@@ -15,7 +15,8 @@ namespace build
     {
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(systemInstallModule->LogStreamId(), "Installing system libraries...");
+            Result<bool> result = LogMessage(systemInstallModule->LogStreamId(), "Installing system libraries...");
+            if (result.Error()) return result;
         }
         auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
         if (systemLibDirResult.Error()) return Result<bool>(ErrorId(systemLibDirResult.GetErrorId()));
@@ -37,7 +38,8 @@ namespace build
             if (copyResult.Error()) return copyResult;
             if (GetGlobalFlag(GlobalFlags.verbose))
             {
-                LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
+                Result<bool> result = LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
+                if (result.Error()) return result;
             }
             if (!systemModule->LibraryFilePath().IsEmpty())
             {
@@ -55,13 +57,15 @@ namespace build
                 if (copyResult.Error()) return copyResult;
                 if (GetGlobalFlag(GlobalFlags.verbose))
                 {
-                    LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
+                    Result<bool> result = LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
+                    if (result.Error()) return result;
                 }
             }
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(systemInstallModule->LogStreamId(), "System libraries installed.");
+            Result<bool> result = LogMessage(systemInstallModule->LogStreamId(), "System libraries installed.");
+            if (result.Error()) return result;
         }
         return Result<bool>(true);
     }
@@ -71,7 +75,8 @@ namespace build
     {
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(systemInstallWindowsModule->LogStreamId(), "Installing system libraries (Windows)...");
+            Result<bool> result = LogMessage(systemInstallWindowsModule->LogStreamId(), "Installing system libraries (Windows)...");
+            if (result.Error()) return result;
         }
         auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
         if (systemLibDirResult.Error()) return Result<bool>(ErrorId(systemLibDirResult.GetErrorId()));
@@ -93,7 +98,8 @@ namespace build
             if (copyResult.Error()) return copyResult;
             if (GetGlobalFlag(GlobalFlags.verbose))
             {
-                LogMessage(systemInstallWindowsModule->LogStreamId(), from + " -> " + to);
+                Result<bool> result = LogMessage(systemInstallWindowsModule->LogStreamId(), from + " -> " + to);
+                if (result.Error()) return result;
             }
             if (!systemModule->LibraryFilePath().IsEmpty())
             {
@@ -111,13 +117,15 @@ namespace build
                 if (copyResult.Error()) return copyResult;
                 if (GetGlobalFlag(GlobalFlags.verbose))
                 {
-                    LogMessage(systemInstallWindowsModule->LogStreamId(), from + " -> " + to);
+                    Result<bool> result = LogMessage(systemInstallWindowsModule->LogStreamId(), from + " -> " + to);
+                    if (result.Error()) return result;
                 }
             }
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(systemInstallWindowsModule->LogStreamId(), "System libraries installed.");
+            Result<bool> result = LogMessage(systemInstallWindowsModule->LogStreamId(), "System libraries installed.");
+            if (result.Error()) return result;
         }
         return Result<bool>(true);
     }

@@ -46,7 +46,8 @@ namespace build
             }
             else if (b == 10u)
             {
-                LogMessage(logStreamId, line);
+                Result<bool> result = LogMessage(logStreamId, line);
+                if (result.Error()) return result;
                 line.Clear();
             }
             else if (b >= 128u)
@@ -59,7 +60,8 @@ namespace build
         }
         if (!line.IsEmpty())
         {
-            LogMessage(logStreamId, line);
+            Result<bool> result = LogMessage(logStreamId, line);
+            if (result.Error()) return result;
         }
         return Result<bool>(true);
     }

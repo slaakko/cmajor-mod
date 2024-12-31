@@ -2708,6 +2708,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thisToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create default constructor for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thisToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -2724,6 +2725,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(baseConstructorCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create default constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, baseConstructorCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -2743,6 +2745,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(vmtPtrHolderClassResult.GetErrorId());
                     int errorId = MakeError("Cannot create default constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, vmtPtrHolderClassResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
@@ -2766,6 +2769,7 @@ namespace binder
                         string message = RtmGetErrorMessageWithoutStackTrace(thisToHolderConversionResult.GetErrorId());
                         int errorId = MakeError("Cannot create default constructor for class '" + classTypeFullName +
                             "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                        AddChildError(errorId, thisToHolderConversionResult.GetErrorId());
                         return Result<bool>(ErrorId(errorId));
                     }
                     FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
@@ -2793,6 +2797,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(scopeResult.GetErrorId());
                     int errorId = MakeError("Cannot create default constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, scopeResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 ContainerScope* scope = scopeResult.Value();
@@ -2818,6 +2823,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(memberConstructorCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create default constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, memberConstructorCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -3027,6 +3033,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thisToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thisToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -3050,6 +3057,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thatToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thatToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
@@ -3066,6 +3074,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(baseConstructorCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, baseConstructorCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -3085,6 +3094,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(vmtPtrHolderClassResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, vmtPtrHolderClassResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
@@ -3108,6 +3118,7 @@ namespace binder
                         string message = RtmGetErrorMessageWithoutStackTrace(thisToHolderConversionResult.GetErrorId());
                         int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                             "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                        AddChildError(errorId, thisToHolderConversionResult.GetErrorId());
                         return Result<bool>(ErrorId(errorId));
                     }
                     FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
@@ -3135,6 +3146,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(scopeResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, scopeResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 if (memberVariableSymbol->Type()->IsClassTypeSymbol())
@@ -3155,6 +3167,7 @@ namespace binder
                             string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
                             int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                                 "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                            AddChildError(errorId, copyCtorErrorId);
                             return Result<bool>(ErrorId(errorId));
                         }
                     }
@@ -3190,6 +3203,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(memberConstructorCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, memberConstructorCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -3393,6 +3407,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thisToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thisToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -3413,6 +3428,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thatToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thatToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
@@ -3429,6 +3445,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(baseConstructorCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, baseConstructorCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -3448,6 +3465,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(vmtPtrHolderClassResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, vmtPtrHolderClassResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
@@ -3471,6 +3489,7 @@ namespace binder
                         string message = RtmGetErrorMessageWithoutStackTrace(thisToHolderConversionResult.GetErrorId());
                         int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                             "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                        AddChildError(errorId, thisToHolderConversionResult.GetErrorId());
                         return Result<bool>(ErrorId(errorId));
                     }
                     FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
@@ -3498,6 +3517,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(scopeResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, scopeResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 ContainerScope* scope = scopeResult.Value();
@@ -3535,6 +3555,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(rvalueMemberCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, rvalueMemberCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 UniquePtr<BoundFunctionCall> rvalueMemberCall = Rvalue(rvalueMemberCallResult.Value());
@@ -3549,6 +3570,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(memberConstructorCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, memberConstructorCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -3758,6 +3780,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thisToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy assignment for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thisToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -3781,6 +3804,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thatToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy assignment for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thatToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
@@ -3797,6 +3821,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(baseAssignmentCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy assignment for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, baseAssignmentCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -3822,6 +3847,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(scopeResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy assignment for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, scopeResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 ContainerScope* scope = scopeResult.Value();
@@ -3855,6 +3881,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(memberAssignmentCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create copy asssignment for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, memberAssignmentCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -4053,6 +4080,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thisToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create move assignment for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thisToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -4073,6 +4101,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(thatToBaseConversionResult.GetErrorId());
                     int errorId = MakeError("Cannot create move assignment for class '" + classTypeFullName +
                         "'. Reason: base class conversion not found:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, thatToBaseConversionResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
@@ -4089,6 +4118,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(baseAssignmentCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create move assignment for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), classType->FullSpan());
+                    AddChildError(errorId, baseAssignmentCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -4130,6 +4160,7 @@ namespace binder
                     string message = RtmGetErrorMessageWithoutStackTrace(swapCallResult.GetErrorId());
                     int errorId = MakeError("Cannot create move asssignment for class '" + classTypeFullName +
                         "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    AddChildError(errorId, swapCallResult.GetErrorId());
                     return Result<bool>(ErrorId(errorId));
                 }
                 boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -4158,6 +4189,7 @@ namespace binder
             bool error = false;
             bool collected = false;
             string message;
+            List<int> operationErrorIds;
             for (Operation* operation : operations)
             {
                 Result<bool> result = operation->CollectViableFunctions(containerScope, arguments, currentFunction, node, flags, viableFunctions);
@@ -4169,6 +4201,7 @@ namespace binder
                         message.Append("\n");
                     }
                     message.Append(RtmGetErrorMessageWithoutStackTrace(result.GetErrorId()));
+                    operationErrorIds.Add(result.GetErrorId());
                 }
                 if (result.Value())
                 {
@@ -4178,6 +4211,10 @@ namespace binder
             if (error && !collected)
             {
                 int errorId = MakeError(message, node->GetFullSpan());
+                for (int operationErrorId : operationErrorIds)
+                {
+                    AddChildError(errorId, operationErrorId);
+                }
                 return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(collected);
@@ -4316,6 +4353,7 @@ namespace binder
                 string clsFullName = Rvalue(clsFullNameResult.Value());
                 string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
                 int errorId = MakeError("could not generate copy constructor for class type '" + clsFullName + "': " + reasonMessage, currentFunction->FullSpan());
+                AddChildError(errorId, result.GetErrorId());
                 return Result<FunctionSymbol*>(ErrorId(errorId));
             }
             FunctionSymbol* copyCtor = *(viableFunctions.Get().Begin());

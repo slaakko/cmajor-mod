@@ -486,7 +486,8 @@ namespace build
 
         if (verbose)
         {
-            LogMessage(project->LogStreamId(), "==> " + vsProjectFilePath);
+            Result<bool> result = LogMessage(project->LogStreamId(), "==> " + vsProjectFilePath);
+            if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));;
         }
 
         return Result<string>(vsProjectFilePath);

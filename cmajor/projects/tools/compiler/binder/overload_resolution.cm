@@ -412,6 +412,9 @@ namespace binder
                     mainMessage.Append("\ncollect errors: ").Append(collectMessage);
                 }
                 int finalErrorId = AllocateError(mainMessage);
+                Error error(mainMessage, finalErrorId);
+                Errors.Instance().AddError(error);
+                AddChildError(finalErrorId, errorId);
                 return Result<UniquePtr<BoundFunctionCall>>(ErrorId(finalErrorId));
             }
             else
@@ -428,6 +431,9 @@ namespace binder
                     mainMessage.Append("\ncollect errors: ").Append(collectMessage);
                 }
                 int finalErrorId = AllocateError(mainMessage);
+                Error error(mainMessage, finalErrorId);
+                Errors.Instance().AddError(error);
+                AddChildError(finalErrorId, errorId);
                 return Result<UniquePtr<BoundFunctionCall>>(ErrorId(finalErrorId));
             }
         }
@@ -1659,7 +1665,11 @@ namespace binder
             {
                 mainMessage.Append("\ncollect errors: ").Append(collectMessage);
             }
-            return AllocateError(mainMessage);
+            int finalErrorId = AllocateError(mainMessage);
+            Error error(mainMessage, finalErrorId);
+            Errors.Instance().AddError(error);
+            AddChildError(finalErrorId, errorId);
+            return finalErrorId;
         }
         else if (castRequired)
         {
@@ -1695,7 +1705,11 @@ namespace binder
             {
                 mainMessage.Append("\ncollect errors: ").Append(collectMessage);
             }
-            return AllocateError(mainMessage);
+            int finalErrorId = AllocateError(mainMessage);
+            Error error(mainMessage, finalErrorId);
+            Errors.Instance().AddError(error);
+            AddChildError(finalErrorId, errorId);
+            return finalErrorId;
         }
         else if (cannotBindConstArgToNonConstParam)
         {
@@ -1731,7 +1745,11 @@ namespace binder
             {
                 mainMessage.Append("\ncollect errors: ").Append(collectMessage);
             }
-            return AllocateError(mainMessage);
+            int finalErrorId = AllocateError(mainMessage);
+            Error error(mainMessage, finalErrorId);
+            Errors.Instance().AddError(error);
+            AddChildError(finalErrorId, errorId);
+            return finalErrorId;
         }
         else if (cannotAssignToConstObject)
         {
@@ -1758,7 +1776,11 @@ namespace binder
             {
                 mainMessage.Append("\ncollect errors: ").Append(collectMessage);
             }
-            return AllocateError(mainMessage);
+            int finalErrorId = AllocateError(mainMessage);
+            Error error(mainMessage, finalErrorId);
+            Errors.Instance().AddError(error);
+            AddChildError(finalErrorId, errorId);
+            return finalErrorId;
         }
         else
         {
@@ -1793,7 +1815,11 @@ namespace binder
             {
                 mainMessage.Append("\nmatch error: ").Append(matchError);
             }
-            return AllocateError(mainMessage);
+            int finalErrorId = AllocateError(mainMessage);
+            Error error(mainMessage, finalErrorId);
+            Errors.Instance().AddError(error);
+            AddChildError(finalErrorId, errorId);
+            return finalErrorId;
         }
     }
 

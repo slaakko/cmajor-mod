@@ -993,7 +993,7 @@ namespace intermediate
 
     public class Types
     {
-        public Types(Context* context_) : context(context_), voidPtrType(System.Lex.Span(), MakePointerTypeId(voidTypeId, 1), 1, voidTypeId), nextUserTypeId(userTypeId)
+        public explicit Types(Context* context_) : context(context_), voidPtrType(System.Lex.Span(), MakePointerTypeId(voidTypeId, 1), 1, voidTypeId), nextUserTypeId(userTypeId)
         {
             voidPtrType.SetBaseType(&voidType);
         }
@@ -1094,7 +1094,7 @@ namespace intermediate
             Type* prev = Get(type->Id());
             if (prev != null)
             {
-                return Error("error adding type id " + ToString(type->Id()) + ": type id not unique", type->Span(), prev->Span(), context);
+                return Result<bool>(ErrorId(Error("error adding type id " + ToString(type->Id()) + ": type id not unique", type->Span(), prev->Span(), context)));
             }
             MapType(type);
             declaredTypes.Add(type);

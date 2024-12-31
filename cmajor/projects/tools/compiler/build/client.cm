@@ -1,0 +1,521 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using symbols;
+
+namespace build
+{
+    public class InboundRunningGuard
+    {
+        public InboundRunningGuard(bool& exited_, ConditionVariable& exitedVar_, int& errorId_) : exited(exited_), exitedVar(exitedVar_), errorId(errorId_)
+        {
+        }
+        public ~InboundRunningGuard()
+        {
+            exited = true;
+            Result<bool> result = exitedVar.NotifyOne();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+            }
+        }
+        private bool& exited;
+        private ConditionVariable& exitedVar;
+        private int& errorId;
+    }
+
+    public UniquePtr<System.Xml.Document> MakeStopReply()
+    {
+        UniquePtr<System.Xml.Document> stopReply = System.Xml.MakeDocument();
+        System.Xml.Element* rootElement = System.Xml.MakeElement("reply");
+        rootElement->SetAttribute("kind", "stop");
+        stopReply->AppendChild(rootElement);
+        return stopReply;
+    }
+
+    public UniquePtr<System.Xml.Document> MakeLogRequest(const string& line)
+    {
+        UniquePtr<System.Xml.Document> logRequest = System.Xml.MakeDocument();
+        System.Xml.Element* rootElement = System.Xml.MakeElement("request");
+        rootElement->SetAttribute("kind", "log");
+        rootElement->SetAttribute("line", line);
+        logRequest->AppendChild(rootElement);
+        return logRequest;
+    }
+
+    public UniquePtr<System.Xml.Document> MakeExitRequest()
+    {
+        UniquePtr<System.Xml.Document> exitRequest = System.Xml.MakeDocument();
+        System.Xml.Element* rootElement = System.Xml.MakeElement("request");
+        rootElement->SetAttribute("kind", "exit");
+        exitRequest->AppendChild(rootElement);
+        return exitRequest;
+    }
+
+    public List<UniquePtr<System.Xml.Element>> MakeCompileErrorElementsForError(Error* error)
+    {
+        List<UniquePtr<System.Xml.Element>> compileErrorElements;
+        bool first = true;
+        for (const System.Lex.FullSpan& location : error->Locations())
+        {
+            UniquePtr<System.Xml.Element> compileErrorElement(System.Xml.MakeElement("compileError"));
+            if (first)
+            {
+                compileErrorElement->SetAttribute("message", error->Message());
+                if (!error->Project().IsEmpty())
+                {
+                    compileErrorElement->SetAttribute("project", error->Project());
+                }
+                first = false;
+            }
+            else
+            {
+                compileErrorElement->SetAttribute("message", "see reference");
+            }
+            if (location.span.IsValid())
+            {
+                Module* module = GetModuleById(location.moduleId);
+                if (module != null)
+                {
+                    int fileIndex = location.fileIndex;
+                    const System.Lex.FileMap& fileMap = module->GetFileMap();
+                    if (fileMap.HasFileName(fileIndex))
+                    {
+                        compileErrorElement->SetAttribute("file", fileMap.GetFileName(fileIndex));
+                        Result<System.Lex.SourceFile*> sourceFileResult = fileMap.GetOrReadSourceFile(fileIndex);
+                        if (sourceFileResult.Error())
+                        {
+                            compileErrorElements.Add(Rvalue(compileErrorElement));
+                            continue;
+                        }
+                        System.Lex.SourceFile* sourceFile = sourceFileResult.Value();
+                        if (sourceFile != null)
+                        {
+                            System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(location.span, sourceFile->LineStartIndeces());
+                            if (lineColLen.IsValid())
+                            {
+                                compileErrorElement->SetAttribute("line", ToString(lineColLen.line));
+                                compileErrorElement->SetAttribute("scol", ToString(lineColLen.col));
+                                compileErrorElement->SetAttribute("ecol", ToString(lineColLen.col + lineColLen.len));
+                            }
+                        }
+                    }
+                }
+            }
+            compileErrorElements.Add(Rvalue(compileErrorElement));
+        }
+        if (first)
+        {
+            UniquePtr<System.Xml.Element> compileErrorElement(System.Xml.MakeElement("compileError"));
+            compileErrorElement->SetAttribute("message", error->Message());
+            if (!error->Project().IsEmpty())
+            {
+                compileErrorElement->SetAttribute("project", error->Project());
+            }
+            compileErrorElements.Add(Rvalue(compileErrorElement));
+        }
+        return compileErrorElements;
+    }
+
+    public List<UniquePtr<System.Xml.Element>> MakeCompileErrorElements(Error* error)
+    {
+        List<UniquePtr<System.Xml.Element>> compileErrorElements;
+        List<UniquePtr<System.Xml.Element>> mainElements = MakeCompileErrorElementsForError(error);
+        for (UniquePtr<System.Xml.Element>& element : mainElements)
+        {
+            compileErrorElements.Add(Rvalue(element));
+        }
+        for (int childId : error->ChildIds())
+        {
+            Error* childError = Errors.Instance().GetError(childId);
+            if (childError != null)
+            {
+                List<UniquePtr<System.Xml.Element>> childElements = MakeCompileErrorElements(childError);
+                for (UniquePtr<System.Xml.Element>& element : childElements)
+                {
+                    compileErrorElements.Add(Rvalue(element));
+                }
+            }
+        }
+        return compileErrorElements;
+    }
+
+    public void AddWarningLocationInfo(System.Xml.Element* warningElement, const System.Lex.FullSpan& location)
+    {
+        if (location.span.IsValid())
+        {
+            Module* module = GetModuleById(location.moduleId);
+            if (module != null)
+            {
+                int fileIndex = location.fileIndex;
+                const System.Lex.FileMap& fileMap = module->GetFileMap();
+                if (fileMap.HasFileName(fileIndex))
+                {
+                    warningElement->SetAttribute("file", fileMap.GetFileName(fileIndex));
+                    Result<System.Lex.SourceFile*> sourceFileResult = fileMap.GetOrReadSourceFile(fileIndex);
+                    if (sourceFileResult.Error())
+                    {
+                        return;
+                    }
+                    System.Lex.SourceFile* sourceFile = sourceFileResult.Value();
+                    if (sourceFile != null)
+                    {
+                        System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(location.span, sourceFile->LineStartIndeces());
+                        if (lineColLen.IsValid())
+                        {
+                            warningElement->SetAttribute("line", ToString(lineColLen.line));
+                            warningElement->SetAttribute("scol", ToString(lineColLen.col));
+                            warningElement->SetAttribute("ecol", ToString(lineColLen.col + lineColLen.len));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public List<UniquePtr<System.Xml.Element>> MakeWarningElements(const Warning& warning)
+    {
+        List<UniquePtr<System.Xml.Element>> warningElements;
+        UniquePtr<System.Xml.Element> warningElement = System.Xml.MakeElement("warning");
+        warningElement->SetAttribute("number", ToString(warning.Number()));
+        warningElement->SetAttribute("message", warning.Message());
+        warningElement->SetAttribute("project", warning.ModuleName());
+        AddWarningLocationInfo(warningElement.Get(), warning.Defined());
+        warningElements.Add(Rvalue(warningElement));
+        for (const System.Lex.FullSpan& location : warning.References())
+        {
+            UniquePtr<System.Xml.Element> warningReferenceElement = System.Xml.MakeElement("warning");
+            warningReferenceElement->SetAttribute("number", ToString(warning.Number()));
+            warningReferenceElement->SetAttribute("message", "see reference");
+            AddWarningLocationInfo(warningReferenceElement.Get(), location);
+            warningElements.Add(Rvalue(warningReferenceElement));
+        }
+        return warningElements;
+    }
+
+    public UniquePtr<System.Xml.Document> MakeBuildResultRequest(int errorId)
+    {
+        UniquePtr<System.Xml.Document> buildResultRequest = System.Xml.MakeDocument();
+        System.Xml.Element* rootElement = System.Xml.MakeElement("request");
+        rootElement->SetAttribute("kind", "buildResult");
+        if (errorId == 0)
+        {
+            rootElement->SetAttribute("success", "true");
+            CompileWarningCollection& collection = CompileWarningCollection.Instance();
+            for (const auto& warning : collection.Warnings())
+            {
+                List<UniquePtr<System.Xml.Element>> warningElements = MakeWarningElements(warning);
+                for (UniquePtr<System.Xml.Element>& warningElement : warningElements)
+                {
+                    rootElement->AppendChild(warningElement.Release());
+                }
+            }
+        }
+        else
+        {
+            rootElement->SetAttribute("success", "false");
+            Error* error = Errors.Instance().GetError(errorId);
+            if (error != null)
+            {
+                List<UniquePtr<System.Xml.Element>> compileErrorElements = MakeCompileErrorElements(error);
+                for (UniquePtr<System.Xml.Element>& compileErrorElement : compileErrorElements)
+                {
+                    rootElement->AppendChild(compileErrorElement.Release());
+                }
+            }
+        }
+        buildResultRequest->AppendChild(rootElement);
+        return buildResultRequest;
+    }
+
+    public Log& GetLog()
+    {
+        return Log.Instance();
+    }
+
+    public void RunInboundClient(void* param)
+    {
+        Client* client = cast<Client*>(param);
+        client->RunInbound();
+    }
+
+    public void RunOutboundClient(void* param)
+    {
+        Client* client = cast<Client*>(param);
+        client->RunOutbound();
+    }
+
+    public class Client
+    {
+        static Client() : instance(new Client())
+        {
+        }
+        public static Client& Instance()
+        {
+            return *instance;
+        }
+        public void Start(int iport_, int oport_)
+        {
+            iport = iport_;
+            oport = oport_;
+            inboundThread = Thread.StartFunction(RunInboundClient, this);
+            outboundThread = Thread.StartFunction(RunOutboundClient, this);
+        }
+        public void RunInbound()
+        {
+            InboundRunningGuard guard(inboundExited, inboundExitedVar, errorId);
+            System.Net.Sockets.TcpSocket socket;
+            Result<bool> result = socket.Bind(iport);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = socket.Listen(10);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            while (!inboundClientExiting)
+            {
+                Result<System.Net.Sockets.TcpSocket> clientSocketResult = socket.Accept();
+                if (clientSocketResult.Error())
+                {
+                    errorId = clientSocketResult.GetErrorId();
+                    break;
+                }
+                System.Net.Sockets.TcpSocket clientSocket = Rvalue(clientSocketResult.Value());
+                Result<UniquePtr<System.Xml.Document>> requestResult = System.Xml.ReceiveDocument(clientSocket, fileMap, messageNumber);
+                if (requestResult.Error())
+                {
+                    errorId = requestResult.GetErrorId();
+                    break;
+                }
+                UniquePtr<System.Xml.Document> requestDocument = Rvalue(requestResult.Value());
+                if (requestDocument.IsNull())
+                {
+                    break;
+                }
+                Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("/request", requestDocument.Get());
+                if (nodeSetResult.Error())
+                {
+                    errorId = nodeSetResult.GetErrorId();
+                    break;
+                }
+                UniquePtr<System.XPath.NodeSet> nodeSet = Rvalue(nodeSetResult.Value());
+                int n = nodeSet->Count();
+                if (n > 0)
+                {
+                    System.Xml.Node* node = nodeSet->GetNode(0);
+                    if (node->IsElementNode())
+                    {
+                        System.Xml.Element* requestElement = cast<System.Xml.Element*>(node);
+                        string kind = requestElement->GetAttribute("kind");
+                        if (kind == "stop")
+                        {
+                            StopBuild();
+                            UniquePtr<System.Xml.Document> stopReply = MakeStopReply();
+                            Result<bool> result = System.Xml.SendDocument(clientSocket, stopReply.Get());
+                            if (result.Error())
+                            {
+                                errorId = result.GetErrorId();
+                                break;
+                            }
+                        }
+                        else if (kind == "exit")
+                        {
+                            inboundClientExiting = true;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            result = socket.Close();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public void StopInboundClient()
+        {
+            System.Net.Sockets.TcpSocket socket("127.0.0.1", iport);
+            if (socket.Error())
+            {
+                errorId = socket.GetErrorId();
+                return;
+            }
+            UniquePtr<System.Xml.Document> exitRequest = MakeExitRequest();
+            Result<bool> result = System.Xml.SendDocument(socket, exitRequest.Get());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = inboundExitedVar.Wait(mtx, InboundExited, null);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = socket.Close();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            inboundThread.Join();
+        }
+        public void RunOutbound()
+        {
+            System.Net.Sockets.TcpSocket socket("127.0.0.1", oport);
+            if (socket.Error())
+            {
+                errorId = socket.GetErrorId();
+                return;
+            }
+            while (!outboundClientExiting)
+            {
+                Result<string> logLineResult = GetLog().GetMessageFromQueue();
+                if (logLineResult.Error())
+                {
+                    errorId = logLineResult.GetErrorId();
+                    return;
+                }
+                string logLine = Rvalue(logLineResult.Value());
+                if (logLine.IsEmpty())
+                {
+                    if (GetLog().Exiting())
+                    {
+                        outboundClientExiting = true;
+                    }
+                }
+                if (!outboundClientExiting)
+                {
+                    UniquePtr<System.Xml.Document> logRequest = MakeLogRequest(logLine);
+                    Result<bool> result = System.Xml.SendDocument(socket, logRequest.Get());
+                    if (result.Error())
+                    {
+                        errorId = result.GetErrorId();
+                        return;
+                    }
+                    Result<UniquePtr<System.Xml.Document>> logReplyResult = System.Xml.ReceiveDocument(socket, fileMap, messageNumber);
+                    if (logReplyResult.Error())
+                    {
+                        errorId = logReplyResult.GetErrorId();
+                        return;
+                    }
+                }
+            }
+            if (!buildResultRequest.IsNull())
+            {
+                Result<bool> result = System.Xml.SendDocument(socket, buildResultRequest.Get());
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+                Result<UniquePtr<System.Xml.Document>> buildResultReplyResult = System.Xml.ReceiveDocument(socket, fileMap, messageNumber);
+                if (buildResultReplyResult.Error())
+                {
+                    errorId = buildResultReplyResult.GetErrorId();
+                    return;
+                }
+            }
+            else
+            {
+                UniquePtr<System.Xml.Document> exitRequest = MakeExitRequest();
+                Result<bool> result = System.Xml.SendDocument(socket, exitRequest.Get());
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+        }
+        [nodiscard]
+        public Result<bool> Exit()
+        {
+            StopInboundClient();
+            Result<bool> exitResult = GetLog().Exit();
+            if (exitResult.Error()) return exitResult;
+            outboundThread.Join();
+            return Result<bool>(true);
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public void SetBuildResultRequest(UniquePtr<System.Xml.Document>&& buildResultRequest_)
+        {
+            buildResultRequest = buildResultRequest_;
+        }
+        public inline bool HasBuildResultRequest() const
+        {
+            return !buildResultRequest.IsNull();
+        }
+        public inline bool InboundExited(void* arg) const
+        {
+            return inboundExited;
+        }
+        private Client() : iport(0), oport(0), outboundClientExiting(false), inboundClientExiting(false), inboundExited(false), errorId(0), fileMap(), messageNumber(0)
+        {
+        }
+        private static UniquePtr<Client> instance;
+        private int iport;
+        private int oport;
+        private bool inboundClientExiting;
+        private bool outboundClientExiting;
+        private bool inboundExited;
+        private Thread outboundThread;
+        private Thread inboundThread;
+        private int errorId;
+        private UniquePtr<System.Xml.Document> buildResultRequest;
+        private System.Lex.FileMap fileMap;
+        private int messageNumber;
+        private RecursiveMutex mtx;
+        private ConditionVariable inboundExitedVar;
+    }
+
+    public void StartClient(int iport, int oport)
+    {
+        Client.Instance().Start(iport, oport);
+    }
+
+    [nodiscard]
+    public Result<bool> StopClient()
+    {
+        if (GetGlobalFlag(GlobalFlags.client))
+        {
+            Result<bool> result = Client.Instance().Exit();
+            if (result.Error()) return result;
+            int errorId = Client.Instance().GetErrorId();
+            if (errorId != 0)
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    public void MakeBuildResult(int errorId)
+    {
+        if (GetGlobalFlag(GlobalFlags.client))
+        {
+            if (!Client.Instance().HasBuildResultRequest())
+            {
+                Client.Instance().SetBuildResultRequest(MakeBuildResultRequest(errorId));
+            }
+        }
+    }
+}
+

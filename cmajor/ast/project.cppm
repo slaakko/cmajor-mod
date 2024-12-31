@@ -14,7 +14,7 @@ export namespace cmajor::ast {
 
 enum class BackEnd : int8_t
 {
-    llvm = 0, systemx = 1, cpp = 2, masm = 3
+    llvm = 0, systemx = 1, cpp = 2, masm = 3, cm = 4
 };
 
 std::string BackEndStr(BackEnd backend);
@@ -38,11 +38,11 @@ class CompileUnitNode;
 
 std::string GetPlatform();
 std::string CmajorRootDir();
-std::string CmajorSystemLibDir(const std::string& config, BackEnd backend);
+std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, int optLevel);
 std::string CmajorResourceDir();
 std::string CmajorLogFileDir();
-std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend);
-std::string CmajorSystemWindowsModuleFilePath(const std::string& config);
+std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend, int optLevel);
+std::string CmajorSystemWindowsModuleFilePath(const std::string& config, BackEnd backend, int optLevel);
 std::string MakeCmajorRootRelativeFilePath(const std::string& filePath);
 std::string ExpandCmajorRootRelativeFilePath(const std::string& filePath);
 std::vector<Project*> GetReferencedProjects(Project* project, Solution* solution);
@@ -151,7 +151,7 @@ private:
 class Project
 {
 public:
-    Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_);
+    Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_, int optLevel_);
     Project(const Project&) = delete;
     Project& operator=(const Project&) = delete;
     const std::u32string& Name() const { return name; }
@@ -226,6 +226,7 @@ private:
     std::u32string name;
     std::string filePath;
     std::string config;
+    int optLevel;
     Target target;
     std::filesystem::path sourceBasePath;
     std::filesystem::path outdirBasePath;

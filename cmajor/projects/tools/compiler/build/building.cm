@@ -12,18 +12,71 @@ using cm.ast;
 
 namespace build
 {
-    internal bool stopBuild = false;
-    internal Solution* currentSolution;
+    internal class BuildVars
+    {
+        static BuildVars() : instance(new BuildVars())
+        {
+        }
+        public static BuildVars& Instance()
+        {
+            return *instance;
+        }
+        private BuildVars() : stopBuild(false), currentSolution(null)
+        {
+        }
+        public bool& GetStopBuildVar()
+        {
+            return stopBuild;
+        }
+        public Solution* CurrentSolution() const
+        {
+            return currentSolution;
+        }
+        public void SetCurrentSolution(Solution* currentSolution_)
+        {
+            currentSolution = currentSolution_;
+        }
+        public void SetStopBuild()
+        {
+            stopBuild = true;
+        }
+        public void ResetStopBuild()
+        {
+            stopBuild = false;
+        }
+        public bool BuildStopped() const
+        {
+            return stopBuild;
+        }
+        private static UniquePtr<BuildVars> instance;
+        private bool stopBuild;
+        private Solution* currentSolution;
+    }
+
+    internal void StopBuild()
+    {
+        BuildVars.Instance().SetStopBuild();
+    }
+
+    internal bool BuildStopped()
+    {
+        return BuildVars.Instance().BuildStopped();
+    }
+
+    internal Solution* CurrentSolution()
+    {
+        return BuildVars.Instance().CurrentSolution();
+    }
 
     internal class CurrentSolutionGuard
     {
         public CurrentSolutionGuard(Solution* solution)
         {
-            currentSolution = solution;
+            BuildVars.Instance().SetCurrentSolution(solution);
         }
         public ~CurrentSolutionGuard()
         {
-            currentSolution = null;
+            BuildVars.Instance().SetCurrentSolution(null);
         }
     }
 
@@ -117,13 +170,15 @@ namespace build
         {
             if (GetGlobalFlag(GlobalFlags.verbose))
             {
-                LogMessage(project->LogStreamId(), "===== Project '" + projectName + "' (" + project->FilePath() + ") is up-to-date.");
+                Result<bool> result = LogMessage(project->LogStreamId(), "===== Project '" + projectName + "' (" + project->FilePath() + ") is up-to-date.");
+                if (result.Error()) return result;
                 return Result<bool>(true);
             }
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(project->LogStreamId(), "===== Building project '" + projectName + "' (" + project->FilePath() + ") using " + config + " configuration.");
+            Result<bool> result = LogMessage(project->LogStreamId(), "===== Building project '" + projectName + "' (" + project->FilePath() + ") using " + config + " configuration.");
+            if (result.Error()) return result;
         }
         SymbolsContext context;
         rootModule.Reset(new Module(projectName, project->ModuleFilePath()));
@@ -143,9 +198,11 @@ namespace build
             stop = true;
             return result;
         }
+        if (stop) return Result<bool>(false);
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(project->LogStreamId(), "Binding types...");
+            Result<bool> result = LogMessage(project->LogStreamId(), "Binding types...");
+            if (result.Error()) return result;
         }
         AttributeBinder attributeBinder(rootModule.Get());
         List<UniquePtr<BoundCompileUnit>> boundCompileUnits;
@@ -155,6 +212,7 @@ namespace build
             stop = true;
             return typeBindingResult;
         }
+        if (stop) return Result<bool>(false);
         List<string> objectFilePaths;
         List<string> asmFilePaths;
         List<string> cppFilePaths;
@@ -164,6 +222,7 @@ namespace build
             stop = true;
             return compileResult;
         }
+        if (stop) return Result<bool>(false);
         for (const auto& rcFilePath : project->ResourceScriptFilePaths())
         {
             Result<bool> result = rootModule->AddResourceScriptFilePath(rcFilePath);
@@ -180,6 +239,7 @@ namespace build
             stop = true;
             return Result<bool>(ErrorId(cmajorRootDirResult.GetErrorId()));
         }
+        if (stop) return Result<bool>(false);
         string cmajorRootDir = Rvalue(cmajorRootDirResult.Value());
         Result<string> xpathLexerFPResult = System.IO.GetFullPath(System.IO.Path.Combine(System.IO.Path.Combine(cmajorRootDir, "rc"), "soul.xml.xpath.lexer.classmap.rc"));
         if (xpathLexerFPResult.Error())
@@ -195,6 +255,7 @@ namespace build
         string classIndexFilePath;
         string traceDataFilePath;
         Target target = project->GetTarget();
+        if (stop) return Result<bool>(false);
         if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
         {
             Result<bool> result = GenerateMainUnit(project, rootModule.Get(), cppFilePaths, context);
@@ -218,6 +279,7 @@ namespace build
                 return result;
             }
         }
+        if (stop) return Result<bool>(false);
         result = VSBuild(project, rootModule.Get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
             GetGlobalFlag(GlobalFlags.verbose));
         if (result.Error())
@@ -233,18 +295,22 @@ namespace build
             stop = true;
             return result;
         }
+        if (stop) return Result<bool>(false);
         if (!CompileWarningCollection.Instance().Warnings().IsEmpty())
         {
-            LogMessage(project->LogStreamId(), string());
-            LogMessage(project->LogStreamId(), "warnings:");
+            result = LogMessage(project->LogStreamId(), "warnings:");
+            if (result.Error()) return result;
             for (const auto& warning : CompileWarningCollection.Instance().Warnings())
             {
-                warning.ToLog(project->LogStreamId());
+                Result<bool> result = warning.ToLog(project->LogStreamId());
+                if (result.Error()) return result;
             }
         }
+        if (stop) return Result<bool>(false);
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(project->LogStreamId(), "Project '" + projectName + "' built successfully.");
+            Result<bool> result = LogMessage(project->LogStreamId(), "Project '" + projectName + "' built successfully.");
+            if (result.Error()) return result;
         }
         if (rootModule->IsSystemModule())
         {
@@ -293,7 +359,7 @@ namespace build
                     return Result<bool>(ErrorId(referencedProjectResult.GetErrorId()));
                 }
                 Project* referencedProject = referencedProjectResult.Value().Get();
-                if (currentSolution == null)
+                if (CurrentSolution() == null)
                 {
                     auto result = BuildProject(referencedProjectFilePath, rootModule, builtProjects);
                     if (result.Error()) return result;
@@ -302,17 +368,41 @@ namespace build
             auto result = CleanProject(project);
             if (result.Error())
             {
-                LogMessage(project->LogStreamId(), result.GetErrorMessage());
+                Result<bool> logResult = LogMessage(project->LogStreamId(), result.GetErrorMessage());
+                if (logResult.Error()) return logResult;
+                int errorId = result.GetErrorId();
+                Error* error = Errors.Instance().GetError(errorId);
+                if (error != null)
+                {
+                    Result<string> projectNameResult = ToUtf8(project->Name());
+                    if (!projectNameResult.Error())
+                    {
+                        error->SetProject(projectNameResult.Value());
+                    }
+                }
+                MakeBuildResult(errorId);
                 return Result<bool>(ErrorId(-1));
             }
         }
         else
         {
-            stopBuild = false;
-            auto result = BuildProject(project, rootModule, stopBuild, true, builtProjects);
+            BuildVars.Instance().ResetStopBuild();
+            auto result = BuildProject(project, rootModule, BuildVars.Instance().GetStopBuildVar(), true, builtProjects);
             if (result.Error())
             {
-                LogMessage(project->LogStreamId(), result.GetErrorMessage());
+                Result<bool> logResult = LogMessage(project->LogStreamId(), result.GetErrorMessage());
+                if (logResult.Error()) return logResult;
+                int errorId = result.GetErrorId();
+                Error* error = Errors.Instance().GetError(errorId);
+                if (error != null)
+                {
+                    Result<string> projectNameResult = ToUtf8(project->Name());
+                    if (!projectNameResult.Error())
+                    {
+                        error->SetProject(projectNameResult.Value());
+                    }
+                }
+                MakeBuildResult(errorId);
                 return Result<bool>(ErrorId(-1));
             }
         }
@@ -326,24 +416,28 @@ namespace build
         int numProjectsToBuild = cast<int>(projectsToBuild.Count());
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(-1, "Building " + ToString(numProjectsToBuild) + " projects...");
+            Result<bool> result = LogMessage(-1, "Building " + ToString(numProjectsToBuild) + " projects...");
+            if (result.Error()) return result;
         }
         for (int i = 0; i < numProjectsToBuild; ++i)
         {
             Project* project = projectsToBuild[i];
-            stopBuild = false;
-            auto result = BuildProject(project, rootModules[i], stopBuild, true, builtProjects);
+            BuildVars.Instance().ResetStopBuild();
+            auto result = BuildProject(project, rootModules[i], BuildVars.Instance().GetStopBuildVar(), true, builtProjects);
             if (result.Error()) return result;
+            if (BuildStopped()) return Result<bool>(false);
         }
         if (!CompileWarningCollection.Instance().Warnings().IsEmpty())
         {
-            LogMessage(-1, string());
-            LogMessage(-1, "warnings:");
+            Result<bool> result = LogMessage(-1, "warnings:");
+            if (result.Error()) return result;
             for (const auto& warning : CompileWarningCollection.Instance().Warnings())
             {
-                warning.ToLog(-1);
+                Result<bool> result = warning.ToLog(-1);
+                if (result.Error()) return result;
             }
         }
+        if (BuildStopped()) return Result<bool>(false);
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
             string solutionName;
@@ -352,7 +446,8 @@ namespace build
             {
                 solutionName = Rvalue(utf8Result.Value());
             }
-            LogMessage(-1, "Solution '" + solutionName + "' built successfully.");
+            Result<bool> result = LogMessage(-1, "Solution '" + solutionName + "' built successfully.");
+            if (result.Error()) return result;
         }
         return Result<bool>(true);
     }
@@ -436,10 +531,11 @@ namespace build
         int numProjectsToBuild = cast<int>(projectsToBuild.Count());
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(-1, "Building " + ToString(numProjectsToBuild) + " projects using " + ToString(numThreads) + " threads...");
+            Result<bool> result = LogMessage(-1, "Building " + ToString(numProjectsToBuild) + " projects using " + ToString(numThreads) + " threads...");
+            if (result.Error()) return result;
         }
-        stopBuild = false;
-        SolutionBuildData buildData(stopBuild, rootModules, builtProjects);
+        BuildVars.Instance().ResetStopBuild();
+        SolutionBuildData buildData(BuildVars.Instance().GetStopBuildVar(), rootModules, builtProjects);
         List<Thread> threads;
         for (int i = 0; i < numThreads; ++i)
         {
@@ -447,7 +543,7 @@ namespace build
             if (buildData.stop) break;
             threads.Add(Rvalue(thread));
         }
-        while (numProjectsToBuild > 0 && !stopBuild)
+        while (numProjectsToBuild > 0 && !BuildStopped())
         {
             List<Project*> building;
             for (Project* project : projectsToBuild)
@@ -474,7 +570,7 @@ namespace build
         }
         buildData.buildQueue.Exit();
         buildData.readyQueue.Exit();
-        stopBuild = true;
+        StopBuild();
         int numStartedThreads = cast<int>(threads.Count());
         for (int i = 0; i < numStartedThreads; ++i)
         {
@@ -495,11 +591,12 @@ namespace build
         }
         if (!CompileWarningCollection.Instance().Warnings().IsEmpty())
         {
-            LogMessage(-1, string());
-            LogMessage(-1, "warnings:");
+            Result<bool> result = LogMessage(-1, "warnings:");
+            if (result.Error()) return result;
             for (const auto& warning : CompileWarningCollection.Instance().Warnings())
             {
-                warning.ToLog(-1);
+                result = warning.ToLog(-1);
+                if (result.Error()) return result;
             }
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
@@ -510,7 +607,8 @@ namespace build
             {
                 solutionName = Rvalue(utf8Result.Value());
             }
-            LogMessage(-1, "Solution '" + solutionName + "' built successfully.");
+            Result<bool> result = LogMessage(-1, "Solution '" + solutionName + "' built successfully.");
+            if (result.Error()) return result;
         }
         return Result<bool>(true);
     }
@@ -526,11 +624,13 @@ namespace build
         }
         if (GetGlobalFlag(GlobalFlags.clean))
         {
-            LogMessage(-1, "Cleaning solution '" + solutionFilePath + "' using " + config + " configuration.");
+            Result<bool> result = LogMessage(-1, "Cleaning solution '" + solutionFilePath + "' using " + config + " configuration.");
+            if (result.Error()) return result;
         }
         else
         {
-            LogMessage(-1, "Building solution '" + solutionFilePath + "' using " + config + " configuration.");
+            Result<bool> result = LogMessage(-1, "Building solution '" + solutionFilePath + "' using " + config + " configuration.");
+            if (result.Error()) return result;
         }
         auto solutionFileResult = ParseSolutionFile(solutionFilePath);
         if (solutionFileResult.Error())
@@ -547,7 +647,9 @@ namespace build
                 return Result<bool>(ErrorId(projectResult.GetErrorId()));
             }
             Project* project = projectResult.Value().Get();
+            #if (DEBUG_OUTPUT)
             Console.Out() << "PROJECT " << project->ModuleFilePath() << endl();
+            #endif
             solution->AddProject(Rvalue(projectResult.Value()));
         }
         Result<List<Project*>> buildOrderResult = solution->CreateBuildOrder();

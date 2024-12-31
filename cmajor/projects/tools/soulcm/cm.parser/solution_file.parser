@@ -17,7 +17,7 @@ parser cm.parser.SolutionFileParser
     using cm.parser.ContainerFileParser.SolutionKeyword;
 
     SolutionFile(var UniquePtr<cm.ast.Solution> solutionFile) : cm.ast.Solution*
-        ::= 
+        ::=
         (
             empty{ lexer.vars.matchFilePath = true; }
             SolutionKeyword:solutionKeyword
@@ -36,7 +36,7 @@ parser cm.parser.SolutionFileParser
         ;
 
     BackEnd(var ustring id) : ustring
-        ::= 
+        ::=
         (
             ID{ id = lexer.GetToken(pos).ToString(); }
         )
@@ -45,14 +45,38 @@ parser cm.parser.SolutionFileParser
         }
         ;
 
+    Config(var ustring id) : ustring
+        ::=
+        (
+            ID{ id = lexer.GetToken(pos).ToString(); }
+        )
+        {
+            return id;
+        }
+        ;
+
+    OptLevel : int
+        ::=
+        (
+            INTEGER_LITERAL
+            {
+                Result<int> result = lexer.GetInt(pos);
+                if (result.Error()) return ErrorId(result.GetErrorId()); 
+                return result.Value();
+            }
+        )
+        ;
+
     Declaration : cm.ast.SolutionDeclaration*
         ::= SolutionProjectDeclaration:solutionProjectDeclaration{ return solutionProjectDeclaration; }
         |   ActiveProjectDeclaration:activeProjectDeclaration{ return activeProjectDeclaration; }
-        |   ActiveBackEndDeclaration:activeBackEndDeclaration{ return activeBackEndDeclaration; } 
+        |   ActiveBackEndDeclaration:activeBackEndDeclaration{ return activeBackEndDeclaration; }
+        |   ActiveConfigurationDeclaration:activeConfigurationDeclaration{ return activeConfigurationDeclaration; }
+        |   ActiveOptLevelDeclaration:activeOptLevelDeclaration{ return activeOptLevelDeclaration; }
         ;
 
     SolutionProjectDeclaration : cm.ast.SolutionDeclaration*
-        ::= 
+        ::=
         (
             ProjectKeyword:projectKeyword
             FilePath:filePath
@@ -67,7 +91,7 @@ parser cm.parser.SolutionFileParser
         ::=
         (
             ActiveProjectKeyword:activeProjectKeyword
-            QualifiedId:activeProjectName 
+            QualifiedId:activeProjectName
             SEMICOLON
         )
         {
@@ -88,11 +112,45 @@ parser cm.parser.SolutionFileParser
         }
         ;
 
+    ActiveConfigurationDeclaration : cm.ast.SolutionDeclaration*
+        ::=
+        (
+            ActiveConfigKeyword:activeConfigKeyword
+            ASSIGN
+            Config:config
+            SEMICOLON
+        )
+        {
+            return new cm.ast.SolutionActiveConfigurationDeclaration(config);
+        }
+        ;
+
+    ActiveOptLevelDeclaration : cm.ast.SolutionDeclaration*
+        ::=
+        (
+            ActiveOptLevelKeyword:activeOptLevelKeyword
+            ASSIGN
+            OptLevel:optLevel
+            SEMICOLON
+        )
+        {
+            return new cm.ast.SolutionActiveOptLevelDeclaration(optLevel);
+        }
+        ;
+
     ActiveProjectKeyword
         ::= ID{ pass = lexer.GetToken(pos).ToString() == u"activeProject"; }
         ;
 
     ActiveBackEndKeyword
         ::= ID{ pass = lexer.GetToken(pos).ToString() == u"activeBackEnd"; }
+        ;
+
+    ActiveConfigKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"activeConfig"; }
+        ;
+
+    ActiveOptLevelKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"activeOptLevel"; }
         ;
 }

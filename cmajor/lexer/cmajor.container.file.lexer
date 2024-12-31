@@ -16,6 +16,7 @@ lexer CmajorContainerFileLexer
         "{separators}" {}
         "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
         "{filepath}" { return FILEPATH; }
+        "{integer}"{ return INTEGER; }
         "=" { return ASSIGN; }
         ";" { return SEMICOLON; }
         "\." { return DOT; }

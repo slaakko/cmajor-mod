@@ -179,6 +179,14 @@ void BuildService::ExecuteCommand()
         {
             backend = cmajor::symbols::BackEnd::masm;
         }
+        else if (buildCommand->backend == "cm")
+        {
+            result = BuildWithCmMasmCompiler(*buildCommand);
+            BuildResultMessage* resultMessage = new BuildResultMessage(result);
+            PutServiceMessage(resultMessage);
+            buildInProgress = false;
+            return;
+        }
         else
         {
             throw std::runtime_error("unsupported backend '" + buildCommand->backend + "'");
@@ -194,9 +202,11 @@ void BuildService::ExecuteCommand()
         cmajor::build::ResetStopBuild();
         cmajor::symbols::ResetGlobalFlags();
         cmajor::symbols::SetBackEnd(backend);
+        int optLevel = std::stoi(buildCommand->optimizationLevel);
         if (buildCommand->config == "release")
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::release);
+            cmajor::symbols::SetOptimizationLevel(optLevel);
         }
         else if (buildCommand->config.empty() || buildCommand->config == "debug")
         {
@@ -255,15 +265,6 @@ void BuildService::ExecuteCommand()
         for (const auto& define : buildCommand->defines)
         {
             cmajor::symbols::DefineCommandLineConditionalSymbol(util::ToUtf32(define));
-        }
-        if (!buildCommand->optimizationLevel.empty() && buildCommand->optimizationLevel != "default")
-        {
-            int optimizationLevel = std::stoi(buildCommand->optimizationLevel);
-            if (optimizationLevel < 0 || optimizationLevel > 3)
-            {
-                throw std::runtime_error("optimization level out of range");
-            }
-            cmajor::symbols::SetOptimizationLevel(optimizationLevel);
         }
         switch (backend)
         {
@@ -340,7 +341,14 @@ void BuildService::CancelBuild()
 {
     if (buildInProgress)
     {
-        cmajor::build::StopBuild();
+        if (buildCommand->backend == "cm")
+        {
+            StopCmMasmBuild();
+        }
+        else
+        {
+            cmajor::build::StopBuild();
+        }
         buildCommand.reset();
         buildInProgress = false;
         PutServiceMessage(new BuildStoppedMessage());
@@ -416,7 +424,8 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
         if (!module)
         {
             std::u32string moduleName = util::ToUtf32(request.projectName);
-            cmajor::ast::Project project(moduleName, request.projectFilePath, request.config, backend);
+            int optLevel = std::stoi(request.optimizationLevel);
+            cmajor::ast::Project project(moduleName, request.projectFilePath, request.config, backend, optLevel);
             std::string moduleFilePath = project.ModuleFilePath();
             bool readModule = false;
             if (!cmajor::symbols::IsModuleCached(moduleFilePath))

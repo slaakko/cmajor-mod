@@ -171,7 +171,9 @@ namespace intermediate
             }
             else
             {
+                #if (DEBUG_OUTPUT)
                 Console.Out() << "GENERATE CODE FOR " << function.Name() << endl();
+                #endif
                 string fullFunctionName = function.ResolveFullName();
                 file.GetDeclarationSection()->AddPublicDataDeclaration(new assembly.PublicDataDeclaration(function.Name()));
                 currentFunction = &function;

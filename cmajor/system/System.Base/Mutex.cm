@@ -34,7 +34,7 @@ namespace System.Threading
         }
         private void* nativeHandle;
     }
-    
+
     public class RecursiveMutex
     {
         public RecursiveMutex() : nativeHandle(RtmAllocateRecursiveMutex())
@@ -65,13 +65,7 @@ namespace System.Threading
         }
         private void* nativeHandle;
     }
-    
-    public concept Lockable<T>
-    {
-        void T.Lock();
-        void T.Unlock();
-    }
-    
+
     public class LockGuard<Mtx> where Mtx is Lockable
     {
         private typedef LockGuard<Mtx> Self;

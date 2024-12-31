@@ -10,7 +10,7 @@ namespace intermediate
 {
     public class CompileUnit
     {
-        public CompileUnit(Context* context_) : context(context_), filePath()
+        public explicit CompileUnit(Context* context_) : context(context_), filePath()
         {
         }
         public void SetFilePath(const string& filePath_)

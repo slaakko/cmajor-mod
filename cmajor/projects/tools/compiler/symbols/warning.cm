@@ -8,7 +8,8 @@ using System.Collections;
 
 namespace symbols
 {
-    public void LogLocationText(int logStreamId, const System.Lex.FullSpan& location)
+    [nodiscard]
+    public Result<bool> LogLocationText(int logStreamId, const System.Lex.FullSpan& location)
     {
         Module* module = GetModuleById(location.moduleId);
         if (module != null)
@@ -20,7 +21,8 @@ namespace symbols
                 Result<System.Lex.SourceFile*> sourceFileResult = fileMap.GetOrReadSourceFile(fileIndex);
                 if (sourceFileResult.Error())
                 {
-                    LogMessage(logStreamId, sourceFileResult.GetErrorMessage());
+                    Result<bool> result = LogMessage(logStreamId, sourceFileResult.GetErrorMessage());
+                    if (result.Error()) return result;
                 }
                 System.Lex.SourceFile* sourceFile = sourceFileResult.Value();
                 if (sourceFile != null)
@@ -30,15 +32,18 @@ namespace symbols
                     {
                         string locationText;
                         locationText.Append(fileMap.GetFileName(fileIndex)).Append(" line ").Append(ToString(lineColLen.line)).Append(":");
-                        LogMessage(logStreamId, locationText);
+                        Result<bool> result = LogMessage(logStreamId, locationText);
+                        if (result.Error()) return result;
                         Result<string> lineResult = sourceFile->GetLine(lineColLen.line);
                         if (!lineResult.Error())
                         {
                             string line = Rvalue(lineResult.Value());
-                            LogMessage(logStreamId, line);
+                            Result<bool> result = LogMessage(logStreamId, line);
+                            if (result.Error()) return result;
                             string caretText;
                             caretText.Append(string(' ', Max(cast<int>(0), lineColLen.col - 1))).Append(string('^', lineColLen.len));
-                            LogMessage(logStreamId, caretText);
+                            result = LogMessage(logStreamId, caretText);
+                            if (result.Error()) return result;
                         }
                         else
                         {
@@ -48,6 +53,7 @@ namespace symbols
                 }
             }
         }
+        return Result<bool>(true);
     }
 
     public const int nodiscardWarning = 1;
@@ -86,11 +92,13 @@ namespace symbols
         {
             references = references_;
         }
-        public void ToLog(int logStreamId) 
+        [nodiscard]
+        public Result<bool> ToLog(int logStreamId)
         {
             string warningText = "warning ";
             warningText.Append(ToString(number)).Append(": project '").Append(moduleName).Append("': ").Append(message);
-            LogMessage(logStreamId, warningText);
+            Result<bool> result = LogMessage(logStreamId, warningText);
+            if (result.Error()) return result;
             List<System.Lex.FullSpan> locations;
             if (defined.span.IsValid())
             {
@@ -109,10 +117,13 @@ namespace symbols
             {
                 if (i > 0)
                 {
-                    LogMessage(logStreamId, "see reference:");
+                    Result<bool> result = LogMessage(logStreamId, "see reference:");
+                    if (result.Error()) return result;
                 }
-                LogLocationText(logStreamId, locations[i]);
+                Result<bool> result = LogLocationText(logStreamId, locations[i]);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
         private int number;
         private string moduleName;

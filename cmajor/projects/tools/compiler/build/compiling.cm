@@ -108,7 +108,8 @@ namespace build
     {
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(project->LogStreamId(), "Compiling...");
+            Result<bool> result = LogMessage(project->LogStreamId(), "Compiling...");
+            if (result.Error()) return result;
         }
         for (UniquePtr<BoundCompileUnit>& boundCompileUnit : boundCompileUnits)
         {
@@ -118,7 +119,8 @@ namespace build
             }
             if (GetGlobalFlag(GlobalFlags.verbose))
             {
-                LogMessage(project->LogStreamId(), "> " + System.IO.Path.GetFileName(boundCompileUnit->SourceFile()->FilePath()));
+                Result<bool> result = LogMessage(project->LogStreamId(), "> " + System.IO.Path.GetFileName(boundCompileUnit->SourceFile()->FilePath()));
+                if (result.Error()) return result;
             }
             Result<bool> result = BindStatements(boundCompileUnit.Get());
             if (result.Error()) return result;
@@ -202,7 +204,8 @@ namespace build
         int numThreads = Max(cast<int>(1), Min(HardwareConcurrency(), cast<int>(compileUnits.Count())));
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
-            LogMessage(project->LogStreamId(), "Compiling using " + ToString(numThreads) + " threads...");
+            Result<bool> result = LogMessage(project->LogStreamId(), "Compiling using " + ToString(numThreads) + " threads...");
+            if (result.Error()) return result;
         }
         for (int i = 0; i < numThreads; ++i)
         {
@@ -215,7 +218,8 @@ namespace build
             BoundCompileUnit* compileUnit = compileUnits[i];
             if (GetGlobalFlag(GlobalFlags.verbose))
             {
-                LogMessage(module->LogStreamId(), "> " + System.IO.Path.GetFileName(compileUnit->SourceFile()->FilePath()));
+                Result<bool> result = LogMessage(module->LogStreamId(), "> " + System.IO.Path.GetFileName(compileUnit->SourceFile()->FilePath()));
+                if (result.Error()) return result;
             }
             result = BindStatements(compileUnit);
             if (result.Error())

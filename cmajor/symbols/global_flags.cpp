@@ -76,20 +76,20 @@ std::string GetConfig()
 
 int GetOptimizationLevel()
 {
-    if (optimizationLevel == -1)
+    if (GetGlobalFlag(GlobalFlags::release))
     {
-        if (GetGlobalFlag(GlobalFlags::release))
+        if (optimizationLevel == -1)
         {
             return 2;
         }
         else
         {
-            return 0;
+            return optimizationLevel;
         }
     }
     else
     {
-        return optimizationLevel;
+        return 0;
     }
 }
 

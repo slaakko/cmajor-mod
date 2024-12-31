@@ -120,7 +120,9 @@ namespace codegen
             int n = cast<int>(boundCompileUnit.BoundNodes().Count());
             for (int i = 0; i < n; ++i)
             {
+                #if (DEBUG_OUTPUT)
                 Console.Out() << "BOUND NODE " << n << " : " << i << endl();
+                #endif
                 BoundNode* boundNode = boundCompileUnit.BoundNodes()[i].Get();
                 boundNode->Accept(*this);
                 if (Error()) return;
@@ -188,7 +190,9 @@ namespace codegen
             int n = cast<int>(boundNamespace.Members().Count());
             for (int i = 0; i < n; ++i)
             {
+                #if (DEBUG_OUTPUT)
                 Console.Out() << "BOUND MEMBER " << n << " : " << i << endl();
+                #endif
                 BoundNode* node = boundNamespace.Members()[i].Get();
                 node->Accept(*this);
                 if (Error()) return;
@@ -218,7 +222,9 @@ namespace codegen
             int n = cast<int>(boundClass.Members().Count());
             for (int i = 0; i < n; ++i)
             {
+                #if (DEBUG_OUTPUT)
                 Console.Out() << "BOUND CLASS MEMBER " << n << " : " << i << endl();
+                #endif
                 BoundNode* boundNode = boundClass.Members()[i].Get();
                 boundNode->Accept(*this);
                 if (Error()) return;
@@ -232,7 +238,9 @@ namespace codegen
             if (compileUnit->CodeGenerated(functionSymbol)) return;
             compileUnit->SetCodeGenerated(functionSymbol);
             SetCurrentFunctionSymbol(functionSymbol);
+            #if (DEBUG_OUTPUT)
             Console.Out() << ">>> " << functionSymbol->FullName() << endl();
+            #endif
             destructorCallGenerated = false;
             lastInstructionWasRet = false;
             basicBlockOpen = false;
@@ -427,6 +435,7 @@ namespace codegen
                     {
                         string message = RtmGetErrorMessageWithoutStackTrace(defaultValueResult.GetErrorId());
                         int errorId = MakeError("error creating default return: " + message, boundFunction.FullSpan());
+                        AddChildError(errorId, defaultValueResult.GetErrorId());
                         SetErrorId(errorId);
                         return;
                     }
@@ -1834,8 +1843,6 @@ namespace codegen
         public override void Visit(BoundGlobalVariable& boundGlobalVariable)
         {
             GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
-            #assert(globalVariableSymbol != null);
-            Console.Out() << "GLOBAL VARIABLE " << globalVariableSymbol->Name() << endl();
             Result<bool> result = globalVariableSymbol->CreateIrObject(emitter);
             if (result.Error())
             {

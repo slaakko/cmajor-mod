@@ -52,6 +52,10 @@ namespace System.Threading
             }
             return Result<T>(T());
         }
+        public inline bool Exiting() const
+        {
+            return exiting;
+        }
         public Result<bool> Exit()
         {
             exiting = true;

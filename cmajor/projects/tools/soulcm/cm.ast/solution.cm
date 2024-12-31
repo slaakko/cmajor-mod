@@ -89,7 +89,7 @@ namespace cm.ast
 
     public enum SolutionDeclarationType
     {
-        projectDeclaration, activeProjectDeclaration, activeBackEndDeclaration, dependencyDeclaration
+        projectDeclaration, activeProjectDeclaration, activeBackEndDeclaration, activeConfigDeclaration, activeOptLevelDeclaration, dependencyDeclaration
     }
 
     public abstract class SolutionDeclaration
@@ -143,6 +143,32 @@ namespace cm.ast
         private ustring activeBackEnd;
     }
 
+    public class SolutionActiveConfigurationDeclaration : SolutionDeclaration
+    {
+        public SolutionActiveConfigurationDeclaration(const ustring& activeConfig_) :
+            base(SolutionDeclarationType.activeConfigDeclaration), activeConfig(activeConfig_)
+        {
+        }
+        public const ustring& ActiveConfig() const
+        {
+            return activeConfig;
+        }
+        private ustring activeConfig;
+    }
+
+    public class SolutionActiveOptLevelDeclaration : SolutionDeclaration
+    {
+        public SolutionActiveOptLevelDeclaration(int activeOptLevel_) :
+            base(SolutionDeclarationType.activeOptLevelDeclaration), activeOptLevel(activeOptLevel_)
+        {
+        }
+        public inline int ActiveOptLevel() const
+        {
+            return activeOptLevel;
+        }
+        private int activeOptLevel;
+    }
+
     public class ProjectDependencyDeclaration  : SolutionDeclaration
     {
         public ProjectDependencyDeclaration(const ustring& projectName_) : base(SolutionDeclarationType.dependencyDeclaration), projectName(projectName_)
@@ -166,7 +192,8 @@ namespace cm.ast
 
     public class Solution
     {
-        public Solution(const ustring& name_, const string& filePath_) : name(name_), filePath(Path.MakeCanonical(filePath_)), basePath(Path.GetDirectoryName(filePath))
+        public Solution(const ustring& name_, const string& filePath_) :
+            name(name_), filePath(Path.MakeCanonical(filePath_)), basePath(Path.GetDirectoryName(filePath)), activeBackEnd(u"cm"), activeConfig("debug"), activeOptLevel(2)
         {
         }
         public const ustring& Name() const
@@ -201,6 +228,18 @@ namespace cm.ast
         public Project* ActiveProject() const
         {
             return activeProject;
+        }
+        public inline const ustring& ActiveBackEnd() const
+        {
+            return activeBackEnd;
+        }
+        public inline const string& ActiveConfig() const
+        {
+            return activeConfig;
+        }
+        public inline int ActiveOptLevel() const
+        {
+            return activeOptLevel;
         }
         public void AddProject(UniquePtr<Project>&& project)
         {
@@ -271,6 +310,25 @@ namespace cm.ast
                     {
                         SolutionActiveBackEndDeclaration* activeBackEndDeclaration = cast<SolutionActiveBackEndDeclaration*>(declaration.Get());
                         activeBackEnd = activeBackEndDeclaration->ActiveBackEnd();
+                        break;
+                    }
+                    case SolutionDeclarationType.activeConfigDeclaration:
+                    {
+                        SolutionActiveConfigurationDeclaration* activeConfigurationDeclaration = cast<SolutionActiveConfigurationDeclaration*>(declaration.Get());
+                        if (activeConfigurationDeclaration->ActiveConfig() == u"debug")
+                        {
+                            activeConfig = "debug";
+                        }
+                        else if (activeConfigurationDeclaration->ActiveConfig() == u"release")
+                        {
+                            activeConfig = "release";
+                        }
+                        break;
+                    }
+                    case SolutionDeclarationType.activeOptLevelDeclaration:
+                    {
+                        SolutionActiveOptLevelDeclaration* activeOptLevelDeclaration = cast< SolutionActiveOptLevelDeclaration*>(declaration.Get());
+                        activeOptLevel = activeOptLevelDeclaration->ActiveOptLevel();
                         break;
                     }
                     case SolutionDeclarationType.dependencyDeclaration:
@@ -480,6 +538,8 @@ namespace cm.ast
         private ustring activeProjectName;
         private Project* activeProject;
         private ustring activeBackEnd;
+        private string activeConfig;
+        private int activeOptLevel;
         private List<UniquePtr<Project>> projects;
         private List<UniquePtr<SolutionDeclaration>> declarations;
         private HashMap<ustring, ProjectDependencyDeclaration*> dependencyMap;

@@ -212,6 +212,7 @@ namespace binder
         {
             string message = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
             int errorId = MakeError("Constraint check failed. Reason:\n" + message, node->GetFullSpan());
+            AddChildError(errorId, result.GetErrorId());
             return Result<bool>(ErrorId(errorId));
         }
         else
@@ -1195,7 +1196,9 @@ namespace binder
                 string message = "constructor signature '" + signature + "' not found:\n";
                 string resolveMessage = RtmGetErrorMessageWithoutStackTrace(constructorCallResult.GetErrorId());
                 message.Append(resolveMessage);
-                SetErrorId(MakeError(message, constructorConstraintNode.GetFullSpan()));
+                int errorId = MakeError(message, constructorConstraintNode.GetFullSpan());
+                AddChildError(errorId, constructorCallResult.GetErrorId());
+                SetErrorId(errorId);
             }
             else
             {
@@ -1300,7 +1303,9 @@ namespace binder
                 string message = "member function signature '" + signature + "' not found:\n";
                 string resolveMessage = RtmGetErrorMessageWithoutStackTrace(memberFunctionCallResult.GetErrorId());
                 message.Append(resolveMessage);
-                SetErrorId(MakeError(message, memberFunctionConstraintNode.GetFullSpan()));
+                int errorId = MakeError(message, memberFunctionConstraintNode.GetFullSpan());
+                AddChildError(errorId, memberFunctionCallResult.GetErrorId());
+                SetErrorId(errorId);
             }
             else
             {
@@ -1445,7 +1450,9 @@ namespace binder
                         string message = "function signature '" + signature + "' not found:\n";
                         string resolutionMessage = RtmGetErrorMessageWithoutStackTrace(functionCallResult.GetErrorId());
                         message.Append(resolutionMessage);
-                        SetErrorId(MakeError(message, functionConstraintNode.GetFullSpan()));
+                        int errorId = MakeError(message, functionConstraintNode.GetFullSpan());
+                        AddChildError(errorId, functionCallResult.GetErrorId());
+                        SetErrorId(errorId);
                         return;
                     }
                     else
@@ -2017,6 +2024,7 @@ namespace binder
             string reasonMessage = RtmGetErrorMessageWithoutStackTrace(boundConceptResult.GetErrorId());
             message.Append(conceptSymbolFullName).Append("' because:\n").Append(reasonMessage);
             int errorId = MakeError(message, conceptSymbol->FullSpan(), node->GetFullSpan());
+            AddChildError(errorId, boundConceptResult.GetErrorId());
             return Result<UniquePtr<BoundConcept>>(ErrorId(errorId));
         }
         else

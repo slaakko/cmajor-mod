@@ -1055,7 +1055,7 @@ namespace symbols
                     {
                         if (!f->IsOverride())
                         {
-                            int errorId = MakeError("overriding function should be declared with override specifier", f->FullSpan(), v->FullSpan());
+                            int errorId = MakeError("overriding function should be declared with 'override' specifier", f->FullSpan(), v->FullSpan());
                             return Result<bool>(ErrorId(errorId));
                         }
                         f->SetVmtIndex(j);

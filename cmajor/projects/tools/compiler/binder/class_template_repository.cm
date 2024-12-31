@@ -44,6 +44,7 @@ namespace binder
                 string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
                 int errorId = MakeError("Could not resolve default template arguments of class template '" + classTemplateFullName + "': Reason:\n" + reasonMessage,
                     node->GetFullSpan());
+                AddChildError(errorId, result.GetErrorId());
                 return Result<bool>(ErrorId(errorId));
             }
             else
@@ -153,6 +154,7 @@ namespace binder
                 string specializationFullName = Rvalue(specializationFullNameResult.Value());
                 string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
                 int errorId = MakeError("Could not bind class template specialization '" + specializationFullName + "': Reason:\n" + reasonMessage, node->GetFullSpan());
+                AddChildError(errorId, result.GetErrorId());
                 return Result<bool>(ErrorId(errorId));
             }
             else
@@ -278,6 +280,7 @@ namespace binder
                 if (memberFunctionFullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(memberFunctionFullNameResult.GetErrorId()));
                 string memberFunctionFullName = Rvalue(memberFunctionFullNameResult.Value());
                 int errorId = MakeError("Could not instantiate member function '" + memberFunctionFullName + "'. Reason:\n" + reasonMessage, node->GetFullSpan());
+                AddChildError(errorId, result.GetErrorId());
                 return Result<FunctionSymbol*>(ErrorId(errorId));
             }
             else
@@ -339,6 +342,7 @@ namespace binder
                         string classTemplateSpecializationFullName = Rvalue(classTemplateSpecializationFullNameResult.Value());
                         int errorId = MakeError("concept check of class template specialization '" + classTemplateSpecializationFullName + "' failed: " + constraintCheckError,
                             node->GetFullSpan());
+                        AddChildError(errorId, constraintCheckResult.GetErrorId());
                         return Result<FunctionSymbol*>(ErrorId(errorId));
                     }
                 }
@@ -397,6 +401,7 @@ namespace binder
                     string constraintCheckError = RtmGetErrorMessageWithoutStackTrace(constraintCheckResult.GetErrorId());
                     int errorId = MakeError("concept check of class template member function '" + memberFunctionFullName + "' failed: " + constraintCheckError,
                         node->GetFullSpan());
+                    AddChildError(errorId, constraintCheckResult.GetErrorId());
                     return Result<FunctionSymbol*>(ErrorId(errorId));
                 }
                 else
@@ -423,14 +428,6 @@ namespace binder
             Result<bool> mangleResult = memberFunctionSymbol->ComputeMangledName();
             if (mangleResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangleResult.GetErrorId()));
             master->SetInstantiatedName(memberFunctionSymbol->MangledName(), context);
-            if (memberFunctionSymbol->MangledName() == u"member_function_Destroy_List_458FDEA637AA59ED5266DFE80D872C284F2261DB")
-            {
-                Result<string> thisParamNameResult = ToUtf8(memberFunctionSymbol->GetThisParam()->Type()->FullName());
-                Console.Out() << "MEMBER FUNCTION " << memberFunctionSymbol->FullName() << " : " << thisParamNameResult.Value() << endl();
-                int errorId = AllocateError("SPECIALIZATION");
-                Console.Out() << GetErrorMessage(errorId) << endl();
-                Foo();
-            }
             boundCompileUnit->SetCanReuse(memberFunctionSymbol);
             symbolTable->BeginContainer(memberFunctionSymbol);
             symbolTable->MapNode(functionInstanceNode, memberFunctionSymbol);
@@ -547,6 +544,7 @@ namespace binder
                 string specializationFullName = Rvalue(specializationFullNameResult.Value());
                 int errorId = MakeError("Full instantiation request for class template specialization '" + specializationFullName + "' failed. Reason: " +
                     reasonMessage);
+                AddChildError(errorId, result.GetErrorId());
                 return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);

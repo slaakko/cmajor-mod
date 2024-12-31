@@ -10,5 +10,5 @@ keywords cmajor.container.file.keyword
     ("project", PROJECT), ("solution", SOLUTION), ("reference", REFERENCE), ("source", SOURCE), ("resource", RESOURCE), ("rc", RC),
     ("text", TEXT), ("action", ACTION), ("target", TARGET),
     ("program", PROGRAM), ("winguiapp", WINGUIAPP), ("winapp", WINAPP), ("library", LIBRARY), ("winlib", WINLIB), ("unitTest", UNITTEST),
-    ("activeProject", ACTIVEPROJECT), ("activeBackEnd", ACTIVEBACKEND)
+    ("activeProject", ACTIVEPROJECT), ("activeBackEnd", ACTIVEBACKEND), ("activeConfig", ACTIVECONFIG), ("activeOptLevel", ACTIVEOPTLEVEL)
 }

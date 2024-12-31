@@ -29,6 +29,8 @@ namespace spring
         public ElementIndex(DiagramElement* element_, int index_) : element(element_), index(index_)
         {
         }
+        suppress ElementIndex(const ElementIndex&);
+        suppress void operator=(const ElementIndex&);
         public inline DiagramElement* Get() const
         {
             return element.Get();

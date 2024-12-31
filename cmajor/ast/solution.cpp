@@ -38,6 +38,14 @@ SolutionActiveBackEndDeclaration::SolutionActiveBackEndDeclaration(const std::u3
 {
 }
 
+SolutionActiveConfigurationDeclaration::SolutionActiveConfigurationDeclaration(const std::u32string& config_) : config(config_)
+{
+}
+
+SolutionActiveOptLevelDeclaration::SolutionActiveOptLevelDeclaration(int level_) : level(level_)
+{
+}
+
 ProjectDependencyDeclaration::ProjectDependencyDeclaration(const std::u32string& projectName_) : projectName(projectName_)
 {
 }
@@ -48,7 +56,7 @@ void ProjectDependencyDeclaration::AddDependency(const std::u32string& dependsOn
 }
 
 Solution::Solution(const std::u32string& name_, const std::string& filePath_) :
-    name(name_), filePath(filePath_), basePath(filePath), activeProject(nullptr), activeBackEnd(BackEnd::cpp)
+    name(name_), filePath(filePath_), basePath(filePath), activeProject(nullptr), activeBackEnd(BackEnd::cpp), activeConfig("debug"), activeOptLevel(2)
 {
     basePath.remove_filename();
 }
@@ -106,10 +114,33 @@ void Solution::ResolveDeclarations()
             {
                 activeBackEnd = BackEnd::masm;
             }
+            else if (activeBackEndDeclaration->ActiveBackEnd() == U"cm")
+            {
+                activeBackEnd = BackEnd::cm;
+            }
             else
             {
                 throw std::runtime_error("unknown backend '" + util::ToUtf8(activeBackEndDeclaration->ActiveBackEnd()) + "'");
             }
+        }
+        else if (SolutionActiveConfigurationDeclaration* activeConfigurationDeclaration = dynamic_cast<SolutionActiveConfigurationDeclaration*>(declaration.get()))
+        {
+            if (activeConfigurationDeclaration->ActiveConfiguration() == U"debug")
+            {
+                activeConfig = "debug";
+            }
+            else if (activeConfigurationDeclaration->ActiveConfiguration() == U"release")
+            {
+                activeConfig = "release";
+            }
+            else
+            {
+                throw std::runtime_error("unknown configuration '" + util::ToUtf8(activeConfigurationDeclaration->ActiveConfiguration()) + "'");
+            }
+        }
+        else if (SolutionActiveOptLevelDeclaration* activeOptLevelDeclaration = dynamic_cast<SolutionActiveOptLevelDeclaration*>(declaration.get()))
+        {
+            activeOptLevel = activeOptLevelDeclaration->Level();
         }
         else if (ProjectDependencyDeclaration* projectDependencyDeclaration = dynamic_cast<ProjectDependencyDeclaration*>(declaration.get()))
         {
@@ -151,6 +182,8 @@ void Solution::Save()
         formatter.WriteLine("activeProject " + util::ToUtf8(activeProject->Name()) + ";");
     }
     formatter.WriteLine("activeBackEnd=" + BackEndStr(activeBackEnd) + ";");
+    formatter.WriteLine("activeConfig=" + activeConfig + ";");
+    formatter.WriteLine("activeOptLevel=" + std::to_string(activeOptLevel) + ";");
     for (const std::unique_ptr<Project>& project : projects)
     {
         project->Save();

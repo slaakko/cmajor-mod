@@ -41,6 +41,7 @@ void ResetStopBuild()
 std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFilePath)
 {
     std::string config = cmajor::symbols::GetConfig();
+    int optLevel = cmajor::symbols::GetOptimizationLevel();
     cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
@@ -54,7 +55,7 @@ std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFile
     {
         backend = cmajor::ast::BackEnd::masm;
     }
-    std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend);
+    std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend, optLevel);
     return project;
 }
 
@@ -153,6 +154,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
             bool systemLibraryInstalled = false;
             std::string config = cmajor::symbols::GetConfig();
+            int optLevel = cmajor::symbols::GetOptimizationLevel();
             bool isSystemModule = cmajor::symbols::IsSystemModule(project->Name());
             if (isSystemModule)
             {
@@ -174,7 +176,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
             if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild))
             {
-                upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd));
+                upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd, optLevel));
             }
             if (upToDate)
             {

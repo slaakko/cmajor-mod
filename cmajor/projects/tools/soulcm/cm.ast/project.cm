@@ -85,7 +85,14 @@ namespace cm.ast
         string cmajorRootDir = cmajorRootDirResult.Value();
         if (backend == BackEnd.llvm)
         {
-            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "llvm"), config));
+            if (config == "debug")
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "llvm"), config));
+            }
+            else
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "llvm"), config), profile));
+            }
         }
         else if (backend == BackEnd.systemx)
         {
@@ -93,11 +100,25 @@ namespace cm.ast
         }
         else if (backend == BackEnd.cpp)
         {
-            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cpp"), config));
+            if (config == "debug")
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cpp"), config));
+            }
+            else
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cpp"), config), profile));
+            }
         }
         else if (backend == BackEnd.masm)
         {
-            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "masm"), config));
+            if (config == "debug")
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "masm"), config));
+            }
+            else
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "masm"), config), profile));
+            }
         }
         else if (backend == BackEnd.cm)
         {

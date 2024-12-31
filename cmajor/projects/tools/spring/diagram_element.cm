@@ -282,6 +282,9 @@ namespace spring
 
     class ConcreteDiagramElementCreator<T> : AbstractDiagramElementCreator
     {
+        public override ~ConcreteDiagramElementCreator()
+        {
+        }
         public override DiagramElement* CreateDiagramElement() const
         {
             return new T();

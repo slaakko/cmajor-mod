@@ -1,4 +1,4 @@
-// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/template.parser' using SoulCm parser generator scmpg version 5.0.0
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg.parser/../cm.parser/template.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;

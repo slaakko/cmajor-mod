@@ -13,7 +13,7 @@ namespace binder
 {
     public class StatementBinder : Visitor
     {
-        public StatementBinder(BoundCompileUnit* boundCompileUnit_) :
+        public explicit StatementBinder(BoundCompileUnit* boundCompileUnit_) :
             boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()), context(boundCompileUnit->Context()),
             containerScope(null), currentClass(null), currentFunction(null), compoundLevel(0), dontCheckDuplicateFunctionSymbols(false), errorId(0)
         {
@@ -38,7 +38,9 @@ namespace binder
             int n = cast<int>(namespaceNode.Members().Count());
             for (int i = 0; i < n; ++i)
             {
+                #if (DEBUG_OUTPUT)
                 Console.Out() << "MEMBER " << n << " : " << i << endl();
+                #endif
                 Node* member = namespaceNode.Members()[i];
                 member->Accept(*this);
                 if (Error()) return;
@@ -70,7 +72,9 @@ namespace binder
             int n = cast<int>(classNode.Members().Count());
             for (int i = 0; i < n; ++i)
             {
+                #if (DEBUG_OUTPUT)
                 Console.Out() << "CLASS MEMBER " << n << " : " << i << endl();
+                #endif
                 Node* classMember = classNode.Members()[i];
                 classMember->Accept(*this);
                 if (Error()) return;
@@ -698,6 +702,7 @@ namespace binder
                     List<UniquePtr<BoundExpression>> classReturnArgs;
                     classReturnArgs.Add(UniquePtr<BoundExpression>(new BoundParameter(returnStatementNode.GetSpan(), currentFunction->GetFunctionSymbol()->ReturnParam())));
                     bool returnClassDelegateType = returnType->IsClassDelegateTypeSymbol();
+                    BoundStatement* prevStatement = ReleaseStatement();
                     Result<UniquePtr<BoundExpression>> expressionResult = BindExpression(returnStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope,
                         this, false, returnClassDelegateType, returnClassDelegateType);
                     if (expressionResult.Error())
@@ -705,6 +710,15 @@ namespace binder
                         SetErrorId(expressionResult.GetErrorId());
                         return;
                     }
+                    DestroyTemporaries();
+                    BoundStatement* destroyStatement = ReleaseStatement();
+                    if (destroyStatement != null)
+                    {
+                        #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
+                        BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
+                        expressionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+                    }
+                    SetStatement(prevStatement);
                     UniquePtr<BoundExpression> expression = Rvalue(expressionResult.Value());
                     if (expression->IsBoundLocalVariable())
                     {
@@ -975,12 +989,22 @@ namespace binder
         }
         public override void Visit(IfStatementNode& ifStatementNode)
         {
+            BoundStatement* prevStatement = ReleaseStatement();
             Result<UniquePtr<BoundExpression>> conditionResult = BindExpression(ifStatementNode.Condition(), boundCompileUnit, currentFunction, containerScope, this);
             if (conditionResult.Error())
             {
                 SetErrorId(conditionResult.GetErrorId());
                 return;
             }
+            DestroyTemporaries();
+            BoundStatement* destroyStatement = ReleaseStatement();
+            if (destroyStatement != null)
+            {
+                #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
+                conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            SetStatement(prevStatement);
             UniquePtr<BoundExpression>& condition = conditionResult.Value();
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())
@@ -1034,12 +1058,22 @@ namespace binder
         }
         public override void Visit(WhileStatementNode& whileStatementNode)
         {
+            BoundStatement* prevStatement = ReleaseStatement();
             Result<UniquePtr<BoundExpression>> conditionResult = BindExpression(whileStatementNode.Condition(), boundCompileUnit, currentFunction, containerScope, this);
             if (conditionResult.Error())
             {
                 SetErrorId(conditionResult.GetErrorId());
                 return;
             }
+            DestroyTemporaries();
+            BoundStatement* destroyStatement = ReleaseStatement();
+            if (destroyStatement != null)
+            {
+                #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
+                conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            SetStatement(prevStatement);
             UniquePtr<BoundExpression>& condition = conditionResult.Value();
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())
@@ -1084,12 +1118,22 @@ namespace binder
         }
         public override void Visit(DoStatementNode& doStatementNode)
         {
+            BoundStatement* prevStatement = ReleaseStatement();
             Result<UniquePtr<BoundExpression>> conditionResult = BindExpression(doStatementNode.Condition(), boundCompileUnit, currentFunction, containerScope, this);
             if (conditionResult.Error())
             {
                 SetErrorId(conditionResult.GetErrorId());
                 return;
             }
+            DestroyTemporaries();
+            BoundStatement* destroyStatement = ReleaseStatement();
+            if (destroyStatement != null)
+            {
+                #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
+                conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            SetStatement(prevStatement);
             UniquePtr<BoundExpression>& condition = conditionResult.Value();
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())
@@ -1153,12 +1197,22 @@ namespace binder
             UniquePtr<BoundExpression> condition;
             if (forStatementNode.Condition() != null)
             {
+                BoundStatement* prevStatement = ReleaseStatement();
                 Result<UniquePtr<BoundExpression>> conditionResult = BindExpression(forStatementNode.Condition(), boundCompileUnit, currentFunction, containerScope, this);
                 if (conditionResult.Error())
                 {
                     SetErrorId(conditionResult.GetErrorId());
                     return;
                 }
+                DestroyTemporaries();
+                BoundStatement* destroyStatement = ReleaseStatement();
+                if (destroyStatement != null)
+                {
+                    #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
+                    BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
+                    conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+                }
+                SetStatement(prevStatement);
                 condition = Rvalue(conditionResult.Value());
             }
             else
@@ -2288,7 +2342,12 @@ namespace binder
                         return;
                     }
                     string specializationFullName = Rvalue(specializationFullNameResult.Value());
-                    LogMessage(module->LogStreamId(), "generating full instantiation of '" + specializationFullName + "'");
+                    Result<bool> result = LogMessage(module->LogStreamId(), "generating full instantiation of '" + specializationFullName + "'");
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
                 }
                 Result<bool> result = boundCompileUnit->GetClassTemplateRepository()->InstantiateAll(specialization, containerScope, currentFunction,
                     &fullInstantiationRequestNode);

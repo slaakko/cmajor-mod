@@ -13,10 +13,10 @@
        </sequence>
        <token first="{SEMICOLON}" name="SEMICOLON"/>
       </sequence>
-      <kleene first="{#, ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
-       <group first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
-        <action first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
-         <nonterminal first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}" ruleName="Declaration"/>
+      <kleene first="{#, ACTIVEBACKEND, ACTIVECONFIG, ACTIVEOPTLEVEL, ACTIVEPROJECT, PROJECT}">
+       <group first="{ACTIVEBACKEND, ACTIVECONFIG, ACTIVEOPTLEVEL, ACTIVEPROJECT, PROJECT}">
+        <action first="{ACTIVEBACKEND, ACTIVECONFIG, ACTIVEOPTLEVEL, ACTIVEPROJECT, PROJECT}">
+         <nonterminal first="{ACTIVEBACKEND, ACTIVECONFIG, ACTIVEOPTLEVEL, ACTIVEPROJECT, PROJECT}" ruleName="Declaration"/>
         </action>
        </group>
       </kleene>
@@ -54,8 +54,17 @@
     </group>
    </action>
   </rule>
-  <rule first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}" name="Declaration">
-   <switch first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
+  <rule first="{ID}" name="Config">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTIVEBACKEND, ACTIVECONFIG, ACTIVEOPTLEVEL, ACTIVEPROJECT, PROJECT}" name="Declaration">
+   <switch first="{ACTIVEBACKEND, ACTIVECONFIG, ACTIVEOPTLEVEL, ACTIVEPROJECT, PROJECT}">
     <case first="{PROJECT}">
      <action first="{PROJECT}">
       <nonterminal first="{PROJECT}" ruleName="SolutionProjectDeclaration"/>
@@ -69,6 +78,16 @@
     <case first="{ACTIVEBACKEND}">
      <action first="{ACTIVEBACKEND}">
       <nonterminal first="{ACTIVEBACKEND}" ruleName="ActiveBackEndDeclaration"/>
+     </action>
+    </case>
+    <case first="{ACTIVECONFIG}">
+     <action first="{ACTIVECONFIG}">
+      <nonterminal first="{ACTIVECONFIG}" ruleName="ActiveConfigDeclaration"/>
+     </action>
+    </case>
+    <case first="{ACTIVEOPTLEVEL}">
+     <action first="{ACTIVEOPTLEVEL}">
+      <nonterminal first="{ACTIVEOPTLEVEL}" ruleName="ActiveOptLevelDeclaration"/>
      </action>
     </case>
    </switch>
@@ -111,6 +130,45 @@
         <token first="{ASSIGN}" name="ASSIGN"/>
        </sequence>
        <nonterminal first="{ID}" ruleName="BackEnd"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTIVECONFIG}" name="ActiveConfigDeclaration">
+   <action first="{ACTIVECONFIG}">
+    <group first="{ACTIVECONFIG}">
+     <sequence first="{ACTIVECONFIG}">
+      <sequence first="{ACTIVECONFIG}">
+       <sequence first="{ACTIVECONFIG}">
+        <token first="{ACTIVECONFIG}" name="ACTIVECONFIG"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{ID}" ruleName="Config"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER}" name="OptLevel">
+   <group first="{INTEGER}">
+    <action first="{INTEGER}">
+     <token first="{INTEGER}" name="INTEGER"/>
+    </action>
+   </group>
+  </rule>
+  <rule first="{ACTIVEOPTLEVEL}" name="ActiveOptLevelDeclaration">
+   <action first="{ACTIVEOPTLEVEL}">
+    <group first="{ACTIVEOPTLEVEL}">
+     <sequence first="{ACTIVEOPTLEVEL}">
+      <sequence first="{ACTIVEOPTLEVEL}">
+       <sequence first="{ACTIVEOPTLEVEL}">
+        <token first="{ACTIVEOPTLEVEL}" name="ACTIVEOPTLEVEL"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{INTEGER}" ruleName="OptLevel"/>
       </sequence>
       <token first="{SEMICOLON}" name="SEMICOLON"/>
      </sequence>

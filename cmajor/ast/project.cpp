@@ -51,6 +51,7 @@ std::string BackEndStr(BackEnd backend)
         case BackEnd::systemx: return "systemx";
         case BackEnd::cpp: return "cpp";
         case BackEnd::masm: return "masm";
+        case BackEnd::cm: return "cm";
     }
     return std::string();
 }
@@ -94,7 +95,7 @@ std::string CmajorRootDir()
     return std::string(e);
 }
 
-std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
+std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, int optLevel)
 {
     if (backend == BackEnd::llvm)
     {
@@ -103,6 +104,10 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
         sld /= "lib";
         sld /= "llvm";
         sld /= config;
+        if (config == "release")
+        {
+            sld /= std::to_string(optLevel);
+        }
         return util::GetFullPath(sld.generic_string());
     }
     else if (backend == BackEnd::systemx)
@@ -112,6 +117,10 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
         sld /= "system";
         sld /= "lib";
         sld /= config;
+        if (config == "release")
+        {
+            sld /= std::to_string(optLevel);
+        }
         return util::GetFullPath(sld.generic_string());
     }
     else if (backend == BackEnd::cpp)
@@ -121,6 +130,10 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
         sld /= "lib";
         sld /= "cpp";
         sld /= config;
+        if (config == "release")
+        {
+            sld /= std::to_string(optLevel);
+        }
         return util::GetFullPath(sld.generic_string());
     }
     else if (backend == BackEnd::masm)
@@ -130,8 +143,26 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
         sld /= "lib";
         sld /= "masm";
         sld /= config;
+        if (config == "release")
+        {
+            sld /= std::to_string(optLevel);
+        }
         return util::GetFullPath(sld.generic_string());
     }
+    else if (backend == BackEnd::cm)
+    {
+        std::filesystem::path sld(CmajorRootDir());
+        sld /= "system";
+        sld /= "lib";
+        sld /= "cm";
+        sld /= config;
+        if (config == "release")
+        {
+            sld /= std::to_string(optLevel);
+        }
+        return util::GetFullPath(sld.generic_string());
+    }
+
     else
     {
         return std::string();
@@ -165,16 +196,16 @@ const std::string& OutDir()
     return outDir;
 }
 
-std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend)
+std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend, int optLevel)
 {
-    std::filesystem::path smfp(CmajorSystemLibDir(config, backend));
+    std::filesystem::path smfp(CmajorSystemLibDir(config, backend, optLevel));
     smfp /= "System.cmm";
     return util::GetFullPath(smfp.generic_string());
 }
 
-std::string CmajorSystemWindowsModuleFilePath(const std::string& config)
+std::string CmajorSystemWindowsModuleFilePath(const std::string& config, BackEnd backend, int optLevel)
 {
-    std::filesystem::path smfp(CmajorSystemLibDir(config, BackEnd::llvm));
+    std::filesystem::path smfp(CmajorSystemLibDir(config, backend, optLevel));
     smfp /= "System.Windows.cmm";
     return util::GetFullPath(smfp.generic_string());
 }
@@ -322,8 +353,8 @@ void TargetDeclaration::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("target=" + TargetStr(target) + ";");
 }
 
-Project::Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_) :
-    backend(backend_), name(name_), filePath(filePath_), config(config_), target(Target::program), sourceBasePath(filePath), outdirBasePath(filePath),
+Project::Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_, int optLevel_) :
+    backend(backend_), name(name_), filePath(filePath_), config(config_), optLevel(optLevel_), target(Target::program), sourceBasePath(filePath), outdirBasePath(filePath),
     isSystemProject(false), logStreamId(0), built(false)
 {
     std::string platform = GetPlatform();
@@ -338,7 +369,7 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         sourceBasePath.remove_filename();
         outdirBasePath = sourceBasePath;
     }
-    systemLibDir = CmajorSystemLibDir(config, backend);
+    systemLibDir = CmajorSystemLibDir(config, backend, optLevel);
     std::filesystem::path mfp(filePath);
     std::filesystem::path fn = mfp.filename();
     mfp.remove_filename();
@@ -359,7 +390,15 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         mfp /= "masm";
     }
+    else if (backend == BackEnd::cm)
+    {
+        mfp /= "cm";
+    }
     mfp /= config;
+    if (config == "release")
+    {
+        mfp /= std::to_string(optLevel);
+    }
     mfp /= fn;
     mfp.replace_extension(".cmm");
     moduleFilePath = util::GetFullPath(mfp.generic_string());
@@ -378,6 +417,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         lfp.replace_extension(".a");
     }
     else if (backend == BackEnd::masm)
+    {
+        lfp.replace_extension(".lib");
+    }
+    else if (backend == BackEnd::cm)
     {
         lfp.replace_extension(".lib");
     }
@@ -406,7 +449,16 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         efp /= "masm";
     }
+    else if (backend == BackEnd::cm)
+    {
+        efp /= "cm";
+    }
+
     efp /= config;
+    if (config == "release")
+    {
+        efp /= std::to_string(optLevel);
+    }
     efp /= fn;
 #ifdef _WIN32
     if (backend == BackEnd::systemx)
@@ -425,6 +477,11 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         efp.replace_extension(".exe");
     }
+    else if (backend == BackEnd::cm)
+    {
+        efp.replace_extension(".exe");
+    }
+
 #else
     if (backend == BackEnd::cpp)
     {
@@ -499,7 +556,15 @@ void Project::ResolveDeclarations()
                 {
                     rp /= "masm";
                 }
+                else if (backend == BackEnd::cm)
+                {
+                    rp /= "cm";
+                }
                 rp /= config;
+                if (config == "release")
+                {
+                    rp /= std::to_string(optLevel);
+                }
                 rp /= fn;
                 if (rp.extension() == ".cmp" || rp.extension() == ".cmproj")
                 {

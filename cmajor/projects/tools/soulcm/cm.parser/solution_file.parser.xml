@@ -38,18 +38,44 @@
     </group>
    </action>
   </rule>
+  <rule first="{ID}" name="Config">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER_LITERAL}" name="OptLevel">
+   <group first="{INTEGER_LITERAL}">
+    <action first="{INTEGER_LITERAL}">
+     <token first="{INTEGER_LITERAL}" name="INTEGER_LITERAL"/>
+    </action>
+   </group>
+  </rule>
   <rule first="{ID}" name="Declaration">
    <choice first="{ID}">
     <choice first="{ID}">
+     <choice first="{ID}">
+      <choice first="{ID}">
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="SolutionProjectDeclaration"/>
+       </action>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="ActiveProjectDeclaration"/>
+       </action>
+      </choice>
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="ActiveBackEndDeclaration"/>
+      </action>
+     </choice>
      <action first="{ID}">
-      <nonterminal first="{ID}" ruleName="SolutionProjectDeclaration"/>
-     </action>
-     <action first="{ID}">
-      <nonterminal first="{ID}" ruleName="ActiveProjectDeclaration"/>
+      <nonterminal first="{ID}" ruleName="ActiveConfigurationDeclaration"/>
      </action>
     </choice>
     <action first="{ID}">
-     <nonterminal first="{ID}" ruleName="ActiveBackEndDeclaration"/>
+     <nonterminal first="{ID}" ruleName="ActiveOptLevelDeclaration"/>
     </action>
    </choice>
   </rule>
@@ -95,12 +121,54 @@
     </group>
    </action>
   </rule>
+  <rule first="{ID}" name="ActiveConfigurationDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <nonterminal first="{ID}" ruleName="ActiveConfigKeyword"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{ID}" ruleName="Config"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveOptLevelDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <nonterminal first="{ID}" ruleName="ActiveOptLevelKeyword"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{INTEGER_LITERAL}" ruleName="OptLevel"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
   <rule first="{ID}" name="ActiveProjectKeyword">
    <action first="{ID}">
     <token first="{ID}" name="ID"/>
    </action>
   </rule>
   <rule first="{ID}" name="ActiveBackEndKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveConfigKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveOptLevelKeyword">
    <action first="{ID}">
     <token first="{ID}" name="ID"/>
    </action>

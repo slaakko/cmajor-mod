@@ -1,0 +1,10 @@
+using System;
+
+void main()
+{
+    string s = "foo";
+    if (s == "foo")
+    {
+        Console.Out() << "foo" << endl();
+    }
+}

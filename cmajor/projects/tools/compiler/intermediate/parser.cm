@@ -13,7 +13,8 @@ namespace intermediate
     {
         if (verbose)
         {
-            LogMessage(logStreamId, "> " + filePath);
+            Result<bool> result = LogMessage(logStreamId, "> " + filePath);
+            if (result.Error()) return result;
         }
         int fileIndex = context->FileMap().MapFileName(filePath);
         context->SetFileIndex(fileIndex);

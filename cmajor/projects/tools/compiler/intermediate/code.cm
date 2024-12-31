@@ -2944,7 +2944,7 @@ namespace intermediate
 
     public class Code : Component
     {
-        public Code(Context* context_) : base(ValueKind.code, System.Lex.Span(), null), context(context_), functions(this)
+        public explicit Code(Context* context_) : base(ValueKind.code, System.Lex.Span(), null), context(context_), functions(this)
         {
         }
         public inline Context* GetContext() const

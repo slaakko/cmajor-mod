@@ -2259,6 +2259,7 @@ namespace binder
                 }
                 string arrayTypeFullName = Rvalue(arrayTypeFullNameResult.Value());
                 SetErrorId(MakeError("invalid length for array literal of type '" + arrayTypeFullName + "'", arrayLiteralNode.GetFullSpan()));
+                return;
             }
             for (int i = 0; i < n; ++i)
             {
@@ -2655,7 +2656,7 @@ namespace binder
         {
             if (enumConstantSymbol->Evaluating())
             {
-                SetErrorId(MakeError("cyclic depenency detected", node->GetFullSpan()));
+                SetErrorId(MakeError("cyclic dependency detected", node->GetFullSpan()));
                 return;
             }
             Value* enumConstantValue = enumConstantSymbol->GetValue();
@@ -2712,7 +2713,9 @@ namespace binder
             if (typeResult.Error())
             {
                 string reasonMessage = RtmGetErrorMessageWithoutStackTrace(typeResult.GetErrorId());
-                SetErrorId(MakeError("conversion from " + ValueKindStr(leftKind) + " to " + ValueKindStr(rightKind) + " is not valid: " + reasonMessage, node.GetFullSpan()));
+                int errorId = MakeError("conversion from " + ValueKindStr(leftKind) + " to " + ValueKindStr(rightKind) + " is not valid: " + reasonMessage, node.GetFullSpan());
+                AddChildError(errorId, typeResult.GetErrorId());
+                SetErrorId(errorId);
                 return;
             }
             TypeSymbol* type = typeResult.Value();
@@ -2750,8 +2753,10 @@ namespace binder
             if (typeResult.Error())
             {
                 string reasonMessage = RtmGetErrorMessageWithoutStackTrace(typeResult.GetErrorId());
-                SetErrorId(MakeError("conversion from " + ValueKindStr(operandKind) + " to " + ValueKindStr(operationKind) + " is not valid: " + reasonMessage,
-                    node.GetFullSpan()));
+                int errorId = MakeError("conversion from " + ValueKindStr(operandKind) + " to " + ValueKindStr(operationKind) + " is not valid: " + reasonMessage,
+                    node.GetFullSpan());
+                AddChildError(errorId, typeResult.GetErrorId());
+                SetErrorId(errorId);
                 return;
             }
             TypeSymbol* type = typeResult.Value();

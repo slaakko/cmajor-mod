@@ -60,10 +60,22 @@ parser SolutionParser
         }
         ;
 
+    Config(var std::u32string config) : std::u32string
+        ::=
+        (
+            ID{ config = lexer.GetToken(pos).ToString(); }
+        )
+        {
+            return config;
+        }
+        ;
+
     Declaration : cmajor::ast::SolutionDeclaration*
         ::= SolutionProjectDeclaration:solutionProjectDeclaration{ return solutionProjectDeclaration; }
         |   ActiveProjectDeclaration:activeProjectDeclaration{ return activeProjectDeclaration; }
         |   ActiveBackEndDeclaration:activeBackEndDeclaration{ return activeBackEndDeclaration; } 
+        |   ActiveConfigDeclaration:activeConfigDeclaration{ return activeConfigDeclaration; }
+        |   ActiveOptLevelDeclaration:activeOptLevelDeclaration{ return activeOptLevelDeclaration; }
         ;
 
     SolutionProjectDeclaration(var std::string filePath) : cmajor::ast::SolutionDeclaration*
@@ -100,6 +112,39 @@ parser SolutionParser
         )
         {
             return new cmajor::ast::SolutionActiveBackEndDeclaration(backend);
+        }
+        ;
+
+    ActiveConfigDeclaration : cmajor::ast::SolutionDeclaration*
+        ::= 
+        (
+            ACTIVECONFIG
+            ASSIGN
+            Config:config
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::SolutionActiveConfigurationDeclaration(config);
+        }
+        ;
+
+    OptLevel : int
+        ::= 
+        (
+            INTEGER{ return lexer.GetToken(pos).ToInt(); }
+        )
+        ;
+
+    ActiveOptLevelDeclaration : cmajor::ast::SolutionDeclaration*
+        ::=
+        (
+            ACTIVEOPTLEVEL
+            ASSIGN
+            OptLevel:level
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::SolutionActiveOptLevelDeclaration(level);
         }
         ;
 }

@@ -21,7 +21,7 @@ std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFile
     std::unique_ptr<std::u32string> content(new std::u32string(util::ToUtf32(util::ReadFile(projectFilePath))));
     auto lexer = cmajor::container::file::lexer::MakeLexer(content->c_str(), content->c_str() + content->length(), projectFilePath);
     using LexerType = decltype(lexer);
-    std::unique_ptr<cmajor::ast::Project> project = cmajor::projects::parser::ProjectParser<LexerType>::Parse(lexer, "debug", cmajor::ast::BackEnd::llvm);
+    std::unique_ptr<cmajor::ast::Project> project = cmajor::projects::parser::ProjectParser<LexerType>::Parse(lexer, "debug", cmajor::ast::BackEnd::llvm, 0);
     project->ResolveDeclarations();
     contents.push_back(std::move(content));
     return project;

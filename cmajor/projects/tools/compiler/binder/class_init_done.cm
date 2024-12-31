@@ -28,7 +28,9 @@ namespace binder
             string message = "Could not generate static initialization for class '" + classTypeFullName + "'. Reason:\n";
             string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
             message.Append(reasonMessage);
-            return MakeError(message, node->GetFullSpan());
+            int errorId = MakeError(message, node->GetFullSpan());
+            AddChildError(errorId, result.GetErrorId());
+            return Result<bool>(ErrorId(errorId));
         }
         return result;
     }
@@ -284,7 +286,9 @@ namespace binder
             string message = "Could not generate initialization for class '" + classTypeFullName + "'. Reason:\n";
             string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
             message.Append(reasonMessage);
-            return MakeError(message, node->GetFullSpan());
+            int errorId = MakeError(message, node->GetFullSpan());
+            AddChildError(errorId, result.GetErrorId());
+            return Result<bool>(ErrorId(errorId));
         }
         return result;
     }
@@ -361,6 +365,7 @@ namespace binder
                     Result<string> memberNameResult = ToUtf8(memberName);
                     if (memberNameResult.Error()) return Result<bool>(ErrorId(memberNameResult.GetErrorId()));
                     int errorId = MakeError("already has initializer for member variable '" + memberNameResult.Value() + "'", node->GetFullSpan(), initializer->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
                 }
                 memberInitializerMap[memberName] = memberInitializer;
             }
@@ -647,7 +652,9 @@ namespace binder
             string message = "Could not generate assignment for class '" + classTypeFullName + "'. Reason:\n";
             string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
             message.Append(reasonMessage);
-            return MakeError(message, node->GetFullSpan());
+            int errorId = MakeError(message, node->GetFullSpan());
+            AddChildError(errorId, result.GetErrorId());
+            return Result<bool>(ErrorId(errorId));
         }
         return result;
     }
@@ -839,7 +846,9 @@ namespace binder
             string message = "Could not generate termination for class '" + classTypeFullName + "'. Reason:\n";
             string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
             message.Append(reasonMessage);
-            return MakeError(message, node->GetFullSpan());
+            int errorId = MakeError(message, node->GetFullSpan());
+            AddChildError(errorId, result.GetErrorId());
+            return Result<bool>(ErrorId(errorId));
         }
         return result;
     }
@@ -947,6 +956,7 @@ namespace binder
             if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
             string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
             int errorId = MakeError("Cannot create destructor for class '" + classTypeFullName + "'. Reason:\n" + reasonMessage, node->GetFullSpan());
+            AddChildError(errorId, result.GetErrorId());
             return Result<bool>(ErrorId(errorId));
         }
         return result;

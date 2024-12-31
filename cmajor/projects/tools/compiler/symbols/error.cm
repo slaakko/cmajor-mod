@@ -8,9 +8,102 @@ using System.Collections;
 
 namespace symbols
 {
+    public class Error
+    {
+        public Error(const string& message_, int id_) : message(message_), id(id_)
+        {
+        }
+        public inline const string& Message() const
+        {
+            return message;
+        }
+        public inline const string& Project() const
+        {
+            return project;
+        }
+        public void SetProject(const string& project_)
+        {
+            project = project_;
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public void AddChildId(int childId)
+        {
+            if (Find(childIds.Begin(), childIds.End(), childId) == childIds.End())
+            {
+                childIds.Add(childId);
+            }
+        }
+        public inline const List<int>& ChildIds() const
+        {
+            return childIds;
+        }
+        public void AddLocation(const System.Lex.FullSpan& location)
+        {
+            if (Find(locations.Begin(), locations.End(), location) == locations.End())
+            {
+                locations.Add(location);
+            }
+        }
+        public inline const List<System.Lex.FullSpan>& Locations() const
+        {
+            return locations;
+        }
+        private string message;
+        private string project;
+        private int id;
+        private List<int> childIds;
+        private List<System.Lex.FullSpan> locations;
+    }
+
+    public class Errors
+    {
+        static Errors() : instance(new Errors())
+        {
+        }
+        private Errors() : rootErrorId(-1)
+        {
+        }
+        public static Errors& Instance()
+        {
+            return *instance;
+        }
+        public void AddError(const Error& error)
+        {
+            errorMap[error.Id()] = error;
+        }
+        public Error* GetError(int errorId) const
+        {
+            auto it = errorMap.Find(errorId);
+            if (it != errorMap.End())
+            {
+                return &it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public inline void SetRootErrorId(int rootErrorId_)
+        {
+            rootErrorId = rootErrorId_;
+        }
+        public inline int RootErrorId() const
+        {
+            return rootErrorId;
+        }
+        private static UniquePtr<Errors> instance;
+        private Map<int, Error> errorMap;
+        private int rootErrorId;
+    }
+
     public int MakeError(const string& message)
     {
-        return AllocateError(message);
+        Error error(message, AllocateError(message));
+        Errors.Instance().AddError(error);
+        return error.Id();
     }
 
     public int MakeError(const string& message, const System.Lex.FullSpan& location)
@@ -83,7 +176,22 @@ namespace symbols
                 }
             }
         }
-        return AllocateError(msg);
+        Error error(message, AllocateError(msg));
+        for (const System.Lex.FullSpan& location : locations)
+        {
+            error.AddLocation(location);
+        }
+        Errors.Instance().AddError(error);
+        return error.Id();
+    }
+
+    public void AddChildError(int parentErrorId, int childErrorId)
+    {
+        Error* error = Errors.Instance().GetError(parentErrorId);
+        if (error != null)
+        {
+            error->AddChildId(childErrorId);
+        }
     }
 }
 

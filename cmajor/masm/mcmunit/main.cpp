@@ -224,7 +224,8 @@ void MakeUnitTestFiles(cmajor::ast::Solution* solution, cmajor::ast::Project* pr
 void MakeUnitTestProject(cmajor::ast::Solution* solution, const std::string& projectFilePath, util::SynchronizedQueue<UnitTest>& unitTestQueue, int& unitTestIndex)
 {
     soul::lexer::FileMap fileMap;
-    std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProjectFile(projectFilePath, cmajor::symbols::GetConfig(), cmajor::ast::BackEnd::masm);
+    std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProjectFile(projectFilePath, cmajor::symbols::GetConfig(), cmajor::ast::BackEnd::masm, 
+        cmajor::symbols::GetOptimizationLevel());
     if (project->GetTarget() != cmajor::ast::Target::unitTest)
     {
         throw std::runtime_error("project '" + projectFilePath + "' is not a unit test project; please add 'target=unitTest;' project declaration");

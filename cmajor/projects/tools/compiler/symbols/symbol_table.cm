@@ -435,6 +435,7 @@ namespace symbols
                     if (mainFunctionSymbol != null)
                     {
                         int errorId = MakeError("already has main function", functionNode.GetFullSpan(), mainFunctionSymbol->FullSpan());
+                        return Result<bool>(ErrorId(errorId));
                     }
                     else
                     {

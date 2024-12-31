@@ -21,10 +21,14 @@ struct SolutionParser
     static soul::parser::Match Solution(LexerT& lexer);
     static soul::parser::Match QualifiedId(LexerT& lexer);
     static soul::parser::Match BackEnd(LexerT& lexer);
+    static soul::parser::Match Config(LexerT& lexer);
     static soul::parser::Match Declaration(LexerT& lexer);
     static soul::parser::Match SolutionProjectDeclaration(LexerT& lexer);
     static soul::parser::Match ActiveProjectDeclaration(LexerT& lexer);
     static soul::parser::Match ActiveBackEndDeclaration(LexerT& lexer);
+    static soul::parser::Match ActiveConfigDeclaration(LexerT& lexer);
+    static soul::parser::Match OptLevel(LexerT& lexer);
+    static soul::parser::Match ActiveOptLevelDeclaration(LexerT& lexer);
 };
 
 } // namespace cmajor::solutions::parser

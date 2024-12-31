@@ -30,7 +30,8 @@ inline BuildRequestKind operator~(BuildRequestKind flags)
     return BuildRequestKind(~int(flags));
 }
 
-void StartBuild(const std::string& backend, const std::string& config, const std::string& disabledWarnings, const std::string& filePath, BuildRequestKind requestKind);
+void StartBuild(const std::string& backend, const std::string& config, int optLevel, 
+    const std::string& disabledWarnings, const std::string& filePath, BuildRequestKind requestKind);
 void StopBuild();
 
 } // namespace cmcode

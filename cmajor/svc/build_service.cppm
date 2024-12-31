@@ -5,6 +5,7 @@
 
 export module cmajor.build.service;
 
+import cmajor.cm_masm_build.service;
 import cmajor.info.bs;
 import cmajor.service.message;
 import std.core;

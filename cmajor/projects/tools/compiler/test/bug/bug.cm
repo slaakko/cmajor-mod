@@ -1,11 +1,24 @@
 using System;
 
-int Increment(int& x)
+public class delegate bool PredicateMethod(void* arg);
+
+public void Foo(PredicateMethod pm)
 {
-    return x++;
+    bool b = pm(null);
+}
+
+class C 
+{
+    public bool M(void* arg)
+    {
+        Console.Out() << "M" << endl();
+        return true;
+    }
 }
 
 void main()
 {
-    
+    C c;
+    PredicateMethod pm = c.M;
+    Foo(pm);
 }

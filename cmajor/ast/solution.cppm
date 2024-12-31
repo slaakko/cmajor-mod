@@ -48,6 +48,24 @@ private:
     std::u32string backend;
 };
 
+class SolutionActiveConfigurationDeclaration : public SolutionDeclaration
+{
+public:
+    SolutionActiveConfigurationDeclaration(const std::u32string& config_);
+    const std::u32string& ActiveConfiguration() const { return config; }
+private:
+    std::u32string config;
+};
+
+class SolutionActiveOptLevelDeclaration : public SolutionDeclaration
+{
+public:
+    SolutionActiveOptLevelDeclaration(int level_);
+    int Level() const { return level; }
+private:
+    int level;
+};
+
 class ProjectDependencyDeclaration : public SolutionDeclaration
 {
 public:
@@ -84,6 +102,10 @@ public:
     void SetActiveProject(Project* activeProject_) { activeProject = activeProject_; }
     BackEnd ActiveBackEnd() const { return activeBackEnd; }
     void SetActiveBackEnd(BackEnd activeBackEnd_) { activeBackEnd = activeBackEnd_; }
+    const std::string& ActiveConfig() const { return activeConfig; }
+    void SetActiveConfig(const std::string& activeConfig_) { activeConfig = activeConfig_;  }
+    int ActiveOptLevel() const { return activeOptLevel; }
+    void SetActiveOptLevel(int activeOptLevel_) { activeOptLevel = activeOptLevel_; }
     void SortByProjectName();
     void Save();
     void RemoveProject(Project* project);
@@ -98,6 +120,8 @@ private:
     Project* activeProject;
     BackEnd activeBackEnd;
     std::u32string activeProjectName;
+    std::string activeConfig;
+    int activeOptLevel;
     std::vector<std::unique_ptr<ProjectDependencyDeclaration>> additionalDependencyDeclarations;
     std::unordered_map<std::u32string, ProjectDependencyDeclaration*> dependencyMap;
     void AddDependencies();

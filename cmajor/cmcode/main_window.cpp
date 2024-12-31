@@ -118,8 +118,13 @@ MainWindow::MainWindow(const std::string& filePath) :
     cppToolButton(nullptr),
     llvmToolButton(nullptr),
     masmToolButton(nullptr),
+    cmToolButton(nullptr),
     debugToolButton(nullptr),
     releaseToolButton(nullptr),
+    optLevelZeroToolButton(nullptr),
+    optLevelOneToolButton(nullptr),
+    optLevelTwoToolButton(nullptr),
+    optLevelThreeToolButton(nullptr),
     buildSolutionToolButton(nullptr),
     buildActiveProjectToolButton(nullptr),
     stopBuildToolButton(nullptr),
@@ -171,8 +176,9 @@ MainWindow::MainWindow(const std::string& filePath) :
     callStackDepth(-1),
     callStackOpen(false),
     localsViewOpen(false),
-    backend("cpp"),
+    backend("llvm"),
     config("debug"),
+    optLevel(2),
     pid(util::GetPid()),
     // ccState(CCState::idle),
     cmajorCodeFormat("cmajor.code"),
@@ -932,44 +938,84 @@ void MainWindow::AddToolButtons()
 
     toolBar->AddToolButton(new wing::ToolButtonSeparator());
 
-    wing::Size textButtonSize(36, 12);
+    wing::Size backEndTextButtonSize(56, 12);
+    wing::Size configTextButtonSize(36, 12);
+    wing::Size optLevelTextButtonSize(12, 12);
 
-    std::unique_ptr<wing::ToolButton> cppToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("C++").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
-        SetToolTip("Compile using C++ Backend")));
-    cppToolButton = cppToolButtonPtr.get();
-    cppToolButton->Click().AddHandler(this, &MainWindow::CppButtonClick);
-    cppToolButton->Disable();
-    toolBar->AddToolButton(cppToolButtonPtr.release());
-
-    std::unique_ptr<wing::ToolButton> llvmToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("LLVM").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+    std::unique_ptr<wing::ToolButton> llvmToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("LLVM").Style(wing::ToolButtonStyle::manual).SetSize(backEndTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
         SetToolTip("Compile using LLVM Backend")));
     llvmToolButton = llvmToolButtonPtr.get();
     llvmToolButton->Click().AddHandler(this, &MainWindow::LlvmButtonClick);
     llvmToolButton->Disable();
     toolBar->AddToolButton(llvmToolButtonPtr.release());
 
-    std::unique_ptr<wing::ToolButton> masmToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("MASM").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+    std::unique_ptr<wing::ToolButton> cppToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("C++").Style(wing::ToolButtonStyle::manual).SetSize(backEndTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using C++ Backend")));
+    cppToolButton = cppToolButtonPtr.get();
+    cppToolButton->Click().AddHandler(this, &MainWindow::CppButtonClick);
+    cppToolButton->Disable();
+    toolBar->AddToolButton(cppToolButtonPtr.release());
+
+    std::unique_ptr<wing::ToolButton> masmToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("MASM").Style(wing::ToolButtonStyle::manual).SetSize(backEndTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
         SetToolTip("Compile using MASM Backend")));
     masmToolButton = masmToolButtonPtr.get();
     masmToolButton->Click().AddHandler(this, &MainWindow::MasmButtonClick);
     masmToolButton->Disable();
     toolBar->AddToolButton(masmToolButtonPtr.release());
 
+    std::unique_ptr<wing::ToolButton> cmToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("CM/MASM").Style(wing::ToolButtonStyle::manual).SetSize(backEndTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using CM/MASM Backend")));
+    cmToolButton = cmToolButtonPtr.get();
+    cmToolButton->Click().AddHandler(this, &MainWindow::CmButtonClick);
+    cmToolButton->Disable();
+    toolBar->AddToolButton(cmToolButtonPtr.release());
+
+
     toolBar->AddToolButton(new wing::ToolButtonSeparator());
 
-    std::unique_ptr<wing::ToolButton> debugToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("Debug").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+    std::unique_ptr<wing::ToolButton> debugToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("Debug").Style(wing::ToolButtonStyle::manual).SetSize(configTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
         SetToolTip("Compile using Debug Configuration")));
     debugToolButton = debugToolButtonPtr.get();
     debugToolButton->Click().AddHandler(this, &MainWindow::DebugButtonClick);
     debugToolButton->Disable();
     toolBar->AddToolButton(debugToolButtonPtr.release());
 
-    std::unique_ptr<wing::ToolButton> releaseToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("Release").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+    std::unique_ptr<wing::ToolButton> releaseToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("Release").Style(wing::ToolButtonStyle::manual).SetSize(configTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
         SetToolTip("Compile using Release Configuration")));
     releaseToolButton = releaseToolButtonPtr.get();
     releaseToolButton->Click().AddHandler(this, &MainWindow::ReleaseButtonClick);
     releaseToolButton->Disable();
     toolBar->AddToolButton(releaseToolButtonPtr.release());
+
+    toolBar->AddToolButton(new wing::ToolButtonSeparator());
+
+    std::unique_ptr<wing::ToolButton> optLevelZeroToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("0").Style(wing::ToolButtonStyle::manual).SetSize(optLevelTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using optimization level 0")));
+    optLevelZeroToolButton = optLevelZeroToolButtonPtr.get();
+    optLevelZeroToolButton->Click().AddHandler(this, &MainWindow::ZeroButtonClick);
+    optLevelZeroToolButton->Disable();
+    toolBar->AddToolButton(optLevelZeroToolButtonPtr.release());
+
+    std::unique_ptr<wing::ToolButton> optLevelOneToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("1").Style(wing::ToolButtonStyle::manual).SetSize(optLevelTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using optimization level 1")));
+    optLevelOneToolButton = optLevelOneToolButtonPtr.get();
+    optLevelOneToolButton->Click().AddHandler(this, &MainWindow::OneButtonClick);
+    optLevelOneToolButton->Disable();
+    toolBar->AddToolButton(optLevelOneToolButtonPtr.release());
+
+    std::unique_ptr<wing::ToolButton> optLevelTwoToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("2").Style(wing::ToolButtonStyle::manual).SetSize(optLevelTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using optimization level 2")));
+    optLevelTwoToolButton = optLevelTwoToolButtonPtr.get();
+    optLevelTwoToolButton->Click().AddHandler(this, &MainWindow::TwoButtonClick);
+    optLevelTwoToolButton->Disable();
+    toolBar->AddToolButton(optLevelTwoToolButtonPtr.release());
+
+    std::unique_ptr<wing::ToolButton> optLevelThreeToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("3").Style(wing::ToolButtonStyle::manual).SetSize(optLevelTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using optimization level 3")));
+    optLevelThreeToolButton = optLevelThreeToolButtonPtr.get();
+    optLevelThreeToolButton->Click().AddHandler(this, &MainWindow::ThreeButtonClick);
+    optLevelThreeToolButton->Disable();
+    toolBar->AddToolButton(optLevelThreeToolButtonPtr.release());
 
     toolBar->AddToolButton(new wing::ToolButtonSeparator());
 
@@ -1582,6 +1628,8 @@ void MainWindow::OpenProject(const std::string& filePath)
             SaveConfiguration();
             LoadEditModule();
             backend = cmajor::ast::BackEndStr(sln->ActiveBackEnd());
+            config = sln->ActiveConfig();
+            optLevel = sln->ActiveOptLevel();
         }
         SetState(MainWindowState::idle);
     }
@@ -2341,8 +2389,13 @@ void MainWindow::SetState(MainWindowState state_)
     cppToolButton->Disable();
     llvmToolButton->Disable();
     masmToolButton->Disable();
+    cmToolButton->Disable();
     debugToolButton->Disable();
     releaseToolButton->Disable();
+    optLevelZeroToolButton->Disable();
+    optLevelOneToolButton->Disable();
+    optLevelTwoToolButton->Disable();
+    optLevelThreeToolButton->Disable();
     buildSolutionToolButton->Disable();
     buildActiveProjectToolButton->Disable();
     stopBuildToolButton->Disable();
@@ -2353,34 +2406,84 @@ void MainWindow::SetState(MainWindowState state_)
     stepIntoToolButton->Disable();
     stepOutToolButton->Disable();
 
-    if (backend == "cpp")
-    {
-        cppToolButton->SetState(wing::ToolButtonState::pressed);
-        llvmToolButton->SetState(wing::ToolButtonState::normal);
-        masmToolButton->SetState(wing::ToolButtonState::normal);
-    }
     if (backend == "llvm")
     {
         llvmToolButton->SetState(wing::ToolButtonState::pressed);
         cppToolButton->SetState(wing::ToolButtonState::normal);
         masmToolButton->SetState(wing::ToolButtonState::normal);
+        cmToolButton->SetState(wing::ToolButtonState::normal);
+    }
+    if (backend == "cpp")
+    {
+        cppToolButton->SetState(wing::ToolButtonState::pressed);
+        llvmToolButton->SetState(wing::ToolButtonState::normal);
+        masmToolButton->SetState(wing::ToolButtonState::normal);
+        cmToolButton->SetState(wing::ToolButtonState::normal);
     }
     if (backend == "masm")
     {
         llvmToolButton->SetState(wing::ToolButtonState::normal);
         cppToolButton->SetState(wing::ToolButtonState::normal);
         masmToolButton->SetState(wing::ToolButtonState::pressed);
+        cmToolButton->SetState(wing::ToolButtonState::normal);
+    }
+    if (backend == "cm")
+    {
+        llvmToolButton->SetState(wing::ToolButtonState::normal);
+        cppToolButton->SetState(wing::ToolButtonState::normal);
+        masmToolButton->SetState(wing::ToolButtonState::normal);
+        cmToolButton->SetState(wing::ToolButtonState::pressed);
     }
 
     if (config == "debug")
     {
         debugToolButton->SetState(wing::ToolButtonState::pressed);
         releaseToolButton->SetState(wing::ToolButtonState::normal);
+        optLevelZeroToolButton->SetState(wing::ToolButtonState::pressed);
+        optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+        optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+        optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
     }
     if (config == "release")
     {
         releaseToolButton->SetState(wing::ToolButtonState::pressed);
         debugToolButton->SetState(wing::ToolButtonState::normal);
+        switch (optLevel)
+        {
+            case 0:
+            {
+                optLevelZeroToolButton->SetState(wing::ToolButtonState::pressed);
+                optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
+                break;
+            }
+            case 1:
+            {
+                optLevelOneToolButton->SetState(wing::ToolButtonState::pressed);
+                optLevelZeroToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
+
+                break;
+            }
+            case 2:
+            {
+                optLevelTwoToolButton->SetState(wing::ToolButtonState::pressed);
+                optLevelZeroToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
+                break;
+            }
+            case 3:
+            {
+                optLevelThreeToolButton->SetState(wing::ToolButtonState::pressed);
+                optLevelZeroToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+                optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+                break;
+            }
+        }
     }
 
     bool solutionOpen = solutionData.get() != nullptr;
@@ -2434,8 +2537,16 @@ void MainWindow::SetState(MainWindowState state_)
             cppToolButton->Enable();
             llvmToolButton->Enable();
             masmToolButton->Enable();
+            cmToolButton->Enable();
             debugToolButton->Enable();
             releaseToolButton->Enable();
+            if (config == "release")
+            {
+                optLevelZeroToolButton->Enable();
+                optLevelOneToolButton->Enable();
+                optLevelTwoToolButton->Enable();
+                optLevelThreeToolButton->Enable();
+            }
             buildSolutionToolButton->Enable();
             buildActiveProjectToolButton->Enable();
             toggleBreakpointMenuItem->Enable();
@@ -2919,6 +3030,7 @@ void MainWindow::GotoDefinition(cmajor::ast::Project* project, const std::string
         cmajor::info::bs::GetDefinitionRequest request;
         request.backend = backend;
         request.config = config;
+        request.optimizationLevel = std::to_string(optLevel);
         request.projectName = util::ToUtf8(project->Name());
         request.projectFilePath = project->FilePath();
         request.identifier = identifier;
@@ -3140,7 +3252,8 @@ void MainWindow::NewProjectClick()
                 }
             }
             std::unique_ptr<cmajor::ast::Solution> solution(new cmajor::ast::Solution(util::ToUtf32(dialog.GetSolutionName()), solutionFilePath));
-            std::unique_ptr<cmajor::ast::Project> project(new cmajor::ast::Project(util::ToUtf32(dialog.GetProjectName()), projectFilePath, "debug", cmajor::ast::BackEnd::llvm));
+            std::unique_ptr<cmajor::ast::Project> project(new cmajor::ast::Project(util::ToUtf32(dialog.GetProjectName()), projectFilePath, "debug", 
+                cmajor::ast::BackEnd::llvm, optLevel));
             project->SetTarget(dialog.GetProjectType());
             solution->SetActiveProject(project.get());
             solution->AddProject(std::move(project));
@@ -3822,7 +3935,7 @@ void MainWindow::BuildSolutionClick()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3844,7 +3957,7 @@ void MainWindow::RebuildSolutionClick()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3866,7 +3979,7 @@ void MainWindow::CleanSolutionClick()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean);
+        StartBuild(backend, config, optLevel, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean);
     }
     catch (const std::exception& ex)
     {
@@ -3888,7 +4001,7 @@ void MainWindow::BuildProject(cmajor::ast::Project* project)
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3910,7 +4023,7 @@ void MainWindow::RebuildProject(cmajor::ast::Project* project)
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3932,7 +4045,7 @@ void MainWindow::CleanProject(cmajor::ast::Project* project)
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3971,7 +4084,8 @@ void MainWindow::AddNewProject()
                     return;
                 }
             }
-            std::unique_ptr<cmajor::ast::Project> project(new cmajor::ast::Project(util::ToUtf32(dialog.GetProjectName()), projectFilePath, "debug", cmajor::ast::BackEnd::llvm));
+            std::unique_ptr<cmajor::ast::Project> project(new cmajor::ast::Project(util::ToUtf32(dialog.GetProjectName()), projectFilePath, "debug", 
+                cmajor::ast::BackEnd::llvm, optLevel));
             project->SetTarget(dialog.GetProjectType());
             solution->AddProject(std::move(project));
             solution->SortByProjectName();
@@ -4351,7 +4465,7 @@ void MainWindow::BuildActiveProjectClick()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -4378,7 +4492,7 @@ bool MainWindow::BuildActiveProject()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
         return true;
     }
     catch (const std::exception& ex)
@@ -4407,7 +4521,7 @@ void MainWindow::RebuildActiveProjectClick()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -4434,7 +4548,7 @@ void MainWindow::CleanActiveProjectClick()
         }
         const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, optLevel, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -4781,6 +4895,7 @@ void MainWindow::CppButtonClick()
     backend = "cpp";
     llvmToolButton->SetState(wing::ToolButtonState::normal);
     masmToolButton->SetState(wing::ToolButtonState::normal);
+    cmToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
@@ -4795,6 +4910,7 @@ void MainWindow::LlvmButtonClick()
     backend = "llvm";
     cppToolButton->SetState(wing::ToolButtonState::normal);
     masmToolButton->SetState(wing::ToolButtonState::normal);
+    cmToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
@@ -4809,11 +4925,27 @@ void MainWindow::MasmButtonClick()
     backend = "masm";
     cppToolButton->SetState(wing::ToolButtonState::normal);
     llvmToolButton->SetState(wing::ToolButtonState::normal);
+    cmToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
     {
         solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::masm);
+        solutionData->GetSolution()->Save();
+    }
+}
+
+void MainWindow::CmButtonClick()
+{
+    backend = "cm";
+    cppToolButton->SetState(wing::ToolButtonState::normal);
+    llvmToolButton->SetState(wing::ToolButtonState::normal);
+    masmToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::cm);
         solutionData->GetSolution()->Save();
     }
 }
@@ -4824,6 +4956,11 @@ void MainWindow::DebugButtonClick()
     releaseToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveConfig("debug");
+        solutionData->GetSolution()->Save();
+    }
 }
 
 void MainWindow::ReleaseButtonClick()
@@ -4832,6 +4969,71 @@ void MainWindow::ReleaseButtonClick()
     debugToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveConfig("release");
+        solutionData->GetSolution()->Save();
+    }
+}
+
+void MainWindow::ZeroButtonClick()
+{
+    optLevel = 0;
+    optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveOptLevel(0);
+        solutionData->GetSolution()->Save();
+    }
+}
+
+void MainWindow::OneButtonClick()
+{
+    optLevel = 1;
+    optLevelZeroToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveOptLevel(1);
+        solutionData->GetSolution()->Save();
+    }
+}
+
+void MainWindow::TwoButtonClick()
+{
+    optLevel = 2;
+    optLevelZeroToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelThreeToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveOptLevel(2);
+        solutionData->GetSolution()->Save();
+    }
+}
+
+void MainWindow::ThreeButtonClick()
+{
+    optLevel = 3;
+    optLevelZeroToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelOneToolButton->SetState(wing::ToolButtonState::normal);
+    optLevelTwoToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveOptLevel(3);
+        solutionData->GetSolution()->Save();
+    }
 }
 
 void MainWindow::StopBuildClick()

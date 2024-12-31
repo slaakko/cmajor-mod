@@ -1295,7 +1295,6 @@ namespace symbols
             intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
             loadResult = emitter.CreateLoad(thatDelegatePtr);
             if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
-            return Result<bool>(true);
             intermediate.Value* thatDelegateValue = loadResult.Value();
             Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
             if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
@@ -1388,7 +1387,6 @@ namespace symbols
             intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
             loadResult = emitter.CreateLoad(thatDelegatePtr);
             if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
-            return Result<bool>(true);
             intermediate.Value* thatDelegateValue = loadResult.Value();
             Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
             if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
@@ -1496,7 +1494,6 @@ namespace symbols
             intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
             loadResult = emitter.CreateLoad(thatDelegatePtr);
             if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
-            return Result<bool>(true);
             intermediate.Value* thatDelegateValue = loadResult.Value();
             Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
             if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
@@ -1597,7 +1594,6 @@ namespace symbols
             intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
             loadResult = emitter.CreateLoad(thatDelegatePtr);
             if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
-            return Result<bool>(true);
             intermediate.Value* thatDelegateValue = loadResult.Value();
             Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
             if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));

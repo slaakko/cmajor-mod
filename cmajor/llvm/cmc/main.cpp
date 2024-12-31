@@ -42,12 +42,14 @@ void PrintHelp()
     std::cout << "  Rebuild." << "\n";
     std::cout << "--clean | -e" << "\n";
     std::cout << "  Clean." << "\n";
+    std::cout << "--all | -a" << "\n";
+    std::cout << "  Build all dependencies.\n";
     std::cout << "--disable-module-cache | -m\n";
     std::cout << "  Do not cache recently built modules.\n";
     std::cout << "--config=CONFIG | -c=CONFIG" << "\n";
     std::cout << "  Compile using CONFIG configuration. CONFIG=('debug'|'release'), default is 'debug'" << "\n";
-    std::cout << "--opt-level=LEVEL| -O=LEVEL" << "\n";
-    std::cout << "  Set optimization level to LEVEL (0-3). Defaults: LEVEL=0 for 'debug' configuration and LEVEL=2 for 'release' configuration." << "\n";
+    std::cout << "--opt=LEVEL| -O=LEVEL" << "\n";
+    std::cout << "  Set release mode optimization level to LEVEL (0-3). Default LEVEL is 2." << "\n";
     std::cout << "--disable-warnings=WARNING_LIST | -w=WARNING_LIST" << "\n";
     std::cout << "  Disable warning messages for specified warnings in WARNING_LIST that is a semicolon-separated list of warning numbers." << "\n";
     std::cout << "--emit-llvm | -l" << "\n";
@@ -102,6 +104,10 @@ int main(int argc, const char** argv)
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
                 }
+                else if (arg == "--all")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll);
+                }
                 else if (arg == "--clean")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::clean);
@@ -138,7 +144,7 @@ int main(int argc, const char** argv)
                                 throw std::runtime_error("unknown configuration '" + components[1] + "'");
                             }
                         }
-                        else if (components[0] == "--opt-level")
+                        else if (components[0] == "--opt")
                         {
                             int optimizationLevel = std::stoi(components[1]);
                             if (optimizationLevel >= 0 && optimizationLevel <= 3)
@@ -255,6 +261,11 @@ int main(int argc, const char** argv)
                             case 'r':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
+                                break;
+                            }
+                            case 'a':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll);
                                 break;
                             }
                             case 'e':

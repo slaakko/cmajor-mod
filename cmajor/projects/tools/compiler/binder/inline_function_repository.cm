@@ -24,6 +24,7 @@ namespace binder
                 if (fullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(fullNameResult.GetErrorId()));
                 string fullName = Rvalue(fullNameResult.Value());
                 int errorId = MakeError("Could not instantiate inline function '" + fullName + "'. Reason:\n" + reasonMessage);
+                AddChildError(errorId, result.GetErrorId());
                 return Result<FunctionSymbol*>(ErrorId(errorId));
             }
             else

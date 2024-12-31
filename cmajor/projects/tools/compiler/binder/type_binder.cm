@@ -113,7 +113,7 @@ namespace binder
 
     public class TypeBinder : Visitor
     {
-        public TypeBinder(BoundCompileUnit* boundCompileUnit_) :
+        public explicit TypeBinder(BoundCompileUnit* boundCompileUnit_) :
             boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()), context(boundCompileUnit->Context()),
             containerScope(null), errorId(0), typeResolverFlags(TypeResolverFlags.none), currentClassTypeSymbol(null), currentFunctionSymbol(null), enumType(null)
         {

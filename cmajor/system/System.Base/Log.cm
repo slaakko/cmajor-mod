@@ -30,7 +30,12 @@ namespace System
         }
         return lines;
     }
-    
+
+    public enum LogMode
+    {
+        console, queue
+    }
+
     public class Log
     {
         static Log() : instance(new Log())
@@ -40,32 +45,85 @@ namespace System
         {
             return *instance;
         }
-        private Log() : mtx()
+        public inline void SetMode(LogMode mode_)
+        {
+            mode = mode_;
+        }
+        public inline LogMode Mode() const
+        {
+            return mode;
+        }
+        private Log() : mtx(), mode(LogMode.console)
         {
         }
-        public void LogMessage(int logStreamId, const string& message)
+        [nodiscard]
+        public Result<bool> LogMessage(int logStreamId, const string& message)
         {
-            LockGuard<Mutex> lock(mtx);
+            if (mode == LogMode.queue)
+            {
+                return PutMessageToQueue(logStreamId, message);
+            }
+            else if (mode == LogMode.console)
+            {
+                LockGuard<Mutex> lock(mtx);
+                if (logStreamId == -1)
+                {
+                    Console.Out() << message << endl();
+                }
+                else
+                {
+                    Console.Out() << Format(ToString(logStreamId), 2, FormatWidth.min, FormatJustify.right, '0') << ">" << message << endl();
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<string> GetMessageFromQueue()
+        {
+            return queue.Get();
+        }
+        public inline bool Exiting() const
+        {
+            return queue.Exiting();
+        }
+        [nodiscard]
+        public Result<bool> Exit()
+        {
+            return queue.Exit();
+        }
+        [nodiscard]
+        private Result<bool> PutMessageToQueue(int logStreamId, const string& message)
+        {
             if (logStreamId == -1)
             {
-                Console.Out() << message << endl();
+                Result<bool> result = queue.Put(message);
+                if (result.Error()) return result;
             }
             else
             {
-                Console.Out() << Format(ToString(logStreamId), 2, FormatWidth.min, FormatJustify.right, '0') << ">" << message << endl();
+                string s = Format(ToString(logStreamId), 2, FormatWidth.min, FormatJustify.right, '0');
+                s.Append(">").Append(message);
+                Result<bool> result = queue.Put(s);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
         private static UniquePtr<Log> instance;
         private Mutex mtx;
+        private LogMode mode;
+        private System.Threading.SynchronizedQueue<string> queue;
     }
 
-    public void LogMessage(int logStreamId, const string& message)
+    [nodiscard]
+    public Result<bool> LogMessage(int logStreamId, const string& message)
     {
         List<string> lines = SplitMessageIntoLines(message);
         for (const string& line : lines)
         {
-            Log.Instance().LogMessage(logStreamId, line);
+            Result<bool> result = Log.Instance().LogMessage(logStreamId, line);
+            if (result.Error()) return result;
         }
+        return Result<bool>(true);
     }
 }
 

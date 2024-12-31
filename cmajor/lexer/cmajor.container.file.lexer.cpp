@@ -29,7 +29,10 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(UNITTEST, "UNITTEST", "'unittest'"));
         tokens.AddToken(new soul::ast::slg::Token(ACTIVEPROJECT, "ACTIVEPROJECT", "'activeproject'"));
         tokens.AddToken(new soul::ast::slg::Token(ACTIVEBACKEND, "ACTIVEBACKEND", "'activebackend'"));
+        tokens.AddToken(new soul::ast::slg::Token(ACTIVECONFIG, "ACTIVECONFIG", "'activeconfig'"));
+        tokens.AddToken(new soul::ast::slg::Token(ACTIVEOPTLEVEL, "ACTIVEOPTLEVEL", "'activeoptlevel'"));
         tokens.AddToken(new soul::ast::slg::Token(ID, "ID", "identifier"));
+        tokens.AddToken(new soul::ast::slg::Token(INTEGER, "INTEGER", "integer"));
         tokens.AddToken(new soul::ast::slg::Token(FILEPATH, "FILEPATH", "file path"));
         tokens.AddToken(new soul::ast::slg::Token(ASSIGN, "ASSIGN", "'='"));
         tokens.AddToken(new soul::ast::slg::Token(SEMICOLON, "SEMICOLON", "';'"));
@@ -67,6 +70,8 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "unitTest", UNITTEST },
          { "activeProject", ACTIVEPROJECT },
          { "activeBackEnd", ACTIVEBACKEND },
+         { "activeConfig", ACTIVECONFIG },
+         { "activeOptLevel", ACTIVEOPTLEVEL },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char> keywordMap(keywords);
@@ -94,6 +99,8 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"unitTest", UNITTEST },
          { u8"activeProject", ACTIVEPROJECT },
          { u8"activeBackEnd", ACTIVEBACKEND },
+         { u8"activeConfig", ACTIVECONFIG },
+         { u8"activeOptLevel", ACTIVEOPTLEVEL },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char8_t> keywordMap(keywords);
@@ -121,6 +128,8 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"unitTest", UNITTEST },
          { u"activeProject", ACTIVEPROJECT },
          { u"activeBackEnd", ACTIVEBACKEND },
+         { u"activeConfig", ACTIVECONFIG },
+         { u"activeOptLevel", ACTIVEOPTLEVEL },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char16_t> keywordMap(keywords);
@@ -148,6 +157,8 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"unitTest", UNITTEST },
          { U"activeProject", ACTIVEPROJECT },
          { U"activeBackEnd", ACTIVEBACKEND },
+         { U"activeConfig", ACTIVECONFIG },
+         { U"activeOptLevel", ACTIVEOPTLEVEL },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char32_t> keywordMap(keywords);

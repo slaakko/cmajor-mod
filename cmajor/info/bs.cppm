@@ -74,6 +74,7 @@ struct GetDefinitionRequest
     std::string projectFilePath;
     std::string backend;
     std::string config;
+    std::string optimizationLevel;
     std::string identifier;
     DefinitionSourceLocation identifierLocation;
 };

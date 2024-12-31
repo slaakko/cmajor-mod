@@ -11,7 +11,7 @@ namespace scm.regex
         public RegExLexer(const uchar* start_, const uchar* end_, const string& fileName_) : 
             base(start_, end_, fileName_, "scm.regex.RegExLexer.classmap")
         {
-            auto classMapResult = System.Lex.GetClassMap(ClassMapName());
+            Result<int*> classMapResult = System.Lex.GetClassMap(ClassMapName());
             if (classMapResult.Error())
             {
                 SetErrorId(classMapResult.GetErrorId());

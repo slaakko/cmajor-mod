@@ -221,8 +221,13 @@ private:
     void CppButtonClick();
     void LlvmButtonClick();
     void MasmButtonClick();
+    void CmButtonClick();
     void DebugButtonClick();
     void ReleaseButtonClick();
+    void ZeroButtonClick();
+    void OneButtonClick();
+    void TwoButtonClick();
+    void ThreeButtonClick();
     void StopBuildClick();
     void ToggleCodeCompletionClick();
     cmajor::view::Editor* GetEditorByTabPage(wing::TabPage* tabPage) const;
@@ -306,8 +311,13 @@ private:
     wing::ToolButton* cppToolButton;
     wing::ToolButton* llvmToolButton;
     wing::ToolButton* masmToolButton;
+    wing::ToolButton* cmToolButton;
     wing::ToolButton* debugToolButton;
     wing::ToolButton* releaseToolButton;
+    wing::ToolButton* optLevelZeroToolButton;
+    wing::ToolButton* optLevelOneToolButton;
+    wing::ToolButton* optLevelTwoToolButton;
+    wing::ToolButton* optLevelThreeToolButton;
     wing::ToolButton* buildSolutionToolButton;
     wing::ToolButton* buildActiveProjectToolButton;
     wing::ToolButton* stopBuildToolButton;
@@ -365,6 +375,7 @@ private:
     bool localsViewOpen;
     std::string backend;
     std::string config;
+    int optLevel;
     std::unique_ptr<wing::ClipboardListener> clipboardListener;
     int pid;
     wing::ClipboardFormat cmajorCodeFormat;

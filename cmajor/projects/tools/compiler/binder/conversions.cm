@@ -702,6 +702,7 @@ namespace binder
                 {
                     string errorMessage = RtmGetErrorMessageWithoutStackTrace(inlineFunctionResult.GetErrorId());
                     int errorId = MakeError("could not instantiate inline conversion:\n" + errorMessage, node->GetFullSpan());
+                    AddChildError(errorId, inlineFunctionResult.GetErrorId());
                     return Result<FunctionSymbol*>(ErrorId(errorId));
                 }
                 conversion = inlineFunctionResult.Value();

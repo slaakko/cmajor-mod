@@ -456,6 +456,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             LogMessage(rootModule->LogStreamId(), "Import: reference: " + reference, rootModule->DebugLogIndent());
 #endif 
             std::string config = GetConfig();
+            int optLevel = GetOptimizationLevel();
             std::filesystem::path mfn = std::filesystem::path(reference).filename();
             std::filesystem::path mfp;
             std::string searchedDirectories;
@@ -475,7 +476,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                     backend = cmajor::ast::BackEnd::masm;
                 }
                 std::filesystem::path p;
-                mfp = CmajorSystemLibDir(config, backend);
+                mfp = CmajorSystemLibDir(config, backend, optLevel);
                 std::string mfps = mfp.generic_string();
                 searchedDirectories.append("\n").append(mfps);
                 mfp /= mfn;
@@ -528,6 +529,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
         else
         {
             std::string config = GetConfig();
+            int optLevel = GetOptimizationLevel();
             std::filesystem::path mfn = std::filesystem::path(reference).filename();
             std::filesystem::path mfp;
             std::string searchedDirectories;
@@ -546,7 +548,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 {
                     backend = cmajor::ast::BackEnd::masm;
                 }
-                mfp = CmajorSystemLibDir(config, backend);
+                mfp = CmajorSystemLibDir(config, backend, optLevel);
                 mfp /= mfn;
                 if (!std::filesystem::exists(mfp))
                 {
@@ -633,11 +635,11 @@ void ImportModulesWithReferences(cmajor::ast::Target target,
             first = false;
             if (target == cmajor::ast::Target::winguiapp || target == cmajor::ast::Target::winapp || target == cmajor::ast::Target::winlib)
             {
-                allReferences.push_back(cmajor::ast::CmajorSystemWindowsModuleFilePath(GetConfig()));
+                allReferences.push_back(cmajor::ast::CmajorSystemWindowsModuleFilePath(GetConfig(), backend, GetOptimizationLevel()));
             }
             else
             {
-                allReferences.push_back(cmajor::ast::CmajorSystemModuleFilePath(GetConfig(), backend));
+                allReferences.push_back(cmajor::ast::CmajorSystemModuleFilePath(GetConfig(), backend, GetOptimizationLevel()));
             }
         }
     }

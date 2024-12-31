@@ -9,6 +9,7 @@ reference <../codegen/codegen.cmp>;
 reference <../intermediate/intermediate.cmp>;
 reference <../symbols/symbols.cmp>;
 source <building.cm>;
+source <client.cm>;
 source <compiling.cm>;
 source <config.cm>;
 source <install.cm>;
