@@ -1,0 +1,47 @@
+using System;
+
+void fn_0()
+{
+    int y = 1;
+    int x = y * 1;
+}
+
+void fn_1()
+{
+    int y = 1;
+    int x = 1 * y;
+}
+
+void fn_2()
+{
+    int y = 1;
+    int x = 2 * y;
+}
+
+void fn_3()
+{
+    int y = 1;
+    int x = y * 2;
+}
+
+void fn_4()
+{
+    int y = 1;
+    int x = 4 * y;
+}
+
+void fn_5()
+{
+    int y = 1;
+    int x = 8 * y;
+}
+
+void main()
+{
+    fn_0();
+    fn_1();
+    fn_2();
+    fn_3();
+    fn_4();
+    fn_5();
+}

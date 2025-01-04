@@ -21,7 +21,7 @@ namespace System
         public inline String() : chars(null), len(0), res(0)
         {
         }
-        public inline String(const CharT* chars_) : len(StrLen(chars_)), res(0), chars(null)
+        public String(const CharT* chars_) : len(StrLen(chars_)), res(0), chars(null)
         {
             if (len > 0)
             {
@@ -29,7 +29,7 @@ namespace System
                 StrCopy(chars, chars_);
             }
         }
-        public inline String(const CharT* chars_, long length_) : len(0), res(0), chars(null)
+        public String(const CharT* chars_, long length_) : len(0), res(0), chars(null)
         {
             if (length_ > 0)
             {
@@ -37,7 +37,7 @@ namespace System
                 len = StrCopy(chars, chars_, length_);
             }
         }
-        public inline String(const CharT* begin, const CharT* end) : this(begin, end - begin)
+        public String(const CharT* begin, const CharT* end) : this(begin, end - begin)
         {
         }
         public String(const String<CharT>& that) : len(that.len), res(0), chars(null)
@@ -380,7 +380,7 @@ namespace System
         {
             return Find(x, 0);
         }
-        public inline long Find(CharT x, long start) const
+        public long Find(CharT x, long start) const
         {
             #assert(start >= 0);
             for (long i = start; i < len; ++i)
@@ -396,7 +396,7 @@ namespace System
         {
             return RFind(x, len - 1);
         }
-        public inline long RFind(CharT x, long start) const
+        public long RFind(CharT x, long start) const
         {
             #assert(start < len);
             for (long i = start; i >= 0; --i)
@@ -439,7 +439,7 @@ namespace System
             }
             return -1;
         }
-        public long RFind(const String<CharT>& s) const
+        public inline long RFind(const String<CharT>& s) const
         {
             return RFind(s, len - 1);
         }

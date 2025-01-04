@@ -14,22 +14,13 @@ namespace System.Net.Sockets
         int length = cast<int>(s.Length());
         byte[4] lengthBuffer;
         MemoryWriter writer(&lengthBuffer[0], 4);
-        auto result = writer.Write(length);
-        if (result.Error())
-        {
-            return Result<bool>(ErrorId(result.GetErrorId()));
-        }
-        auto lengthResult = socket.SendAll(&lengthBuffer[0], 4);
-        if (lengthResult.Error())
-        {
-            return Result<bool>(ErrorId(lengthResult.GetErrorId()));
-        }
+        Result<bool> result = writer.Write(length);
+        if (result.Error()) return result;
+        result = socket.SendAll(&lengthBuffer[0], 4);
+        if (result.Error()) return result;
         byte* p = cast<byte*>(cast<void*>(s.Chars()));
-        auto stringResult = socket.SendAll(p, length);
-        if (stringResult.Error())
-        {
-            return Result<bool>(ErrorId(stringResult.GetErrorId()));
-        }
+        result = socket.SendAll(p, length);
+        if (result.Error()) return result;
         return Result<bool>(true);
     }
 
@@ -41,7 +32,7 @@ namespace System.Net.Sockets
         int offset = 0;
         while (bytesToReceive > 0)
         {
-            auto bytesReceivedResult = socket.Receive(&lengthBuffer[offset], bytesToReceive);
+            Result<int> bytesReceivedResult = socket.Receive(&lengthBuffer[offset], bytesToReceive);
             if (bytesReceivedResult.Error())
             {
                 return Result<string>(ErrorId(bytesReceivedResult.GetErrorId()));
@@ -51,7 +42,7 @@ namespace System.Net.Sockets
             offset = offset + bytesReceived;
         }
         MemoryReader reader(&lengthBuffer[0], 4);
-        auto lengthResult = reader.ReadInt();
+        Result<int> lengthResult = reader.ReadInt();
         if (lengthResult.Error())
         {
             return Result<string>(ErrorId(lengthResult.GetErrorId()));
@@ -66,7 +57,7 @@ namespace System.Net.Sockets
         bytesToReceive = length;
         while (bytesToReceive > 0)
         {
-            auto bytesReceivedResult = socket.Receive(mem.Get() + offset, bytesToReceive);
+            Result<int> bytesReceivedResult = socket.Receive(mem.Get() + offset, bytesToReceive);
             if (bytesReceivedResult.Error())
             {
                 return Result<string>(ErrorId(bytesReceivedResult.GetErrorId()));

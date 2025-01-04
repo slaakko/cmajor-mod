@@ -151,7 +151,12 @@ namespace codegen
             UniquePtr<intermediate.CodeGenerator> codeGenerator;
             if (GetGlobalFlag(GlobalFlags.release) && optimizer.Optimizer.Instance().CurrentProfile() != "0")
             {
-                optimizer.Optimize(&intermediateContext);
+                result = optimizer.Optimize(&intermediateContext);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
                 intermediateContext.GetCompileUnit()->SetFilePath(optimizedIntermediateFilePath);
                 result = intermediateContext.GetCompileUnit()->Write();
                 if (result.Error())
@@ -184,6 +189,7 @@ namespace codegen
                 SetErrorId(result.GetErrorId());
                 return;
             }
+            codeGenerator.Reset();
         }
         public override void Visit(BoundNamespace& boundNamespace)
         {

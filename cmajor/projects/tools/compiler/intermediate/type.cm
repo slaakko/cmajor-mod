@@ -112,6 +112,11 @@ namespace intermediate
         public abstract string Name() const;
         public abstract long Size() const;
         public abstract long Alignment() const;
+        public virtual Result<Value*> GetDefaultValue(Context* context) const
+        {
+            int errorId = Error("type '" + Name() + "' has no default value", Span(), context);
+            return Result<Value*>(ErrorId(errorId));
+        }
         public inline const System.Lex.Span& Span() const
         {
             return span;
@@ -332,6 +337,10 @@ namespace intermediate
         {
             return 1;
         }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
+        }
         public inline BoolValue* DefaultValue() const
         {
             return &defaultValue;
@@ -355,6 +364,10 @@ namespace intermediate
         public override long Alignment() const
         {
             return 1;
+        }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
         }
         public inline SByteValue* DefaultValue() const
         {
@@ -380,6 +393,10 @@ namespace intermediate
         {
             return 1;
         }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
+        }
         public inline ByteValue* DefaultValue() const
         {
             return &defaultValue;
@@ -403,6 +420,10 @@ namespace intermediate
         public override long Alignment() const
         {
             return 2;
+        }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
         }
         public inline ShortValue* DefaultValue() const
         {
@@ -428,6 +449,10 @@ namespace intermediate
         {
             return 2;
         }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
+        }
         public inline UShortValue* DefaultValue() const
         {
             return &defaultValue;
@@ -451,6 +476,10 @@ namespace intermediate
         public override long Alignment() const
         {
             return 4;
+        }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
         }
         public inline IntValue* DefaultValue() const
         {
@@ -476,6 +505,10 @@ namespace intermediate
         {
             return 4;
         }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
+        }
         public inline UIntValue* DefaultValue() const
         {
             return &defaultValue;
@@ -499,6 +532,10 @@ namespace intermediate
         public override long Alignment() const
         {
             return 8;
+        }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
         }
         public inline LongValue* DefaultValue() const
         {
@@ -524,6 +561,10 @@ namespace intermediate
         {
             return 8;
         }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
+        }
         public inline ULongValue* DefaultValue() const
         {
             return &defaultValue;
@@ -548,6 +589,10 @@ namespace intermediate
         {
             return 4;
         }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
+        }
         public inline FloatValue* DefaultValue() const
         {
             return &defaultValue;
@@ -571,6 +616,10 @@ namespace intermediate
         public override long Alignment() const
         {
             return 8;
+        }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&defaultValue);
         }
         public inline DoubleValue* DefaultValue() const
         {
@@ -942,6 +991,22 @@ namespace intermediate
             }
             return Result<bool>(true);
         }
+        public bool IsUnaryOperationType() const
+        {
+            if (Arity() == 1)
+            {
+                Type* returnType = ReturnType();
+                Type* paramType = ParamType(0);
+                if (paramType == returnType)
+                {
+                    if (paramType->Size() <= 8)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         private TypeRef returnTypeRef;
         private List<TypeRef> paramTypeRefs;
     }
@@ -981,6 +1046,10 @@ namespace intermediate
         public override long Alignment() const
         {
             return 8;
+        }
+        public override Result<Value*> GetDefaultValue(Context* context) const
+        {
+            return Result<Value*>(&nullValue);
         }
         public inline NullValue* DefaultValue() const
         {

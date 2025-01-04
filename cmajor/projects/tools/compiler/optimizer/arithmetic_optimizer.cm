@@ -1,0 +1,498 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace optimizer
+{
+    [nodiscard]
+    public Result<bool> OptimizeNot(intermediate.NotInstruction* notInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        switch (notInst->Operand()->Kind())
+        {
+            case intermediate.ValueKind.boolValue:
+            {
+                intermediate.BoolValue* boolValue = cast<intermediate.BoolValue*>(notInst->Operand());
+                intermediate.Value* value = context->GetData()->GetBoolValue(!boolValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(notInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeNeg(intermediate.NegInstruction* negInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        switch (negInst->Operand()->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                intermediate.SByteValue* sbyteValue = cast<intermediate.SByteValue*>(negInst->Operand());
+                intermediate.Value* value = context->GetData()->MakeValue(-sbyteValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(negInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                intermediate.ShortValue* shortValue = cast<intermediate.ShortValue*>(negInst->Operand());
+                intermediate.Value* value = context->GetData()->MakeValue(-shortValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(negInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                intermediate.IntValue* intValue = cast<intermediate.IntValue*>(negInst->Operand());
+                intermediate.Value* value = context->GetData()->MakeValue(-intValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(negInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                intermediate.LongValue* longValue = cast<intermediate.LongValue*>(negInst->Operand());
+                intermediate.Value* value = context->GetData()->MakeValue(-longValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(negInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+            case intermediate.ValueKind.floatValue:
+            {
+                intermediate.FloatValue* floatValue = cast<intermediate.FloatValue*>(negInst->Operand());
+                intermediate.Value* value = context->GetData()->MakeValue(-floatValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(negInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+            case intermediate.ValueKind.doubleValue:
+            {
+                intermediate.DoubleValue* doubleValue = cast<intermediate.DoubleValue*>(negInst->Operand());
+                intermediate.Value* value = context->GetData()->MakeValue(-doubleValue->GetValue());
+                Result<bool> result = intermediate.ReplaceInstructionWithValue(negInst, value);
+                if (result.Error()) return result;
+                optimized = true;
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeSignExtend(intermediate.SignExtendInstruction* signExtendInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        switch (signExtendInst->GetResult()->GetType()->Id())
+        {
+            case intermediate.shortTypeId:
+            {
+                switch (signExtendInst->Operand()->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        intermediate.SByteValue* sbyteValue = cast<intermediate.SByteValue*>(signExtendInst->Operand());
+                        short val = sbyteValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(signExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.intTypeId:
+            {
+                switch (signExtendInst->Operand()->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        intermediate.SByteValue* sbyteValue = cast<intermediate.SByteValue*>(signExtendInst->Operand());
+                        int val = sbyteValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(signExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        intermediate.ShortValue* shortValue = cast<intermediate.ShortValue*>(signExtendInst->Operand());
+                        int val = shortValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(signExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.longTypeId:
+            {
+                switch (signExtendInst->Operand()->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        intermediate.SByteValue* sbyteValue = cast<intermediate.SByteValue*>(signExtendInst->Operand());
+                        long val = sbyteValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(signExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        intermediate.ShortValue* shortValue = cast<intermediate.ShortValue*>(signExtendInst->Operand());
+                        long val = shortValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(signExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                    case intermediate.ValueKind.intValue:
+                    {
+                        intermediate.IntValue* intValue = cast<intermediate.IntValue*>(signExtendInst->Operand());
+                        long val = intValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(signExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeZeroExtend(intermediate.ZeroExtendInstruction* zeroExtendInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        switch (zeroExtendInst->GetResult()->GetType()->Id())
+        {
+            case intermediate.ushortTypeId:
+            {
+                switch (zeroExtendInst->Operand()->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        intermediate.ByteValue* byteValue = cast<intermediate.ByteValue*>(zeroExtendInst->Operand());
+                        ushort val = byteValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(zeroExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.uintTypeId:
+            {
+                switch (zeroExtendInst->Operand()->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        intermediate.ByteValue* byteValue = cast<intermediate.ByteValue*>(zeroExtendInst->Operand());
+                        uint val = byteValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(zeroExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        intermediate.UShortValue* ushortValue = cast<intermediate.UShortValue*>(zeroExtendInst->Operand());
+                        uint val = ushortValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(zeroExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ulongTypeId:
+            {
+                switch (zeroExtendInst->Operand()->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        intermediate.ByteValue* byteValue = cast<intermediate.ByteValue*>(zeroExtendInst->Operand());
+                        ulong val = byteValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(zeroExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        intermediate.UShortValue* ushortValue = cast<intermediate.UShortValue*>(zeroExtendInst->Operand());
+                        ulong val = ushortValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(zeroExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        intermediate.UIntValue* uintValue = cast<intermediate.UIntValue*>(zeroExtendInst->Operand());
+                        ulong val = uintValue->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(val);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(zeroExtendInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeAdd(intermediate.AddInstruction* addInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        if (addInst->Left()->IsZero())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, addInst->Right());
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else if (addInst->Right()->IsZero())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, addInst->Left());
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeMul(intermediate.MulInstruction* mulInst, intermediate.Function* fn, intermediate.Context* context)
+    {
+        bool optimized = false;
+        if (mulInst->Left()->IsZero())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Left());
+            if (result.Error()) return result;
+        }
+        else if (mulInst->Right()->IsZero())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Right());
+            if (result.Error()) return result;
+        }
+        else if (mulInst->Left()->IsOne())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Right());
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else if (mulInst->Right()->IsOne())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Left());
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else if (mulInst->Left()->IsTwo())
+        {
+            intermediate.Value* right = mulInst->Right();
+            intermediate.AddInstruction* addInst = new intermediate.AddInstruction(
+                System.Lex.Span(), fn->MakeNextRegValue(right->GetType()), right, right);
+            Result<bool> result = intermediate.ReplaceInstructionWithInstruction(mulInst, addInst);
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else if (mulInst->Right()->IsTwo())
+        {
+            intermediate.Value* left = mulInst->Left();
+            intermediate.AddInstruction* addInst = new intermediate.AddInstruction(
+                System.Lex.Span(), fn->MakeNextRegValue(left->GetType()), left, left);
+            Result<bool> result = intermediate.ReplaceInstructionWithInstruction(mulInst, addInst);
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else
+        {
+            intermediate.Value* left = mulInst->Left();
+            intermediate.Value* right = mulInst->Right();
+            intermediate.Value* leftLog2 = left->Log2(context);
+            if (leftLog2 != null)
+            {
+                intermediate.ShlInstruction* shlInst = new intermediate.ShlInstruction(
+                    System.Lex.Span(), fn->MakeNextRegValue(left->GetType()), right, leftLog2);
+                Result<bool> result = intermediate.ReplaceInstructionWithInstruction(mulInst, shlInst);
+                if (result.Error()) return result;
+                optimized = true;
+            }
+            else
+            {
+                intermediate.Value* rightLog2 = right->Log2(context);
+                if (rightLog2 != null)
+                {
+                    intermediate.ShlInstruction* shlInst = new intermediate.ShlInstruction(
+                        System.Lex.Span(), fn->MakeNextRegValue(right->GetType()), left, rightLog2);
+                    Result<bool> result = intermediate.ReplaceInstructionWithInstruction(mulInst, shlInst);
+                    if (result.Error()) return result;
+                    optimized = true;
+                }
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeDiv(intermediate.DivInstruction* divInst, intermediate.Function* fn, intermediate.Context* context)
+    {
+        bool optimized = false;
+        if (divInst->Right()->IsOne())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, divInst->Left());
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else
+        {
+            intermediate.Value* left = divInst->Left();
+            intermediate.Value* right = divInst->Right();
+            intermediate.Value* rightLog2 = right->Log2(context);
+            if (rightLog2 != null)
+            {
+                intermediate.ShrInstruction* shrInst = new intermediate.ShrInstruction(
+                    System.Lex.Span(), fn->MakeNextRegValue(right->GetType()), left, rightLog2);
+                Result<bool> result = intermediate.ReplaceInstructionWithInstruction(divInst, shrInst);
+                if (result.Error()) return result;
+                Console.Out() << "DIV OPTIMIZED " << fn->Name() << endl();
+                optimized = true;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeArithmetic(intermediate.Function* fn, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+        while (bb != null)
+        {
+            intermediate.Instruction* inst = bb->FirstInstruction();
+            while (inst != null)
+            {
+                intermediate.Instruction* next = inst->Next();
+                switch (inst->GetOpCode())
+                {
+                    case intermediate.OpCode.not_:
+                    {
+                        intermediate.NotInstruction* notInst = cast<intermediate.NotInstruction*>(inst);
+                        Result<bool> result = OptimizeNot(notInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.neg:
+                    {
+                        intermediate.NegInstruction* negInst = cast<intermediate.NegInstruction*>(inst);
+                        Result<bool> result = OptimizeNeg(negInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.signextend:
+                    {
+                        intermediate.SignExtendInstruction* signExtendInst = cast<intermediate.SignExtendInstruction*>(inst);
+                        Result<bool> result = OptimizeSignExtend(signExtendInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.zeroextend:
+                    {
+                        intermediate.ZeroExtendInstruction* zeroExtendInst = cast<intermediate.ZeroExtendInstruction*>(inst);
+                        Result<bool> result = OptimizeZeroExtend(zeroExtendInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.add:
+                    {
+                        intermediate.AddInstruction* addInst = cast<intermediate.AddInstruction*>(inst);
+                        Result<bool> result = OptimizeAdd(addInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.mul:
+                    {
+                        intermediate.MulInstruction* mulInst = cast<intermediate.MulInstruction*>(inst);
+                        Result<bool> result = OptimizeMul(mulInst, fn, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.div_:
+                    {
+                        intermediate.DivInstruction* divInst = cast<intermediate.DivInstruction*>(inst);
+                        Result<bool> result = OptimizeDiv(divInst, fn, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                }
+                inst = next;
+            }
+            bb = bb->Next();
+        }
+        if (optimized)
+        {
+            Result<bool> result = fn->SetNumbers();
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+}
+

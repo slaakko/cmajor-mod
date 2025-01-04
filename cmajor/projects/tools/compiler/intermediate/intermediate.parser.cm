@@ -7322,8 +7322,7 @@ namespace intermediate.parser
                             instruction.Reset(cast<intermediate.Instruction*>(match.value));
                             if (match.hit)
                             {
-                                auto result = basicBlock->AddInstruction(instruction.Release());
-                                if (result.Error()) return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
+                                basicBlock->AddInstruction(instruction.Release());
                             }
                             *parentMatch3 = match;
                         }
@@ -7357,8 +7356,7 @@ namespace intermediate.parser
                                                 next.Reset(cast<intermediate.Instruction*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    auto result = basicBlock->AddInstruction(next.Release());
-                                                    if (result.Error()) return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
+                                                    basicBlock->AddInstruction(next.Release());
                                                 }
                                                 *parentMatch7 = match;
                                             }

@@ -1,0 +1,34 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace intermediate
+{
+    [nodiscard]
+    public Result<bool> ReplaceInstructionWithValue(Instruction* inst, Value* value)
+    {
+        Result<bool> result = inst->ReplaceUsesWith(value);
+        if (result.Error()) return result;
+        inst->Parent()->RemoveInstruction(inst);
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> ReplaceInstructionWithInstruction(Instruction* oldInst, Instruction* newInst)
+    {
+        if (oldInst->IsValueInstruction() && newInst->IsValueInstruction())
+        {
+            ValueInstruction* valueInst = cast<ValueInstruction*>(newInst);
+            Result<bool> result = oldInst->ReplaceUsesWith(valueInst->GetResult());
+            if (result.Error()) return result;
+        }
+        BasicBlock* bb = oldInst->Parent();
+        bb->InsertInstructionAfter(newInst, oldInst);
+        bb->RemoveInstruction(oldInst);
+        return Result<bool>(true);
+    }
+}
+

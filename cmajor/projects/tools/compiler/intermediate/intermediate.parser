@@ -549,14 +549,12 @@ parser intermediate.parser.intermediate_parser
         (
             Instruction(context):instruction
             {
-                auto result = basicBlock->AddInstruction(instruction);
-                if (result.Error()) return ErrorId(result.GetErrorId());
+                basicBlock->AddInstruction(instruction);
             }
             (
                 Instruction(context):next
                 {
-                    auto result = basicBlock->AddInstruction(next);
-                    if (result.Error()) return ErrorId(result.GetErrorId());
+                    basicBlock->AddInstruction(next);
                 }
             )*
         )

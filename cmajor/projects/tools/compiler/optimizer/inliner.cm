@@ -1,0 +1,230 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace optimizer
+{
+    [nodiscard]
+    public Result<bool> ReplaceParamsWithArgs(intermediate.Instruction* callInst, intermediate.ArgInstruction* firstArg, intermediate.Function* callee,
+        intermediate.Function* originalCallee, intermediate.Context* context)
+    {
+        intermediate.BasicBlock* bb = callee->FirstBasicBlock();
+        while (bb != null)
+        {
+            intermediate.Instruction* inst = bb->FirstInstruction();
+            while (inst != null)
+            {
+                intermediate.Instruction* next = inst->Next();
+                if (inst->IsParamInstruction())
+                {
+                    if (firstArg != null)
+                    {
+                        Result<bool> result = inst->ReplaceUsesWith(firstArg->Arg());
+                        if (result.Error()) return result;
+                        intermediate.Instruction* nextArg = firstArg->Next();
+                        firstArg->RemoveFromUses();
+                        firstArg->Parent()->RemoveInstruction(firstArg);
+                        if (nextArg != null && nextArg->IsArgInstruction())
+                        {
+                            firstArg = cast<intermediate.ArgInstruction*>(nextArg);
+                        }
+                        else
+                        {
+                            firstArg = null;
+                        }
+                    }
+                    else
+                    {
+                        int errorId = intermediate.Error("number of arguments and parameters do not match", callInst->Span(), originalCallee->Span(), context);
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    inst->RemoveFromUses();
+                    inst->Parent()->RemoveInstruction(inst);
+                }
+                else
+                {
+                    break;
+                }
+                inst = next;
+            }
+            bb = bb->Next();
+        }
+        return Result<bool>(true);
+    }
+
+    public void MoveInstructionsAfterCall(intermediate.BasicBlock* fromBasicBlock, intermediate.Instruction* afterCallInst, List<intermediate.RetInstruction*>& rets)
+    {
+        intermediate.Instruction* inst = fromBasicBlock->FirstInstruction();
+        while (inst != null)
+        {
+            intermediate.Instruction* next = inst->Next();
+            UniquePtr<intermediate.Instruction> instToMove = inst->Parent()->RemoveInstruction(inst);
+            if (instToMove->IsRetInstruction())
+            {
+                rets.Add(cast<intermediate.RetInstruction*>(instToMove.Get()));
+            }
+            afterCallInst->Parent()->InsertInstructionAfter(instToMove.Release(), afterCallInst);
+            afterCallInst = afterCallInst->Next();
+            inst = next;
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> MergeSingleBasicBlock(intermediate.Function* fn, intermediate.BasicBlock* basicBlock, intermediate.Instruction* callInst, intermediate.Context* context)
+    {
+        List<intermediate.RetInstruction*> rets;
+        MoveInstructionsAfterCall(basicBlock, callInst, rets);
+        intermediate.Function* callee = basicBlock->Parent();
+        callee->MoveRegValuesTo(fn);
+        Result<bool> result = fn->SetNumbers();
+        if (result.Error()) return result;
+        if (callInst->IsFunctionCallInstruction())
+        {
+            if (rets.Count() == 1)
+            {
+                intermediate.RetInstruction* ret = rets.Front();
+                if (ret->ReturnValue() != null)
+                {
+                    Result<bool> result = callInst->ReplaceUsesWith(ret->ReturnValue());
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = intermediate.Error("return value expected", ret->Span(), context);
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = intermediate.Error("single ret instruction expected", callee->Span(), context);
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        int n = cast<int>(rets.Count());
+        for (int i = 0; i < n; ++i)
+        {
+            intermediate.RetInstruction* ret = rets[i];
+            ret->RemoveFromUses();
+            ret->Parent()->RemoveInstruction(ret);
+        }
+        callInst->RemoveFromUses();
+        callInst->Parent()->RemoveInstruction(callInst);
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> MergeManyBasicBlocks(intermediate.Function* fn, intermediate.Function* callee, intermediate.Instruction* callInst, intermediate.Context* context)
+    {
+        // todo
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> MergeBasicBlocks(intermediate.Function* fn, intermediate.Function* callee, intermediate.Instruction* callInst, intermediate.Context* context)
+    {
+        if (callee->NumBasicBlocks() == 1)
+        {
+            Result<bool> result = MergeSingleBasicBlock(fn, callee->FirstBasicBlock(), callInst, context);
+            if (result.Error()) return result;
+        }
+        else if (callee->NumBasicBlocks() > 1)
+        {
+            Result<bool> result = MergeManyBasicBlocks(fn, callee, callInst, context);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            int errorId = intermediate.Error("callee has no basic blocks", callee->Span(), context);
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> InlineExpand(intermediate.Function* fn, intermediate.Instruction* callInst, intermediate.ArgInstruction* firstArg, intermediate.Function* callee,
+        intermediate.Context* context)
+    {
+        intermediate.CloneContext cloneContext;
+        Result<intermediate.Value*> clonedCalleeResult = callee->Clone(cloneContext);
+        if (clonedCalleeResult.Error()) return Result<bool>(ErrorId(clonedCalleeResult.GetErrorId()));
+        UniquePtr<intermediate.Function> clonedCallee(cast<intermediate.Function*>(clonedCalleeResult.Value()));
+        Result<bool> result = ReplaceParamsWithArgs(callInst, firstArg, clonedCallee.Get(), callee, context);
+        if (result.Error()) return result;
+        result = MergeBasicBlocks(fn, clonedCallee.Get(), callInst, context);
+        if (result.Error()) return result;
+        result = fn->SetNumbers();
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> InlineExpand(intermediate.Function* fn, intermediate.Context* context)
+    {
+        bool optimized = false;
+        //int inlineDepth = context->InlineDepth();
+        int inlineDepth = 1;
+        int inlineCount = 0;
+        bool inlined = false;
+        do
+        {
+            inlined = false;
+            intermediate.ArgInstruction* firstArg = null;
+            intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+            while (bb != null)
+            {
+                intermediate.Instruction* inst = bb->FirstInstruction();
+                while (inst != null)
+                {
+                    intermediate.Instruction* next = inst->Next();
+                    if (inst->IsArgInstruction())
+                    {
+                        if (firstArg == null)
+                        {
+                            firstArg = cast<intermediate.ArgInstruction*>(inst);
+                        }
+                    }
+                    intermediate.Function* callee = null;
+                    bool isCallInst = false;
+                    if (inst->IsProcedureCallInstruction())
+                    {
+                        intermediate.ProcedureCallInstruction* procedureCallInst = cast<intermediate.ProcedureCallInstruction*>(inst);
+                        callee = procedureCallInst->CalleeFn();
+                        isCallInst = true;
+                    }
+                    else if (inst->IsFunctionCallInstruction())
+                    {
+                        intermediate.FunctionCallInstruction* functionCallInst = cast<intermediate.FunctionCallInstruction*>(inst);
+                        callee = functionCallInst->CalleeFn();
+                        isCallInst = true;
+                    }
+                    if (callee != null)
+                    {
+                        if (callee != fn)
+                        {
+                            if (callee->IsInline() && callee->NumBasicBlocks() == 1)
+                            {
+                                Result<bool> result = InlineExpand(fn, inst, firstArg, callee, context);
+                                if (result.Error()) return result;
+                                inlined = true;
+                                optimized = true;
+                                Console.Out() << "INLINED " << fn->Name() << " <- " << callee->Name() << endl();
+                            }
+                        }
+                    }
+                    if (isCallInst)
+                    {
+                        firstArg = null;
+                    }
+                    inst = next;
+                }
+                bb = bb->Next();
+            }
+        }
+        while (inlined && ++inlineCount < inlineDepth);
+        return Result<bool>(true);
+    }
+}

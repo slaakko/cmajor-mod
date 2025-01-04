@@ -22,6 +22,7 @@ source <parser.cm>;
 source <parsing_util.cm>;
 source <register_allocator.cm>;
 source <type.cm>;
+source <util.cm>;
 source <verify.cm>;
 source <visitor.cm>;
 rc <intermediate_lexer.classmap.rc>;

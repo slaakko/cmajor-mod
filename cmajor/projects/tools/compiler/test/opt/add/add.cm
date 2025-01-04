@@ -1,0 +1,19 @@
+using System;
+
+void fn_0()
+{
+    int y = 1;
+    int x = y + 0;
+}
+
+void fn_1()
+{
+    int y = 1;
+    int x = 0 + y;
+}
+
+void main()
+{
+    fn_0();
+    fn_1();
+}

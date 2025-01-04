@@ -460,6 +460,25 @@ namespace System
         return k;
     }
 
+    public bool IsPowerOfTwo(ulong n, int& shift)
+    {
+        ulong p = 2u;
+        shift = 1;
+        while (p < n)
+        {
+            p = p << 1u;
+            ++shift;
+        }
+        if (n == p)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public void InsertionSort<I, R>(I begin, I end, R r)
         where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
     {

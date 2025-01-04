@@ -1,0 +1,6 @@
+using System;
+
+void main()
+{
+    sbyte x = 0;
+}

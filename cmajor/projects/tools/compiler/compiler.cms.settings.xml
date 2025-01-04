@@ -2,10 +2,10 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/build/building.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/optimizer/inliner.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/build/building.cm"/>
-    <currentCursorLine value="546"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/optimizer/inliner.cm"/>
+    <currentCursorLine value="204"/>
     <breakpoints/>
     <expandedProjects/>
 </solutionSettings>

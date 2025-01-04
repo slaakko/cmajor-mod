@@ -15,11 +15,13 @@ namespace optimizer
         jump = 1u << 1u,
         removeNops = 1u << 2u,
         jumpTableSwitch = 1u << 3u,
-        inln = 1u << 4u,
+        arithmetic = 1u << 4u,
+        identity = 1u << 5u,
+        inln = 1u << 6u,
         o0 = none,
-        o1 = xor | jump | removeNops | jumpTableSwitch,
-        o2 = xor | jump | removeNops | jumpTableSwitch | inln,
-        o3 = xor | jump | removeNops | jumpTableSwitch | inln
+        o1 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity,
+        o2 = inln,
+        o3 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity | inln
     }
 
     internal Optimizations currentOptimizations = Optimizations.o2;
@@ -76,18 +78,36 @@ namespace optimizer
         private string currentProfile;
     }
 
-    public void Optimize(intermediate.Context* intermediateContext)
+    [nodiscard]
+    public Result<bool> Optimize(intermediate.Context* intermediateContext)
     {
         intermediate.Code* code = intermediateContext->GetCode();
         intermediate.Function* fn = code->FirstFunction();
         while (fn != null)
         {
+            if (HasOptimization(Optimizations.identity))
+            {
+                Result<bool> result = OptimizeIdentity(fn, intermediateContext);
+                if (result.Error()) return result;
+            }
+            if (HasOptimization(Optimizations.inln))
+            {
+                Result<bool> result = InlineExpand(fn, intermediateContext);
+                if (result.Error()) return result;
+            }
+            if (HasOptimization(Optimizations.arithmetic))
+            {
+                Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
+                if (result.Error()) return result;
+            }
             if (HasOptimization(Optimizations.jump))
             {
-                OptimizeJumps(fn);
+                Result<bool> result = OptimizeJumps(fn);
+                if (result.Error()) return result;
             }
             fn = fn->Next();
         }
+        return Result<bool>(true);
     }
 }
 

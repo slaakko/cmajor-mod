@@ -44,6 +44,74 @@ namespace intermediate
         return string();
     }
 
+    public class CloneContext
+    {
+        public CloneContext() : context(null), currentFunction(null)
+        {
+        }
+        public inline void SetContext(Context* context_)
+        {
+            context = context_;
+        }
+        public inline Context* GetContext() const
+        {
+            return context;
+        }
+        public inline void SetCurrentFunction(Function* currentFunction_)
+        {
+            currentFunction = currentFunction_;
+        }
+        public inline Function* CurrentFunction() const
+        {
+            return currentFunction;
+        }
+        public void MapInstruction(Instruction* inst, Instruction* clone)
+        {
+            instMap[inst] = clone;
+        }
+        public Instruction* GetMappedInstruction(Instruction* inst) const
+        {
+            auto it = instMap.Find(inst);
+            if (it != instMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void AddUnmappedInstruction(Instruction* inst, RegValue* regValue)
+        {
+            unmappedInstructions.Insert(MakePair(inst, regValue));
+        }
+        public inline Set<Pair<Instruction*, RegValue*>>& UnmappedInstructions() const
+        {
+            return unmappedInstructions;
+        }
+        public BasicBlock* GetMappedBasicBlock(BasicBlock* bb) const
+        {
+            auto it = bbMap.Find(bb);
+            if (it != bbMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void MapBasicBlock(BasicBlock* bb, BasicBlock* clone)
+        {
+            bbMap[bb] = clone;
+        }
+        private Context* context;
+        private Function* currentFunction;
+        private Map<Instruction*, Instruction*> instMap;
+        private Set<Pair<Instruction*, RegValue*>> unmappedInstructions;
+        private Map<BasicBlock*, BasicBlock*> bbMap;
+    }
+
     public abstract class Value
     {
         public Value(ValueKind kind_, const System.Lex.Span& span_, Type* type_) : kind(kind_), span(span_), type(type_)
@@ -52,6 +120,14 @@ namespace intermediate
         public default virtual ~Value();
         public virtual void Accept(Visitor& visitor)
         {
+        }
+        public virtual Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            return Result<Value*>(this);
+        }
+        public virtual void Dump()
+        {
+            Console.Out() << "VALUE" << endl();
         }
         public virtual string ToString() const
         {
@@ -238,6 +314,31 @@ namespace intermediate
         {
             type = type_;
         }
+        public Instruction* GetInstruction() const
+        {
+            if (IsRegValue())
+            {
+                RegValue* regValue = cast<RegValue*>(this);
+                return regValue->Inst();
+            }
+            return null;
+        }
+        public virtual bool IsZero() const
+        {
+            return false;
+        }
+        public virtual bool IsOne() const
+        {
+            return false;
+        }
+        public virtual bool IsTwo() const
+        {
+            return false;
+        }
+        public virtual Value* Log2(Context* context) const
+        {
+            return null;
+        }
         private ValueKind kind;
         private System.Lex.Span span;
         private Type* type;
@@ -284,6 +385,30 @@ namespace intermediate
         {
             return ToString(value);
         }
+        public override bool IsZero() const
+        {
+            return value == 0;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(cast<sbyte>(shift));
+                }
+            }
+            return null;
+        }
         private sbyte value;
     }
 
@@ -303,6 +428,30 @@ namespace intermediate
         public override string ToString() const
         {
             return ToString(value);
+        }
+        public override bool IsZero() const
+        {
+            return value == 0u;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1u;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2u;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0u)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(value, shift))
+                {
+                    return context->GetData()->MakeValue(cast<byte>(shift));
+                }
+            }
+            return null;
         }
         private byte value;
     }
@@ -324,6 +473,30 @@ namespace intermediate
         {
             return ToString(value);
         }
+        public override bool IsZero() const
+        {
+            return value == 0;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(cast<short>(shift));
+                }
+            }
+            return null;
+        }
         private short value;
     }
 
@@ -343,6 +516,30 @@ namespace intermediate
         public override string ToString() const
         {
             return ToString(value);
+        }
+        public override bool IsZero() const
+        {
+            return value == 0u;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1u;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2u;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0u)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(value, shift))
+                {
+                    return context->GetData()->MakeValue(cast<ushort>(shift));
+                }
+            }
+            return null;
         }
         private ushort value;
     }
@@ -364,6 +561,30 @@ namespace intermediate
         {
             return ToString(value);
         }
+        public override bool IsZero() const
+        {
+            return value == 0;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(cast<int>(shift));
+                }
+            }
+            return null;
+        }
         private int value;
     }
 
@@ -383,6 +604,30 @@ namespace intermediate
         public override string ToString() const
         {
             return ToString(value);
+        }
+        public override bool IsZero() const
+        {
+            return value == 0u;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1u;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2u;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0u)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(value, shift))
+                {
+                    return context->GetData()->MakeValue(cast<uint>(shift));
+                }
+            }
+            return null;
         }
         private uint value;
     }
@@ -404,6 +649,30 @@ namespace intermediate
         {
             return ToString(value);
         }
+        public override bool IsZero() const
+        {
+            return value == 0;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(cast<long>(shift));
+                }
+            }
+            return null;
+        }
         private long value;
     }
 
@@ -423,6 +692,30 @@ namespace intermediate
         public override string ToString() const
         {
             return ToString(value);
+        }
+        public override bool IsZero() const
+        {
+            return value == 0u;
+        }
+        public override bool IsOne() const
+        {
+            return value == 1u;
+        }
+        public override bool IsTwo() const
+        {
+            return value == 2u;
+        }
+        public override Value* Log2(Context* context) const
+        {
+            if (value > 0u)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(value, shift))
+                {
+                    return context->GetData()->MakeValue(cast<ulong>(shift));
+                }
+            }
+            return null;
         }
         private ulong value;
     }

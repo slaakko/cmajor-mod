@@ -254,9 +254,51 @@ namespace intermediate
         {
             #assert(GetType() != null);
         }
+        public ~RegValue()
+        {
+            if (inst != null && inst->IsValueInstruction())
+            {
+                ValueInstruction* valueInst = cast<ValueInstruction*>(inst);
+                if (valueInst->GetResult() == this)
+                {
+                    valueInst->ResetResult();
+                }
+            }
+        }
         public override string ToString() const
         {
+            #assert(inst != null);
             return "$" + ToString(inst->RegValueIndex());
+        }
+        public override void Dump()
+        {
+            int instReg = -1;
+            if (inst != null)
+            {
+                instReg = inst->RegValueIndex();
+            }
+            Console.Out() << "REG VALUE " << reg << "=" << instReg << " : " << cast<ulong>(this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            RegValue* regValue = cloneContext.CurrentFunction()->GetRegValue(reg);
+            if (regValue != null)
+            {
+                return Result<Value*>(regValue);
+            }
+            Result<RegValue*> cloneResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), reg);
+            if (cloneResult.Error()) return Result<Value*>(ErrorId(cloneResult.GetErrorId()));
+            RegValue* clone = cloneResult.Value();
+            Instruction* mappedInst = cloneContext.GetMappedInstruction(inst);
+            if (mappedInst != null)
+            {
+                clone->SetInst(mappedInst);
+            }
+            else
+            {
+                cloneContext.AddUnmappedInstruction(inst, clone);
+            }
+            return Result<Value*>(clone);
         }
         public inline int Reg() const
         {
@@ -590,7 +632,8 @@ namespace intermediate
                 use->RemoveUser(this);
             }
         }
-        public void ReplaceUsesWith(Value* value)
+        [nodiscard]
+        public Result<bool> ReplaceUsesWith(Value* value)
         {
             Function* fn = Parent()->Parent();
             RegValue* use = fn->GetRegValue(RegValueIndex());
@@ -606,8 +649,10 @@ namespace intermediate
             {
                 Code* code = fn->Parent();
                 Context* context = code->GetContext();
-                Error("reg value " + ToString(RegValueIndex()) + "not found", Span(), context);
+                int errorId = Error("reg value " + ToString(RegValueIndex()) + "not found", Span(), context);
+                return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
         public virtual void ReplaceValue(Value* use, Value* value)
         {
@@ -628,6 +673,28 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "store ";
+            value->Dump();
+            Console.Out() << " : ";
+            ptr->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<Value*> clonedValueResult = value->Clone(cloneContext);
+            if (clonedValueResult.Error()) return  clonedValueResult;
+            Value* clonedValue = clonedValueResult.Value();
+            Result<Value*> clonedPtrResult = ptr->Clone(cloneContext);
+            if (clonedPtrResult.Error()) return  clonedPtrResult;
+            Value* clonedPtr = clonedPtrResult.Value();
+            StoreInstruction* clone = new StoreInstruction(Span(), clonedValue, clonedPtr);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -706,6 +773,23 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "arg ";
+            arg->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<Value*> clonedArgResult = arg->Clone(cloneContext);
+            if (clonedArgResult.Error()) return clonedArgResult;
+            Value* clonedArg = clonedArgResult.Value();
+            ArgInstruction* clone = new ArgInstruction(Span(), clonedArg);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -760,6 +844,28 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "jmp @" << TargetBasicBlock()->Id() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            JmpInstruction* clone = new JmpInstruction(Span(), targetBasicBlock->Id());
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            BasicBlock* bb = cloneContext.GetMappedBasicBlock(targetBasicBlock);
+            if (bb != null)
+            {
+                clone->SetTargetBasicBlock(bb);
+            }
+            else
+            {
+                int errorId = Error("mapped basic block not found", Span(), cloneContext.GetContext());
+                return Result<Value*>(ErrorId(errorId));
+            }
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -796,6 +902,43 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "branch ";
+            cond->Dump();
+            Console.Out() << " : @" << trueTargetBasicBlock->Id() << " : @" << falseTargetBasicBlock->Id() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<Value*> clonedCondResult = cond->Clone(cloneContext);
+            if (clonedCondResult.Error()) return clonedCondResult;
+            Value* clonedCond = clonedCondResult.Value();
+            BranchInstruction* clone = new BranchInstruction(Span(), clonedCond, trueTargetBasicBlock->Id(), falseTargetBasicBlock->Id());
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            BasicBlock* trueBB = cloneContext.GetMappedBasicBlock(trueTargetBasicBlock);
+            if (trueBB != null)
+            {
+                clone->SetTrueTargetBasicBlock(trueBB);
+            }
+            else
+            {
+                int errorId = Error("mapped basic block not found", trueTargetBasicBlock->Span(), cloneContext.GetContext());
+                return Result<Value*>(ErrorId(errorId));
+            }
+            BasicBlock* falseBB = cloneContext.GetMappedBasicBlock(falseTargetBasicBlock);
+            if (falseBB != null)
+            {
+                clone->SetFalseTargetBasicBlock(falseBB);
+            }
+            else
+            {
+                int errorId = Error("mapped basic block not found", falseTargetBasicBlock->Span(), cloneContext.GetContext());
+                return Result<Value*>(ErrorId(errorId));
+           }
+           clone->AddToUses();
+           return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -883,6 +1026,38 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "procedure call ";
+            callee->Dump();
+            Console.Out() << endl();
+            for (Value* arg : args)
+            {
+                Console.Out() << "ARG ";
+                arg->Dump();
+                Console.Out() << endl();
+            }
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<Value*> clonedCalleeResult = callee->Clone(cloneContext);
+            if (clonedCalleeResult.Error()) return clonedCalleeResult;
+            Value* clonedCallee = clonedCalleeResult.Value();
+            ProcedureCallInstruction* clone = new ProcedureCallInstruction(Span(), clonedCallee);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            List<Value*> clonedArgs;
+            for (Value* arg : args)
+            {
+                Result<Value*> clonedArgResult = arg->Clone(cloneContext);
+                if (clonedArgResult.Error()) return clonedArgResult;
+                Value* clonedArg = clonedArgResult.Value();
+                clonedArgs.Add(clonedArg);
+            }
+            clone->SetArgs(Rvalue(clonedArgs));
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -968,6 +1143,34 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            if (returnValue != null)
+            {
+                Console.Out() << "ret ";
+                returnValue->Dump();
+                Console.Out() << endl();
+            }
+            else
+            {
+                Console.Out() << "ret void" << endl();
+            }
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Value* clonedReturnValue = null;
+            if (returnValue != null)
+            {
+                Result<Value*> clonedReturnValueResult = returnValue->Clone(cloneContext);
+                if (clonedReturnValueResult.Error()) return clonedReturnValueResult;
+                clonedReturnValue = clonedReturnValueResult.Value();
+            }
+            RetInstruction* clone = new RetInstruction(Span(), clonedReturnValue);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1050,6 +1253,58 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "switch ";
+            cond->Dump();
+            Console.Out() << " : @" << defaultTargetBlock->Id() << endl();
+            for (const auto& caseTarget : caseTargets)
+            {
+                Console.Out() << "case ";
+                caseTarget.caseValue->Dump();
+                Console.Out() << " : @" << caseTarget.targetBlock->Id() << endl();
+            }
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<Value*> clonedCondResult = cond->Clone(cloneContext);
+            if (clonedCondResult.Error()) return clonedCondResult;
+            Value* clonedCond = clonedCondResult.Value();
+            SwitchInstruction* clone = new SwitchInstruction(Span(), clonedCond, defaultTargetBlock->Id());
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            BasicBlock* bb = cloneContext.GetMappedBasicBlock(defaultTargetBlock);
+            if (bb != null)
+            {
+                clone->SetDefaultTargetBlock(bb);
+            }
+            else
+            {
+                int errorId = Error("mapped basic block not found", defaultTargetBlock->Span(), cloneContext.GetContext());
+                return Result<Value*>(ErrorId(errorId));
+            }
+            for (const auto& caseTarget : caseTargets)
+            {
+                CaseTarget clonedCaseTarget;
+                Result<Value*> clonedCaseValueResult = caseTarget.caseValue->Clone(cloneContext);
+                if (clonedCaseValueResult.Error()) return clonedCaseValueResult;
+                Value* clonedCaseValue = clonedCaseValueResult.Value();
+                clonedCaseTarget.caseValue = clonedCaseValue;
+                BasicBlock* bb = cloneContext.GetMappedBasicBlock(caseTarget.targetBlock);
+                if (bb != null)
+                {
+                    clonedCaseTarget.targetBlock = bb;
+                }
+                else
+                {
+                    int errorId = Error("mapped basic block not found", caseTarget.targetBlock->Span(), cloneContext.GetContext());
+                    return Result<Value*>(ErrorId(errorId));
+                }
+                clone->AddCaseTarget(clonedCaseTarget);
+            }
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1223,6 +1478,14 @@ namespace intermediate
         {
             return operand;
         }
+        public override void Dump()
+        {
+            Console.Out() << Name() << " ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            Operand()->Dump();
+            Console.Out() << endl();
+        }
         [nodiscard]
         public Result<bool> WriteArg(System.Text.CodeFormatter& formatter)
         {
@@ -1265,6 +1528,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            NotInstruction* clone = new NotInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1288,6 +1566,21 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            NegInstruction* clone = new NegInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         public override bool IsFloatingPointInstruction() const
         {
@@ -1317,6 +1610,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            SignExtendInstruction* clone = new SignExtendInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1340,6 +1648,21 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            ZeroExtendInstruction* clone = new ZeroExtendInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1365,6 +1688,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            FloatingPointExtendInstruction* clone = new FloatingPointExtendInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1388,6 +1726,21 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            TruncateInstruction* clone = new TruncateInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1413,6 +1766,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            BitcastInstruction* clone = new BitcastInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1436,6 +1804,21 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            IntToFloatInstruction* clone = new IntToFloatInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1465,6 +1848,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            FloatToIntInstruction* clone = new FloatToIntInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1493,6 +1891,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            IntToPtrInstruction* clone = new IntToPtrInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1517,6 +1930,21 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedOperandResult = Operand()->Clone(cloneContext);
+            if (clonedOperandResult.Error()) return clonedOperandResult;
+            Value* clonedOperand = clonedOperandResult.Value();
+            PtrToIntInstruction* clone = new PtrToIntInstruction(Span(), regValue, clonedOperand);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1537,6 +1965,16 @@ namespace intermediate
         public BinaryInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_, OpCode opCode_) :
             base(span_, result_, opCode_), left(left_), right(right_)
         {
+        }
+        public override void Dump()
+        {
+            Console.Out() << Name() << " ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            Left()->Dump();
+            Console.Out() << " : ";
+            Right()->Dump();
+            Console.Out() << endl();
         }
         public inline Value* Left() const
         {
@@ -1610,6 +2048,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            AddInstruction* clone = new AddInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1634,6 +2090,24 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            SubInstruction* clone = new SubInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1660,6 +2134,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            MulInstruction* clone = new MulInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1684,6 +2176,24 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            DivInstruction* clone = new DivInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1710,6 +2220,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            ModInstruction* clone = new ModInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1734,6 +2262,24 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            AndInstruction* clone = new AndInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1760,6 +2306,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            OrInstruction* clone = new OrInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1784,6 +2348,24 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            XorInstruction* clone = new XorInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1810,6 +2392,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            ShlInstruction* clone = new ShlInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1835,6 +2435,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            ShrInstruction* clone = new ShrInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1859,6 +2477,24 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            EqualInstruction* clone = new EqualInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -1889,6 +2525,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftResult = Left()->Clone(cloneContext);
+            if (clonedLeftResult.Error()) return clonedLeftResult;
+            Value* clonedLeft = clonedLeftResult.Value();
+            Result<Value*> clonedRightResult = Right()->Clone(cloneContext);
+            if (clonedRightResult.Error()) return clonedRightResult;
+            Value* clonedRight = clonedRightResult.Value();
+            LessInstruction* clone = new LessInstruction(Span(), regValue, clonedLeft, clonedRight);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1917,6 +2571,24 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "param ";
+            GetResult()->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            ParamInstruction* clone = new ParamInstruction(Span(), regValue);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -1938,6 +2610,24 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "local ";
+            GetResult()->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            LocalInstruction* clone = new LocalInstruction(Span(), regValue, localType);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         public inline Type* LocalType() const
         {
@@ -1967,6 +2657,29 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "load ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            ptr->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedPtrResult = ptr->Clone(cloneContext);
+            if (clonedPtrResult.Error()) return clonedPtrResult;
+            Value* clonedPtr = clonedPtrResult.Value();
+            LoadInstruction* clone = new LoadInstruction(Span(), regValue, clonedPtr);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -2025,6 +2738,34 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "elemaddr ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            ptr->Dump();
+            Console.Out() << " : ";
+            indexValue->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedPtrResult = ptr->Clone(cloneContext);
+            if (clonedPtrResult.Error()) return clonedPtrResult;
+            Value* clonedPtr = clonedPtrResult.Value();
+            Result<Value*> clonedIndexValueResult = indexValue->Clone(cloneContext);
+            if (clonedIndexValueResult.Error()) return clonedIndexValueResult;
+            Value* clonedIndexValue = clonedIndexValueResult.Value();
+            ElemAddrInstruction* clone = new ElemAddrInstruction(Span(), regValue, clonedPtr, clonedIndexValue);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -2120,6 +2861,34 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "ptroffset ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            ptr->Dump();
+            Console.Out() << " : ";
+            offset->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedPtrResult = ptr->Clone(cloneContext);
+            if (clonedPtrResult.Error()) return clonedPtrResult;
+            Value* clonedPtr = clonedPtrResult.Value();
+            Result<Value*> clonedOffsetResult = offset->Clone(cloneContext);
+            if (clonedOffsetResult.Error()) return clonedOffsetResult;
+            Value* clonedOffset = clonedOffsetResult.Value();
+            PtrOffsetInstruction* clone = new PtrOffsetInstruction(Span(), regValue, clonedPtr, clonedOffset);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -2194,6 +2963,34 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "ptrdiff ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            leftPtr->Dump();
+            Console.Out() << " : ";
+            rightPtr->Dump();
+            Console.Out() << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedLeftPtrResult = leftPtr->Clone(cloneContext);
+            if (clonedLeftPtrResult.Error()) return clonedLeftPtrResult;
+            Value* clonedLeftPtr = clonedLeftPtrResult.Value();
+            Result<Value*> clonedRightPtrResult = rightPtr->Clone(cloneContext);
+            if (clonedRightPtrResult.Error()) return clonedRightPtrResult;
+            Value* clonedRightPtr = clonedRightPtrResult.Value();
+            PtrDiffInstruction* clone = new PtrDiffInstruction(Span(), regValue, clonedLeftPtr, clonedRightPtr);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            regValue->SetInst(clone);
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -2267,6 +3064,43 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "functionCall ";
+            GetResult()->Dump();
+            Console.Out() << " : ";
+            callee->Dump();
+            Console.Out() << endl();
+            for (Value* arg : args)
+            {
+                Console.Out() << "ARG ";
+                arg->Dump();
+                Console.Out() << endl();
+            }
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Result<RegValue*> regValueResult = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), GetResult()->Reg());
+            if (regValueResult.Error()) return Result<Value*>(ErrorId(regValueResult.GetErrorId()));
+            RegValue* regValue = regValueResult.Value();
+            Result<Value*> clonedCalleeResult = callee->Clone(cloneContext);
+            if (clonedCalleeResult.Error()) return clonedCalleeResult;
+            Value* clonedCallee = clonedCalleeResult.Value();
+            FunctionCallInstruction* clone = new FunctionCallInstruction(Span(), regValue, clonedCallee);
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            List<Value*> clonedArgs;
+            for (Value* arg : args)
+            {
+                Result<Value*> clonedArgResult = arg->Clone(cloneContext);
+                if (clonedArgResult.Error()) return clonedArgResult;
+                Value* clonedArg = clonedArgResult.Value();
+                clonedArgs.Add(clonedArg);
+            }
+            clone->SetArgs(Rvalue(clonedArgs));
+            clone->AddToUses();
+            return Result<Value*>(clone);
         }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -2355,6 +3189,18 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "nop" << endl();
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            NoOperationInstruction* clone = new NoOperationInstruction(Span());
+            clone->SetIndex(Index());
+            clone->SetRegValueIndex(RegValueIndex());
+            clone->AddToUses();
+            return Result<Value*>(clone);
+        }
         [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -2432,24 +3278,33 @@ namespace intermediate
             Function* fn = Parent();
             return this == fn->LastBasicBlock();
         }
-        [nodiscard]
-        public Result<bool> AddInstruction(Instruction* instruction, bool mapInstruction)
+        public void AddInstruction(Instruction* instruction, bool mapInstruction)
         {
             instructions.AddChild(instruction);
             if (mapInstruction && instruction->IsValueInstruction())
             {
                 ValueInstruction* valueInstruction = cast<ValueInstruction*>(instruction);
                 Function* function = Parent();
-                Context* context = function->Parent()->GetContext();
-                auto result = function->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
-                if (result.Error()) return result;
+                function->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
             }
-            return Result<bool>(true);
         }
-        [nodiscard]
-        public Result<bool> AddInstruction(Instruction* instruction)
+        public void AddInstruction(Instruction* instruction)
         {
-            return AddInstruction(instruction, true);
+            AddInstruction(instruction, true);
+        }
+        public UniquePtr<Instruction> RemoveInstruction(Instruction* instruction)
+        {
+            return UniquePtr<Instruction>(cast<Instruction*>(instructions.RemoveChild(instruction).Release()));
+        }
+        public void InsertInstructionAfter(Instruction* instruction, Instruction* after)
+        {
+            instructions.InsertAfter(instruction, after);
+            if (instruction->IsValueInstruction())
+            {
+                ValueInstruction* valueInstruction = cast<ValueInstruction*>(instruction);
+                Function* function = Parent();
+                function->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+            }
         }
         [nodiscard]
         public Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -2479,6 +3334,28 @@ namespace intermediate
                     }
                     first = false;
                 }
+                inst = inst->Next();
+            }
+            return Result<bool>(true);
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            BasicBlock* clone = new BasicBlock(Span(), id);
+            cloneContext.MapBasicBlock(this, clone);
+            return Result<Value*>(clone);
+        }
+        [nodiscard]
+        public Result<bool> CloneInstructions(CloneContext& cloneContext, BasicBlock* to)
+        {
+            Instruction* inst = FirstInstruction();
+            while (inst != null)
+            {
+                Result<Value*> cloneResult = inst->Clone(cloneContext);
+                if (cloneResult.Error()) return Result<bool>(ErrorId(cloneResult.GetErrorId()));
+                Value* clone = cloneResult.Value();
+                Instruction* clonedInst = cast<Instruction*>(clone);
+                cloneContext.MapInstruction(inst, clonedInst);
+                to->AddInstruction(clonedInst);
                 inst = inst->Next();
             }
             return Result<bool>(true);
@@ -2528,12 +3405,7 @@ namespace intermediate
                     Type* paramType = functionType->ParamType(i);
                     #assert(paramType != null);
                     Instruction* paramInst = new ParamInstruction(span_, MakeNextRegValue(paramType));
-                    Result<bool> addResult = entryBlock->AddInstruction(paramInst);
-                    if (addResult.Error())
-                    {
-                        errorId = addResult.GetErrorId();
-                        return;
-                    }
+                    entryBlock->AddInstruction(paramInst);
                     params.Add(paramInst);
                 }
             }
@@ -2545,6 +3417,10 @@ namespace intermediate
         public inline const string& Name() const
         {
             return name;
+        }
+        public inline const FunctionType* FnType() const
+        {
+            return functionType;
         }
         public override string ToString() const
         {
@@ -2652,8 +3528,7 @@ namespace intermediate
                         valueInst->SetRegValueIndex(nextRegNumber++);
                         valueInst->GetResult()->SetReg(valueInst->RegValueIndex());
                         MapRegValue(valueInst->GetResult());
-                        Result<bool> result = MapInstruction(valueInst->RegValueIndex(), valueInst);
-                        if (result.Error()) return result;
+                        MapInstruction(valueInst->RegValueIndex(), valueInst);
                     }
                     inst = inst->Next();
                 }
@@ -2726,6 +3601,11 @@ namespace intermediate
             basicBlockMap[id] = basicBlock;
             return Result<BasicBlock*>(basicBlock);
         }
+        public void AddBasicBlock(BasicBlock* basicBlock)
+        {
+            basicBlocks.AddChild(basicBlock);
+            basicBlockMap[basicBlock->Id()] = basicBlock;
+        }
         public Value* Param(int index) const
         {
             return params[index];
@@ -2760,7 +3640,8 @@ namespace intermediate
             if (prev != null)
             {
                 Context* context = Parent()->GetContext();
-                return Result<RegValue*>(ErrorId(Error("error adding register " + ToString(reg) + ": register not unique", span, prev->Span(), context)));
+                int errorId = Error("error adding register " + ToString(reg) + ": register not unique", span, prev->Span(), context);
+                return Result<RegValue*>(ErrorId(errorId));
             }
             #assert(type != null);
             RegValue* regValue = new RegValue(span, type, reg);
@@ -2792,7 +3673,7 @@ namespace intermediate
                 else
                 {
                     Context* context = Parent()->GetContext();
-                    int errorId = Error("error referencing register value " + ToString(reg) + ": type conflick", span, regValue->Span(), context);
+                    int errorId = Error("error referencing register value " + ToString(reg) + ": type conflict", span, regValue->Span(), context);
                     return Result<RegValue*>(ErrorId(errorId));
                 }
             }
@@ -2807,6 +3688,16 @@ namespace intermediate
         {
             regValueMap[regValue->Reg()] = regValue;
         }
+        public void MoveRegValuesTo(Function* toFunction)
+        {
+            for (auto& regValue : regValues)
+            {
+                if (regValue->Inst() == null) continue;
+                regValue->SetReg(toFunction->GetNextRegNumber());
+                toFunction->MapRegValue(regValue.Get());
+                toFunction->regValues.Add(Rvalue(regValue));
+            }
+        }
         public Instruction* GetInstruction(int reg) const
         {
             auto it = instructionMap.Find(reg);
@@ -2819,18 +3710,9 @@ namespace intermediate
                 return null;
             }
         }
-        [nodiscard]
-        public Result<bool> MapInstruction(int reg, ValueInstruction* inst)
+        public void MapInstruction(int reg, ValueInstruction* inst)
         {
-            Instruction* prev = GetInstruction(reg);
-            if (prev != null)
-            {
-                Context* context = Parent()->GetContext();
-                int errorId = Error("error mapping instruction " + ToString(reg) + ": register not unique", inst->Span(), prev->Span(), context);
-                return Result<bool>(ErrorId(errorId));
-            }
             instructionMap[reg] = inst;
-            return Result<bool>(true);
         }
         public inline FunctionFlags Flags() const
         {
@@ -2924,6 +3806,87 @@ namespace intermediate
         {
             errorId = errorId_;
         }
+        public inline int NumBasicBlocks() const
+        {
+            return cast<int>(basicBlockMap.Count());
+        }
+        public override Result<Value*> Clone(CloneContext& cloneContext) const
+        {
+            Code* code = Parent();
+            Context* context = code->GetContext();
+            Function* clone = new Function(context, code->Functions(), Span(), GetType(), name, IsDefined(), metadataRef, true);
+            clone->SetMdId(mdId);
+            string fullName = ResolveFullName();
+            if (!fullName.IsEmpty())
+            {
+                clone->SetComment(fullName);
+            }
+            cloneContext.SetContext(code->GetContext());
+            cloneContext.SetCurrentFunction(clone);
+            BasicBlock* bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                Result<Value*> cloneResult = bb->Clone(cloneContext);
+                if (cloneResult.Error()) return cloneResult;
+                Value* clonedValue = cloneResult.Value();
+                BasicBlock* clonedBB = cast<BasicBlock*>(clonedValue);
+                clone->AddBasicBlock(clonedBB);
+                bb = bb->Next();
+            }
+            bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                BasicBlock* clonedBB = cloneContext.GetMappedBasicBlock(bb);
+                if (clonedBB != null)
+                {
+                    Result<bool> result = bb->CloneInstructions(cloneContext, clonedBB);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                }
+                else
+                {
+                    int errorId = Error("mapped basic block not found", bb->Span(), context);
+                    return Result<Value*>(ErrorId(errorId));
+                }
+                bb = bb->Next();
+            }
+            for (const auto& instRegValuePair : cloneContext.UnmappedInstructions())
+            {
+                Instruction* inst = instRegValuePair.first;
+                RegValue* regValue = instRegValuePair.second;
+                Instruction* mappedInst = cloneContext.GetMappedInstruction(inst);
+                if (mappedInst != null)
+                {
+                    regValue->SetInst(mappedInst);
+                }
+                else
+                {
+                    int errorId = Error("mapped instruction not found", inst->Span(), context);
+                    return Result<Value*>(ErrorId(errorId));
+                }
+            }
+            return Result<Value*>(clone);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "FUNCTION " << name << endl();
+            for (const auto& regValuePtr : regValues)
+            {
+                RegValue* regValue = regValuePtr.Get();
+                Console.Out() << "REG VALUE " << regValue->Reg() << " : " << cast<ulong>(regValue) << endl();
+            }
+            BasicBlock* bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                Console.Out() << "BASIC BLOCK " << bb->Id() << endl();
+                Instruction* inst = bb->FirstInstruction();
+                while (inst != null)
+                {
+                    inst->Dump();
+                    inst = inst->Next();
+                }
+                bb = bb->Next();
+            }
+        }
         private FunctionFlags flags;
         private string name;
         private FunctionType* functionType;
@@ -2950,6 +3913,10 @@ namespace intermediate
         public inline Context* GetContext() const
         {
             return context;
+        }
+        public inline ComponentContainer* Functions() const
+        {
+            return &functions;
         }
         [nodiscard]
         public Result<bool> VisitFunctions(Visitor& visitor)

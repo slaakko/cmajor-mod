@@ -1,0 +1,12 @@
+using System;
+
+void fn_0()
+{
+    int y = 8;
+    int x = y / 2;
+}
+
+void main()
+{
+    fn_0();
+}

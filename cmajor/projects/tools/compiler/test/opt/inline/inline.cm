@@ -1,0 +1,28 @@
+using System;
+
+public void fn_0()
+{
+    int y = 0;
+    int x = Rvalue(y);
+}
+
+public inline int DoubleSum(int x, int y)
+{
+    int s1 = x + y;
+    int s2 = x + y;
+    return s1 + s2;
+}
+
+public void fn_1()
+{
+    int x = 2;
+    int y = 3;
+    int s = DoubleSum(x, y) + 10;
+    Console.Out() << s << endl();
+}
+
+void main()
+{
+    fn_0();
+    fn_1();
+}

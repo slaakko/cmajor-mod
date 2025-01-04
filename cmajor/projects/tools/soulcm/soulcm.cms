@@ -18,5 +18,5 @@ project <scmpg.parser/scmpg.parser.cmp>;
 project <soul2html/soul2html.cmp>;
 activeProject cml;
 activeBackEnd=cm;
-activeConfig=debug;
-activeOptLevel=2;
+activeConfig=release;
+activeOptLevel=1;

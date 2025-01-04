@@ -10,7 +10,7 @@ namespace intermediate
 {
     public class VerifierVisitor : Visitor
     {
-        public VerifierVisitor(Context* context_) : context(context_)
+        public explicit VerifierVisitor(Context* context_) : context(context_)
         {
         }
         public override void Visit(Function& function)

@@ -702,7 +702,6 @@ namespace binder
                     List<UniquePtr<BoundExpression>> classReturnArgs;
                     classReturnArgs.Add(UniquePtr<BoundExpression>(new BoundParameter(returnStatementNode.GetSpan(), currentFunction->GetFunctionSymbol()->ReturnParam())));
                     bool returnClassDelegateType = returnType->IsClassDelegateTypeSymbol();
-                    BoundStatement* prevStatement = ReleaseStatement();
                     Result<UniquePtr<BoundExpression>> expressionResult = BindExpression(returnStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope,
                         this, false, returnClassDelegateType, returnClassDelegateType);
                     if (expressionResult.Error())
@@ -710,15 +709,6 @@ namespace binder
                         SetErrorId(expressionResult.GetErrorId());
                         return;
                     }
-                    DestroyTemporaries();
-                    BoundStatement* destroyStatement = ReleaseStatement();
-                    if (destroyStatement != null)
-                    {
-                        #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
-                        BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
-                        expressionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
-                    }
-                    SetStatement(prevStatement);
                     UniquePtr<BoundExpression> expression = Rvalue(expressionResult.Value());
                     if (expression->IsBoundLocalVariable())
                     {

@@ -16,3 +16,5 @@ project <System.Xml/System.Xml.cmp>;
 project <System.Xml.Serialization/System.Xml.Serialization.cmp>;
 activeProject System;
 activeBackEnd=llvm;
+activeConfig=release;
+activeOptLevel=2;

@@ -1,0 +1,30 @@
+using System;
+
+void fn_1()
+{
+    int x = 0;
+}
+
+void fn_2()
+{
+    int x = 0;
+    int y = x;
+}
+
+void fn_3()
+{
+    int x = -1;
+}
+
+void fn_4()
+{
+    float x = -1.0f;
+}
+
+void main()
+{
+    fn_1();
+    fn_2();
+    fn_3();
+    fn_4();
+}

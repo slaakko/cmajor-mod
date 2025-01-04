@@ -1,0 +1,18 @@
+using System;
+
+void fn_1()
+{
+    uint x = 0u;
+}
+
+void fn_2()
+{
+    uint x = 0u;
+    uint y = x;
+}
+
+void main()
+{
+    fn_1();
+    fn_2();
+}

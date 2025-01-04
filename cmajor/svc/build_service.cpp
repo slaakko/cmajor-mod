@@ -181,6 +181,8 @@ void BuildService::ExecuteCommand()
         }
         else if (buildCommand->backend == "cm")
         {
+            backend = cmajor::symbols::BackEnd::cm;
+            cmajor::symbols::SetBackEnd(backend);
             result = BuildWithCmMasmCompiler(*buildCommand);
             BuildResultMessage* resultMessage = new BuildResultMessage(result);
             PutServiceMessage(resultMessage);

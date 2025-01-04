@@ -1146,6 +1146,7 @@ namespace binder
                     }
                     Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, flags);
                     if (callResult.Error()) return callResult;
+                    return Result<bool>(true);
                 }
                 else
                 {

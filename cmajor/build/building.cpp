@@ -174,6 +174,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             {
                 astBackEnd = cmajor::ast::BackEnd::masm;
             }
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cm)
+            {
+                astBackEnd = cmajor::ast::BackEnd::cm;
+            }
             if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild))
             {
                 upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd, optLevel));

@@ -1,0 +1,133 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace optimizer
+{
+    public bool IsIdentityOperation(intermediate.Function* fn)
+    {
+        intermediate.FunctionType* functionType = fn->FnType();
+        if (functionType->IsUnaryOperationType())
+        {
+            if (fn->NumBasicBlocks() == 1)
+            {
+                intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+                intermediate.Instruction* inst0 = bb->FirstInstruction();
+                if (inst0 != null && inst0->IsParamInstruction())
+                {
+                    intermediate.Instruction* inst1 = inst0->Next();
+                    if (inst1 != null && inst1->IsLocalInstruction())
+                    {
+                        intermediate.Instruction* inst2 = inst1->Next();
+                        if (inst2 != null && inst2->IsStoreInstruction())
+                        {
+                            intermediate.Instruction* inst3 = inst2->Next();
+                            if (inst3 != null && inst3->IsLoadInstruction())
+                            {
+                                intermediate.Instruction* inst4 = inst3->Next();
+                                if (inst4 != null && inst4->IsRetInstruction())
+                                {
+                                    if (inst4->Next() == null)
+                                    {
+                                        intermediate.Type* paramType = functionType->ParamType(0);
+                                        intermediate.ParamInstruction* paramInst = cast<intermediate.ParamInstruction*>(inst0);
+                                        if (paramInst->GetResult()->GetType() == paramType)
+                                        {
+                                            intermediate.LocalInstruction* localInst = cast<intermediate.LocalInstruction*>(inst1);
+                                            if (localInst->LocalType() == paramType)
+                                            {
+                                                intermediate.StoreInstruction* storeInst = cast<intermediate.StoreInstruction*>(inst2);
+                                                if (storeInst->GetValue()->GetInstruction() == paramInst && storeInst->Ptr()->GetInstruction() == localInst)
+                                                {
+                                                    intermediate.LoadInstruction* loadInst = cast<intermediate.LoadInstruction*>(inst3);
+                                                    if (loadInst->Ptr()->GetInstruction() == localInst)
+                                                    {
+                                                        intermediate.Value* loadedValue = loadInst->GetResult();
+                                                        intermediate.RetInstruction* retInst = cast<intermediate.RetInstruction*>(inst4);
+                                                        if (retInst->ReturnValue() == loadedValue)
+                                                        {
+                                                            Console.Out() << "IDENTITY " << fn->Name() << endl();
+                                                            return true;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    [nodiscard]
+    public Result<bool> RemoveIdentityFunctionCall(intermediate.FunctionCallInstruction* identityFunctionCallInst, intermediate.Context* context)
+    {
+        if (identityFunctionCallInst->Args().Count() != 1)
+        {
+            int errorId = intermediate.Error("one arg expected", identityFunctionCallInst->Span(), context);
+            return Result<bool>(ErrorId(errorId));
+        }
+        intermediate.Instruction* prev = identityFunctionCallInst->Prev();
+        if (prev == null || !prev->IsArgInstruction())
+        {
+            int errorId = intermediate.Error("arg prev instruction expected", identityFunctionCallInst->Span(), context);
+            return Result<bool>(ErrorId(errorId));
+        }
+        intermediate.ArgInstruction* argInst = cast<intermediate.ArgInstruction*>(prev);
+        Result<bool> result = identityFunctionCallInst->ReplaceUsesWith(argInst->Arg());
+        if (result.Error()) return result;
+        intermediate.Instruction* inst = argInst->Arg()->GetInstruction();
+        if (inst != null)
+        {
+            inst->RemoveUser(argInst);
+            inst->RemoveUser(identityFunctionCallInst);
+        }
+        argInst->Parent()->RemoveInstruction(argInst);
+        identityFunctionCallInst->Parent()->RemoveInstruction(identityFunctionCallInst);
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeIdentity(intermediate.Function* fn, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+        while (bb != null)
+        {
+            intermediate.Instruction* inst = bb->FirstInstruction();
+            while (inst != null)
+            {
+                intermediate.Instruction* next = inst->Next();
+                if (inst->IsFunctionCallInstruction())
+                {
+                    intermediate.FunctionCallInstruction* functionCallInst = cast<intermediate.FunctionCallInstruction*>(inst);
+                    intermediate.Function* callee = functionCallInst->CalleeFn();
+                    if (callee != null && IsIdentityOperation(callee))
+                    {
+                        Result<bool> result = RemoveIdentityFunctionCall(functionCallInst, context);
+                        if (result.Error()) return result;
+                        optimized = true;
+                    }
+                }
+                inst = next;
+            }
+            bb = bb->Next();
+        }
+        if (optimized)
+        {
+            Result<bool> result = fn->SetNumbers();
+            if (result.Error()) return result;
+            Console.Out() << "IDENTITY FN FROM " << fn->Name() << " REMOVED" << endl();
+        }
+        return Result<bool>(true);
+    }
+}
+

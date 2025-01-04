@@ -7,8 +7,10 @@ using System;
 
 namespace optimizer
 {
-    public void OptimizeJumps(intermediate.Function* fn)
+    [nodiscard]
+    public Result<bool> OptimizeJumps(intermediate.Function* fn)
     {
+        bool optimized = false;
         intermediate.BasicBlock* bb = fn->FirstBasicBlock();
         while (bb != null)
         {
@@ -28,6 +30,7 @@ namespace optimizer
                 if (target != firstTarget)
                 {
                     jmp->SetTargetBasicBlock(target);
+                    optimized = true;
                 }
             }
             else if (terminator->IsBranchInstruction())
@@ -45,6 +48,7 @@ namespace optimizer
                 if (trueTarget != firstTrueTarget)
                 {
                     branch->SetTrueTargetBasicBlock(trueTarget);
+                    optimized = true;
                 }
                 intermediate.BasicBlock* falseTarget = branch->FalseTargetBasicBlock();
                 intermediate.BasicBlock* firstFalseTarget = falseTarget;
@@ -58,10 +62,17 @@ namespace optimizer
                 if (falseTarget != firstFalseTarget)
                 {
                     branch->SetFalseTargetBasicBlock(falseTarget);
+                    optimized = true;
                 }
             }
             bb = bb->Next();
         }
+        if (optimized)
+        {
+            Result<bool> result = fn->SetNumbers();
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
     }
 }
 
