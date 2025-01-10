@@ -21,7 +21,8 @@ enum class ClassTemplateSpecializationFlags : uint8_t
     none = 0,
     prototype = 1 << 0,
     constraintChecked = 1 << 1,
-    hasFullInstantiation = 1 << 2
+    hasFullInstantiation = 1 << 2,
+    instantiatingAll = 1 << 3
 };
 
 inline ClassTemplateSpecializationFlags operator|(ClassTemplateSpecializationFlags left, ClassTemplateSpecializationFlags right)
@@ -69,6 +70,9 @@ public:
     bool HasFullInstantiation() const { return GetFlag(ClassTemplateSpecializationFlags::hasFullInstantiation); }
     void SetHasFullInstantiation() { SetFlag(ClassTemplateSpecializationFlags::hasFullInstantiation); }
     void ResetHasFullInstantiation() { ResetFlag(ClassTemplateSpecializationFlags::hasFullInstantiation); }
+    bool InstantiatingAll() const { return GetFlag(ClassTemplateSpecializationFlags::instantiatingAll); }
+    void SetInstantiatingAll() { SetFlag(ClassTemplateSpecializationFlags::instantiatingAll); }
+    void ResetInstantiatingAll() { ResetFlag(ClassTemplateSpecializationFlags::instantiatingAll); }
     void SetFlag(ClassTemplateSpecializationFlags flag) { flags = flags | flag; }
     bool GetFlag(ClassTemplateSpecializationFlags flag) const { return (flags & flag) != ClassTemplateSpecializationFlags::none; }
     void ResetFlag(ClassTemplateSpecializationFlags flag) { flags = flags & ~flag; }

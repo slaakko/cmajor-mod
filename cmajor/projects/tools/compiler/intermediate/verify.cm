@@ -177,7 +177,6 @@ namespace intermediate
                     inst.Callee()->GetType()->Name(), inst.Span(), context));
                 return;
             }
-            inst.SetArgs(Rvalue(arguments));
             arguments.Clear();
             inst.AddToUses();
             inst.SetIndex(index++);
@@ -716,7 +715,6 @@ namespace intermediate
             }
             CheckValueInstruction(&inst);
             if (Error()) return;
-            inst.SetArgs(Rvalue(arguments));
             arguments.Clear();
             inst.AddToUses();
             inst.SetIndex(index++);

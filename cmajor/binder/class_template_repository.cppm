@@ -29,7 +29,7 @@ public:
         cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node);
     void BindClassTemplateSpecialization(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, 
         cmajor::ast::Node* node);
-    cmajor::symbols::FunctionSymbol* Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, 
+    cmajor::symbols::FunctionSymbol* Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope,
         BoundFunction* currentFunction, cmajor::ast::Node* node);
     void InstantiateAll(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, 
         BoundFunction* currentFunction, cmajor::ast::Node* node);

@@ -1,0 +1,75 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace optimizer
+{
+    public void Walk(intermediate.BasicBlock* bb, Set<intermediate.BasicBlock*>& reachable)
+    {
+        if (reachable.Find(bb) != reachable.End()) return;
+        reachable.Insert(bb);
+        intermediate.Instruction* terminator = bb->LastInstruction();
+        switch (terminator->GetOpCode())
+        {
+            case intermediate.OpCode.jmp:
+            {
+                intermediate.JmpInstruction* jmpInst = cast<intermediate.JmpInstruction*>(terminator);
+                intermediate.BasicBlock* target = jmpInst->TargetBasicBlock();
+                Walk(target, reachable);
+                break;
+            }
+            case intermediate.OpCode.branch:
+            {
+                intermediate.BranchInstruction* branchInst = cast<intermediate.BranchInstruction*>(terminator);
+                intermediate.BasicBlock* trueTarget = branchInst->TrueTargetBasicBlock();
+                Walk(trueTarget, reachable);
+                intermediate.BasicBlock* falseTarget = branchInst->FalseTargetBasicBlock();
+                Walk(falseTarget, reachable);
+                break;
+            }
+            case intermediate.OpCode.switch_:
+            {
+                intermediate.SwitchInstruction* switchInst = cast<intermediate.SwitchInstruction*>(terminator);
+                intermediate.BasicBlock* defaultBlock = switchInst->DefaultTargetBlock();
+                Walk(defaultBlock, reachable);
+                for (const intermediate.CaseTarget& caseTarget : switchInst->CaseTargets())
+                {
+                    intermediate.BasicBlock* caseBlock = caseTarget.targetBlock;
+                    Walk(caseBlock, reachable);
+                }
+                break;
+            }
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> DeadCodeElimination(intermediate.Function* fn)
+    {
+        bool optimized = false;
+        Set<intermediate.BasicBlock*> reachable;
+        intermediate.BasicBlock* entry = fn->FirstBasicBlock();
+        Walk(entry, reachable);
+        intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+        while (bb != null)
+        {
+            intermediate.BasicBlock* next = bb->Next();
+            if (reachable.Find(bb) == reachable.End())
+            {
+                fn->RemoveBasicBlock(bb);
+                optimized = true;
+            }
+            bb = next;
+        }
+        if (optimized)
+        {
+            Result<bool> result = fn->SetNumbers();
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+}
+

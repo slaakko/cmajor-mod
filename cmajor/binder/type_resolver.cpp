@@ -418,7 +418,7 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
         classTemplateSpecialization = boundCompileUnit.GetSymbolTable().CopyClassTemplateSpecialization(classTemplateSpecialization);
     }
-    if (!classTemplateSpecialization->IsBound())
+    if (!classTemplateSpecialization->IsBound() && (flags & TypeResolverFlags::doNotBind) == TypeResolverFlags::none)
     {
         classTemplateRepository.BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);
     }

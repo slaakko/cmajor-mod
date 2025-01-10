@@ -43,7 +43,8 @@ enum class TypeResolverFlags : uint8_t
 {
     none = 0,
     resolveClassGroup = 1 << 0,
-    createMemberSymbols = 1 << 1
+    createMemberSymbols = 1 << 1,
+    doNotBind = 1 << 2
 };
 
 inline TypeResolverFlags operator&(TypeResolverFlags left, TypeResolverFlags right)

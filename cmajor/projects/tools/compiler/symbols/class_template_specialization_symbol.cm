@@ -55,7 +55,8 @@ namespace symbols
         none = 0u,
         prototype = 1u << 0u,
         constraintChecked = 1u << 1u,
-        hasFullInstantiation = 1u << 2u
+        hasFullInstantiation = 1u << 2u,
+        instantiatingAll = 1u << 3u
     }
 
     public class ClassTemplateSpecializationSymbol : ClassTypeSymbol
@@ -195,6 +196,22 @@ namespace symbols
         public inline void SetHasFullInstantiation()
         {
             SetFlag(ClassTemplateSpecializationFlags.hasFullInstantiation);
+        }
+        public inline void ResetHasFullInstantiation()
+        {
+            ResetFlag(ClassTemplateSpecializationFlags.hasFullInstantiation);
+        }
+        public inline bool InstantiatingAll() const
+        {
+            return GetFlag(ClassTemplateSpecializationFlags.instantiatingAll);
+        }
+        public inline void SetInstantiatingAll()
+        {
+            SetFlag(ClassTemplateSpecializationFlags.instantiatingAll);
+        }
+        public inline void ResetInstantiatingAll()
+        {
+            ResetFlag(ClassTemplateSpecializationFlags.instantiatingAll);
         }
         public inline bool IsConstraintChecked() const
         {

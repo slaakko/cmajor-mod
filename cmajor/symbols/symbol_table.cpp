@@ -1734,6 +1734,14 @@ ClassTemplateSpecializationSymbol* SymbolTable::CopyClassTemplateSpecialization(
     copy->SetFileIndex(source->FileIndex());
     copy->SetModuleId(source->ModuleId());
     copy->SetModule(module);
+    if (source->VmtEmitted())
+    {
+        copy->SetVmtEmitted();
+    }
+    if (source->HasFullInstantiation())
+    {
+        copy->SetHasFullInstantiation();
+    }
     classTemplateSpecializations.push_back(std::unique_ptr<ClassTemplateSpecializationSymbol>(copy));
     derivedTypeMap[copy->TypeId()].clear();
     specializationCopyMap[source] = copy;

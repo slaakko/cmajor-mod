@@ -237,8 +237,8 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     }
 }
 
-cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction,
-    cmajor::ast::Node* node)
+cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, 
+        BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     if (instantiatedMemberFunctions.find(memberFunction) != instantiatedMemberFunctions.cend())
     {
@@ -262,7 +262,9 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
                 return memberFunction;
             }
         }
-        if (classTemplateSpecialization->HasFullInstantiation() && !(cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && memberFunction->IsInline()))
+        if (!classTemplateSpecialization->InstantiatingAll() && 
+            classTemplateSpecialization->HasFullInstantiation() && 
+            !(cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && memberFunction->IsInline()))
         {
             instantiatedMemberFunctions.insert(memberFunction);
             return memberFunction;
@@ -379,7 +381,8 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
         InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+        if ((cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) && 
+            (!classTemplateSpecialization->HasFullInstantiation() || cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && memberFunction->IsInline()))
         {
             cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
             if (compileUnitNode)
@@ -496,6 +499,7 @@ void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpeci
 {
     try
     {
+        classTemplateSpecialization->SetInstantiatingAll();
         BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, node);
         for (cmajor::symbols::FunctionSymbol* memberFunction : classTemplateSpecialization->AllMemberFunctions())
         {
@@ -504,6 +508,7 @@ void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpeci
                 throw cmajor::symbols::Exception("instantiation of member function '" + util::ToUtf8(memberFunction->Name()) + "' failed", memberFunction->GetFullSpan());
             }
         }
+        classTemplateSpecialization->ResetInstantiatingAll();
     }
     catch (const cmajor::symbols::Exception& ex)
     {

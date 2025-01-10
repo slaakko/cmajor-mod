@@ -119,7 +119,71 @@ namespace optimizer
     [nodiscard]
     public Result<bool> MergeManyBasicBlocks(intermediate.Function* fn, intermediate.Function* callee, intermediate.Instruction* callInst, intermediate.Context* context)
     {
-        // todo
+        intermediate.Instruction* lastInst = callInst;
+        intermediate.LocalInstruction* localInst = null;
+        intermediate.Type* returnType = null;
+        intermediate.BasicBlock* targetBB = callInst->Parent()->SplitAfter(callInst);
+        if (callInst->IsFunctionCallInstruction())
+        {
+            returnType = callee->FnType()->ReturnType();
+            Result<intermediate.Type*> ptrTypeResult = returnType->AddPointer(context);
+            if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+            intermediate.Type* ptrType = ptrTypeResult.Value();
+            localInst = new intermediate.LocalInstruction(callInst->Span(), fn->MakeNextRegValue(ptrType), returnType);
+            callInst->Parent()->InsertInstructionAfter(localInst, callInst);
+            lastInst = localInst;
+        }
+        intermediate.BasicBlock* firstMergedBasicBlock = callee->FirstBasicBlock();
+        intermediate.BasicBlock* bbToMerge = firstMergedBasicBlock;
+        while (bbToMerge != null)
+        {
+            intermediate.BasicBlock* next = bbToMerge->Next();
+            UniquePtr<intermediate.BasicBlock> removedBasicBlock = callee->RemoveBasicBlock(bbToMerge);
+            removedBasicBlock->SetId(fn->NextBBNumber());
+            removedBasicBlock->SetContainer(fn->BasicBlocks());
+            intermediate.Instruction* lastInst = removedBasicBlock->LastInstruction();
+            if (lastInst->IsRetInstruction())
+            {
+                intermediate.RetInstruction* retInst = cast<intermediate.RetInstruction*>(lastInst);
+                if (callInst->IsFunctionCallInstruction())
+                {
+                    if (retInst->ReturnValue() != null)
+                    {
+                        intermediate.StoreInstruction* storeInst = new intermediate.StoreInstruction(retInst->Span(), retInst->ReturnValue(), localInst->GetResult());
+                        storeInst->AddToUses();
+                        retInst->Parent()->InsertInstructionAfter(storeInst, retInst);
+                        lastInst = storeInst;
+                    }
+                    else
+                    {
+                        int errorId = intermediate.Error("return value expected", retInst->Span(), context);
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                intermediate.JmpInstruction* jmpInst = new intermediate.JmpInstruction(retInst->Span(), targetBB->Id());
+                jmpInst->SetTargetBasicBlock(targetBB);
+                lastInst->Parent()->InsertInstructionAfter(jmpInst, lastInst);
+                retInst->RemoveFromUses();
+                removedBasicBlock->RemoveInstruction(retInst);
+            }
+            removedBasicBlock->SetContainer(null);
+            fn->InsertBasicBlockBefore(removedBasicBlock.Release(), targetBB);
+            bbToMerge = next;
+        }
+        if (callInst->IsFunctionCallInstruction())
+        {
+            intermediate.LoadInstruction* loadInst = new intermediate.LoadInstruction(localInst->Span(), fn->MakeNextRegValue(returnType), localInst->GetResult());
+            targetBB->InsertFront(loadInst);
+            loadInst->AddToUses();
+            Result<bool> result = callInst->ReplaceUsesWith(loadInst->GetResult());
+            if (result.Error()) return result;
+        }
+        intermediate.JmpInstruction* jmpInst = new intermediate.JmpInstruction(callInst->Span(), firstMergedBasicBlock->Id());
+        jmpInst->SetTargetBasicBlock(firstMergedBasicBlock);
+        callInst->Parent()->InsertInstructionAfter(jmpInst, lastInst);
+        callInst->RemoveFromUses();
+        callInst->Parent()->RemoveInstruction(callInst);
+        callee->MoveRegValuesTo(fn);
         return Result<bool>(true);
     }
 
@@ -205,13 +269,16 @@ namespace optimizer
                     {
                         if (callee != fn)
                         {
-                            if (callee->IsInline() && callee->NumBasicBlocks() == 1)
+                            if (callee->IsInline())
                             {
                                 Result<bool> result = InlineExpand(fn, inst, firstArg, callee, context);
                                 if (result.Error()) return result;
                                 inlined = true;
                                 optimized = true;
-                                Console.Out() << "INLINED " << fn->Name() << " <- " << callee->Name() << endl();
+                                if (callee->NumBasicBlocks() > 1)
+                                {
+                                    Console.Out() << "INLINED MANY " << fn->Name() << " <- " << callee->Name() << endl();
+                                }
                             }
                         }
                     }
@@ -223,8 +290,12 @@ namespace optimizer
                 }
                 bb = bb->Next();
             }
+            if (inlined)
+            {
+                ++inlineCount;
+            }
         }
-        while (inlined && ++inlineCount < inlineDepth);
+        while (inlined && inlineCount < inlineDepth);
         return Result<bool>(true);
     }
 }

@@ -1232,13 +1232,15 @@ namespace binder
             }
             statementBinder->DestroyTemporaries();
             BoundStatement* statement = statementBinder->ReleaseStatement();
-            if (statement != null)
+            if (statement != null  && statement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(statement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
                 leftResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
             }
-            statementBinder->SetStatement(prevStatement);
+            else if (!statementBinder->HasStatement())
+            {
+                statementBinder->SetStatement(prevStatement);
+            }
             prevStatement = statementBinder->ReleaseStatement();
             Result<UniquePtr<BoundExpression>> rightResult = BindExpression(disjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
             if (rightResult.Error())
@@ -1248,13 +1250,15 @@ namespace binder
             }
             statementBinder->DestroyTemporaries();
             statement = statementBinder->ReleaseStatement();
-            if (statement != null)
+            if (statement != null  && statement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(statement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
                 rightResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
             }
-            statementBinder->SetStatement(prevStatement);
+            else if (!statementBinder->HasStatement())
+            {
+                statementBinder->SetStatement(prevStatement);
+            }
             Result<TypeSymbol*> boolResult = symbolTable->GetTypeByName(u"bool");
             if (boolResult.Error())
             {
@@ -1284,13 +1288,15 @@ namespace binder
             }
             statementBinder->DestroyTemporaries();
             BoundStatement* statement = statementBinder->ReleaseStatement();
-            if (statement != null)
+            if (statement != null  && statement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(statement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
                 leftResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
             }
-            statementBinder->SetStatement(prevStatement);
+            else if (!statementBinder->HasStatement())
+            {
+                statementBinder->SetStatement(prevStatement);
+            }
             prevStatement = statementBinder->ReleaseStatement();
             Result<UniquePtr<BoundExpression>> rightResult = BindExpression(conjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
             if (rightResult.Error())
@@ -1300,11 +1306,14 @@ namespace binder
             }
             statementBinder->DestroyTemporaries();
             statement = statementBinder->ReleaseStatement();
-            if (statement != null)
+            if (statement != null  && statement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(statement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
                 rightResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            else if (!statementBinder->HasStatement())
+            {
+                statementBinder->SetStatement(prevStatement);
             }
             statementBinder->SetStatement(prevStatement);
             Result<TypeSymbol*> boolResult = symbolTable->GetTypeByName(u"bool");

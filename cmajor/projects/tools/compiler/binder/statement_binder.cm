@@ -988,13 +988,15 @@ namespace binder
             }
             DestroyTemporaries();
             BoundStatement* destroyStatement = ReleaseStatement();
-            if (destroyStatement != null)
+            if (destroyStatement != null  && destroyStatement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
                 conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
             }
-            SetStatement(prevStatement);
+            else if (!HasStatement())
+            {
+                SetStatement(prevStatement);
+            }
             UniquePtr<BoundExpression>& condition = conditionResult.Value();
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())
@@ -1057,13 +1059,15 @@ namespace binder
             }
             DestroyTemporaries();
             BoundStatement* destroyStatement = ReleaseStatement();
-            if (destroyStatement != null)
+            if (destroyStatement != null  && destroyStatement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
                 conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
             }
-            SetStatement(prevStatement);
+            else if (!HasStatement())
+            {
+                SetStatement(prevStatement);
+            }
             UniquePtr<BoundExpression>& condition = conditionResult.Value();
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())
@@ -1117,13 +1121,15 @@ namespace binder
             }
             DestroyTemporaries();
             BoundStatement* destroyStatement = ReleaseStatement();
-            if (destroyStatement != null)
+            if (destroyStatement != null  && destroyStatement->IsBoundDestroyTemporariesStatement())
             {
-                #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
                 BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
                 conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
             }
-            SetStatement(prevStatement);
+            else if (!HasStatement())
+            {
+                SetStatement(prevStatement);
+            }
             UniquePtr<BoundExpression>& condition = conditionResult.Value();
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())
@@ -1196,13 +1202,15 @@ namespace binder
                 }
                 DestroyTemporaries();
                 BoundStatement* destroyStatement = ReleaseStatement();
-                if (destroyStatement != null)
+                if (destroyStatement != null  && destroyStatement->IsBoundDestroyTemporariesStatement())
                 {
-                    #assert(destroyStatement->IsBoundDestroyTemporariesStatement());
                     BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(destroyStatement);
                     conditionResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
                 }
-                SetStatement(prevStatement);
+                else if (!HasStatement())
+                {
+                    SetStatement(prevStatement);
+                }
                 condition = Rvalue(conditionResult.Value());
             }
             else
@@ -2322,7 +2330,6 @@ namespace binder
             if (type->IsClassTemplateSpecializationSymbol())
             {
                 ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(type);
-                if (specialization->HasFullInstantiation()) return;
                 if (GetGlobalFlag(GlobalFlags.verbose))
                 {
                     Result<string> specializationFullNameResult = ToUtf8(specialization->FullName());
@@ -2346,7 +2353,6 @@ namespace binder
                     SetErrorId(result.GetErrorId());
                     return;
                 }
-                specialization->SetHasFullInstantiation();
             }
             else
             {
@@ -2554,6 +2560,10 @@ namespace binder
         public inline BoundStatement* ReleaseStatement()
         {
             return statement.Release();
+        }
+        public inline bool HasStatement() const
+        {
+            return !statement.IsNull();
         }
         private BoundCompileUnit* boundCompileUnit;
         private SymbolTable* symbolTable;

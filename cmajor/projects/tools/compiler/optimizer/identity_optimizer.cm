@@ -70,11 +70,6 @@ namespace optimizer
     [nodiscard]
     public Result<bool> RemoveIdentityFunctionCall(intermediate.FunctionCallInstruction* identityFunctionCallInst, intermediate.Context* context)
     {
-        if (identityFunctionCallInst->Args().Count() != 1)
-        {
-            int errorId = intermediate.Error("one arg expected", identityFunctionCallInst->Span(), context);
-            return Result<bool>(ErrorId(errorId));
-        }
         intermediate.Instruction* prev = identityFunctionCallInst->Prev();
         if (prev == null || !prev->IsArgInstruction())
         {
@@ -123,9 +118,9 @@ namespace optimizer
         }
         if (optimized)
         {
+            Console.Out() << "IDENTITY FUNCTION CALLS FROM " << fn->Name() << " REMOVED" << endl();
             Result<bool> result = fn->SetNumbers();
             if (result.Error()) return result;
-            Console.Out() << "IDENTITY FN FROM " << fn->Name() << " REMOVED" << endl();
         }
         return Result<bool>(true);
     }

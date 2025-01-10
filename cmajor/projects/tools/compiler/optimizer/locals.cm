@@ -1,0 +1,40 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace optimizer
+{
+    public void MoveLocalsToEntryBlock(intermediate.Function* fn)
+    {
+        intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+        intermediate.BasicBlock* entryBlock = bb;
+        intermediate.Instruction* lastEntryBlockLocal = null;
+        while (bb != null)
+        {
+            intermediate.Instruction* inst = bb->FirstInstruction();
+            while (inst != null)
+            {
+                intermediate.Instruction* next = inst->Next();
+                if (inst->IsLocalInstruction())
+                {
+                    if (bb == entryBlock)
+                    {
+                        lastEntryBlockLocal = inst;
+                    }
+                    else
+                    {
+                        UniquePtr<intermediate.Instruction> removedLocal = inst->Parent()->RemoveInstruction(inst);
+                        entryBlock->Instructions()->InsertAfter(removedLocal.Release(), lastEntryBlockLocal);
+                        lastEntryBlockLocal = inst;
+                    }
+                }
+                inst = next;
+            }
+            bb = bb->Next();
+        }
+    }
+}
+

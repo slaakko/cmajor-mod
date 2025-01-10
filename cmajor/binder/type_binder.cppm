@@ -77,6 +77,7 @@ public:
     void Visit(cmajor::ast::EnumTypeNode& enumTypeNode) override;
     void Visit(cmajor::ast::EnumConstantNode& enumConstantNode) override;
     void Visit(cmajor::ast::GlobalVariableNode& globalVariableNode) override;
+    void Visit(cmajor::ast::FullInstantiationRequestNode& fullInstantiationRequestNode) override;
 
     void SetContainerScope(cmajor::symbols::ContainerScope* containerScope_) { containerScope = containerScope_; }
     void SetCurrentFunctionSymbol(cmajor::symbols::FunctionSymbol* currentFunctionSymbol_) { currentFunctionSymbol = currentFunctionSymbol_; }

@@ -1336,6 +1336,18 @@ void TypeBinder::Visit(cmajor::ast::ConditionalCompilationStatementNode& conditi
     }
 }
 
+void TypeBinder::Visit(cmajor::ast::FullInstantiationRequestNode& fullInstantiationRequestNode)
+{
+    cmajor::symbols::TypeSymbol* type = ResolveType(fullInstantiationRequestNode.TemplateId(), boundCompileUnit, containerScope, TypeResolverFlags::doNotBind);
+    if (type->GetSymbolType() != cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
+    {
+        throw cmajor::symbols::Exception("full instantiation request expects subject template identifier to be a class template specialization",
+            fullInstantiationRequestNode.GetFullSpan());
+    }
+    cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
+    specialization->SetHasFullInstantiation();
+}
+
 void TypeBinder::Visit(cmajor::ast::TypedefNode& typedefNode)
 {
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&typedefNode);

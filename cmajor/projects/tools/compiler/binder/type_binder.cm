@@ -1926,6 +1926,28 @@ namespace binder
             boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundGlobalVariable));
             containerScope = prevContainerScope;
         }
+        public override void Visit(FullInstantiationRequestNode& fullInstantiationRequestNode)
+        {
+            Result<TypeSymbol*> typeResult = ResolveType(fullInstantiationRequestNode.TemplateId(), boundCompileUnit, containerScope, TypeResolverFlags.doNotBind, null);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* type = typeResult.Value();
+            if (type->IsClassTemplateSpecializationSymbol())
+            {
+                ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(type);
+                specialization->SetHasFullInstantiation();
+            }
+            else
+            {
+                int errorId = MakeError("full instantiation request expects subject template identifier to be a class template specialization",
+                    fullInstantiationRequestNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
         public void BindAlias(AliasTypeSymbol* aliasTypeSymbol, AliasNode* aliasNode, bool fromOwnCompileUnit)
         {
             if (aliasTypeSymbol->IsBound()) return;

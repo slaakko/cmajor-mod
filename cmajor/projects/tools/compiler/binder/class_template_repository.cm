@@ -299,7 +299,9 @@ namespace binder
             Symbol* parent = memberFunctionSymbol->Parent();
             #assert(parent->IsClassTemplateSpecializationSymbol());
             ClassTemplateSpecializationSymbol* classTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(parent);
-            if (classTemplateSpecialization->HasFullInstantiation() && !(GetGlobalFlag(GlobalFlags.release) && memberFunctionSymbol->IsInline()))
+            if (!classTemplateSpecialization->InstantiatingAll() &&
+                classTemplateSpecialization->HasFullInstantiation() &&
+                !(GetGlobalFlag(GlobalFlags.release) && memberFunctionSymbol->IsInline()))
             {
                 return memberFunctionSymbol;
             }
@@ -419,16 +421,19 @@ namespace binder
             symbolTable->AddFunctionSymbol(UniquePtr<FunctionSymbol>(memberFunctionSymbol));
             symbolTable->SetCurrentSourceFile(boundCompileUnit->SourceFile());
             InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
-            SourceFileNode* sourceFile = boundCompileUnit->SourceFile();
-            Result<string> sourceFileIdResult = sourceFile->Id();
-            if (sourceFileIdResult.Error()) return Result<FunctionSymbol*>(ErrorId(sourceFileIdResult.GetErrorId()));
-            string sourceFileId = Rvalue(sourceFileIdResult.Value());
-            memberFunctionSymbol->SetSourceFileId(sourceFileId);
-            memberFunctionSymbol->SetFlag(FunctionSymbolFlags.dontReuse);
-            Result<bool> mangleResult = memberFunctionSymbol->ComputeMangledName();
-            if (mangleResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangleResult.GetErrorId()));
-            master->SetInstantiatedName(memberFunctionSymbol->MangledName(), context);
-            boundCompileUnit->SetCanReuse(memberFunctionSymbol);
+            if (!classTemplateSpecialization->HasFullInstantiation() || GetGlobalFlag(GlobalFlags.release) && memberFunctionSymbol->IsInline())
+            {
+                SourceFileNode* sourceFile = boundCompileUnit->SourceFile();
+                Result<string> sourceFileIdResult = sourceFile->Id();
+                if (sourceFileIdResult.Error()) return Result<FunctionSymbol*>(ErrorId(sourceFileIdResult.GetErrorId()));
+                string sourceFileId = Rvalue(sourceFileIdResult.Value());
+                memberFunctionSymbol->SetSourceFileId(sourceFileId);
+                memberFunctionSymbol->SetFlag(FunctionSymbolFlags.dontReuse);
+                Result<bool> mangleResult = memberFunctionSymbol->ComputeMangledName();
+                if (mangleResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangleResult.GetErrorId()));
+                master->SetInstantiatedName(memberFunctionSymbol->MangledName(), context);
+                boundCompileUnit->SetCanReuse(memberFunctionSymbol);
+            }
             symbolTable->BeginContainer(memberFunctionSymbol);
             symbolTable->MapNode(functionInstanceNode, memberFunctionSymbol);
             Result<bool> createResult = CreateSymbols(functionInstanceNode->Body(), symbolTable, boundCompileUnit->Context());
@@ -553,6 +558,7 @@ namespace binder
         public Result<bool> DoInstantiateAll(ClassTemplateSpecializationSymbol* classTemplateSpecialization, ContainerScope* containerScope, BoundFunction* currentFunction,
             Node* node)
         {
+            classTemplateSpecialization->SetInstantiatingAll();
             Result<bool> result = BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, node);
             if (result.Error()) return result;
             for (FunctionSymbol* memberFunction : classTemplateSpecialization->AllMemberFunctions())
@@ -560,6 +566,7 @@ namespace binder
                 Result<FunctionSymbol*> instantiationResult = Instantiate(memberFunction, containerScope, currentFunction, node);
                 if (instantiationResult.Error()) return Result<bool>(ErrorId(instantiationResult.GetErrorId()));
             }
+            classTemplateSpecialization->ResetInstantiatingAll();
             return Result<bool>(true);
         }
         private FunctionSymbol* GetCopy(FunctionSymbol* master) const

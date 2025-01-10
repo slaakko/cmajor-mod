@@ -412,10 +412,8 @@ void StatementBinder::Visit(cmajor::ast::FullInstantiationRequestNode& fullInsta
             fullInstantiationRequestNode.GetFullSpan());
     }
     cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
-    if (specialization->HasFullInstantiation()) return;
     util::LogMessage(module->LogStreamId(), "generating full instantiation of '" + util::ToUtf8(specialization->FullName()) + "'");
     GetBoundCompileUnit().GetClassTemplateRepository().InstantiateAll(specialization, containerScope, currentFunction, &fullInstantiationRequestNode);
-    specialization->SetHasFullInstantiation();
 }
 
 void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructorNode)

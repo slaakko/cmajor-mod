@@ -12,7 +12,7 @@ namespace binder
 {
     public enum TypeResolverFlags : byte
     {
-        none = 0u, resolveClassGroup = 1u << 0u, createMemberSymbols = 1u << 1u
+        none = 0u, resolveClassGroup = 1u << 0u, createMemberSymbols = 1u << 1u, doNotBind = 1u << 2u
     }
 
     public class NamespaceTypeSymbol : TypeSymbol
@@ -419,7 +419,7 @@ namespace binder
                 return;
             }
             ClassTemplateSpecializationSymbol* classTemplateSpecialization = classTemplateSpecializationResult.Value();
-            if (!classTemplateSpecialization->IsBound())
+            if (!classTemplateSpecialization->IsBound() && (flags & TypeResolverFlags.doNotBind) == TypeResolverFlags.none)
             {
                 auto result = classTemplateRepository->BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);
                 if (result.Error())

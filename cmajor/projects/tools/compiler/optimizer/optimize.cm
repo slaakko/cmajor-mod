@@ -17,11 +17,13 @@ namespace optimizer
         jumpTableSwitch = 1u << 3u,
         arithmetic = 1u << 4u,
         identity = 1u << 5u,
-        inln = 1u << 6u,
+        deadCodeElimination = 1u << 6u,
+        moveLocalsToEntryBlock = 1u << 7u,
+        inln = 1u << 8u,
         o0 = none,
-        o1 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity,
-        o2 = inln,
-        o3 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity | inln
+        o1 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity | deadCodeElimination | moveLocalsToEntryBlock,
+        o2 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity | deadCodeElimination | moveLocalsToEntryBlock | inln,
+        o3 = xor | jump | removeNops | jumpTableSwitch | arithmetic | identity | deadCodeElimination | moveLocalsToEntryBlock | inln
     }
 
     internal Optimizations currentOptimizations = Optimizations.o2;
@@ -85,27 +87,119 @@ namespace optimizer
         intermediate.Function* fn = code->FirstFunction();
         while (fn != null)
         {
-            if (HasOptimization(Optimizations.identity))
+            intermediate.Function* next = fn->Next();
+            if (fn->IsDefined())
             {
-                Result<bool> result = OptimizeIdentity(fn, intermediateContext);
-                if (result.Error()) return result;
+                intermediate.CloneContext cloneContext;
+                Result<intermediate.Value*> cloneResult = fn->Clone(cloneContext);
+                if (cloneResult.Error())
+                {
+                    string errorMessage = cloneResult.GetErrorMessage();
+                    Result<bool> result = LogMessage(-1, "error cloning function '" + fn->Name() + "': " + errorMessage);
+                    if (result.Error()) return result;
+                    intermediate.Break();
+                }
+                else
+                {
+                    UniquePtr<intermediate.Function> clonedFn(cast<intermediate.Function*>(cloneResult.Value()));
+                    bool succeeded = true;
+                    if (HasOptimization(Optimizations.deadCodeElimination))
+                    {
+                        Result<bool> result = DeadCodeElimination(fn);
+                        if (result.Error())
+                        {
+                            string errorMessage = result.GetErrorMessage();
+                            result = LogMessage(-1, "error eliminating dead code for function '" + fn->Name() + "': " + errorMessage);
+                            if (result.Error()) return result;
+                            succeeded = false;
+                        }
+                    }
+                    if (succeeded)
+                    {
+                        if (HasOptimization(Optimizations.identity))
+                        {
+                            Result<bool> result = OptimizeIdentity(fn, intermediateContext);
+                            if (result.Error())
+                            {
+                                string errorMessage = result.GetErrorMessage();
+                                result = LogMessage(-1, "error optimizing identity calls for function '" + fn->Name() + "': " + errorMessage);
+                                if (result.Error()) return result;
+                                succeeded = false;
+                            }
+                        }
+                    }
+                    if (succeeded)
+                    {
+                        if (HasOptimization(Optimizations.inln))
+                        {
+                            Result<bool> result = InlineExpand(fn, intermediateContext);
+                            if (result.Error())
+                            {
+                                string errorMessage = result.GetErrorMessage();
+                                result = LogMessage(-1, "error inlining function '" + fn->Name() + "': " + errorMessage);
+                                if (result.Error()) return result;
+                                succeeded = false;
+                            }
+                        }
+                    }
+                    if (succeeded)
+                    {
+                        if (HasOptimization(Optimizations.moveLocalsToEntryBlock))
+                        {
+                            MoveLocalsToEntryBlock(fn);
+                        }
+                    }
+                    if (succeeded)
+                    {
+                        if (HasOptimization(Optimizations.arithmetic))
+                        {
+                            Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
+                            if (result.Error())
+                            {
+                                string errorMessage = result.GetErrorMessage();
+                                result = LogMessage(-1, "error optimizing arithmetic for function '" + fn->Name() + "': " + errorMessage);
+                                if (result.Error()) return result;
+                                succeeded = false;
+                            }
+                        }
+                    }
+                    if (succeeded)
+                    {
+                        if (HasOptimization(Optimizations.jump))
+                        {
+                            Result<bool> result = OptimizeJumps(fn);
+                            if (result.Error())
+                            {
+                                string errorMessage = result.GetErrorMessage();
+                                result = LogMessage(-1, "error optimizing jumps for function '" + fn->Name() + "': " + errorMessage);
+                                if (result.Error()) return result;
+                                succeeded = false;
+                            }
+                        }
+                    }
+                    if (succeeded)
+                    {
+                        if (HasOptimization(Optimizations.deadCodeElimination))
+                        {
+                            Result<bool> result = DeadCodeElimination(fn);
+                            if (result.Error())
+                            {
+                                string errorMessage = result.GetErrorMessage();
+                                result = LogMessage(-1, "error eliminating dead code for function '" + fn->Name() + "': " + errorMessage);
+                                if (result.Error()) return result;
+                                succeeded = false;
+                            }
+                        }
+                    }
+                    if (!succeeded)
+                    {
+                        code->Functions()->InsertBefore(clonedFn.Release(), fn);
+                        code->Functions()->RemoveChild(fn);
+                        intermediate.Break();
+                    }
+                }
             }
-            if (HasOptimization(Optimizations.inln))
-            {
-                Result<bool> result = InlineExpand(fn, intermediateContext);
-                if (result.Error()) return result;
-            }
-            if (HasOptimization(Optimizations.arithmetic))
-            {
-                Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
-                if (result.Error()) return result;
-            }
-            if (HasOptimization(Optimizations.jump))
-            {
-                Result<bool> result = OptimizeJumps(fn);
-                if (result.Error()) return result;
-            }
-            fn = fn->Next();
+            fn = next;
         }
         return Result<bool>(true);
     }

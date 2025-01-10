@@ -8,6 +8,10 @@ using System.Collections;
 
 namespace intermediate
 {
+    public void Break()
+    {
+    }
+
     public enum OpCode : byte
     {
         store, arg, jmp, branch, procedure_call, ret, switch_,
@@ -1031,12 +1035,6 @@ namespace intermediate
             Console.Out() << "procedure call ";
             callee->Dump();
             Console.Out() << endl();
-            for (Value* arg : args)
-            {
-                Console.Out() << "ARG ";
-                arg->Dump();
-                Console.Out() << endl();
-            }
         }
         public override Result<Value*> Clone(CloneContext& cloneContext) const
         {
@@ -1046,15 +1044,6 @@ namespace intermediate
             ProcedureCallInstruction* clone = new ProcedureCallInstruction(Span(), clonedCallee);
             clone->SetIndex(Index());
             clone->SetRegValueIndex(RegValueIndex());
-            List<Value*> clonedArgs;
-            for (Value* arg : args)
-            {
-                Result<Value*> clonedArgResult = arg->Clone(cloneContext);
-                if (clonedArgResult.Error()) return clonedArgResult;
-                Value* clonedArg = clonedArgResult.Value();
-                clonedArgs.Add(clonedArg);
-            }
-            clone->SetArgs(Rvalue(clonedArgs));
             clone->AddToUses();
             return Result<Value*>(clone);
         }
@@ -1086,31 +1075,15 @@ namespace intermediate
             }
             return null;
         }
-        public inline const List<Value*>& Args() const
-        {
-            return args;
-        }
-        public void SetArgs(List<Value*>&& args_)
-        {
-            args = args_;
-        }
         public override List<Instruction*> Uses() const
         {
             List<Instruction*> uses;
             AddToUsesList(uses, callee);
-            for (Value* arg : args)
-            {
-                AddToUsesList(uses, arg);
-            }
             return uses;
         }
         public override void AddToUses()
         {
             intermediate.AddUser(this, callee);
-            for (Value* arg : args)
-            {
-                intermediate.AddUser(this, arg);
-            }
         }
         public override void ReplaceValue(Value* use, Value* value)
         {
@@ -1120,18 +1093,8 @@ namespace intermediate
                 callee = value;
                 intermediate.AddUser(this, callee);
             }
-            for (Value* arg : args)
-            {
-                if (arg == use)
-                {
-                    intermediate.RemoveUser(this, arg);
-                    arg = value;
-                    intermediate.AddUser(this, arg);
-                }
-            }
         }
         private Value* callee;
-        private List<Value*> args;
     }
 
     public class RetInstruction : Instruction
@@ -3072,12 +3035,6 @@ namespace intermediate
             Console.Out() << " : ";
             callee->Dump();
             Console.Out() << endl();
-            for (Value* arg : args)
-            {
-                Console.Out() << "ARG ";
-                arg->Dump();
-                Console.Out() << endl();
-            }
         }
         public override Result<Value*> Clone(CloneContext& cloneContext) const
         {
@@ -3090,15 +3047,6 @@ namespace intermediate
             FunctionCallInstruction* clone = new FunctionCallInstruction(Span(), regValue, clonedCallee);
             clone->SetIndex(Index());
             clone->SetRegValueIndex(RegValueIndex());
-            List<Value*> clonedArgs;
-            for (Value* arg : args)
-            {
-                Result<Value*> clonedArgResult = arg->Clone(cloneContext);
-                if (clonedArgResult.Error()) return clonedArgResult;
-                Value* clonedArg = clonedArgResult.Value();
-                clonedArgs.Add(clonedArg);
-            }
-            clone->SetArgs(Rvalue(clonedArgs));
             clone->AddToUses();
             return Result<Value*>(clone);
         }
@@ -3119,14 +3067,6 @@ namespace intermediate
             if (result.Error()) return result;
             return Result<bool>(true);
         }
-        public inline const List<Value*>& Args() const
-        {
-            return args;
-        }
-        public void SetArgs(List<Value*>&& args_)
-        {
-            args = args_;
-        }
         public inline Value* Callee() const
         {
             return callee;
@@ -3144,19 +3084,11 @@ namespace intermediate
         {
             List<Instruction*> uses;
             AddToUsesList(uses, callee);
-            for (Value* arg : args)
-            {
-                AddToUsesList(uses, arg);
-            }
             return uses;
         }
         public override void AddToUses()
         {
             intermediate.AddUser(this, callee);
-            for (Value* arg : args)
-            {
-                intermediate.AddUser(this, arg);
-            }
         }
         public override void ReplaceValue(Value* use, Value* value)
         {
@@ -3166,18 +3098,8 @@ namespace intermediate
                 callee = value;
                 intermediate.AddUser(this, callee);
             }
-            for (Value* arg : args)
-            {
-                if (arg == use)
-                {
-                    intermediate.RemoveUser(this, arg);
-                    arg = value;
-                    intermediate.AddUser(this, arg);
-                }
-            }
         }
         private Value* callee;
-        private List<Value*> args;
     }
 
     public class NoOperationInstruction : Instruction
@@ -3263,15 +3185,32 @@ namespace intermediate
         {
             return cast<Instruction*>(instructions.LastChild());
         }
+        public inline ComponentContainer* Instructions() const
+        {
+            return &instructions;
+        }
         public Instruction* Leader() const
         {
             Instruction* leader = FirstInstruction();
-            while (leader != null && (leader->IsNopInstruction() || leader->IsLocalInstruction()))
+            while (leader != null && leader->IsNopInstruction())
             {
                 leader = leader->Next();
             }
             #assert(leader != null);
             return leader;
+        }
+        public bool ContainsOnlyLocalsAndNops() const
+        {
+            Instruction* inst = FirstInstruction();
+            while (inst != null && !inst->IsTerminator())
+            {
+                if (!inst->IsLocalInstruction() && !inst->IsNopInstruction())
+                {
+                    return false;
+                }
+                inst = inst->Next();
+            }
+            return true;
         }
         public bool IsLast() const
         {
@@ -3281,12 +3220,15 @@ namespace intermediate
         public void AddInstruction(Instruction* instruction, bool mapInstruction)
         {
             instructions.AddChild(instruction);
+            Function* fn = Parent();
+            int nextRegNumber = fn->NextRegNumber();
             if (mapInstruction && instruction->IsValueInstruction())
             {
                 ValueInstruction* valueInstruction = cast<ValueInstruction*>(instruction);
-                Function* function = Parent();
-                function->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+                fn->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+                nextRegNumber = Max(valueInstruction->GetResult()->Reg() + 1, nextRegNumber);
             }
+            fn->SetNextRegNumber(nextRegNumber);
         }
         public void AddInstruction(Instruction* instruction)
         {
@@ -3299,12 +3241,58 @@ namespace intermediate
         public void InsertInstructionAfter(Instruction* instruction, Instruction* after)
         {
             instructions.InsertAfter(instruction, after);
+            Function* fn = Parent();
+            int nextRegNumber = fn->NextRegNumber();
             if (instruction->IsValueInstruction())
             {
                 ValueInstruction* valueInstruction = cast<ValueInstruction*>(instruction);
-                Function* function = Parent();
-                function->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+                fn->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+                nextRegNumber = Max(valueInstruction->GetResult()->Reg() + 1, nextRegNumber);
             }
+            fn->SetNextRegNumber(nextRegNumber);
+        }
+        public BasicBlock* SplitAfter(Instruction* instruction)
+        {
+            Function* fn = Parent();
+            UniquePtr<BasicBlock> newBB(new BasicBlock(Span(), fn->NextBBNumber()));
+            BasicBlock* nbb = newBB.Get();
+            fn->InsertBasicBlockAfter(newBB.Release(), instruction->Parent());
+            instruction = instruction->Next();
+            while (instruction != null)
+            {
+                Instruction* next = instruction->Next();
+                UniquePtr<Instruction> removedInst = instruction->Parent()->RemoveInstruction(instruction);
+                if (removedInst->IsValueInstruction())
+                {
+                    ValueInstruction* valueInst = cast<ValueInstruction*>(removedInst.Get());
+                    valueInst->SetRegValueIndex(fn->GetNextRegNumber());
+                    valueInst->GetResult()->SetReg(valueInst->RegValueIndex());
+                    fn->MapRegValue(valueInst->GetResult());
+                }
+                nbb->AddInstruction(removedInst.Release(), false);
+                instruction = next;
+            }
+            return nbb;
+        }
+        public void InsertFront(Instruction* instruction)
+        {
+            Function* fn = Parent();
+            int nextRegNumber = fn->NextRegNumber();
+            if (instructions.IsEmpty())
+            {
+                instructions.AddChild(instruction);
+            }
+            else
+            {
+                instructions.InsertBefore(instruction, instructions.FirstChild());
+            }
+            if (instruction->IsValueInstruction())
+            {
+                ValueInstruction* valueInstruction = cast<ValueInstruction*>(instruction);
+                fn->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+                nextRegNumber = Max(valueInstruction->GetResult()->Reg() + 1, nextRegNumber);
+            }
+            fn->SetNextRegNumber(nextRegNumber);
         }
         [nodiscard]
         public Result<bool> Write(System.Text.CodeFormatter& formatter)
@@ -3536,6 +3524,28 @@ namespace intermediate
             }
             return Result<bool>(true);
         }
+        public Result<Value*> ResolveRegValue(Value* value)
+        {
+            if (value == null)
+            {
+                return Result<Value*>(cast<Value*>(null));
+            }
+            else if (value->IsRegValue())
+            {
+                RegValue* regValue = cast<RegValue*>(value);
+                RegValue* rv = GetRegValue(regValue->Reg());
+                if (rv != null)
+                {
+                    return Result<Value*>(rv);
+                }
+                else
+                {
+                    int errorId = Error("value for reg " + regValue->Reg() + " not resolved", value->Span(), Parent()->GetContext());
+                    return Result<Value*>(ErrorId(errorId));
+                }
+            }
+            return Result<Value*>(value);
+        }
         public inline Code* Parent() const
         {
             #assert(GetContainer() != null);
@@ -3576,6 +3586,10 @@ namespace intermediate
         {
             return cast<BasicBlock*>(basicBlocks.LastChild());
         }
+        public inline ComponentContainer* BasicBlocks() const
+        {
+            return &basicBlocks;
+        }
         public BasicBlock* GetBasicBlock(int id) const
         {
             auto it = basicBlockMap.Find(id);
@@ -3599,12 +3613,28 @@ namespace intermediate
             BasicBlock* basicBlock = new BasicBlock(span, id);
             basicBlocks.AddChild(basicBlock);
             basicBlockMap[id] = basicBlock;
+            nextBBNumber = Max(id + 1, nextBBNumber);
             return Result<BasicBlock*>(basicBlock);
         }
         public void AddBasicBlock(BasicBlock* basicBlock)
         {
             basicBlocks.AddChild(basicBlock);
             basicBlockMap[basicBlock->Id()] = basicBlock;
+            nextBBNumber = Max(basicBlock->Id() + 1, nextBBNumber);
+        }
+        public UniquePtr<BasicBlock> RemoveBasicBlock(BasicBlock* basicBlock)
+        {
+            return UniquePtr<BasicBlock>(cast<BasicBlock*>(basicBlocks.RemoveChild(basicBlock).Release()));
+        }
+        public void InsertBasicBlockBefore(BasicBlock* bb, BasicBlock* before)
+        {
+            basicBlocks.InsertBefore(bb, before);
+            nextBBNumber = Max(bb->Id() + 1, nextBBNumber);
+        }
+        public void InsertBasicBlockAfter(BasicBlock* bb, BasicBlock* after)
+        {
+            basicBlocks.InsertAfter(bb, after);
+            nextBBNumber = Max(bb->Id() + 1, nextBBNumber);
         }
         public Value* Param(int index) const
         {
@@ -3621,6 +3651,14 @@ namespace intermediate
             BasicBlock* bb = new BasicBlock(Span(), NextBBNumber());
             basicBlocks.AddChild(bb);
             return bb;
+        }
+        public inline int NextRegNumber() const
+        {
+            return nextRegNumber;
+        }
+        public inline void SetNextRegNumber(int nextRegNumber_)
+        {
+            nextRegNumber = nextRegNumber_;
         }
         public inline int GetNextRegNumber()
         {
@@ -3840,7 +3878,12 @@ namespace intermediate
                 if (clonedBB != null)
                 {
                     Result<bool> result = bb->CloneInstructions(cloneContext, clonedBB);
-                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    if (result.Error())
+                    {
+                        string errorMessage = "error cloning instructions of function '" + name + "': " + RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                        int errorId = AllocateError(errorMessage);
+                        return Result<Value*>(ErrorId(errorId));
+                    }
                 }
                 else
                 {

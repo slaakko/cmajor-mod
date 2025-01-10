@@ -1,0 +1,38 @@
+using System;
+
+inline bool Foo(bool value)
+{
+    if (value)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void fn()
+{
+    if (!Foo(false))
+    {
+        Console.Out() << "yep" << endl();
+    }
+    else
+    {
+        Console.Out() << "nope" << endl();
+    }
+    if (Foo(true))
+    {
+        Console.Out() << "yep" << endl();
+    }
+    else
+    {
+        Console.Out() << "nope" << endl();
+    }
+}
+
+void main()
+{
+    fn();
+}

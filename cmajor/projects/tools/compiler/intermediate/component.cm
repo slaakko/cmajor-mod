@@ -16,7 +16,7 @@ namespace intermediate
         {
             return container;
         }
-        internal inline void SetContainer(ComponentContainer* container_)
+        public inline void SetContainer(ComponentContainer* container_)
         {
             container = container_;
         }

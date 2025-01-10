@@ -127,7 +127,7 @@ namespace intermediate
         }
         public virtual void Dump()
         {
-            Console.Out() << "VALUE" << endl();
+            Console.Out() << "VALUE";
         }
         public virtual string ToString() const
         {
@@ -353,6 +353,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "BOOL " << value;
+        }
         public inline bool GetValue() const
         {
             return value;
@@ -376,6 +380,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "SBYTE " << value;
         }
         public inline sbyte GetValue() const
         {
@@ -421,6 +429,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "BYTE " << value;
+        }
         public inline byte GetValue() const
         {
             return value;
@@ -464,6 +476,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "SHORT " << value;
         }
         public inline short GetValue() const
         {
@@ -509,6 +525,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "USHORT " << value;
+        }
         public inline ushort GetValue() const
         {
             return value;
@@ -552,6 +572,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "INT " << value;
         }
         public inline int GetValue() const
         {
@@ -597,6 +621,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "UINT " << value;
+        }
         public inline uint GetValue() const
         {
             return value;
@@ -640,6 +668,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "LONG " << value;
         }
         public inline long GetValue() const
         {
@@ -685,6 +717,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "ULONG " << value;
+        }
         public inline ulong GetValue() const
         {
             return value;
@@ -729,6 +765,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "FLOAT " << value;
+        }
         public inline float GetValue() const
         {
             return value;
@@ -749,6 +789,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "DOUBLE " << value;
+        }
         public inline double GetValue() const
         {
             return value;
@@ -764,6 +808,10 @@ namespace intermediate
     {
         public NullValue(const System.Lex.Span& span_, Type* type_) : base(ValueKind.nullValue, span_, type_)
         {
+        }
+        public override void Dump()
+        {
+            Console.Out() << "NULL";
         }
         public override void Accept(Visitor& visitor)
         {
@@ -788,6 +836,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "ADDRESS " << id;
         }
         public inline const string& Id() const
         {
@@ -818,6 +870,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "ARRAY";
         }
         public override string ToString() const
         {
@@ -862,6 +918,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "STRUCTURE";
+        }
         public override string ToString() const
         {
             string s = "{ ";
@@ -903,6 +963,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "STRING";
         }
         public inline const string& GetValue() const
         {
@@ -979,6 +1043,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "STRING ARRAY";
+        }
         public inline char Prefix() const
         {
             return prefix;
@@ -1043,6 +1111,10 @@ namespace intermediate
         {
             visitor.Visit(*this);
         }
+        public override void Dump()
+        {
+            Console.Out() << "SYMBOL " << symbol;
+        }
         public inline const string& Symbol() const
         {
             return symbol;
@@ -1081,6 +1153,10 @@ namespace intermediate
         public override void Accept(Visitor& visitor)
         {
             visitor.Visit(*this);
+        }
+        public override void Dump()
+        {
+            Console.Out() << "GLOBAL " << name;
         }
         public inline const string& Name() const
         {

@@ -149,7 +149,7 @@ namespace optimizer
             {
                 intermediate.BasicBlock* bb = inst.Parent();
                 intermediate.BasicBlock* next = bb->Next();
-                if (next != null)
+                if (next != null && !inst.Parent()->ContainsOnlyLocalsAndNops())
                 {
                     if (inst.TargetBasicBlock() == next)
                     {
