@@ -1,0 +1,415 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+
+namespace binder
+{
+    public class ControlFlowAnalyzer : BoundNodeVisitor
+    {
+        public ControlFlowAnalyzer() : currentFunction(null), collectLabels(false), resolveGotos(false), errorId(0)
+        {
+        }
+        public override void Visit(BoundCompileUnit& boundCompileUnit)
+        {
+            int n = cast<int>(boundCompileUnit.BoundNodes().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundNode* boundNode = boundCompileUnit.BoundNodes()[i].Get();
+                boundNode->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundNamespace& boundNamespace)
+        {
+            int n = cast<int>(boundNamespace.Members().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundNode* member = boundNamespace.Members()[i].Get();
+                member->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundClass& boundClass)
+        {
+            int n = cast<int>(boundClass.Members().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundNode* member = boundClass.Members()[i].Get();
+                member->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundFunction& boundFunction)
+        {
+            if (!boundFunction.HasGotos()) return;
+            BoundFunction* prevFunction = currentFunction;
+            currentFunction = &boundFunction;
+            bool prevCollectLabels = collectLabels;
+            collectLabels = true;
+            boundFunction.Body()->Accept(*this);
+            if (Error()) return;
+            collectLabels = prevCollectLabels;
+            bool prevResolveGotos = resolveGotos;
+            resolveGotos = true;
+            boundFunction.Body()->Accept(*this);
+            if (Error()) return;
+            resolveGotos = prevResolveGotos;
+            currentFunction = prevFunction;
+        }
+        public override void Visit(BoundSequenceStatement& boundSequenceStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundSequenceStatement);
+                if (Error()) return;
+            }
+            boundSequenceStatement.First()->Accept(*this);
+            if (Error()) return;
+            boundSequenceStatement.Second()->Accept(*this);
+            if (Error()) return;
+        }
+        public override void Visit(BoundCompoundStatement& boundCompoundStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundCompoundStatement);
+                if (Error()) return;
+            }
+            int n = cast<int>(boundCompoundStatement.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundStatement* statement = boundCompoundStatement.Statements()[i].Get();
+                statement->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundReturnStatement& boundReturnStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundReturnStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundIfStatement& boundIfStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundIfStatement);
+                if (Error()) return;
+            }
+            boundIfStatement.ThenS()->Accept(*this);
+            if (Error()) return;
+            if (boundIfStatement.ElseS() != null)
+            {
+                boundIfStatement.ElseS()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundWhileStatement& boundWhileStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundWhileStatement);
+                if (Error()) return;
+            }
+            boundWhileStatement.Statement()->Accept(*this);
+            if (Error()) return;
+        }
+        public override void Visit(BoundDoStatement& boundDoStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundDoStatement);
+                if (Error()) return;
+            }
+            boundDoStatement.Statement()->Accept(*this);
+            if (Error()) return;
+        }
+        public override void Visit(BoundForStatement& boundForStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundForStatement);
+                if (Error()) return;
+            }
+            boundForStatement.InitS()->Accept(*this);
+            if (Error()) return;
+            boundForStatement.LoopS()->Accept(*this);
+            if (Error()) return;
+            boundForStatement.ActionS()->Accept(*this);
+            if (Error()) return;
+        }
+        public override void Visit(BoundSwitchStatement& boundSwitchStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundSwitchStatement);
+                if (Error()) return;
+            }
+            int n = cast<int>(boundSwitchStatement.CaseStatements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundCaseStatement* caseStatement = boundSwitchStatement.CaseStatements()[i].Get();
+                caseStatement->Accept(*this);
+                if (Error()) return;
+            }
+            if (boundSwitchStatement.DefaultStatement() != null)
+            {
+                boundSwitchStatement.DefaultStatement()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundCaseStatement& boundCaseStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundCaseStatement);
+                if (Error()) return;
+            }
+            if (boundCaseStatement.CompoundStatement() != null)
+            {
+                boundCaseStatement.CompoundStatement()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundDefaultStatement& boundDefaultStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundDefaultStatement);
+                if (Error()) return;
+            }
+            if (boundDefaultStatement.CompoundStatement() != null)
+            {
+                boundDefaultStatement.CompoundStatement()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundGotoCaseStatement& boundGotoCaseStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundGotoCaseStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundGotoDefaultStatement& boundGotoDefaultStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundGotoDefaultStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundBreakStatement& boundBreakStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundBreakStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundContinueStatement& boundContinueStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundContinueStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundGotoStatement& boundGotoStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundGotoStatement);
+                if (Error()) return;
+            }
+            if (resolveGotos)
+            {
+                ResolveGoto(boundGotoStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundConstructionStatement& boundConstructionStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundConstructionStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundAssignmentStatement& boundAssignmentStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundAssignmentStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundExpressionStatement& boundExpressionStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundExpressionStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundInitializationStatement& boundInitializationStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundInitializationStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundEmptyStatement& boundEmptyStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundEmptyStatement);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundSetVmtPtrStatement& boundSetVmtPtrStatement)
+        {
+            if (collectLabels)
+            {
+                CollectLabel(boundSetVmtPtrStatement);
+                if (Error()) return;
+            }
+        }
+        private void CollectLabel(BoundStatement& statement)
+        {
+            if (statement.Label().IsEmpty()) return;
+            currentFunction->AddLabeledStatement(&statement);
+            auto it = labelStatementMap.Find(statement.Label());
+            if (it == labelStatementMap.End())
+            {
+                labelStatementMap[statement.Label()] = &statement;
+            }
+            else
+            {
+                Result<string> labelResult = ToUtf8(statement.Label());
+                if (labelResult.Error())
+                {
+                    SetErrorId(labelResult.GetErrorId());
+                    return;
+                }
+                string label = Rvalue(labelResult.Value());
+                int errorId = MakeError("duplicate label '" + label + "'", statement.FullSpan(), it->second->FullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        private void ResolveGoto(BoundGotoStatement& boundGotoStatement)
+        {
+            auto it = labelStatementMap.Find(boundGotoStatement.Target());
+            if (it != labelStatementMap.End())
+            {
+                BoundStatement* targetStatement = it->second;
+                Result<BoundCompoundStatement*> targetBlockResult = targetStatement->Block();
+                if (targetBlockResult.Error())
+                {
+                    SetErrorId(targetBlockResult.GetErrorId());
+                    return;
+                }
+                BoundCompoundStatement* targetBlock = targetBlockResult.Value();
+                boundGotoStatement.SetTargetStatement(targetStatement);
+                boundGotoStatement.SetTargetBlock(targetBlock);
+                Result<BoundCompoundStatement*> gotoBlockResult = boundGotoStatement.Block();
+                if (gotoBlockResult.Error())
+                {
+                    SetErrorId(gotoBlockResult.GetErrorId());
+                    return;
+                }
+                BoundCompoundStatement* gotoBlock = gotoBlockResult.Value();
+                while (gotoBlock != null && gotoBlock != targetBlock)
+                {
+                    if (gotoBlock->Parent() != null)
+                    {
+                        Result<BoundStatement*> parentResult = gotoBlock->StatementParent();
+                        if (parentResult.Error())
+                        {
+                            SetErrorId(parentResult.GetErrorId());
+                            return;
+                        }
+                        BoundStatement* parent = parentResult.Value();
+                        gotoBlockResult = parent->Block();
+                        if (gotoBlockResult.Error())
+                        {
+                            SetErrorId(gotoBlockResult.GetErrorId());
+                            return;
+                        }
+                        gotoBlock = gotoBlockResult.Value();
+                    }
+                    else
+                    {
+                        gotoBlock = null;
+                    }
+                }
+                if (gotoBlock == null)
+                {
+                    Result<string> targetResult = ToUtf8(boundGotoStatement.Target());
+                    if (targetResult.Error())
+                    {
+                        SetErrorId(targetResult.GetErrorId());
+                        return;
+                    }
+                    string target = Rvalue(targetResult.Value());
+                    int errorId = MakeError("goto target '" + target + "' not in enclosing block", boundGotoStatement.FullSpan(), targetStatement->FullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                Result<string> gotoTargetResult = ToUtf8(boundGotoStatement.Target());
+                if (gotoTargetResult.Error())
+                {
+                    SetErrorId(gotoTargetResult.GetErrorId());
+                    return;
+                }
+                string gotoTarget = Rvalue(gotoTargetResult.Value());
+                int errorId = MakeError("goto target '" + gotoTarget + "' not found", boundGotoStatement.FullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private BoundFunction* currentFunction;
+        private bool collectLabels;
+        private bool resolveGotos;
+        private int errorId;
+        private Map<ustring, BoundStatement*> labelStatementMap;
+    }
+    
+    [nodiscard]
+    public Result<bool> AnalyzeControlFlow(BoundCompileUnit* boundCompileUnit)
+    {
+        ControlFlowAnalyzer controlFlowAnalyzer;
+        boundCompileUnit->Accept(controlFlowAnalyzer);
+        int errorId = controlFlowAnalyzer.GetErrorId();
+        if (errorId != 0)
+        {
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+}
+

@@ -1261,6 +1261,22 @@ void* SystemXEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int3
     return callee;
 }
 
+void* SystemXEmitter::GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset)
+{
+    cmajor::systemx::ir::Value* imtsArrayPtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(imtsVmtIndexOffset));
+    cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateLoad(imtsArrayPtrAddr);
+    return imtsArrayPtr;
+}
+
+void* SystemXEmitter::GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount)
+{
+    cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateBitCast(static_cast<cmajor::systemx::ir::Value*>(imtsPtr),
+        context->GetPtrType(context->GetArrayType(context->GetPtrType(context->GetVoidType()), static_cast<uint64_t>(interfaceCount))));
+    cmajor::systemx::ir::Value* imtPtrAddr = context->CreateElemAddr(imtsArrayPtr, context->GetLongValue(interfaceIndex));
+    cmajor::systemx::ir::Value* imtPtr = context->CreateLoad(imtPtrAddr);
+    return imtPtr;
+}
+
 void* SystemXEmitter::GetFunctionIrType(void* functionSymbol) const
 {
     auto it = functionIrTypeMap.find(functionSymbol);
@@ -1292,6 +1308,7 @@ void* SystemXEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex
     return context->CreateLoad(funPtrPtr);
 }
 
+/*
 void* SystemXEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     cmajor::systemx::ir::Value* imtsArrayPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset));
@@ -1304,6 +1321,7 @@ void* SystemXEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfa
     cmajor::systemx::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
     return context->CreateLoad(imtArrayPtr);
 }
+*/
 
 void* SystemXEmitter::GetIrObject(void* symbol) const
 {

@@ -22,7 +22,6 @@ public:
     CodeGenerator(Context* context_, const std::string& assemblyFilePath_);
     Context* Ctx() const { return context; }
     RegisterAllocator* RegAllocator() const { return registerAllocator; }
-    int ExitLabelId() const;
     cmajor::masm::assembly::Function* AssemblyFunction() const { return assemblyFunction; }
     Function* CurrentFunction() const { return currentFunction; }
     const soul::ast::Span& Span() const;
@@ -89,6 +88,10 @@ public:
     void Visit(SymbolValue& value) override;
     void Error(const std::string& message);
     void WriteOutputFile();
+    void ResetLeader() { leader = false; }
+    virtual int ExitLabelId() const;
+    virtual void EmitJumpToExit(RetInstruction& retInst);
+    virtual void EmitBranchJumps(BranchInstruction& branchInst);
 private:
     Context* context;
     cmajor::masm::assembly::File file;

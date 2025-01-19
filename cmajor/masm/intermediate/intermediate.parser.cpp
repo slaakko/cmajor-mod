@@ -1724,7 +1724,7 @@ soul::parser::Match IntermediateParser<LexerT>::DataDefinitions(LexerT& lexer, c
                 }
                 if (match.hit)
                 {
-                    context->ValidateData();
+                    context->ResolveData();
                 }
                 *parentMatch7 = match;
             }
@@ -3380,7 +3380,7 @@ soul::parser::Match IntermediateParser<LexerT>::AddressConstant(LexerT& lexer, c
                                     #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                     if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddressConstant");
                                     #endif
-                                    return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSpan(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString())));
+                                    return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSpan(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()), false));
                                 }
                             }
                             *parentMatch6 = match;
@@ -4920,7 +4920,7 @@ soul::parser::Match IntermediateParser<LexerT>::LiteralValue(LexerT& lexer, cmaj
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "LiteralValue");
                         #endif
-                        return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())));
+                        return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString()), true));
                     }
                 }
                 *parentMatch5 = match;

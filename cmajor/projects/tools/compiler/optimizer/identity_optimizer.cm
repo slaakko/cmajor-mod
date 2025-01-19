@@ -49,7 +49,7 @@ namespace optimizer
                                                         intermediate.RetInstruction* retInst = cast<intermediate.RetInstruction*>(inst4);
                                                         if (retInst->ReturnValue() == loadedValue)
                                                         {
-                                                            Console.Out() << "IDENTITY " << fn->Name() << endl();
+                                                            // Console.Out() << "IDENTITY " << fn->Name() << endl();
                                                             return true;
                                                         }
                                                     }
@@ -118,9 +118,9 @@ namespace optimizer
         }
         if (optimized)
         {
-            Console.Out() << "IDENTITY FUNCTION CALLS FROM " << fn->Name() << " REMOVED" << endl();
             Result<bool> result = fn->SetNumbers();
             if (result.Error()) return result;
+            // Console.Out() << "IDENTITY FUNCTION CALLS FROM " << fn->Name() << " REMOVED" << endl();
         }
         return Result<bool>(true);
     }

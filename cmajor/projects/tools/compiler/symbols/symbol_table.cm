@@ -515,6 +515,37 @@ namespace symbols
             EndContainer();
             currentClass = currentClassStack.Pop();
         }
+        public void BeginInterface(InterfaceNode& interfaceNode)
+        {
+            InterfaceTypeSymbol* interfaceTypeSymbol = new InterfaceTypeSymbol(interfaceNode.GetSpan(), interfaceNode.Id()->Str());
+            currentInterfaceStack.Push(currentInterface);
+            currentInterface = interfaceTypeSymbol;
+            if (instantiatingTemplate)
+            {
+                interfaceTypeSymbol->SetFileIndex(currentFileIndex);
+                interfaceTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                interfaceTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                interfaceTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            interfaceTypeSymbol->SetSourceFile(currentSourceFile);
+            interfaceTypeSymbol->SetModule(module);
+            MapNode(&interfaceNode, interfaceTypeSymbol);
+            SetTypeIdFor(interfaceTypeSymbol);
+            BeginContainer(interfaceTypeSymbol);
+        }
+        [nodiscard]
+        public Result<bool> EndInterface(SymbolsContext& context)
+        {
+            InterfaceTypeSymbol* interfaceTypeSymbol = currentInterface;
+            EndContainer();
+            currentInterface = currentInterfaceStack.Pop();
+            auto result = container->AddMember(interfaceTypeSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         public void BeginStaticConstructor(StaticConstructorNode& staticConstructorNode, int functionIndex)
         {
             StaticConstructorSymbol* staticConstructorSymbol = new StaticConstructorSymbol(staticConstructorNode.GetSpan(), u"@static_constructor");
@@ -739,7 +770,10 @@ namespace symbols
                 }
                 else if (currentInterface != null)
                 {
-                    Result<TypeSymbol*> pointerTypeResult = currentInterface->AddPointer(context);
+                    Result<TypeSymbol*> voidTypeResult = GetTypeByName(u"void");
+                    if (voidTypeResult.Error()) return Result<bool>(ErrorId(voidTypeResult.GetErrorId()));
+                    TypeSymbol* voidType = voidTypeResult.Value();
+                    Result<TypeSymbol*> pointerTypeResult = voidType->AddPointer(context);
                     if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
                     TypeSymbol* pointerType = pointerTypeResult.Value();
                     thisParamType = pointerType;
@@ -1707,6 +1741,7 @@ namespace symbols
         private ClassTypeSymbol* currentClass;
         private Stack<ClassTypeSymbol*> currentClassStack;
         private InterfaceTypeSymbol* currentInterface;
+        private Stack<InterfaceTypeSymbol*> currentInterfaceStack;
         private int parameterIndex;
         private int declarationBlockIndex;
         private int axiomNumber;

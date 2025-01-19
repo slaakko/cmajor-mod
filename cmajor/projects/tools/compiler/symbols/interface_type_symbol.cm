@@ -4,6 +4,8 @@
 // =================================
 
 using System;
+using System.Collections;
+using cm.ast;
 
 namespace symbols
 {
@@ -16,10 +18,820 @@ namespace symbols
         {
              return u"interface";
         }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be nothrow", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be throw", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("interface type cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
         public override Result<intermediate.Type*> IrType(Emitter& emitter)
         {
-            // todo
-            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+            return emitter.GetInterfaceType(this);
+        }
+        [nodiscard]
+        public override Result<bool> AddMember(Symbol* member, SymbolsContext& context)
+        {
+            Result<bool> result = base->AddMember(member, context);
+            if (result.Error()) return result;
+            switch (member->Kind())
+            {
+                case SymbolKind.interfaceTypeDefaultCtor:
+                {
+                    defaultCtor = cast<FunctionSymbol*>(member);
+                    break;
+                }
+                case SymbolKind.interfaceTypeCopyCtor:
+                {
+                    copyCtor = cast<FunctionSymbol*>(member);
+                    break;
+                }
+                case SymbolKind.interfaceTypeMoveCtor:
+                {
+                    moveCtor = cast<FunctionSymbol*>(member);
+                    break;
+                }
+                case SymbolKind.interfaceTypeCopyAssignment:
+                {
+                    copyAssignment = cast<FunctionSymbol*>(member);
+                    break;
+                }
+                case SymbolKind.interfaceTypeMoveAssignment:
+                {
+                    moveAssignment = cast<FunctionSymbol*>(member);
+                    break;
+                }
+                case SymbolKind.interfaceTypeEquality:
+                {
+                    equality = cast<FunctionSymbol*>(member);
+                    break;
+                }
+                case SymbolKind.memberFunctionSymbol:
+                {
+                    FunctionSymbol* method = cast<FunctionSymbol*>(member);
+                    method->SetImtIndex(cast<int>(methods.Count()));
+                    methods.Add(method);
+                    break;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public inline const List<FunctionSymbol*>& Methods() const
+        {
+            return methods;
+        }
+        public inline FunctionSymbol* CopyConstructor() const
+        {
+            return copyCtor;
+        }
+        public inline FunctionSymbol* MoveConstructor() const
+        {
+            return moveCtor;
+        }
+        public inline FunctionSymbol* CopyAssignment() const
+        {
+            return copyAssignment;
+        }
+        public inline FunctionSymbol* MoveAssignment() const
+        {
+            return moveAssignment;
+        }
+        public inline FunctionSymbol* Equality() const
+        {
+            return equality;
+        }
+        private List<FunctionSymbol*> methods;
+        private FunctionSymbol* defaultCtor;
+        private FunctionSymbol* copyCtor;
+        private FunctionSymbol* moveCtor;
+        private FunctionSymbol* copyAssignment;
+        private FunctionSymbol* moveAssignment;
+        private FunctionSymbol* equality;
+    }
+
+    public class InterfaceTypeDefaultConstructor : FunctionSymbol
+    {
+        public InterfaceTypeDefaultConstructor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeDefaultCtor, span_, name_)
+        {
+        }
+        public InterfaceTypeDefaultConstructor(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeDefaultCtor, interfaceType->Span(), u"@interfaceDefaultCtor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = interfaceType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* receiver = emitter.Stack().Pop();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            intermediate.Value* nullValue = emitter.GetNullValue(emitter.GetVoidPtrType());
+            result = emitter.CreateStore(nullValue, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> interfacePtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            result = emitter.CreateStore(nullValue, interfacePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class InterfaceTypeCopyConstructor : FunctionSymbol
+    {
+        public InterfaceTypeCopyConstructor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeCopyCtor, span_, name_)
+        {
+        }
+        public InterfaceTypeCopyConstructor(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeCopyCtor, interfaceType->Span(), u"@interfaceCopyCtor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = interfaceType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(interfaceType->Span(), u"that");
+            Result<TypeSymbol*> constTypeResult = interfaceType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* receiver = emitter.Stack().Pop();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> thatObjectResult = emitter.CreateLoad(thatObjectPtr);
+            if (thatObjectResult.Error()) return Result<bool>(ErrorId(thatObjectResult.GetErrorId()));
+            intermediate.Value* thatObject = thatObjectResult.Value();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            result = emitter.CreateStore(thatObject, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(thatPtr);
+            if (thatInterfacePtrResult.Error()) return Result<bool>(ErrorId(thatInterfacePtrResult.GetErrorId()));
+            intermediate.Value* thatInterfacePtr = thatInterfacePtrResult.Value();
+            Result<intermediate.Value*> thatInterfaceResult = emitter.CreateLoad(thatInterfacePtr);
+            if (thatInterfaceResult.Error()) return Result<bool>(ErrorId(thatInterfaceResult.GetErrorId()));
+            intermediate.Value* thatInterface = thatInterfaceResult.Value();
+            Result<intermediate.Value*> interfacePtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            result = emitter.CreateStore(thatInterface, interfacePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class InterfaceTypeMoveConstructor : FunctionSymbol
+    {
+        public InterfaceTypeMoveConstructor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeMoveCtor, span_, name_)
+        {
+        }
+        public InterfaceTypeMoveConstructor(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeMoveCtor, interfaceType->Span(), u"@interfaceMoveCtor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = interfaceType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(interfaceType->Span(), u"that");
+            Result<TypeSymbol*> rvalueRefTypeResult = interfaceType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            thatParam->SetType(rvalueRefType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* receiver = emitter.Stack().Pop();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> thatObjectResult = emitter.CreateLoad(thatObjectPtr);
+            if (thatObjectResult.Error()) return Result<bool>(ErrorId(thatObjectResult.GetErrorId()));
+            intermediate.Value* thatObject = thatObjectResult.Value();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            result = emitter.CreateStore(thatObject, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(thatPtr);
+            if (thatInterfacePtrResult.Error()) return Result<bool>(ErrorId(thatInterfacePtrResult.GetErrorId()));
+            intermediate.Value* thatInterfacePtr = thatInterfacePtrResult.Value();
+            Result<intermediate.Value*> thatInterfaceResult = emitter.CreateLoad(thatInterfacePtr);
+            if (thatInterfaceResult.Error()) return Result<bool>(ErrorId(thatInterfaceResult.GetErrorId()));
+            intermediate.Value* thatInterface = thatInterfaceResult.Value();
+            Result<intermediate.Value*> interfacePtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            result = emitter.CreateStore(thatInterface, interfacePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class InterfaceTypeCopyAssignment : FunctionSymbol
+    {
+        public InterfaceTypeCopyAssignment(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeCopyAssignment, span_, name_)
+        {
+        }
+        public InterfaceTypeCopyAssignment(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeCopyAssignment, interfaceType->Span(), u"@interfaceCopyAssignment")
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = interfaceType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(interfaceType->Span(), u"that");
+            Result<TypeSymbol*> constTypeResult = interfaceType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* receiver = emitter.Stack().Pop();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> thatObjectResult = emitter.CreateLoad(thatObjectPtr);
+            if (thatObjectResult.Error()) return Result<bool>(ErrorId(thatObjectResult.GetErrorId()));
+            intermediate.Value* thatObject = thatObjectResult.Value();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            result = emitter.CreateStore(thatObject, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(thatPtr);
+            if (thatInterfacePtrResult.Error()) return Result<bool>(ErrorId(thatInterfacePtrResult.GetErrorId()));
+            intermediate.Value* thatInterfacePtr = thatInterfacePtrResult.Value();
+            Result<intermediate.Value*> thatInterfaceResult = emitter.CreateLoad(thatInterfacePtr);
+            if (thatInterfaceResult.Error()) return Result<bool>(ErrorId(thatInterfaceResult.GetErrorId()));
+            intermediate.Value* thatInterface = thatInterfaceResult.Value();
+            Result<intermediate.Value*> interfacePtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            result = emitter.CreateStore(thatInterface, interfacePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class InterfaceTypeMoveAssignment : FunctionSymbol
+    {
+        public InterfaceTypeMoveAssignment(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeMoveAssignment, span_, name_)
+        {
+        }
+        public InterfaceTypeMoveAssignment(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeMoveAssignment, interfaceType->Span(), u"@interfaceMoveAssignment")
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = interfaceType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(interfaceType->Span(), u"that");
+            Result<TypeSymbol*> rvalueRefTypeResult = interfaceType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            thatParam->SetType(rvalueRefType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* receiver = emitter.Stack().Pop();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> thatObjectResult = emitter.CreateLoad(thatObjectPtr);
+            if (thatObjectResult.Error()) return Result<bool>(ErrorId(thatObjectResult.GetErrorId()));
+            intermediate.Value* thatObject = thatObjectResult.Value();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            result = emitter.CreateStore(thatObject, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(thatPtr);
+            if (thatInterfacePtrResult.Error()) return Result<bool>(ErrorId(thatInterfacePtrResult.GetErrorId()));
+            intermediate.Value* thatInterfacePtr = thatInterfacePtrResult.Value();
+            Result<intermediate.Value*> thatInterfaceResult = emitter.CreateLoad(thatInterfacePtr);
+            if (thatInterfaceResult.Error()) return Result<bool>(ErrorId(thatInterfaceResult.GetErrorId()));
+            intermediate.Value* thatInterface = thatInterfaceResult.Value();
+            Result<intermediate.Value*> interfacePtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            result = emitter.CreateStore(thatInterface, interfacePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class InterfaceTypeEquality : FunctionSymbol
+    {
+        public InterfaceTypeEquality(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeEquality, span_, name_)
+        {
+        }
+        public InterfaceTypeEquality(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeEquality, interfaceType->Span(), u"@interfaceEquality")
+        {
+            SetGroupName(u"operator==");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(interfaceType->Span(), u"left");
+            Result<TypeSymbol*> constTypeResult = interfaceType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            leftParam->SetType(refType);
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(interfaceType->Span(), u"right");
+            rightParam->SetType(refType);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* leftPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> leftObjectPtrResult = emitter.GetObjectFromReceiver(leftPtr);
+            if (leftObjectPtrResult.Error()) return Result<bool>(ErrorId(leftObjectPtrResult.GetErrorId()));
+            intermediate.Value* leftObjectPtr = leftObjectPtrResult.Value();
+            Result<intermediate.Value*> leftObjectValueResult = emitter.CreateLoad(leftObjectPtr);
+            if (leftObjectValueResult.Error()) return Result<bool>(ErrorId(leftObjectValueResult.GetErrorId()));
+            intermediate.Value* leftObjectValue = leftObjectValueResult.Value();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* rightPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> rightObjectPtrResult = emitter.GetObjectFromReceiver(rightPtr);
+            if (rightObjectPtrResult.Error()) return Result<bool>(ErrorId(rightObjectPtrResult.GetErrorId()));
+            intermediate.Value* rightObjectPtr = rightObjectPtrResult.Value();
+            Result<intermediate.Value*> rightObjectValueResult = emitter.CreateLoad(rightObjectPtr);
+            if (rightObjectValueResult.Error()) return Result<bool>(ErrorId(rightObjectValueResult.GetErrorId()));
+            intermediate.Value* rightObjectValue = rightObjectValueResult.Value();
+            Result<intermediate.Value*> objectsEqualResult = emitter.CreateEqual(leftObjectValue, rightObjectValue);
+            if (objectsEqualResult.Error()) return Result<bool>(ErrorId(objectsEqualResult.GetErrorId()));
+            intermediate.Value* objectsEqual = objectsEqualResult.Value();
+            Result<intermediate.Value*> leftInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(leftPtr);
+            if (leftInterfacePtrResult.Error()) return Result<bool>(ErrorId(leftInterfacePtrResult.GetErrorId()));
+            intermediate.Value* leftInterfacePtr = leftInterfacePtrResult.Value();
+            Result<intermediate.Value*> leftInterfacePtrValueResult = emitter.CreateLoad(leftInterfacePtr);
+            if (leftInterfacePtrValueResult.Error()) return Result<bool>(ErrorId(leftInterfacePtrValueResult.GetErrorId()));
+            intermediate.Value* leftInterfacePtrValue = leftInterfacePtrValueResult.Value();
+            Result<intermediate.Value*> rightInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(rightPtr);
+            if (rightInterfacePtrResult.Error()) return Result<bool>(ErrorId(rightInterfacePtrResult.GetErrorId()));
+            intermediate.Value* rightInterfacePtr = rightInterfacePtrResult.Value();
+            Result<intermediate.Value*> rightInterfacePtrValueResult = emitter.CreateLoad(rightInterfacePtr);
+            if (rightInterfacePtrValueResult.Error()) return Result<bool>(ErrorId(rightInterfacePtrValueResult.GetErrorId()));
+            intermediate.Value* rightInterfacePtrValue = rightInterfacePtrValueResult.Value();
+            Result<intermediate.Value*> interfacesEqualResult = emitter.CreateEqual(leftInterfacePtrValue, rightInterfacePtrValue);
+            if (interfacesEqualResult.Error()) return Result<bool>(ErrorId(interfacesEqualResult.GetErrorId()));
+            intermediate.Value* interfacesEqual = interfacesEqualResult.Value();
+            Result<intermediate.Value*> equalResult = emitter.CreateAnd(objectsEqual, interfacesEqual);
+            if (equalResult.Error()) return Result<bool>(ErrorId(equalResult.GetErrorId()));
+            intermediate.Value* equal = equalResult.Value();
+            emitter.Stack().Push(equal);
+            return Result<bool>(true);
+        }
+    }
+    
+    public class ClassToInterfaceConversion : FunctionSymbol
+    {
+        public ClassToInterfaceConversion(SymbolsContext& context, ClassTypeSymbol* sourceClassType, InterfaceTypeSymbol* targetInterfaceType) :
+            base(System.Lex.Span(), u"@class2interface")
+        {
+            SetImplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionDistance(1u);
+            SetConversionSourceType(sourceClassType);
+            SetConversionTargetType(targetInterfaceType);
+        }
+        public override bool IsClassToInterfaceTypeConversion() const
+        {
+            return true;
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            TypeSymbol* interfaceType = ConversionTargetType();
+            Result<LocalVariableSymbol*> temporaryResult = currentFunction->CreateTemporary(System.Lex.Span(), interfaceType, context);
+            if (temporaryResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(temporaryResult.GetErrorId()));
+            temporaries.Add(temporaryResult.Value());
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(!irObjects.IsEmpty());
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> objectResult = emitter.CreateBitcast(thisPtr, emitter.GetVoidPtrType());
+            if (objectResult.Error()) return Result<bool>(ErrorId(objectResult.GetErrorId()));
+            intermediate.Value* object = objectResult.Value();
+            IrObject* temporary = irObjects.Front();
+            Result<bool> result = temporary->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* receiver = emitter.Stack().Pop();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            result = emitter.CreateStore(object, objectPtr);
+            if (result.Error()) return result;
+            ClassTypeSymbol* sourceClassType = cast<ClassTypeSymbol*>(ConversionSourceType());
+            Result<ClassTypeSymbol*> vmtPtrHolderClassResult = sourceClassType->VmtPtrHolderClass();
+            if (vmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
+            if (sourceClassType != vmtPtrHolderClass)
+            {
+                Result<TypeSymbol*> ptrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* vmtPtrType = ptrTypeResult.Value();
+                Result<intermediate.Type*> vmtPtrIrTypeResult = vmtPtrType->IrType(emitter);
+                if (vmtPtrIrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrIrTypeResult.GetErrorId()));
+                intermediate.Type* vmtPtrIrType = vmtPtrIrTypeResult.Value();
+                Result<intermediate.Value*> castResult = emitter.CreateBitcast(thisPtr, vmtPtrIrType);
+                if (castResult.Error()) return Result<bool>(ErrorId(castResult.GetErrorId()));
+                thisPtr = castResult.Value();
+            }
+            Result<intermediate.Type*> vmtPtrTypeResult = sourceClassType->VmtPtrType(emitter);
+            if (vmtPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrTypeResult.GetErrorId()));
+            intermediate.Type* vmtPtrType = vmtPtrTypeResult.Value();
+            Result<intermediate.Value*> vmtPtrResult = emitter.GetVmtPtr(thisPtr, vmtPtrHolderClass->VmtPtrIndex(), vmtPtrType);
+            if (vmtPtrResult.Error()) return Result<bool>(ErrorId(vmtPtrResult.GetErrorId()));
+            intermediate.Value* vmtPtr = vmtPtrResult.Value();
+            Result<intermediate.Value*> imtsArrayPtrResult = emitter.GetImtsArrayPtrFromVmt(vmtPtr, vmtImtsIndex);
+            if (imtsArrayPtrResult.Error()) return Result<bool>(ErrorId(imtsArrayPtrResult.GetErrorId()));
+            intermediate.Value* imtsArrayPtr = imtsArrayPtrResult.Value();
+            Result<intermediate.Value*> loadedImtsArrayPtrResult = emitter.CreateLoad(imtsArrayPtr);
+            if (loadedImtsArrayPtrResult.Error()) return Result<bool>(ErrorId(loadedImtsArrayPtrResult.GetErrorId()));
+            intermediate.Value* loadedImtsArrayPtr = loadedImtsArrayPtrResult.Value();
+            InterfaceTypeSymbol* interfaceType = cast<InterfaceTypeSymbol*>(ConversionTargetType());
+            int interfaceIndex = sourceClassType->GetInterfaceIndex(interfaceType);
+            if (interfaceIndex == -1)
+            {
+                Result<string> classNameResult = ToUtf8(sourceClassType->FullName());
+                if (classNameResult.Error()) return Result<bool>(ErrorId(classNameResult.GetErrorId()));
+                string className = Rvalue(classNameResult.Value());
+                Result<string> interfaceNameResult = ToUtf8(interfaceType->FullName());
+                if (interfaceNameResult.Error()) return Result<bool>(ErrorId(interfaceNameResult.GetErrorId()));
+                string interfaceName = Rvalue(interfaceNameResult.Value());
+                int errorId = MakeError("index of interface '" + interfaceName + "' not found from class '" + className + "'",
+                    sourceClassType->FullSpan(), interfaceType->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<intermediate.ArrayType*> imtsArrayTypeResult = sourceClassType->ImtsArrayType(emitter);
+            if (imtsArrayTypeResult.Error()) return Result<bool>(ErrorId(imtsArrayTypeResult.GetErrorId()));
+            intermediate.ArrayType* imtsArrayType = imtsArrayTypeResult.Value();
+            Result<intermediate.Type*> imtsPtrTypeResult = emitter.GetPointerType(imtsArrayType);
+            if (imtsPtrTypeResult.Error()) return Result<bool>(ErrorId(imtsPtrTypeResult.GetErrorId()));
+            intermediate.Type* imtsPtrType = imtsPtrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(loadedImtsArrayPtr, imtsPtrType);
+            if (bitcastResult.Error()) return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            intermediate.Value* bitcastValue = bitcastResult.Value();
+            Result<intermediate.Value*> imtPtrResult = emitter.GetImtPtrFromImtsPtr(bitcastValue, interfaceIndex);
+            if (imtPtrResult.Error()) return Result<bool>(ErrorId(imtPtrResult.GetErrorId()));
+            intermediate.Value* imtPtr = imtPtrResult.Value();
+            Result<intermediate.Value*> loadedImtPtrResult = emitter.CreateLoad(imtPtr);
+            if (loadedImtPtrResult.Error()) return Result<bool>(ErrorId(loadedImtPtrResult.GetErrorId()));
+            intermediate.Value* loadedImtPtr = loadedImtPtrResult.Value();
+            Result<intermediate.Value*> interfacePtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            result = emitter.CreateStore(loadedImtPtr, interfacePtr);
+            if (result.Error()) return result;
+            emitter.Stack().Push(receiver);
+            return Result<bool>(true);
         }
     }
 }

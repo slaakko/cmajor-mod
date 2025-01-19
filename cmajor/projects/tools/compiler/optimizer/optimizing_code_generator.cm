@@ -149,7 +149,7 @@ namespace optimizer
             {
                 intermediate.BasicBlock* bb = inst.Parent();
                 intermediate.BasicBlock* next = bb->Next();
-                if (next != null && !inst.Parent()->ContainsOnlyLocalsAndNops())
+                if (next != null && !bb->ContainsOnlyNops())
                 {
                     if (inst.TargetBasicBlock() == next)
                     {
@@ -164,7 +164,7 @@ namespace optimizer
             inst.SetAssemblyIndex(AssemblyFunction()->Index());
             if (HasOptimization(Optimizations.jump))
             {
-                BasicBlock* bb = inst.Parent();
+                intermediate.BasicBlock* bb = inst.Parent();
                 if (bb->IsLast() && inst.IsLeader() && inst.ReturnValue() == null)
                 {
                     ResetLeader();
@@ -186,7 +186,7 @@ namespace optimizer
         {
             if (HasOptimization(Optimizations.jump))
             {
-                BasicBlock* lastBB = CurrentFunction()->LastBasicBlock();
+                intermediate.BasicBlock* lastBB = CurrentFunction()->LastBasicBlock();
                 if (lastBB->Leader()->IsRetVoid())
                 {
                     return lastBB->Id();
@@ -195,7 +195,7 @@ namespace optimizer
             return base->ExitLabelId();
         }
         [nodiscard]
-        public override Result<bool> EmitJumpToExit(Instruction& retInst)
+        public override Result<bool> EmitJumpToExit(intermediate.Instruction& retInst)
         {
             if (HasOptimization(Optimizations.jump))
             {
@@ -208,7 +208,7 @@ namespace optimizer
             return base->EmitJumpToExit(retInst);
         }
         [nodiscard]
-        public override Result<bool> EmitBranchJumps(BranchInstruction& inst)
+        public override Result<bool> EmitBranchJumps(intermediate.BranchInstruction& inst)
         {
             if (HasOptimization(Optimizations.jump))
             {

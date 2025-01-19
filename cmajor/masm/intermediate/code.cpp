@@ -376,6 +376,16 @@ void Instruction::ReplaceValue(Value* use, Value* value)
 {
 }
 
+bool Instruction::IsRetVoid() const
+{
+    if (IsRetInstruction())
+    {
+        const RetInstruction* retInst = static_cast<const RetInstruction*>(this);
+        return retInst->ReturnValue() == nullptr;
+    }
+    return false;
+}
+
 StoreInstruction::StoreInstruction(const soul::ast::Span& span_, Value* value_, Value* ptr_) : Instruction(span_, nullptr, OpCode::store), value(value_), ptr(ptr_)
 {
 }
@@ -2093,16 +2103,33 @@ bool BasicBlock::IsLast() const
     return this == fn->LastBasicBlock();
 }
 
+bool BasicBlock::ContainsOnlyNops() 
+{
+    Instruction* inst = FirstInstruction();
+    while (inst && !inst->IsTerminator())
+    {
+        if (!inst->IsNopInstruction())
+        {
+            return false;
+        }
+        inst = inst->Next();
+    }
+    return true;
+}
+
 void BasicBlock::AddInstruction(Instruction* instruction, bool mapInstruction)
 {
     instructions.AddChild(instruction);
+    Function* fn = Parent();
+    int nextRegNumber = fn->NextRegNumber();
     if (mapInstruction && instruction->IsValueInstruction())
     {
         ValueInstruction* valueInstruction = static_cast<ValueInstruction*>(instruction);
-        Function* function = Parent();
-        Context* context = function->Parent()->GetContext();
-        function->MapInstruction(valueInstruction->Result()->Reg(), valueInstruction, context);
+        Context* context = fn->Parent()->GetContext();
+        fn->MapInstruction(valueInstruction->Result()->Reg(), valueInstruction, context);
+        nextRegNumber = std::max(valueInstruction->Result()->Reg() + 1, nextRegNumber);
     }
+    fn->SetNextRegNumber(nextRegNumber);
 }
 
 void BasicBlock::AddInstruction(Instruction* instruction)
@@ -2118,10 +2145,22 @@ std::unique_ptr<Instruction> BasicBlock::RemoveInstruction(Instruction* instruct
 void BasicBlock::InsertInstructionAfter(Instruction* instruction, Instruction* after)
 {
     instructions.InsertAfter(instruction, after);
+    Function* fn = Parent();
+    int nextRegNumber = fn->NextRegNumber();
+    if (instruction->IsValueInstruction())
+    {
+        ValueInstruction* valueInstruction = static_cast<ValueInstruction*>(instruction);
+        Context* context = fn->Parent()->GetContext();
+        fn->MapInstruction(valueInstruction->Result()->Reg(), valueInstruction, context);
+        nextRegNumber = std::max(valueInstruction->Result()->Reg() + 1, nextRegNumber);
+    }
+    fn->SetNextRegNumber(nextRegNumber);
 }
 
 void BasicBlock::InsertFront(Instruction* instruction)
 {
+    Function* fn = Parent();
+    int nextRegNumber = fn->NextRegNumber();
     if (instructions.IsEmpty())
     {
         instructions.AddChild(instruction);
@@ -2133,10 +2172,11 @@ void BasicBlock::InsertFront(Instruction* instruction)
     if (instruction->IsValueInstruction())
     {
         ValueInstruction* valueInstruction = static_cast<ValueInstruction*>(instruction);
-        Function* function = Parent();
-        Context* context = function->Parent()->GetContext();
-        function->MapInstruction(valueInstruction->Result()->Reg(), valueInstruction, context);
+        Context* context = fn->Parent()->GetContext();
+        fn->MapInstruction(valueInstruction->Result()->Reg(), valueInstruction, context);
+        nextRegNumber = std::max(valueInstruction->Result()->Reg() + 1, nextRegNumber);
     }
+    fn->SetNextRegNumber(nextRegNumber);
 }
 
 BasicBlock* BasicBlock::SplitAfter(Instruction* instruction)
@@ -2213,7 +2253,7 @@ Function* BasicBlock::Parent() const
 Instruction* BasicBlock::Leader() const
 {
     Instruction* leader = const_cast<BasicBlock*>(this)->FirstInstruction();
-    while (leader && (leader->IsNopInstruction() || leader->IsLocalInstruction()))
+    while (leader && leader->IsNopInstruction())
     {
         leader = leader->Next();
     }
@@ -2363,6 +2403,7 @@ BasicBlock* Function::AddBasicBlock(const soul::ast::Span& span, int32_t id, Con
     BasicBlock* basicBlock = new BasicBlock(span, id);
     basicBlocks.AddChild(basicBlock);
     basicBlockMap[id] = basicBlock;
+    nextBBNumber = std::max(id + 1, nextBBNumber);
     return basicBlock;
 }
 
@@ -2370,18 +2411,21 @@ void Function::AddBasicBlock(BasicBlock* basicBlock)
 {
     basicBlocks.AddChild(basicBlock);
     basicBlockMap[basicBlock->Id()] = basicBlock;
+    nextBBNumber = std::max(basicBlock->Id() + 1, nextBBNumber);
 }
 
 void Function::InsertBasicBlockBefore(BasicBlock* basicBlockToInsert, BasicBlock* before)
 {
     basicBlocks.InsertBefore(basicBlockToInsert, before);
     basicBlockMap[basicBlockToInsert->Id()] = basicBlockToInsert;
+    nextBBNumber = std::max(basicBlockToInsert->Id() + 1, nextBBNumber);
 }
 
 void Function::InsertBasicBlockAfter(BasicBlock* basicBlockToInsert, BasicBlock* after)
 {
     basicBlocks.InsertAfter(basicBlockToInsert, after);
     basicBlockMap[basicBlockToInsert->Id()] = basicBlockToInsert;
+    nextBBNumber = std::max(basicBlockToInsert->Id() + 1, nextBBNumber);
 }
 
 std::unique_ptr<BasicBlock> Function::RemoveBasicBlock(BasicBlock* block)
@@ -2476,17 +2520,7 @@ Instruction* Function::GetInstruction(int32_t reg) const
 
 void Function::MapInstruction(int32_t reg, Instruction* inst, Context* context)
 {
-    Instruction* prev = GetInstruction(reg);
-    if (prev)
-    {
-        Error("error mappint instruction " + std::to_string(reg) + ": register number not unique", span, context, prev->Span());
-    }
     instructionMap[reg] = inst;
-}
-
-void Function::UnmapInstruction(int32_t reg)
-{
-    instructionMap.erase(reg);
 }
 
 int Function::NumBasicBlocks() const

@@ -16,7 +16,12 @@ import std.core;
 
 export namespace cmajor::symbols {
 
+class InterfaceTypeDefaultConstructor;
 class InterfaceTypeCopyConstructor;
+class InterfaceTypeMoveConstructor;
+class InterfaceTypeCopyAssignment;
+class InterfaceTypeMoveAssignment;
+class InterfaceTypeEqual;
 
 class InterfaceTypeSymbol : public TypeSymbol
 {
@@ -30,8 +35,12 @@ public:
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
     const std::vector<MemberFunctionSymbol*>& MemberFunctions() const { return memberFunctions; }
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, MemberFunctionSymbol* interfaceMemberFunction);
-    void SetCopyConstructor(InterfaceTypeCopyConstructor* copyConstructor_) { copyConstructor = copyConstructor_; }
-    InterfaceTypeCopyConstructor* CopyConstructor() { return copyConstructor; }
+    InterfaceTypeDefaultConstructor* DefaultConstructor() const { return defaultConstructor; }
+    InterfaceTypeCopyConstructor* CopyConstructor() const { return copyConstructor; }
+    InterfaceTypeMoveConstructor* MoveConstructor() const { return moveConstructor; }
+    InterfaceTypeCopyAssignment* CopyAssignment() const { return copyAssignment; }
+    InterfaceTypeMoveAssignment* MoveAssigment() const { return moveAssignment; }
+    InterfaceTypeEqual* Equal() const { return equal; }
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "InterfaceTypeSymbol"; }
     void Check() override;
@@ -39,7 +48,12 @@ public:
     std::string GetSymbolCategoryDescription() const override { return "interface"; }
 private:
     std::vector<MemberFunctionSymbol*> memberFunctions;
+    InterfaceTypeDefaultConstructor* defaultConstructor;
     InterfaceTypeCopyConstructor* copyConstructor;
+    InterfaceTypeMoveConstructor* moveConstructor;
+    InterfaceTypeCopyAssignment* copyAssignment;
+    InterfaceTypeMoveAssignment* moveAssignment;
+    InterfaceTypeEqual* equal;
 };
 
 class InterfaceTypeDefaultConstructor : public FunctionSymbol
@@ -91,7 +105,7 @@ class InterfaceTypeCopyAssignment : public FunctionSymbol
 {
 public:
     InterfaceTypeCopyAssignment(const soul::ast::Span& span_, const std::u32string& name_);
-    InterfaceTypeCopyAssignment(InterfaceTypeSymbol* interfaceType_);
+    InterfaceTypeCopyAssignment(InterfaceTypeSymbol* interfaceType_, TypeSymbol* voidType);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
@@ -106,13 +120,28 @@ class InterfaceTypeMoveAssignment : public FunctionSymbol
 {
 public:
     InterfaceTypeMoveAssignment(const soul::ast::Span& span_, const std::u32string& name_);
-    InterfaceTypeMoveAssignment(InterfaceTypeSymbol* interfaceType_);
+    InterfaceTypeMoveAssignment(InterfaceTypeSymbol* interfaceType_, TypeSymbol* voidType);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeMoveAssignment"; }
+private:
+    InterfaceTypeSymbol* interfaceType;
+};
+
+class InterfaceTypeEqual : public FunctionSymbol
+{
+public:
+    InterfaceTypeEqual(const soul::ast::Span& span_, const std::u32string& name_);
+    InterfaceTypeEqual(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType);
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
+    void EmplaceType(TypeSymbol* typeSymbol, int index) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    bool IsBasicTypeOperation() const override { return true; }
+    const char* ClassName() const override { return "InterfaceTypeEqual"; }
 private:
     InterfaceTypeSymbol* interfaceType;
 };

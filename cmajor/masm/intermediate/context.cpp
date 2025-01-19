@@ -208,9 +208,9 @@ Value* Context::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, cons
     return data.MakeIntegerLiteral(span, type, strValue, types, this);
 }
 
-Value* Context::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id)
+Value* Context::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, bool resolve)
 {
-    return data.MakeAddressLiteral(span, type, id, this);
+    return data.MakeAddressLiteral(span, type, id, this, resolve);
 }
 
 Function* Context::CurrentFunction() const
@@ -218,8 +218,9 @@ Function* Context::CurrentFunction() const
     return code.CurrentFunction();
 }
 
-void Context::ValidateData()
+void Context::ResolveData()
 {
+    data.ResolveAddressValues();
 }
 
 void Context::SetCurrentFunction(Function* function)

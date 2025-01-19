@@ -99,6 +99,10 @@ namespace cm.ast
         {
             return nodeType == NodeType.classNode;
         }
+        public inline bool IsInterfaceNode() const
+        {
+            return nodeType == NodeType.interfaceNode;
+        }
         public inline bool IsNamespaceImportNode() const
         {
             return nodeType == NodeType.namespaceImportNode;

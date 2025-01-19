@@ -75,6 +75,7 @@ public:
     bool IsFunctionCallInstruction() const { return opCode == OpCode::function_call; }
     bool IsProcedureCallInstruction() const { return opCode == OpCode::procedure_call; }
     bool IsRetInstruction() const { return opCode == OpCode::ret; }
+    bool IsRetVoid() const;
     bool IsJumpInstruction() const { return opCode == OpCode::jmp; }
     bool IsBranchInstruction() const { return opCode == OpCode::branch; }
     bool IsNopInstruction() const { return opCode == OpCode::nop; }
@@ -652,8 +653,10 @@ public:
     BasicBlock* Prev() { return static_cast<BasicBlock*>(PrevSibling()); }
     Instruction* FirstInstruction() { return static_cast<Instruction*>(instructions.FirstChild()); }
     Instruction* LastInstruction() { return static_cast<Instruction*>(instructions.LastChild()); }
+    util::Container* Instructions() { return &instructions; }
     Instruction* Leader() const;
     bool IsLast() const;
+    bool ContainsOnlyNops();
     void AddInstruction(Instruction* instruction);
     void AddInstruction(Instruction* instruction, bool mapInstruction);
     std::unique_ptr<Instruction> RemoveInstruction(Instruction* instruction);
@@ -726,6 +729,7 @@ public:
     BasicBlock* GetBasicBlock(int32_t id) const;
     BasicBlock* AddBasicBlock(const soul::ast::Span& span, int32_t id, Context* context);
     void AddBasicBlock(BasicBlock* basicBlock);
+    util::Container* BasicBlocks() { return &basicBlocks; }
     void InsertBasicBlockBefore(BasicBlock* basicBlockToInsert, BasicBlock* before);
     void InsertBasicBlockAfter(BasicBlock* basicBlockToInsert, BasicBlock* after);
     std::unique_ptr<BasicBlock> RemoveBasicBlock(BasicBlock* block);
@@ -742,7 +746,6 @@ public:
     void RemoveRegValue(int32_t reg);
     Instruction* GetInstruction(int32_t reg) const;
     void MapInstruction(int32_t reg, Instruction* inst, Context* context);
-    void UnmapInstruction(int32_t reg);
     int NumBasicBlocks() const;
     const std::vector<BasicBlock*>& RetBlocks() const { return retBlocks; }
     void AddRetBlock(BasicBlock* retBlock);

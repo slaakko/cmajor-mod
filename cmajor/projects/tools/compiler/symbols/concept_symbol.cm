@@ -264,6 +264,7 @@ namespace symbols
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> SetSpecifiers(const Specifiers& specifiers)
         {
             Specifiers accessSpecifiers = specifiers & Specifiers.access_;

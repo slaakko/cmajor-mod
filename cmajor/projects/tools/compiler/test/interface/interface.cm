@@ -1,0 +1,31 @@
+using System;
+
+public interface Fooable
+{
+    void Foo();
+}
+
+public class Fooer : Fooable
+{
+    public Fooer() : foo("foo")
+    {
+    }
+    public void Foo()
+    {
+        Console.Out() << foo << endl();
+    }
+    private string foo;
+}
+
+public void SayFoo(Fooable fooable)
+{
+    fooable.Foo();
+}
+
+void main()
+{
+    Fooer fooer;
+    Fooable fooable = fooer;
+    fooable.Foo();
+    SayFoo(fooable);
+}

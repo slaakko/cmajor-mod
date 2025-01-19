@@ -9,6 +9,7 @@ import cmajor.masm.intermediate.context;
 import cmajor.masm.intermediate.error;
 import cmajor.masm.intermediate.visitor;
 import cmajor.masm.intermediate.code;
+import cmajor.masm.intermediate.util;
 
 namespace cmajor::masm::intermediate {
 
@@ -77,6 +78,16 @@ Value::~Value()
 
 void Value::Accept(Visitor& visitor)
 {
+}
+
+bool Value::IsTrue() const
+{ 
+    return kind == ValueKind::boolValue && static_cast<const BoolValue*>(this)->GetValue() == true; 
+}
+
+bool Value::IsFalse() const
+{
+    return kind == ValueKind::boolValue && static_cast<const BoolValue*>(this)->GetValue() == true;
 }
 
 bool Value::IsIntegerValue() const
@@ -212,6 +223,32 @@ std::string SByteValue::ToString() const
     return std::to_string(value);
 }
 
+Value* SByteValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int8_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* SByteValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int8_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
 ByteValue::ByteValue(uint8_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::byteValue, type_), value(value_)
 {
 }
@@ -224,6 +261,32 @@ void ByteValue::Accept(Visitor& visitor)
 std::string ByteValue::ToString() const
 {
     return std::to_string(value);
+}
+
+Value* ByteValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint8_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* ByteValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint8_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
 }
 
 ShortValue::ShortValue(int16_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::shortValue, type_), value(value_)
@@ -240,6 +303,32 @@ std::string ShortValue::ToString() const
     return std::to_string(value);
 }
 
+Value* ShortValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int16_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* ShortValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int16_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
 UShortValue::UShortValue(uint16_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::ushortValue, type_), value(value_)
 {
 }
@@ -252,6 +341,32 @@ void UShortValue::Accept(Visitor& visitor)
 std::string UShortValue::ToString() const
 {
     return std::to_string(value);
+}
+
+Value* UShortValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint16_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* UShortValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint16_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
 }
 
 IntValue::IntValue(int32_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::intValue, type_), value(value_)
@@ -268,6 +383,32 @@ std::string IntValue::ToString() const
     return std::to_string(value);
 }
 
+Value* IntValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int32_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* IntValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int32_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
 UIntValue::UIntValue(uint32_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::uintValue, type_), value(value_)
 {
 }
@@ -280,6 +421,32 @@ void UIntValue::Accept(Visitor& visitor)
 std::string UIntValue::ToString() const
 {
     return std::to_string(value);
+}
+
+Value* UIntValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint32_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* UIntValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint32_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
 }
 
 LongValue::LongValue(int64_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::longValue, type_), value(value_)
@@ -296,6 +463,32 @@ std::string LongValue::ToString() const
     return std::to_string(value);
 }
 
+Value* LongValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int64_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* LongValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<int64_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
 ULongValue::ULongValue(uint64_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::ulongValue, type_), value(value_)
 {
 }
@@ -308,6 +501,32 @@ void ULongValue::Accept(Visitor& visitor)
 std::string ULongValue::ToString() const
 {
     return std::to_string(value);
+}
+
+Value* ULongValue::Log2(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint64_t>(shift), context->GetTypes());
+        }
+    }
+    return nullptr;
+}
+
+Value* ULongValue::ModPowerOfTwo(Context* context) const
+{
+    if (value > 0)
+    {
+        int shift = 0;
+        if (IsPowerOfTwo(static_cast<uint64_t>(value), shift))
+        {
+            return context->GetData().MakeValue(static_cast<uint64_t>(value - 1), context->GetTypes());
+        }
+    }
+    return nullptr;
 }
 
 FloatValue::FloatValue(float value_, Type* type_) : Value(soul::ast::Span(), ValueKind::floatValue, type_), value(value_)
@@ -352,8 +571,8 @@ std::string NullValue::ToString() const
     return "null";
 }
 
-AddressValue::AddressValue(const soul::ast::Span& span_, GlobalVariable* globalVariable_, Type* type) :
-    Value(span_, ValueKind::addressValue, type), globalVariable(globalVariable_)
+AddressValue::AddressValue(const soul::ast::Span& span_, const std::string& id_, Type* type) :
+    Value(span_, ValueKind::addressValue, type), id(id_), globalVariable(nullptr)
 {
 }
 
@@ -660,6 +879,18 @@ void Data::AddGlobalVariable(const soul::ast::Span& span, Type* type, const std:
     catch (const std::exception& ex)
     {
         Error("error adding global variable: " + std::string(ex.what()), span, context);
+    }
+}
+
+Value* Data::GetBoolValue(bool value, const Types& types) 
+{
+    if (value)
+    {
+        return GetTrueValue(types);
+    }
+    else
+    {
+        return GetFalseValue(types);
     }
 }
 
@@ -977,21 +1208,38 @@ Value* Data::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const s
     return nullptr;
 }
 
-Value* Data::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, Context* context)
+Value* Data::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, Context* context, bool resolve)
 {
-    auto it = globalVariableMap.find(id);
+    AddressValue* addressValue = new AddressValue(span, id, type);
+    if (resolve)
+    {
+        ResolveAddressValue(addressValue);
+    }
+    values.push_back(std::unique_ptr<Value>(addressValue));
+    addressValues.push_back(addressValue);
+    return addressValue;
+}
+
+void Data::ResolveAddressValue(AddressValue* addressValue)
+{
+    auto it = globalVariableMap.find(addressValue->Id());
     if (it != globalVariableMap.cend())
     {
         GlobalVariable* globalVariable = it->second;
-        AddressValue* addressValue = new AddressValue(span, globalVariable, globalVariable->GetType()->AddPointer(context));
-        values.push_back(std::unique_ptr<Value>(addressValue));
-        return addressValue;
+        addressValue->SetValue(globalVariable);
     }
     else
     {
-        Error("error making address literal: global variable id '" + id + "' not found", span, context);
+        Error("error resolving address literal: global variable id '" + addressValue->Id() + "' not found", addressValue->Span(), context);
     }
-    return nullptr;
+}
+
+void Data::ResolveAddressValues()
+{
+    for (AddressValue* addressValue : addressValues)
+    {
+        ResolveAddressValue(addressValue);
+    }
 }
 
 void Data::VisitGlobalVariables(Visitor& visitor)

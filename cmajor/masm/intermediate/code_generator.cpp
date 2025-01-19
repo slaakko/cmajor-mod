@@ -682,10 +682,7 @@ void EmitIntegerRet(RetInstruction& inst, CodeGenerator& codeGenerator)
         movInst->AddOperand(MakeIntegerRegOperand(inst.ReturnValue(), assemblyContext->GetGlobalReg(size, cmajor::masm::assembly::RegisterGroupKind::rbx), codeGenerator));
         codeGenerator.Emit(movInst);
     }
-    int targetLabelId = codeGenerator.ExitLabelId();
-    cmajor::masm::assembly::Instruction* jmpInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
-    jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + std::to_string(targetLabelId)));
-    codeGenerator.Emit(jmpInst);
+    codeGenerator.EmitJumpToExit(inst);
 }
 
 void EmitFloatingPointRet(RetInstruction& inst, CodeGenerator& codeGenerator)
@@ -713,10 +710,7 @@ void EmitFloatingPointRet(RetInstruction& inst, CodeGenerator& codeGenerator)
             inst.ReturnValue(), assemblyContext->GetGlobalReg(16, cmajor::masm::assembly::RegisterGroupKind::xmm1), codeGenerator));
         codeGenerator.Emit(movInst);
     }
-    int targetLabelId = codeGenerator.ExitLabelId();
-    cmajor::masm::assembly::Instruction* jmpInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
-    jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + std::to_string(targetLabelId)));
-    codeGenerator.Emit(jmpInst);
+    codeGenerator.EmitJumpToExit(inst);
 }
 
 void EmitSignExtend(SignExtendInstruction& inst, CodeGenerator& codeGenerator)
@@ -1515,12 +1509,7 @@ void EmitBranch(BranchInstruction& inst, CodeGenerator& codeGenerator)
     orInstruction->AddOperand(operandReg);
     orInstruction->AddOperand(operandReg);
     codeGenerator.Emit(orInstruction);
-    cmajor::masm::assembly::Instruction* jnzInstruction = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JNZ);
-    jnzInstruction->AddOperand(assemblyContext->MakeSymbol("@" + std::to_string(inst.TrueTargetBasicBlock()->Id())));
-    codeGenerator.Emit(jnzInstruction);
-    cmajor::masm::assembly::Instruction* jmpInstruction = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
-    jmpInstruction->AddOperand(assemblyContext->MakeSymbol("@" + std::to_string(inst.FalseTargetBasicBlock()->Id())));
-    codeGenerator.Emit(jmpInstruction);
+    codeGenerator.EmitBranchJumps(inst);
 }
 
 void EmitNot(NotInstruction& inst, CodeGenerator& codeGenerator)
@@ -2674,11 +2663,6 @@ void CodeGenerator::Visit(Function& function)
         std::unique_ptr<RegisterAllocator> linearScanRregisterAllocator = CreateLinearScanRegisterAllocator(function, Ctx());
         registerAllocator = linearScanRregisterAllocator.get();
         function.VisitBasicBlocks(*this);
-        if (function.Name() == "constructor_CmajorLexer_88A94EF725A832C0952C250BA62D8C4E646AB874")
-        {
-            registerAllocator->GetFrame().Dump();
-            int x = 0;
-        }
         assemblyFunction->SetActiveFunctionPart(cmajor::masm::assembly::FunctionPart::prologue);
         EmitPrologue(*this);
         assemblyFunction->SetActiveFunctionPart(cmajor::masm::assembly::FunctionPart::epilogue);
@@ -3216,6 +3200,25 @@ void CodeGenerator::WriteOutputFile()
         data->AddInstruction(std::move(dataInstruction));
     }
     file.Write();
+}
+
+void CodeGenerator::EmitJumpToExit(RetInstruction& retInst) 
+{
+    int targetLabelId = ExitLabelId();
+    cmajor::masm::assembly::Instruction* jmpInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
+    jmpInst->AddOperand(context->AssemblyContext()->MakeSymbol("@" + std::to_string(targetLabelId)));
+    Emit(jmpInst);
+}
+
+void CodeGenerator::EmitBranchJumps(BranchInstruction& branchInst)
+{
+    cmajor::masm::assembly::Context* assemblyContext = context->AssemblyContext();
+    cmajor::masm::assembly::Instruction* jnzInstruction = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JNZ);
+    jnzInstruction->AddOperand(assemblyContext->MakeSymbol("@" + std::to_string(branchInst.TrueTargetBasicBlock()->Id())));
+    Emit(jnzInstruction);
+    cmajor::masm::assembly::Instruction* jmpInstruction = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
+    jmpInstruction->AddOperand(assemblyContext->MakeSymbol("@" + std::to_string(branchInst.FalseTargetBasicBlock()->Id())));
+    Emit(jmpInstruction);
 }
 
 } // cmajor::masm::intermediate

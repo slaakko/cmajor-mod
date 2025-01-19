@@ -1456,6 +1456,29 @@ void* LLVMEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t
     return callee;
 }
 
+void* LLVMEmitter::GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset)
+{
+    ArgVector imtVmtsIndeces;
+    imtVmtsIndeces.push_back(builder.getInt32(0));
+    imtVmtsIndeces.push_back(builder.getInt32(imtsVmtIndexOffset));
+    llvm::Value* imtsArrayPtrAddr = builder.CreateGEP(static_cast<llvm::Type*>(vmtArrayType), static_cast<llvm::Value*>(vmtPtr), imtVmtsIndeces);
+    llvm::Value* imtsArrayPtr = builder.CreateLoad(static_cast<llvm::Type*>(GetIrTypeForVoidPtrType()), imtsArrayPtrAddr);
+    return imtsArrayPtr;
+}
+
+void* LLVMEmitter::GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount)
+{
+    ArgVector interfaceIndeces;
+    interfaceIndeces.push_back(builder.getInt32(0));
+    interfaceIndeces.push_back(builder.getInt32(interfaceIndex));
+    llvm::Type* imtsArrayType = static_cast<llvm::Type*>(GetIrTypeForArrayType(GetIrTypeForVoidPtrType(), interfaceCount));
+    llvm::Type* imtsArrayPtrType = static_cast<llvm::Type*>(GetIrTypeForPtrType(imtsArrayType));
+    llvm::Value* imtsArrayPtr = builder.CreateBitCast(static_cast<llvm::Value*>(imtsPtr), imtsArrayPtrType);
+    llvm::Value* imtPtrAddr = builder.CreateGEP(imtsArrayType, imtsArrayPtr, interfaceIndeces);
+    llvm::Value* imtPtr = builder.CreateLoad(static_cast<llvm::Type*>(GetIrTypeForVoidPtrType()), imtPtrAddr);
+    return imtPtr;
+}
+
 void* LLVMEmitter::GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
 {
     ArgVector vmtPtrIndeces;
@@ -1487,6 +1510,7 @@ void* LLVMEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
     return funAsVoidPtr;
 }
 
+/*
 void* LLVMEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     ArgVector imtsArrayIndeces;
@@ -1523,6 +1547,7 @@ void* LLVMEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceI
 #endif
     return imt;
 }
+*/
 
 void* LLVMEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex)
 {

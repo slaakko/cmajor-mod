@@ -2103,7 +2103,19 @@ namespace codegen
             }
             else if (paramType->IsInterfaceTypeSymbol())
             {
-                // todo
+                InterfaceTypeSymbol* interfaceType = cast<InterfaceTypeSymbol*>(paramType);
+                FunctionSymbol* copyConstructor = interfaceType->CopyConstructor();
+                #assert(copyConstructor != null);
+                List<IrObject*> copyCtorArgs;
+                Result<intermediate.Value*> paramObjectResult = parameter->GetIrObject(emitter);
+                if (paramObjectResult.Error()) return Result<bool>(ErrorId(paramObjectResult.GetErrorId()));
+                intermediate.Value* paramObject = paramObjectResult.Value();
+                NativeValue paramValue(paramObject);
+                copyCtorArgs.Add(&paramValue);
+                NativeValue argumentValue(arg);
+                copyCtorArgs.Add(&argumentValue);
+                Result<bool> result = copyConstructor->GenerateCall(emitter, copyCtorArgs, OperationFlags.none);
+                return result;
             }
             return Result<bool>(false);
         }

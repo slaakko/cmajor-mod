@@ -137,6 +137,29 @@ void MasmCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targe
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    switch (cmajor::symbols::GetOptimizationLevel())
+    {
+        case 0:
+        {
+            cmajor::masm::optimizer::SetOptimizations(cmajor::masm::optimizer::Optimizations::o0);
+            break;
+        }
+        case 1:
+        {
+            cmajor::masm::optimizer::SetOptimizations(cmajor::masm::optimizer::Optimizations::o1);
+            break;
+        }
+        case 2:
+        {
+            cmajor::masm::optimizer::SetOptimizations(cmajor::masm::optimizer::Optimizations::o2);
+            break;
+        }
+        case 3:
+        {
+            cmajor::masm::optimizer::SetOptimizations(cmajor::masm::optimizer::Optimizations::o3);
+            break;
+        }
+    }
     fileIndex = boundCompileUnit.FileIndex();
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
     std::string optimizedIntermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".opt.i");
@@ -174,7 +197,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
     cmajor::masm::intermediate::Verify(intermediateContext);
     std::unique_ptr<cmajor::masm::intermediate::CodeGenerator> codeGenerator;
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && cmajor::symbols::GetOptimizationLevel() != 0)
     {
         cmajor::masm::optimizer::Optimize(&intermediateContext);
         intermediateContext.Write(optimizedIntermediateFilePath);

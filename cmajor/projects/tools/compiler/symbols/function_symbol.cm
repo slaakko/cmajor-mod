@@ -483,6 +483,10 @@ namespace symbols
             {
                 return GenerateVirtualCall(emitter, irObjects, flags);
             }
+            if (Parent()->IsInterfaceTypeSymbol())
+            {
+                return GenerateInterfaceMethodCall(emitter, irObjects);
+            }
             Result<string> instantiatedNameResult = ToUtf8(InstantiatedName(emitter.GetSymbolsContext()));
             if (instantiatedNameResult.Error()) return Result<bool>(ErrorId(instantiatedNameResult.GetErrorId()));
             Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(this);
@@ -590,6 +594,86 @@ namespace symbols
                 args[n - i - 1] = arg;
             }
             Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            if (ReturnType() != null && !ReturnType()->IsVoidTypeSymbol() && !ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                intermediate.Value* returnValue = result.Value();
+                emitter.Stack().Push(returnValue);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> GenerateInterfaceMethodCall(Emitter& emitter, const List<IrObject*>& irObjects)
+        {
+            #assert(!irObjects.IsEmpty());
+            InterfaceTypeSymbol* interfaceType = cast<InterfaceTypeSymbol*>(Parent());
+            Result<intermediate.Type*> interfaceIrTypeResult = interfaceType->IrType(emitter);
+            if (interfaceIrTypeResult.Error()) return Result<bool>(ErrorId(interfaceIrTypeResult.GetErrorId()));
+            intermediate.Type* interfaceIrType = interfaceIrTypeResult.Value();
+            Result<intermediate.Type*> interfacePtrTypeResult = emitter.GetPointerType(interfaceIrType);
+            if (interfacePtrTypeResult.Error()) return Result<bool>(ErrorId(interfacePtrTypeResult.GetErrorId()));
+            intermediate.Type* interfacePtrType = interfacePtrTypeResult.Value();
+            Result<intermediate.Type*> imtPtrTypeResult = emitter.GetImtPtrType(interfaceType);
+            if (imtPtrTypeResult.Error()) return Result<bool>(ErrorId(imtPtrTypeResult.GetErrorId()));
+            intermediate.Type* imtPtrType = imtPtrTypeResult.Value();
+            IrObject* voidPtrReceiverObject = irObjects.Front();
+            Result<bool> loadResult = voidPtrReceiverObject->Load(emitter, OperationFlags.addr);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* voidPtrReceiver = emitter.Stack().Pop();
+            Result<intermediate.Value*> receiverResult = emitter.CreateBitcast(voidPtrReceiver, interfacePtrType);
+            if (receiverResult.Error()) return Result<bool>(ErrorId(receiverResult.GetErrorId()));
+            intermediate.Value* receiver = receiverResult.Value();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromReceiver(receiver);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            Result<intermediate.Value*> objectResult = emitter.CreateLoad(objectPtr);
+            if (objectResult.Error()) return Result<bool>(ErrorId(objectResult.GetErrorId()));
+            intermediate.Value* object = objectResult.Value();
+            emitter.Stack().Push(object);
+            Result<intermediate.Value*> interfaceVoidPtrResult = emitter.GetInterfacePtrFromReceiver(receiver);
+            if (interfaceVoidPtrResult.Error()) return Result<bool>(ErrorId(interfaceVoidPtrResult.GetErrorId()));
+            intermediate.Value* interfaceVoidPtr = interfaceVoidPtrResult.Value();
+            Result<intermediate.Value*> loadedInterfaceVoidPtrResult = emitter.CreateLoad(interfaceVoidPtr);
+            if (loadedInterfaceVoidPtrResult.Error()) return Result<bool>(ErrorId(loadedInterfaceVoidPtrResult.GetErrorId()));
+            intermediate.Value* loadedInterfaceVoidPtr = loadedInterfaceVoidPtrResult.Value();
+            Result<intermediate.Value*> interfacePtrResult = emitter.CreateBitcast(loadedInterfaceVoidPtr, imtPtrType);
+            if (interfacePtrResult.Error()) return Result<bool>(ErrorId(interfacePtrResult.GetErrorId()));
+            intermediate.Value* interfacePtr = interfacePtrResult.Value();
+            Result<intermediate.Value*> methodPtrResult = emitter.GetMethodPtrFromInterfacePtr(interfacePtr, ImtIndex());
+            if (methodPtrResult.Error()) return Result<bool>(ErrorId(methodPtrResult.GetErrorId()));
+            intermediate.Value* methodPtr = methodPtrResult.Value();
+            Result<intermediate.Value*> methodResult = emitter.CreateLoad(methodPtr);
+            if (methodResult.Error()) return Result<bool>(ErrorId(methodResult.GetErrorId()));
+            intermediate.Value* method = methodResult.Value();
+            Result<intermediate.FunctionType*> fnTypeResult = emitter.GetFunctionType(this);
+            if (fnTypeResult.Error()) return Result<bool>(ErrorId(fnTypeResult.GetErrorId()));
+            intermediate.FunctionType* fnType = fnTypeResult.Value();
+            Result<intermediate.Type*> methodPtrTypeResult = emitter.GetPointerType(fnType);
+            if (methodPtrTypeResult.Error()) return Result<bool>(ErrorId(methodPtrTypeResult.GetErrorId()));
+            intermediate.Type* methodPtrType = methodPtrTypeResult.Value();
+            Result<intermediate.Value*> calleeResult = emitter.CreateBitcast(method, methodPtrType);
+            if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
+            intermediate.Value* callee = calleeResult.Value();
+            int na = cast<int>(irObjects.Count());
+            for (int i = 1; i < na; ++i)
+            {
+                IrObject* arg = irObjects[i];
+                Result<bool> loadResult = arg->Load(emitter, OperationFlags.none);
+                if (loadResult.Error()) return loadResult;
+            }
+            List<intermediate.Value*> args;
+            int n = cast<int>(parameters.Count());
+            if (ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ++n;
+            }
+            args.Resize(n);
+            for (int i = 0; i < n; ++i)
+            {
+                intermediate.Value* arg = emitter.Stack().Pop();
+                args[n - i - 1] = arg;
+            }
+            Result<intermediate.Value*> result = emitter.CreateCall(fnType, callee, args);
             if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
             if (ReturnType() != null && !ReturnType()->IsVoidTypeSymbol() && !ReturnsClassInterfaceOrClassDelegateByValue())
             {

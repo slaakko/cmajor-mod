@@ -64,6 +64,22 @@ namespace optimizer
                     branch->SetFalseTargetBasicBlock(falseTarget);
                     optimized = true;
                 }
+                if (branch->Cond()->IsTrue())
+                {
+                    intermediate.JmpInstruction* jmp = new intermediate.JmpInstruction(System.Lex.Span(), trueTarget->Id());
+                    jmp->SetTargetBasicBlock(trueTarget);
+                    Result<bool> result = intermediate.ReplaceInstructionWithInstruction(branch, jmp);
+                    if (result.Error()) return result;
+                    optimized = true;
+                }
+                else if (branch->Cond()->IsFalse())
+                {
+                    intermediate.JmpInstruction* jmp = new intermediate.JmpInstruction(System.Lex.Span(), falseTarget->Id());
+                    jmp->SetTargetBasicBlock(falseTarget);
+                    Result<bool> result = intermediate.ReplaceInstructionWithInstruction(branch, jmp);
+                    if (result.Error()) return result;
+                    optimized = true;
+                }
             }
             bb = bb->Next();
         }

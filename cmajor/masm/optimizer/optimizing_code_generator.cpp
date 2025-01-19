@@ -5,6 +5,7 @@
 
 module cmajor.masm.optimizer.optimizing_code_generator;
 
+import cmajor.masm.optimizer.optimize;
 import cmajor.masm.assembly;
 
 namespace cmajor::masm::optimizer {
@@ -249,22 +250,31 @@ void OptimizingCodeGenerator::EmitXorInst(const std::string& label,  cmajor::mas
 void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::SwitchInstruction& inst)
 {
     inst.SetAssemblyIndex(AssemblyFunction()->Index());
-    if (inst.CaseTargets().size() <= jumpTableSwitchThreshold)
+    if (HasOptimization(Optimizations::jumpTableSwitch))
     {
-        cmajor::masm::intermediate::EmitSwitch(inst, *this);
+        if (inst.CaseTargets().size() <= jumpTableSwitchThreshold)
+        {
+            cmajor::masm::intermediate::EmitSwitch(inst, *this);
+        }
+        else
+        {
+            EmitJumpTableSwitch(inst, *this);
+        }
     }
     else
     {
-        EmitJumpTableSwitch(inst, *this);
+        cmajor::masm::intermediate::EmitSwitch(inst, *this);
     }
 }
 
 void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::JmpInstruction& inst)
 {
-    if (!inst.IsLeader())
+    inst.SetAssemblyIndex(AssemblyFunction()->Index());
+    if (HasOptimization(Optimizations::jump))
     {
-        intermediate::BasicBlock* next = inst.Parent()->Next();
-        if (next)
+        cmajor::masm::intermediate::BasicBlock* bb = inst.Parent();
+        cmajor::masm::intermediate::BasicBlock* next = bb->Next();
+        if (next && !bb->ContainsOnlyNops())
         {
             if (inst.TargetBasicBlock() == next)
             {
@@ -275,13 +285,71 @@ void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::JmpInstruction& 
     CodeGenerator::Visit(inst);
 }
 
+void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::RetInstruction& inst)
+{
+    inst.SetAssemblyIndex(AssemblyFunction()->Index());
+    if (HasOptimization(Optimizations::jump))
+    {
+        cmajor::masm::intermediate::BasicBlock* bb = inst.Parent();
+        if (bb->IsLast() && inst.IsLeader() && inst.ReturnValue() == nullptr)
+        {
+            ResetLeader();
+            return;
+        }
+    }
+    CodeGenerator::Visit(inst);
+}
+
 void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::NoOperationInstruction& inst)
 {
-    if (!inst.IsLeader())
+    inst.SetAssemblyIndex(AssemblyFunction()->Index());
+    if (HasOptimization(Optimizations::removeNops))
     {
         return;
     }
     CodeGenerator::Visit(inst);
+}
+
+int OptimizingCodeGenerator::ExitLabelId() const
+{
+    if (HasOptimization(Optimizations::jump))
+    {
+        cmajor::masm::intermediate::BasicBlock* lastBB = CurrentFunction()->LastBasicBlock();
+        if (lastBB->Leader()->IsRetVoid())
+        {
+            return lastBB->Id();
+        }
+    }
+    return CodeGenerator::ExitLabelId();
+}
+
+void OptimizingCodeGenerator::EmitJumpToExit(cmajor::masm::intermediate::RetInstruction& retInst)
+{
+    if (HasOptimization(Optimizations::jump))
+    {
+        cmajor::masm::intermediate::BasicBlock* bb = retInst.Parent();
+        if (bb->IsLast())
+        {
+            return;
+        }
+    }
+    CodeGenerator::EmitJumpToExit(retInst);
+}
+
+void OptimizingCodeGenerator::EmitBranchJumps(cmajor::masm::intermediate::BranchInstruction& branchInst)
+{
+    if (HasOptimization(Optimizations::jump))
+    {
+        cmajor::masm::intermediate::BasicBlock* bb = branchInst.Parent();
+        if (branchInst.TrueTargetBasicBlock() == bb->Next())
+        {
+            cmajor::masm::assembly::Instruction* jzInstruction = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JZ);
+            jzInstruction->AddOperand(Ctx()->AssemblyContext()->MakeSymbol("@" + std::to_string(branchInst.FalseTargetBasicBlock()->Id())));
+            Emit(jzInstruction);
+            return;
+        }
+    }
+    CodeGenerator::EmitBranchJumps(branchInst);
 }
 
 } // cmajor::masm::optimizer

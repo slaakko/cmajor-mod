@@ -410,6 +410,42 @@ namespace intermediate
         {
             return users;
         }
+        public List<StoreInstruction*> Stores() const
+        {
+            List<StoreInstruction*> stores;
+            for (Instruction* user : users)
+            {
+                if (user->IsStoreInstruction())
+                {
+                    stores.Add(cast<StoreInstruction*>(user));
+                }
+            }
+            return stores;
+        }
+        public List<LoadInstruction*> Loads() const
+        {
+            List<LoadInstruction*> loads;
+            for (Instruction* user : users)
+            {
+                if (user->IsLoadInstruction())
+                {
+                    loads.Add(cast<LoadInstruction*>(user));
+                }
+            }
+            return loads;
+        }
+        public List<ArgInstruction*> Args() const
+        {
+            List<ArgInstruction*> args;
+            for (Instruction* user : users)
+            {
+                if (user->IsArgInstruction())
+                {
+                    args.Add(cast<ArgInstruction*>(user));
+                }
+            }
+            return args;
+        }
         public bool IsValueInstruction() const
         {
             switch (opCode)
@@ -3199,12 +3235,12 @@ namespace intermediate
             #assert(leader != null);
             return leader;
         }
-        public bool ContainsOnlyLocalsAndNops() const
+        public bool ContainsOnlyNops() const
         {
             Instruction* inst = FirstInstruction();
             while (inst != null && !inst->IsTerminator())
             {
-                if (!inst->IsLocalInstruction() && !inst->IsNopInstruction())
+                if (!inst->IsNopInstruction())
                 {
                     return false;
                 }

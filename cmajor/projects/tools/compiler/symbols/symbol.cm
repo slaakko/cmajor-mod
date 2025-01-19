@@ -33,7 +33,7 @@ namespace symbols
         classDelegateTypeMoveAssignment, classDelegateTypeEquality, memberFunctionToClassDelegateSymbol,
         arrayLengthFunctionSymbol, arrayBeginFunctionSymbol, arrayEndFunctionSymbol, arrayCBeginFunctionSymbol, arrayCEndFunctionSymbol,
         arrayDefaultConstructorSymbol, arrayCopyConstructorSymbol, arrayMoveConstructorSymbol, arrayCopyAssignmentSymbol, arrayMoveAssignmentSymbol, arrayElementAccessSymbol,
-        interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment,
+        interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment, interfaceTypeEquality, 
         classToInterfaceConversion, getObjectPtrFromInterfaceSymbol, namespaceTypeSymbol, functionGroupTypeSymbol, memberExpressionTypeSymbol, variableValueSymbol,
         globalVariableSymbol, globalVariableGroupSymbol, stringFunctionContainerSymbol, stringLengthFunctionSymbol, axiomSymbol, keywordSymbol, autoTypeSymbol,
         maxSymbol
@@ -171,6 +171,7 @@ namespace symbols
             case SymbolKind.interfaceTypeMoveCtor: return "interfaceTypeMoveCtor";
             case SymbolKind.interfaceTypeCopyAssignment: return "interfaceTypeCopyAssignment";
             case SymbolKind.interfaceTypeMoveAssignment: return "interfaceTypeMoveAssignment";
+            case SymbolKind.interfaceTypeEquality: return "interfaceTypeEquality";
             case SymbolKind.classToInterfaceConversion: return "classToInterfaceConversion";
             case SymbolKind.getObjectPtrFromInterfaceSymbol: return "getObjectPtrFromInterfaceSymbol";
             case SymbolKind.namespaceTypeSymbol: return "namespaceTypeSymbol";

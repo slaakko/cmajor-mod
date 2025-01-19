@@ -6,6 +6,7 @@
 export module cmajor.masm.intermediate.util;
 
 import std.core;
+import cmajor.masm.intermediate.code;
 
 export namespace cmajor::masm::intermediate {
 
@@ -40,5 +41,11 @@ inline bool PtrInSet(PtrT* ptr, const std::vector<PtrT*>& set)
 {
     return std::find(set.cbegin(), set.cend(), ptr) != set.cend();
 }
+
+void ReplaceInstructionWithValue(Instruction* inst, Value* value);
+
+void ReplaceInstructionWithInstruction(Instruction* oldInst, Instruction* newInst);
+
+bool IsPowerOfTwo(uint64_t n, int& shift);
 
 } // cmajor::masm::intermediate

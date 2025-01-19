@@ -63,8 +63,8 @@ const char* symbolTypeStr[uint8_t(SymbolType::maxSymbol)] =
     "classDelegateTypeDefaultConstructor", "classDelegateTypeCopyConstructor", "classDelegateTypeMoveConstructor", "classDelegateTypeCopyAssignment", "classDelegateTypeMoveAssignment",
     "classDelegateTypeEquality", "memberFunctionToClassDelegateSymbol",
     "arrayLengthFunctionSymbol", "arrayBeginFunctionSymbol", "arrayEndFunctionSymbol", "arrayCBeginFunctionSymbol", "arrayCEndFunctionSymbol",
-    "interfaceTypeDefaultCtor", "interfaceTypeCopyCtor", "interfaceTypeMoveCtor", "interfaceTypeCopyAssignment", "interfaceTypeMoveAssignment", "classToInterfaceConversion",
-    "getObjectPtrFromInterfaceSymbol",
+    "interfaceTypeDefaultCtor", "interfaceTypeCopyCtor", "interfaceTypeMoveCtor", "interfaceTypeCopyAssignment", "interfaceTypeMoveAssignment", "interfaceTypeEqual",
+    "classToInterfaceConversion", "getObjectPtrFromInterfaceSymbol",
     "namespaceTypeSymbol", "functionGroupTypeSymbol", "memberExpressionTypeSymbol", "variableValueSymbol", "globalVariableSymbol", "globalVariableGroupSymbol",
     "stringFunctionContainerSymbol", "stringLengthFunctionSymbol", "axiomSymbol", "keywordSymbol", "autoTypeSymbol"
 };
@@ -1330,6 +1330,7 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::interfaceTypeMoveCtor, new ConcreteSymbolCreator<InterfaceTypeMoveConstructor>());
     Register(SymbolType::interfaceTypeCopyAssignment, new ConcreteSymbolCreator<InterfaceTypeCopyAssignment>());
     Register(SymbolType::interfaceTypeMoveAssignment, new ConcreteSymbolCreator<InterfaceTypeMoveAssignment>());
+    Register(SymbolType::interfaceTypeEqual, new ConcreteSymbolCreator<InterfaceTypeEqual>());
     Register(SymbolType::classToInterfaceConversion, new ConcreteSymbolCreator<ClassToInterfaceConversion>());
     Register(SymbolType::getObjectPtrFromInterfaceSymbol, new ConcreteSymbolCreator<GetObjectPtrFromInterface>());
     Register(SymbolType::globalVariableSymbol, new ConcreteSymbolCreator<GlobalVariableSymbol>());

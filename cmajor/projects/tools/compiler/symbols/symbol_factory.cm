@@ -307,6 +307,30 @@ namespace symbols
             {
                 return Result<Symbol*>(new InterfaceTypeSymbol(span, name));
             }
+            case SymbolKind.interfaceTypeDefaultCtor:
+            {
+                return Result<Symbol*>(new InterfaceTypeDefaultConstructor(span, name));
+            }
+            case SymbolKind.interfaceTypeCopyCtor:
+            {
+                return Result<Symbol*>(new InterfaceTypeCopyConstructor(span, name));
+            }
+            case SymbolKind.interfaceTypeMoveCtor:
+            {
+                return Result<Symbol*>(new InterfaceTypeMoveConstructor(span, name));
+            }
+            case SymbolKind.interfaceTypeCopyAssignment:
+            {
+                return Result<Symbol*>(new InterfaceTypeCopyAssignment(span, name));
+            }
+            case SymbolKind.interfaceTypeMoveAssignment:
+            {
+                return Result<Symbol*>(new InterfaceTypeMoveAssignment(span, name));
+            }
+            case SymbolKind.interfaceTypeEquality:
+            {
+                return Result<Symbol*>(new InterfaceTypeEquality(span, name));
+            }
             case SymbolKind.delegateTypeSymbol:
             {
                 return Result<Symbol*>(new DelegateTypeSymbol(span, name));

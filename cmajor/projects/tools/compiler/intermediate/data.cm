@@ -141,6 +141,27 @@ namespace intermediate
         {
             return kind;
         }
+        public bool IsLiteralValue() const
+        {
+            switch (kind)
+            {
+                case ValueKind.boolValue:
+                case ValueKind.sbyteValue:
+                case ValueKind.byteValue:
+                case ValueKind.shortValue:
+                case ValueKind.ushortValue:
+                case ValueKind.intValue:
+                case ValueKind.uintValue:
+                case ValueKind.longValue:
+                case ValueKind.ulongValue:
+                case ValueKind.floatValue:
+                case ValueKind.doubleValue:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         public bool IsIntegerValue() const
         {
             switch (kind)
@@ -335,7 +356,19 @@ namespace intermediate
         {
             return false;
         }
+        public bool IsTrue() const
+        {
+            return IsBoolValue() && cast<BoolValue*>(this)->GetValue() == true;
+        }
+        public bool IsFalse() const
+        {
+            return IsBoolValue() && cast<BoolValue*>(this)->GetValue() == false;
+        }
         public virtual Value* Log2(Context* context) const
+        {
+            return null;
+        }
+        public virtual Value* PowerOfTwoMod(Context* context) const
         {
             return null;
         }
@@ -417,6 +450,18 @@ namespace intermediate
             }
             return null;
         }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1);
+                }
+            }
+            return null;
+        }
         private sbyte value;
     }
 
@@ -461,6 +506,18 @@ namespace intermediate
                 if (IsPowerOfTwo(value, shift))
                 {
                     return context->GetData()->MakeValue(cast<byte>(shift));
+                }
+            }
+            return null;
+        }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1u);
                 }
             }
             return null;
@@ -513,6 +570,18 @@ namespace intermediate
             }
             return null;
         }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1);
+                }
+            }
+            return null;
+        }
         private short value;
     }
 
@@ -557,6 +626,18 @@ namespace intermediate
                 if (IsPowerOfTwo(value, shift))
                 {
                     return context->GetData()->MakeValue(cast<ushort>(shift));
+                }
+            }
+            return null;
+        }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1u);
                 }
             }
             return null;
@@ -609,6 +690,18 @@ namespace intermediate
             }
             return null;
         }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1);
+                }
+            }
+            return null;
+        }
         private int value;
     }
 
@@ -653,6 +746,18 @@ namespace intermediate
                 if (IsPowerOfTwo(value, shift))
                 {
                     return context->GetData()->MakeValue(cast<uint>(shift));
+                }
+            }
+            return null;
+        }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1u);
                 }
             }
             return null;
@@ -705,6 +810,18 @@ namespace intermediate
             }
             return null;
         }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1);
+                }
+            }
+            return null;
+        }
         private long value;
     }
 
@@ -749,6 +866,18 @@ namespace intermediate
                 if (IsPowerOfTwo(value, shift))
                 {
                     return context->GetData()->MakeValue(cast<ulong>(shift));
+                }
+            }
+            return null;
+        }
+        public override Value* PowerOfTwoMod(Context* context) const
+        {
+            if (value > 0)
+            {
+                int shift = 0;
+                if (IsPowerOfTwo(cast<ulong>(value), shift))
+                {
+                    return context->GetData()->MakeValue(value - 1u);
                 }
             }
             return null;

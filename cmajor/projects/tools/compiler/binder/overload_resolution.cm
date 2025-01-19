@@ -2130,7 +2130,15 @@ namespace binder
                 }
                 else if (argument->Type()->IsInterfaceTypeSymbol())
                 {
-                    // todo
+                    InterfaceTypeSymbol* interfaceType = cast<InterfaceTypeSymbol*>(argument->Type());
+                    Result<TypeSymbol*> constTypeResult = argument->Type()->AddConst(context);
+                    if (constTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(constTypeResult.GetErrorId()));
+                    TypeSymbol* constType = constTypeResult.Value();
+                    Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                    if (lvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                    TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                    TypeSymbol* type = lvalueRefType;
+                    argument.Reset(new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type));
                 }
             }
             boundFunctionCall->AddArgument(Rvalue(argument));

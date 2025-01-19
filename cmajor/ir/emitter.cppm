@@ -280,12 +280,14 @@ public:
     virtual void* GetImtPtrPtrFromInterface(void* interfaceType, void* interfaceTypePtr) = 0;
     virtual void* GetImtPtrFromInterface(void* interfaceType, void* interfaceTypePtr) = 0;
     virtual void* GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t methodIndex, void* interfaceMethodType) = 0;
+    virtual void* GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset) = 0;
+    virtual void* GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount) = 0;
     virtual void* GetFunctionIrType(void* functionSymbol) const = 0;
     virtual void SetFunctionIrType(void* symbol, void* irType) = 0;
     virtual void* GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType) = 0;
     virtual void* GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex) = 0;
-    virtual void* GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset) = 0;
-    virtual void* GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex) = 0;
+    //virtual void* GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset) = 0;
+    //virtual void* GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex) = 0;
     virtual void* GetIrObject(void* symbol) const = 0;
     virtual void SetIrObject(void* symbol, void* irObject) = 0;
     virtual void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) = 0;

@@ -1,0 +1,15 @@
+using System;
+
+void fn()
+{
+    if (false)
+    {
+        Console.Out() << "dead" << endl();
+    }
+    Console.Out() << "fn" << endl();
+}
+
+void main()
+{
+    fn();
+}

@@ -244,12 +244,14 @@ public:
     void* GetImtPtrPtrFromInterface(void* interfaceType, void* interfaceTypePtr) override;
     void* GetImtPtrFromInterface(void* interfaceType, void* interfaceTypePtr) override;
     void* GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t methodIndex, void* interfaceMethodType) override;
+    void* GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset) override;
+    void* GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount) override;
     void* GetFunctionIrType(void* functionSymbol) const override;
     void SetFunctionIrType(void* symbol, void* irType) override;
     void* GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType) override;
     void* GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex) override;
-    void* GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset) override;
-    void* GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex) override;
+    //void* GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset) override;
+    //void* GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex) override;
     void* GetIrObject(void* symbol) const override;
     void SetIrObject(void* symbol, void* irObject) override;
     void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) override;

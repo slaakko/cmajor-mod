@@ -1,0 +1,2 @@
+project literal_expr;
+source <literal_expr.cm>;

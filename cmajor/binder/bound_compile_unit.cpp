@@ -685,11 +685,12 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                         if (TypesEqual(targetInterfaceType, sourceInterfaceType))
                         {
                             //LocalVariableSymbol* temporaryInterfaceObjectVar = currentFunction->GetFunctionSymbol()->CreateTemporary(targetInterfaceType, sourcePos);
-                            std::unique_ptr<cmajor::symbols::FunctionSymbol> classToInterfaceConversion(new cmajor::symbols::ClassToInterfaceConversion(sourceClassType, targetInterfaceType, i, node->GetSpan()));
+                            std::unique_ptr<cmajor::symbols::FunctionSymbol> classToInterfaceConversion(
+                                new cmajor::symbols::ClassToInterfaceConversion(sourceClassType, targetInterfaceType, i, node->GetSpan()));
                             classToInterfaceConversion->SetParent(&symbolTable.GlobalNs());
                             classToInterfaceConversion->SetModule(&GetModule());
                             conversion = classToInterfaceConversion.get();
-                            conversionTable.AddConversion(conversion);
+                            // do not add entry to the conversion table
                             conversionTable.AddGeneratedConversion(std::move(classToInterfaceConversion));
                             return conversion;
                         }

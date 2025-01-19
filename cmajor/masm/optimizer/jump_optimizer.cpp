@@ -59,6 +59,18 @@ void OptimizeJumps(cmajor::masm::intermediate::Function* fn)
             {
                 branch->SetFalseTargetBasicBlock(falseTarget);
             }
+            if (branch->Cond()->IsTrue())
+            {
+                cmajor::masm::intermediate::JmpInstruction* jmp = new cmajor::masm::intermediate::JmpInstruction(soul::ast::Span(), trueTarget->Id());
+                jmp->SetTargetBasicBlock(trueTarget);
+                cmajor::masm::intermediate::ReplaceInstructionWithInstruction(branch, jmp);
+            }
+            else if (branch->Cond()->IsFalse())
+            {
+                cmajor::masm::intermediate::JmpInstruction* jmp = new cmajor::masm::intermediate::JmpInstruction(soul::ast::Span(), falseTarget->Id());
+                jmp->SetTargetBasicBlock(falseTarget);
+                cmajor::masm::intermediate::ReplaceInstructionWithInstruction(branch, jmp);
+            }
         }
         bb = bb->Next();
     }

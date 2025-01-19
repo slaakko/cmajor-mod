@@ -1041,7 +1041,62 @@ namespace binder
                 }
                 else if (type->IsInterfaceTypeSymbol())
                 {
-                    // todo
+                    InterfaceTypeSymbol* interfaceType = cast<InterfaceTypeSymbol*>(type);
+                    ContainerScope* scope = interfaceType->GetContainerScope();
+                    Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str(), ScopeLookup.this_, context);
+                    if (symbolResult.Error())
+                    {
+                        SetErrorId(symbolResult.GetErrorId());
+                        return;
+                    }
+                    Symbol* symbol = symbolResult.Value();
+                    if (symbol != null)
+                    {
+                        UniquePtr<BoundExpression> interfacePtr = Rvalue(expression);
+                        BindSymbol(symbol, dotNode.MemberId());
+                        if (Error()) return;
+                        if (expression->IsBoundFunctionGroupExpression())
+                        {
+                            MemberExpressionTypeSymbol* memberExpressionTypeSymbol = new MemberExpressionTypeSymbol(dotNode.GetSpan(), expression->Type()->Name());
+                            BoundMemberExpression* bme = new BoundMemberExpression(dotNode.GetSpan(), UniquePtr<BoundExpression>(interfacePtr.Release()), Rvalue(expression),
+                                memberExpressionTypeSymbol);
+                            memberExpressionTypeSymbol->SetBoundMemberExpression(bme);
+                            expression.Reset(bme);
+                        }
+                        else
+                        {
+                            Result<string> symbolNameResult = ToUtf8(dotNode.MemberId()->Str());
+                            if (symbolNameResult.Error())
+                            {
+                                SetErrorId(symbolNameResult.GetErrorId());
+                                return;
+                            }
+                            string symbolName = Rvalue(symbolNameResult.Value());
+                            int errorId = MakeError("symbol '" + symbolName + "' does not denote a function group", dotNode.MemberId()->GetFullSpan());
+                            SetErrorId(errorId);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Result<string> symbolNameResult = ToUtf8(dotNode.MemberId()->Str());
+                        if (symbolNameResult.Error())
+                        {
+                            SetErrorId(symbolNameResult.GetErrorId());
+                            return;
+                        }
+                        string symbolName = Rvalue(symbolNameResult.Value());
+                        Result<string> interfaceTypeFullNameResult = ToUtf8(interfaceType->FullName());
+                        if (interfaceTypeFullNameResult.Error())
+                        {
+                            SetErrorId(interfaceTypeFullNameResult.GetErrorId());
+                            return;
+                        }
+                        string interfaceTypeFullName = Rvalue(interfaceTypeFullNameResult.Value());
+                        int errorId = MakeError("symbol '" + symbolName + "' not found from interface '" + interfaceTypeFullName + "'", dotNode.MemberId()->GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
                 }
                 else if (type->IsEnumTypeSymbol())
                 {
@@ -3652,7 +3707,8 @@ namespace binder
                 }
                 case SymbolKind.interfaceTypeSymbol:
                 {
-                    // todo
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(symbol);
+                    expression.Reset(new BoundTypeExpression(identifierNode->GetSpan(), interfaceTypeSymbol));
                     break;
                 }
                 case SymbolKind.delegateTypeSymbol:

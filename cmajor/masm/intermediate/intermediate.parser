@@ -110,7 +110,7 @@ parser IntermediateParser
         ;
 
     DataDefinitions(cmajor::masm::intermediate::Context* context) 
-        ::= DATA LBRACE DataDefinition(context):dataDefinition* RBRACE{ context->ValidateData(); }
+        ::= DATA LBRACE DataDefinition(context):dataDefinition* RBRACE{ context->ResolveData(); }
         ;
 
     DataDefinition(cmajor::masm::intermediate::Context* context, 
@@ -199,7 +199,7 @@ parser IntermediateParser
             }
         |   ID
             { 
-                return context->MakeAddressLiteral(lexer.GetSpan(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString())); 
+                return context->MakeAddressLiteral(lexer.GetSpan(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()), false); 
             }
         )
         ;
@@ -292,7 +292,7 @@ parser IntermediateParser
         |   FALSE{ return context->GetBooleanLiteral(lexer.GetSpan(pos), type, false); }
         |   NULL_TOKEN{ return context->GetNullValue(lexer.GetSpan(pos), type); }
         |   NUMBER{ return context->MakeIntegerLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
-        |   ID{ return context->MakeAddressLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   ID{ return context->MakeAddressLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString()), true); }
         ;
 
     FunctionDefinitions(cmajor::masm::intermediate::Context* context)

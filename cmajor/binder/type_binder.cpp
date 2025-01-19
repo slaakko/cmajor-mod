@@ -876,7 +876,24 @@ void TypeBinder::BindInterface(cmajor::symbols::InterfaceTypeSymbol* interfaceTy
     cmajor::symbols::GetObjectPtrFromInterface* getObjectPtrFromInterface = new cmajor::symbols::GetObjectPtrFromInterface(interfaceTypeSymbol);
     symbolTable.SetFunctionIdFor(getObjectPtrFromInterface);
     interfaceTypeSymbol->AddMember(getObjectPtrFromInterface);
-    boundCompileUnit.GenerateCopyConstructorFor(interfaceTypeSymbol, containerScope, interfaceNode);
+    cmajor::symbols::InterfaceTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::InterfaceTypeDefaultConstructor(interfaceTypeSymbol);
+    symbolTable.SetFunctionIdFor(defaultConstructor);
+    interfaceTypeSymbol->AddMember(defaultConstructor);
+    cmajor::symbols::InterfaceTypeCopyConstructor* copyConstructor = new cmajor::symbols::InterfaceTypeCopyConstructor(interfaceTypeSymbol);
+    symbolTable.SetFunctionIdFor(copyConstructor);
+    interfaceTypeSymbol->AddMember(copyConstructor);
+    cmajor::symbols::InterfaceTypeMoveConstructor* moveConstructor = new cmajor::symbols::InterfaceTypeMoveConstructor(interfaceTypeSymbol);
+    symbolTable.SetFunctionIdFor(moveConstructor);
+    interfaceTypeSymbol->AddMember(moveConstructor);
+    cmajor::symbols::InterfaceTypeCopyAssignment* copyAssignment = new cmajor::symbols::InterfaceTypeCopyAssignment(interfaceTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    symbolTable.SetFunctionIdFor(copyAssignment);
+    interfaceTypeSymbol->AddMember(copyAssignment);
+    cmajor::symbols::InterfaceTypeMoveAssignment* moveAssignment = new cmajor::symbols::InterfaceTypeMoveAssignment(interfaceTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    symbolTable.SetFunctionIdFor(moveAssignment);
+    interfaceTypeSymbol->AddMember(moveAssignment);
+    cmajor::symbols::InterfaceTypeEqual* equality = new cmajor::symbols::InterfaceTypeEqual(interfaceTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    symbolTable.SetFunctionIdFor(equality);
+    interfaceTypeSymbol->Ns()->AddMember(equality);
     boundCompileUnit.GetAttributeBinder()->BindAttributes(interfaceNode->GetAttributes(), interfaceTypeSymbol, boundCompileUnit, containerScope);
     containerScope = prevContainerScope;
 }

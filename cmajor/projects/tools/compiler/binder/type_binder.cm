@@ -233,7 +233,18 @@ namespace binder
                 #assert(symbol->IsParameterSymbol());
                 ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
                 parameterSymbol->SetType(parameterType);
-                // todo interface type
+                if (parameterType->IsInterfaceTypeSymbol())
+                {
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(parameterType);
+                    if (interfaceTypeSymbol->IsProject())
+                    {
+                        Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                        #assert(node != null && node->IsInterfaceNode());
+                        InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                        BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                        if (Error()) return;
+                    }
+                }
             }
             auto resolveResult = ResolveType(functionNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             if (resolveResult.Error())
@@ -243,7 +254,18 @@ namespace binder
             }
             TypeSymbol* returnType = resolveResult.Value();
             functionSymbol->SetReturnType(returnType);
-            // todo interface type
+            if (returnType->IsInterfaceTypeSymbol())
+            {
+                InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(returnType);
+                if (interfaceTypeSymbol->IsProject())
+                {
+                    Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                    #assert(node != null && node->IsInterfaceNode());
+                    InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                    BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                    if (Error()) return;
+                }
+            }
             if (functionSymbol->Constraint() == null && functionNode.WhereConstraint() != null)
             {
                 CloneContext cloneContext;
@@ -432,7 +454,18 @@ namespace binder
                 #assert(symbol->IsParameterSymbol());
                 ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
                 parameterSymbol->SetType(parameterType);
-                // todo interface type
+                if (parameterType->IsInterfaceTypeSymbol())
+                {
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(parameterType);
+                    if (interfaceTypeSymbol->IsProject())
+                    {
+                        Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                        #assert(node != null && node->IsInterfaceNode());
+                        InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                        BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                        if (Error()) return;
+                    }
+                }
             }
             if (constructorSymbol->Constraint() == null && constructorNode.WhereConstraint() != null)
             {
@@ -652,7 +685,18 @@ namespace binder
                 #assert(symbol->IsParameterSymbol());
                 ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
                 parameterSymbol->SetType(parameterType);
-                // todo interface type
+                if (parameterType->IsInterfaceTypeSymbol())
+                {
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(parameterType);
+                    if (interfaceTypeSymbol->IsProject())
+                    {
+                        Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                        #assert(node != null && node->IsInterfaceNode());
+                        InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                        BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                        if (Error()) return;
+                    }
+                }
             }
             Result<TypeSymbol*> resolveResult = ResolveType(memberFunctionNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             if (resolveResult.Error())
@@ -662,7 +706,18 @@ namespace binder
             }
             TypeSymbol* returnType = resolveResult.Value();
             memberFunctionSymbol->SetReturnType(returnType);
-            // todo interface type
+            if (returnType->IsInterfaceTypeSymbol())
+            {
+                InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(returnType);
+                if (interfaceTypeSymbol->IsProject())
+                {
+                    Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                    #assert(node != null && node->IsInterfaceNode());
+                    InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                    BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                    if (Error()) return;
+                }
+            }
             if (memberFunctionSymbol->Constraint() == null && memberFunctionNode.WhereConstraint() != null)
             {
                 CloneContext cloneContext;
@@ -970,6 +1025,18 @@ namespace binder
                 #assert(symbol->IsParameterSymbol());
                 ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
                 parameterSymbol->SetType(parameterType);
+                if (parameterType->IsInterfaceTypeSymbol())
+                {
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(parameterType);
+                    if (interfaceTypeSymbol->IsProject())
+                    {
+                        Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                        #assert(node != null && node->IsInterfaceNode());
+                        InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                        BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                        if (Error()) return;
+                    }
+                }
             }
             Result<TypeSymbol*> resolveResult = ResolveType(delegateNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             if (resolveResult.Error())
@@ -979,6 +1046,18 @@ namespace binder
             }
             TypeSymbol* returnType = resolveResult.Value();
             delegateTypeSymbol->SetReturnType(returnType);
+            if (returnType->IsInterfaceTypeSymbol())
+            {
+                InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(returnType);
+                if (interfaceTypeSymbol->IsProject())
+                {
+                    Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                    #assert(node != null && node->IsInterfaceNode());
+                    InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                    BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                    if (Error()) return;
+                }
+            }
             if (delegateTypeSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(delegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
@@ -1170,6 +1249,18 @@ namespace binder
                 #assert(symbol->IsParameterSymbol());
                 ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
                 parameterSymbol->SetType(parameterType);
+                if (parameterType->IsInterfaceTypeSymbol())
+                {
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(parameterType);
+                    if (interfaceTypeSymbol->IsProject())
+                    {
+                        Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                        #assert(node != null && node->IsInterfaceNode());
+                        InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                        BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                        if (Error()) return;
+                    }
+                }
                 string paramName = "@p" + ToString(i);
                 Result<ustring> paramNameResult = ToUtf32(paramName);
                 if (paramNameResult.Error())
@@ -1195,6 +1286,18 @@ namespace binder
             }
             TypeSymbol* returnType = resolveResult.Value();
             classDelegateTypeSymbol->SetReturnType(returnType);
+            if (returnType->IsInterfaceTypeSymbol())
+            {
+                InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(returnType);
+                if (interfaceTypeSymbol->IsProject())
+                {
+                    Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                    #assert(node != null && node->IsInterfaceNode());
+                    InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                    BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                    if (Error()) return;
+                }
+            }
             if (classDelegateTypeSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
@@ -2088,7 +2191,16 @@ namespace binder
                 }
                 else if (baseOrInterfaceSymbol->IsInterfaceTypeSymbol())
                 {
-                    // todo
+                    InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(baseOrInterfaceSymbol);
+                    if (interfaceTypeSymbol->IsProject())
+                    {
+                        Node* node = symbolTable->GetNode(interfaceTypeSymbol);
+                        #assert(node != null && node->IsInterfaceNode());
+                        InterfaceNode* interfaceNode = cast<InterfaceNode*>(node);
+                        BindInterface(interfaceTypeSymbol, interfaceNode, false);
+                        if (Error()) return;
+                    }
+                    classTypeSymbol->AddImplementedInterface(interfaceTypeSymbol);
                 }
                 if (Error()) return;
             }
@@ -2150,7 +2262,125 @@ namespace binder
         }
         public void BindInterface(InterfaceTypeSymbol* interfaceTypeSymbol, InterfaceNode* interfaceNode, bool fromOwnCompileUnit)
         {
-            // todo
+            if (interfaceTypeSymbol->IsBound()) return;
+            interfaceTypeSymbol->SetBound();
+            Result<bool> result = interfaceTypeSymbol->SetSpecifiers(interfaceNode->GetSpecifiers());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (!fromOwnCompileUnit)
+            {
+                AddUsingNodesToCurrentCompileUnit(interfaceNode);
+            }
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = interfaceTypeSymbol->GetContainerScope();
+            int nm = interfaceNode->Members().Count();
+            if (nm == 0)
+            {
+                int errorId = MakeError("interface must have at least one member function", interfaceNode->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            for (int i = 0; i < nm; ++i)
+            {
+                Node* member = interfaceNode->Members()[i];
+                member->Accept(*this);
+                if (Error()) return;
+            }
+            InterfaceTypeDefaultConstructor* defaultConstructor = new InterfaceTypeDefaultConstructor(context, interfaceTypeSymbol);
+            if (defaultConstructor->Error())
+            {
+                SetErrorId(defaultConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(defaultConstructor);
+            result = interfaceTypeSymbol->AddMember(defaultConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            InterfaceTypeCopyConstructor* copyConstructor = new InterfaceTypeCopyConstructor(context, interfaceTypeSymbol);
+            if (copyConstructor->Error())
+            {
+                SetErrorId(copyConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyConstructor);
+            result = interfaceTypeSymbol->AddMember(copyConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            InterfaceTypeMoveConstructor* moveConstructor = new InterfaceTypeMoveConstructor(context, interfaceTypeSymbol);
+            if (moveConstructor->Error())
+            {
+                SetErrorId(moveConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveConstructor);
+            result = interfaceTypeSymbol->AddMember(moveConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            InterfaceTypeCopyAssignment* copyAssignment = new InterfaceTypeCopyAssignment(context, interfaceTypeSymbol);
+            if (copyAssignment->Error())
+            {
+                SetErrorId(copyAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyAssignment);
+            result = interfaceTypeSymbol->AddMember(copyAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            InterfaceTypeMoveAssignment* moveAssignment = new InterfaceTypeMoveAssignment(context, interfaceTypeSymbol);
+            if (moveAssignment->Error())
+            {
+                SetErrorId(moveAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveAssignment);
+            result = interfaceTypeSymbol->AddMember(moveAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            InterfaceTypeEquality* equality = new InterfaceTypeEquality(context, interfaceTypeSymbol);
+            if (equality->Error())
+            {
+                SetErrorId(equality->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(equality);
+            Result<NamespaceSymbol*> nsResult = interfaceTypeSymbol->Ns(context);
+            if (nsResult.Error())
+            {
+                SetErrorId(nsResult.GetErrorId());
+                return;
+            }
+            NamespaceSymbol* ns = nsResult.Value();
+            result = ns->AddMember(equality, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(interfaceNode->GetAttributes(), interfaceTypeSymbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            containerScope = prevContainerScope;
         }
         public void BindConcept(ConceptSymbol* conceptSymbol, ConceptNode* conceptNode)
         {
@@ -2158,8 +2388,13 @@ namespace binder
             conceptSymbol->SetBound();
             ContainerScope* prevContainerScope = containerScope;
             containerScope = conceptSymbol->GetContainerScope();
-            conceptSymbol->SetSpecifiers(conceptNode->GetSpecifiers());
-            Result<bool> result = conceptSymbol->ComputeName();
+            Result<bool> result = conceptSymbol->SetSpecifiers(conceptNode->GetSpecifiers());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = conceptSymbol->ComputeName();
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());

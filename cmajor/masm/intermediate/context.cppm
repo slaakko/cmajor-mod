@@ -58,7 +58,7 @@ public:
     void AddFunctionType(const soul::ast::Span& span, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs);
     void AddGlobalVariable(const soul::ast::Span& span, Type* type, const std::string& variableName, Value* initializer);
     void ResolveTypes();
-    void ValidateData();
+    void ResolveData();
     void ResolveType(TypeRef& typeRef);
     Value* GetTrueValue();
     Value* GetFalseValue();
@@ -82,7 +82,7 @@ public:
     Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr);
     Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol);
     Value* MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue);
-    Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id);
+    Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, bool resolve);
     Function* CurrentFunction() const;
     void SetCurrentFunction(Function* function);
     Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, cmajor::masm::intermediate::MetadataRef* metadataRef);

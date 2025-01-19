@@ -1,0 +1,10 @@
+using System;
+
+void main()
+{
+    int count = 0;
+loop:
+    Console.WriteLine("Helena is best");
+    ++count;
+    if (count <= 100) goto loop;
+}

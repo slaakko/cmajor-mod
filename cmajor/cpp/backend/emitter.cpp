@@ -1290,6 +1290,22 @@ void* CppEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t 
     return callee;
 }
 
+void* CppEmitter::GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset)
+{
+    cmajor::cpp::ir::Value* imtsArrayPtrAddr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(vmtPtr), context->GetLongValue(imtsVmtIndexOffset));
+    cmajor::cpp::ir::Value* imtsArrayPtr = context->CreateLoad(imtsArrayPtrAddr);
+    return imtsArrayPtr;
+}
+
+void* CppEmitter::GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount)
+{
+    cmajor::cpp::ir::Value* imtsArrayPtr = context->CreateBitCast(static_cast<cmajor::cpp::ir::Value*>(imtsPtr),
+        context->GetPtrType(context->GetArrayType(context->GetPtrType(context->GetVoidType()), static_cast<uint64_t>(interfaceCount))));
+    cmajor::cpp::ir::Value* imtPtrAddr = context->CreateElemAddr(imtsArrayPtr, context->GetLongValue(interfaceIndex));
+    cmajor::cpp::ir::Value* imtPtr = context->CreateLoad(imtPtrAddr);
+    return imtPtr;
+}
+
 void* CppEmitter::GetFunctionIrType(void* functionSymbol) const
 {
     auto it = functionIrTypeMap.find(functionSymbol);
@@ -1321,6 +1337,7 @@ void* CppEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
     return context->CreateLoad(funPtrPtr);
 }
 
+/*
 void* CppEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     cmajor::cpp::ir::Value* imtsArrayPtrPtr = context->CreateBitCast(context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset)),
@@ -1334,6 +1351,7 @@ void* CppEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIn
     cmajor::cpp::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::cpp::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
     return context->CreateLoad(imtArrayPtr);
 }
+*/
 
 void* CppEmitter::GetIrObject(void* symbol) const
 {

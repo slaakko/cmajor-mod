@@ -276,17 +276,366 @@ namespace optimizer
     public Result<bool> OptimizeAdd(intermediate.AddInstruction* addInst, intermediate.Context* context)
     {
         bool optimized = false;
-        if (addInst->Left()->IsZero())
+        intermediate.Value* left = addInst->Left();
+        intermediate.Value* right = addInst->Right();
+        if (left->IsZero())
         {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, addInst->Right());
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, right);
             if (result.Error()) return result;
             optimized = true;
         }
-        else if (addInst->Right()->IsZero())
+        else if (right->IsZero())
         {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, addInst->Left());
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, left);
             if (result.Error()) return result;
             optimized = true;
+        }
+        if (!optimized)
+        {
+            switch (left->Kind())
+            {
+                case intermediate.ValueKind.sbyteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.sbyteValue:
+                        {
+                            sbyte sum = cast<intermediate.SByteValue*>(left)->GetValue() + cast<intermediate.SByteValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.byteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.byteValue:
+                        {
+                            byte sum = cast<intermediate.ByteValue*>(left)->GetValue() + cast<intermediate.ByteValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.shortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.shortValue:
+                        {
+                            short sum = cast<intermediate.ShortValue*>(left)->GetValue() + cast<intermediate.ShortValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ushortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ushortValue:
+                        {
+                            ushort sum = cast<intermediate.UShortValue*>(left)->GetValue() + cast<intermediate.UShortValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.intValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.intValue:
+                        {
+                            int sum = cast<intermediate.IntValue*>(left)->GetValue() + cast<intermediate.IntValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.uintValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.uintValue:
+                        {
+                            uint sum = cast<intermediate.UIntValue*>(left)->GetValue() + cast<intermediate.UIntValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.longValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.longValue:
+                        {
+                            long sum = cast<intermediate.LongValue*>(left)->GetValue() + cast<intermediate.LongValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ulongValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ulongValue:
+                        {
+                            ulong sum = cast<intermediate.ULongValue*>(left)->GetValue() + cast<intermediate.ULongValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.floatValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.floatValue:
+                        {
+                            float sum = cast<intermediate.FloatValue*>(left)->GetValue() + cast<intermediate.FloatValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.doubleValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.doubleValue:
+                        {
+                            double sum = cast<intermediate.DoubleValue*>(left)->GetValue() + cast<intermediate.DoubleValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(sum);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(addInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeSub(intermediate.SubInstruction* subInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = subInst->Left();
+        intermediate.Value* right = subInst->Right();
+        if (right->IsZero())
+        {
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, left);
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        if (!optimized)
+        {
+            switch (left->Kind())
+            {
+                case intermediate.ValueKind.sbyteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.sbyteValue:
+                        {
+                            sbyte difference = cast<intermediate.SByteValue*>(left)->GetValue() - cast<intermediate.SByteValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.byteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.byteValue:
+                        {
+                            byte difference = cast<intermediate.ByteValue*>(left)->GetValue() - cast<intermediate.ByteValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.shortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.shortValue:
+                        {
+                            short difference = cast<intermediate.ShortValue*>(left)->GetValue() - cast<intermediate.ShortValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ushortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ushortValue:
+                        {
+                            ushort difference = cast<intermediate.UShortValue*>(left)->GetValue() - cast<intermediate.UShortValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.intValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.intValue:
+                        {
+                            int difference = cast<intermediate.IntValue*>(left)->GetValue() - cast<intermediate.IntValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.uintValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.uintValue:
+                        {
+                            uint difference = cast<intermediate.UIntValue*>(left)->GetValue() - cast<intermediate.UIntValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.longValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.longValue:
+                        {
+                            long difference = cast<intermediate.LongValue*>(left)->GetValue() - cast<intermediate.LongValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ulongValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ulongValue:
+                        {
+                            ulong difference = cast<intermediate.ULongValue*>(left)->GetValue() - cast<intermediate.ULongValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.floatValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.floatValue:
+                        {
+                            float difference = cast<intermediate.FloatValue*>(left)->GetValue() - cast<intermediate.FloatValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.doubleValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.doubleValue:
+                        {
+                            double difference = cast<intermediate.DoubleValue*>(left)->GetValue() - cast<intermediate.DoubleValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(difference);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(subInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
         }
         return Result<bool>(optimized);
     }
@@ -295,40 +644,40 @@ namespace optimizer
     public Result<bool> OptimizeMul(intermediate.MulInstruction* mulInst, intermediate.Function* fn, intermediate.Context* context)
     {
         bool optimized = false;
-        if (mulInst->Left()->IsZero())
+        intermediate.Value* left = mulInst->Left();
+        intermediate.Value* right = mulInst->Right();
+        if (left->IsZero())
         {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Left());
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, left);
             if (result.Error()) return result;
         }
-        else if (mulInst->Right()->IsZero())
+        else if (right->IsZero())
         {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Right());
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, right);
             if (result.Error()) return result;
         }
-        else if (mulInst->Left()->IsOne())
+        else if (left->IsOne())
         {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Right());
-            if (result.Error()) return result;
-            optimized = true;
-        }
-        else if (mulInst->Right()->IsOne())
-        {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, mulInst->Left());
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, right);
             if (result.Error()) return result;
             optimized = true;
         }
-        else if (mulInst->Left()->IsTwo())
+        else if (right->IsOne())
         {
-            intermediate.Value* right = mulInst->Right();
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, left);
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        else if (left->IsTwo())
+        {
             intermediate.AddInstruction* addInst = new intermediate.AddInstruction(
                 System.Lex.Span(), fn->MakeNextRegValue(right->GetType()), right, right);
             Result<bool> result = intermediate.ReplaceInstructionWithInstruction(mulInst, addInst);
             if (result.Error()) return result;
             optimized = true;
         }
-        else if (mulInst->Right()->IsTwo())
+        else if (right->IsTwo())
         {
-            intermediate.Value* left = mulInst->Left();
             intermediate.AddInstruction* addInst = new intermediate.AddInstruction(
                 System.Lex.Span(), fn->MakeNextRegValue(left->GetType()), left, left);
             Result<bool> result = intermediate.ReplaceInstructionWithInstruction(mulInst, addInst);
@@ -337,8 +686,6 @@ namespace optimizer
         }
         else
         {
-            intermediate.Value* left = mulInst->Left();
-            intermediate.Value* right = mulInst->Right();
             intermediate.Value* leftLog2 = left->Log2(context);
             if (leftLog2 != null)
             {
@@ -361,6 +708,172 @@ namespace optimizer
                 }
             }
         }
+        if (!optimized)
+        {
+            switch (left->Kind())
+            {
+                case intermediate.ValueKind.sbyteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.sbyteValue:
+                        {
+                            sbyte product = cast<intermediate.SByteValue*>(left)->GetValue() * cast<intermediate.SByteValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.byteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.byteValue:
+                        {
+                            byte product = cast<intermediate.ByteValue*>(left)->GetValue() * cast<intermediate.ByteValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.shortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.shortValue:
+                        {
+                            short product = cast<intermediate.ShortValue*>(left)->GetValue() * cast<intermediate.ShortValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ushortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ushortValue:
+                        {
+                            ushort product = cast<intermediate.UShortValue*>(left)->GetValue() * cast<intermediate.UShortValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.intValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.intValue:
+                        {
+                            int product = cast<intermediate.IntValue*>(left)->GetValue() * cast<intermediate.IntValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.uintValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.uintValue:
+                        {
+                            uint product = cast<intermediate.UIntValue*>(left)->GetValue() * cast<intermediate.UIntValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.longValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.longValue:
+                        {
+                            long product = cast<intermediate.LongValue*>(left)->GetValue() * cast<intermediate.LongValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ulongValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ulongValue:
+                        {
+                            ulong product = cast<intermediate.ULongValue*>(left)->GetValue() * cast<intermediate.ULongValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.floatValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.floatValue:
+                        {
+                            float product = cast<intermediate.FloatValue*>(left)->GetValue() * cast<intermediate.FloatValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.doubleValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.doubleValue:
+                        {
+                            double product = cast<intermediate.DoubleValue*>(left)->GetValue() * cast<intermediate.DoubleValue*>(right)->GetValue();
+                            intermediate.Value* value = context->GetData()->MakeValue(product);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(mulInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
         return Result<bool>(optimized);
     }
 
@@ -368,16 +881,16 @@ namespace optimizer
     public Result<bool> OptimizeDiv(intermediate.DivInstruction* divInst, intermediate.Function* fn, intermediate.Context* context)
     {
         bool optimized = false;
-        if (divInst->Right()->IsOne())
+        intermediate.Value* left = divInst->Left();
+        intermediate.Value* right = divInst->Right();
+        if (right->IsOne())
         {
-            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, divInst->Left());
+            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, left);
             if (result.Error()) return result;
             optimized = true;
         }
         else
         {
-            intermediate.Value* left = divInst->Left();
-            intermediate.Value* right = divInst->Right();
             intermediate.Value* rightLog2 = right->Log2(context);
             if (rightLog2 != null)
             {
@@ -385,8 +898,1493 @@ namespace optimizer
                     System.Lex.Span(), fn->MakeNextRegValue(right->GetType()), left, rightLog2);
                 Result<bool> result = intermediate.ReplaceInstructionWithInstruction(divInst, shrInst);
                 if (result.Error()) return result;
-                Console.Out() << "DIV OPTIMIZED " << fn->Name() << endl();
                 optimized = true;
+            }
+        }
+        if (!optimized)
+        {
+            switch (left->Kind())
+            {
+                case intermediate.ValueKind.sbyteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.sbyteValue:
+                        {
+                            sbyte r = cast<intermediate.SByteValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            sbyte quotient = cast<intermediate.SByteValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.byteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.byteValue:
+                        {
+                            byte r = cast<intermediate.ByteValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            byte quotient = cast<intermediate.ByteValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.shortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.shortValue:
+                        {
+                            short r = cast<intermediate.ShortValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            short quotient = cast<intermediate.ShortValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ushortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ushortValue:
+                        {
+                            ushort r = cast<intermediate.UShortValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            ushort quotient = cast<intermediate.UShortValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.intValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.intValue:
+                        {
+                            int r = cast<intermediate.IntValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            int quotient = cast<intermediate.IntValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.uintValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.uintValue:
+                        {
+                            uint r = cast<intermediate.UIntValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            uint quotient = cast<intermediate.UIntValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.longValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.longValue:
+                        {
+                            long r = cast<intermediate.LongValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            long quotient = cast<intermediate.LongValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ulongValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ulongValue:
+                        {
+                            ulong r = cast<intermediate.ULongValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            ulong quotient = cast<intermediate.ULongValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.floatValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.floatValue:
+                        {
+                            float r = cast<intermediate.FloatValue*>(right)->GetValue();
+                            if (r == 0.0f)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            float quotient = cast<intermediate.FloatValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.doubleValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.doubleValue:
+                        {
+                            double r = cast<intermediate.DoubleValue*>(right)->GetValue();
+                            if (r == 0.0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            double quotient = cast<intermediate.DoubleValue*>(left)->GetValue() / r;
+                            intermediate.Value* value = context->GetData()->MakeValue(quotient);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(divInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeMod(intermediate.ModInstruction* modInst, intermediate.Function* fn, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = modInst->Left();
+        intermediate.Value* right = modInst->Right();
+        intermediate.Value* rightPowerOfTwoMod = right->PowerOfTwoMod(context);
+        if (rightPowerOfTwoMod != null)
+        {
+            intermediate.AndInstruction* andInst = new intermediate.AndInstruction(
+                System.Lex.Span(), fn->MakeNextRegValue(left->GetType()), left, rightPowerOfTwoMod);
+            Result<bool> result = intermediate.ReplaceInstructionWithInstruction(modInst, andInst);
+            if (result.Error()) return result;
+            optimized = true;
+        }
+        if (!optimized)
+        {
+            switch (left->Kind())
+            {
+                case intermediate.ValueKind.sbyteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.sbyteValue:
+                        {
+                            sbyte r = cast<intermediate.SByteValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            sbyte remainder = cast<intermediate.SByteValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.byteValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.byteValue:
+                        {
+                            byte r = cast<intermediate.ByteValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            byte remainder = cast<intermediate.ByteValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.shortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.shortValue:
+                        {
+                            short r = cast<intermediate.ShortValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            short remainder = cast<intermediate.ShortValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ushortValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ushortValue:
+                        {
+                            ushort r = cast<intermediate.UShortValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            ushort remainder = cast<intermediate.UShortValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.intValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.intValue:
+                        {
+                            int r = cast<intermediate.IntValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            int remainder = cast<intermediate.IntValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.uintValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.uintValue:
+                        {
+                            uint r = cast<intermediate.UIntValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            uint remainder = cast<intermediate.UIntValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.longValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.longValue:
+                        {
+                            long r = cast<intermediate.LongValue*>(right)->GetValue();
+                            if (r == 0)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            long remainder = cast<intermediate.LongValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case intermediate.ValueKind.ulongValue:
+                {
+                    switch (right->Kind())
+                    {
+                        case intermediate.ValueKind.ulongValue:
+                        {
+                            ulong r = cast<intermediate.ULongValue*>(right)->GetValue();
+                            if (r == 0u)
+                            {
+                                int errorId = intermediate.Error("division by zero", right->Span(), context);
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                            ulong remainder = cast<intermediate.ULongValue*>(left)->GetValue() % r;
+                            intermediate.Value* value = context->GetData()->MakeValue(remainder);
+                            Result<bool> result = intermediate.ReplaceInstructionWithValue(modInst, value);
+                            if (result.Error()) return result;
+                            optimized = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeAnd(intermediate.AndInstruction* andInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = andInst->Left();
+        intermediate.Value* right = andInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        sbyte andResult = cast<intermediate.SByteValue*>(left)->GetValue() & cast<intermediate.SByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        byte andResult = cast<intermediate.ByteValue*>(left)->GetValue() & cast<intermediate.ByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        short andResult = cast<intermediate.ShortValue*>(left)->GetValue() & cast<intermediate.ShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        ushort andResult = cast<intermediate.UShortValue*>(left)->GetValue() & cast<intermediate.UShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        int andResult = cast<intermediate.IntValue*>(left)->GetValue() & cast<intermediate.IntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        uint andResult = cast<intermediate.UIntValue*>(left)->GetValue() & cast<intermediate.UIntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        long andResult = cast<intermediate.LongValue*>(left)->GetValue() & cast<intermediate.LongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        ulong andResult = cast<intermediate.ULongValue*>(left)->GetValue() & cast<intermediate.ULongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(andResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(andInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeOr(intermediate.OrInstruction* orInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = orInst->Left();
+        intermediate.Value* right = orInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        sbyte orResult = cast<intermediate.SByteValue*>(left)->GetValue() | cast<intermediate.SByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        byte orResult = cast<intermediate.ByteValue*>(left)->GetValue() | cast<intermediate.ByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        short orResult = cast<intermediate.ShortValue*>(left)->GetValue() | cast<intermediate.ShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        ushort orResult = cast<intermediate.UShortValue*>(left)->GetValue() | cast<intermediate.UShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        int orResult = cast<intermediate.IntValue*>(left)->GetValue() | cast<intermediate.IntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        uint orResult = cast<intermediate.UIntValue*>(left)->GetValue() | cast<intermediate.UIntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        long orResult = cast<intermediate.LongValue*>(left)->GetValue() | cast<intermediate.LongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        ulong orResult = cast<intermediate.ULongValue*>(left)->GetValue() | cast<intermediate.ULongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(orResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(orInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeXor(intermediate.XorInstruction* xorInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = xorInst->Left();
+        intermediate.Value* right = xorInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        sbyte xorResult = cast<intermediate.SByteValue*>(left)->GetValue() ^ cast<intermediate.SByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        byte xorResult = cast<intermediate.ByteValue*>(left)->GetValue() ^ cast<intermediate.ByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        short xorResult = cast<intermediate.ShortValue*>(left)->GetValue() ^ cast<intermediate.ShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        ushort xorResult = cast<intermediate.UShortValue*>(left)->GetValue() ^ cast<intermediate.UShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        int xorResult = cast<intermediate.IntValue*>(left)->GetValue() ^ cast<intermediate.IntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        uint xorResult = cast<intermediate.UIntValue*>(left)->GetValue() ^ cast<intermediate.UIntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        long xorResult = cast<intermediate.LongValue*>(left)->GetValue() ^ cast<intermediate.LongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        ulong xorResult = cast<intermediate.ULongValue*>(left)->GetValue() ^ cast<intermediate.ULongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(xorResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(xorInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeShl(intermediate.ShlInstruction* shlInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = shlInst->Left();
+        intermediate.Value* right = shlInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        sbyte shlResult = cast<intermediate.SByteValue*>(left)->GetValue() << cast<intermediate.SByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        byte shlResult = cast<intermediate.ByteValue*>(left)->GetValue() << cast<intermediate.ByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        short shlResult = cast<intermediate.ShortValue*>(left)->GetValue() << cast<intermediate.ShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        ushort shlResult = cast<intermediate.UShortValue*>(left)->GetValue() << cast<intermediate.UShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        int shlResult = cast<intermediate.IntValue*>(left)->GetValue() << cast<intermediate.IntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        uint shlResult = cast<intermediate.UIntValue*>(left)->GetValue() << cast<intermediate.UIntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        long shlResult = cast<intermediate.LongValue*>(left)->GetValue() << cast<intermediate.LongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        ulong shlResult = cast<intermediate.ULongValue*>(left)->GetValue() << cast<intermediate.ULongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shlResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shlInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeShr(intermediate.ShrInstruction* shrInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = shrInst->Left();
+        intermediate.Value* right = shrInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        sbyte shrResult = cast<intermediate.SByteValue*>(left)->GetValue() >> cast<intermediate.SByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        byte shrResult = cast<intermediate.ByteValue*>(left)->GetValue() >> cast<intermediate.ByteValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        short shrResult = cast<intermediate.ShortValue*>(left)->GetValue() >> cast<intermediate.ShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        ushort shrResult = cast<intermediate.UShortValue*>(left)->GetValue() >> cast<intermediate.UShortValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        int shrResult = cast<intermediate.IntValue*>(left)->GetValue() >> cast<intermediate.IntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        uint shrResult = cast<intermediate.UIntValue*>(left)->GetValue() >> cast<intermediate.UIntValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        long shrResult = cast<intermediate.LongValue*>(left)->GetValue() >> cast<intermediate.LongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        ulong shrResult = cast<intermediate.ULongValue*>(left)->GetValue() >> cast<intermediate.ULongValue*>(right)->GetValue();
+                        intermediate.Value* value = context->GetData()->MakeValue(shrResult);
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(shrInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeEqual(intermediate.EqualInstruction* equalInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = equalInst->Left();
+        intermediate.Value* right = equalInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.boolValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.boolValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.BoolValue*>(left)->GetValue() == cast<intermediate.BoolValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.SByteValue*>(left)->GetValue() == cast<intermediate.SByteValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.ByteValue*>(left)->GetValue() == cast<intermediate.ByteValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.ShortValue*>(left)->GetValue() == cast<intermediate.ShortValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.UShortValue*>(left)->GetValue() == cast<intermediate.UShortValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.IntValue*>(left)->GetValue() == cast<intermediate.IntValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.UIntValue*>(left)->GetValue() == cast<intermediate.UIntValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.LongValue*>(left)->GetValue() == cast<intermediate.LongValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.ULongValue*>(left)->GetValue() == cast<intermediate.ULongValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.floatValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.floatValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.FloatValue*>(left)->GetValue() == cast<intermediate.FloatValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.doubleValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.doubleValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.DoubleValue*>(left)->GetValue() == cast<intermediate.DoubleValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(equalInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return Result<bool>(optimized);
+    }
+
+    [nodiscard]
+    public Result<bool> OptimizeLess(intermediate.LessInstruction* lessInst, intermediate.Context* context)
+    {
+        bool optimized = false;
+        intermediate.Value* left = lessInst->Left();
+        intermediate.Value* right = lessInst->Right();
+        switch (left->Kind())
+        {
+            case intermediate.ValueKind.sbyteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.sbyteValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.SByteValue*>(left)->GetValue() < cast<intermediate.SByteValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.byteValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.byteValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.ByteValue*>(left)->GetValue() < cast<intermediate.ByteValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.shortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.shortValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.ShortValue*>(left)->GetValue() < cast<intermediate.ShortValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ushortValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ushortValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.UShortValue*>(left)->GetValue() < cast<intermediate.UShortValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.intValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.intValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.IntValue*>(left)->GetValue() < cast<intermediate.IntValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.uintValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.uintValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.UIntValue*>(left)->GetValue() < cast<intermediate.UIntValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.longValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.longValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.LongValue*>(left)->GetValue() < cast<intermediate.LongValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.ulongValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.ulongValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.ULongValue*>(left)->GetValue() < cast<intermediate.ULongValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.floatValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.floatValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.FloatValue*>(left)->GetValue() < cast<intermediate.FloatValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+            case intermediate.ValueKind.doubleValue:
+            {
+                switch (right->Kind())
+                {
+                    case intermediate.ValueKind.doubleValue:
+                    {
+                        intermediate.Value* value = context->GetData()->GetBoolValue(
+                            cast<intermediate.DoubleValue*>(left)->GetValue() < cast<intermediate.DoubleValue*>(right)->GetValue());
+                        Result<bool> result = intermediate.ReplaceInstructionWithValue(lessInst, value);
+                        if (result.Error()) return result;
+                        optimized = true;
+                        break;
+                    }
+                }
+                break;
             }
         }
         return Result<bool>(optimized);
@@ -460,6 +2458,17 @@ namespace optimizer
                         }
                         break;
                     }
+                    case intermediate.OpCode.sub:
+                    {
+                        intermediate.SubInstruction* subInst = cast<intermediate.SubInstruction*>(inst);
+                        Result<bool> result = OptimizeSub(subInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
                     case intermediate.OpCode.mul:
                     {
                         intermediate.MulInstruction* mulInst = cast<intermediate.MulInstruction*>(inst);
@@ -482,6 +2491,94 @@ namespace optimizer
                         }
                         break;
                     }
+                    case intermediate.OpCode.mod:
+                    {
+                        intermediate.ModInstruction* modInst = cast<intermediate.ModInstruction*>(inst);
+                        Result<bool> result = OptimizeMod(modInst, fn, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.and_:
+                    {
+                        intermediate.AndInstruction* andInst = cast<intermediate.AndInstruction*>(inst);
+                        Result<bool> result = OptimizeAnd(andInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.or_:
+                    {
+                        intermediate.OrInstruction* orInst = cast<intermediate.OrInstruction*>(inst);
+                        Result<bool> result = OptimizeOr(orInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.xor_:
+                    {
+                        intermediate.XorInstruction* xorInst = cast<intermediate.XorInstruction*>(inst);
+                        Result<bool> result = OptimizeXor(xorInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.shl:
+                    {
+                        intermediate.ShlInstruction* shlInst = cast<intermediate.ShlInstruction*>(inst);
+                        Result<bool> result = OptimizeShl(shlInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.shr:
+                    {
+                        intermediate.ShrInstruction* shrInst = cast<intermediate.ShrInstruction*>(inst);
+                        Result<bool> result = OptimizeShr(shrInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.equal:
+                    {
+                        intermediate.EqualInstruction* equalInst = cast<intermediate.EqualInstruction*>(inst);
+                        Result<bool> result = OptimizeEqual(equalInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
+                    case intermediate.OpCode.less:
+                    {
+                        intermediate.LessInstruction* lessInst = cast<intermediate.LessInstruction*>(inst);
+                        Result<bool> result = OptimizeLess(lessInst, context);
+                        if (result.Error()) return result;
+                        if (result.Value())
+                        {
+                            optimized = true;
+                        }
+                        break;
+                    }
                 }
                 inst = next;
             }
@@ -491,8 +2588,9 @@ namespace optimizer
         {
             Result<bool> result = fn->SetNumbers();
             if (result.Error()) return result;
+            Console.Out() << "ARITHMETIC " << fn->Name() << endl();
         }
-        return Result<bool>(true);
+        return Result<bool>(optimized);
     }
 }
 

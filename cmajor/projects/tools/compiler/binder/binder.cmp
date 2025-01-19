@@ -24,6 +24,7 @@ source <concept_repository.cm>;
 source <const_expr_function_repository.cm>;
 source <constant_array_repository.cm>;
 source <constant_structure_repository.cm>;
+source <control_flow_analyzer.cm>;
 source <conversions.cm>;
 source <evaluator.cm>;
 source <expression_binder.cm>;

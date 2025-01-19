@@ -154,6 +154,23 @@ namespace symbols
                 }
             }
         }
+        public override void Visit(InterfaceNode& interfaceNode)
+        {
+            symbolTable->BeginInterface(interfaceNode);
+            int n = cast<int>(interfaceNode.Members().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* member = interfaceNode.Members()[i];
+                member->Accept(*this);
+                if (Error()) return;
+            }
+            Result<bool> result = symbolTable->EndInterface(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
         public override void Visit(ThisInitializerNode& thisInitializerNode)
         {
             int n = cast<int>(thisInitializerNode.Arguments().Count());

@@ -13,4 +13,5 @@ export import cmajor.masm.intermediate.main.parser;
 export import cmajor.masm.intermediate.metadata;
 export import cmajor.masm.intermediate.types;
 export import cmajor.masm.intermediate.verify;
+export import cmajor.masm.intermediate.util;
 export import cmajor.masm.intermediate.visitor;

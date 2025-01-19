@@ -650,6 +650,26 @@ namespace binder
                     }
                 }
             }
+            if (sourcePlainType->IsClassTypeSymbol() && targetPlainType->IsInterfaceTypeSymbol())
+            {
+                ClassTypeSymbol* sourceClassType = cast<ClassTypeSymbol*>(sourcePlainType);
+                InterfaceTypeSymbol* targetInterfaceType = cast<InterfaceTypeSymbol*>(targetPlainType);
+                int n = cast<int>(sourceClassType->ImplementedInterfaces().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    InterfaceTypeSymbol* interfaceTypeSymbol = sourceClassType->ImplementedInterfaces()[i];
+                    if (TypesEqual(interfaceTypeSymbol, targetInterfaceType))
+                    {
+                        UniquePtr<FunctionSymbol> classToInterfaceConversion(new ClassToInterfaceConversion(
+                            context, sourceClassType, targetInterfaceType));
+                        classToInterfaceConversion->SetParent(&symbolTable->GlobalNs());
+                        conversion = classToInterfaceConversion.Get();
+                        // do not add entry to the conversion table
+                        boundCompileUnit->GetConversionTable()->Add(Rvalue(classToInterfaceConversion));
+                        return Result<FunctionSymbol*>(conversion);
+                    }
+                }
+            }
         }
         if (conversion != null)
         {

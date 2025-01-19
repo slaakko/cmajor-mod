@@ -1,9 +1,19 @@
 <solutionSettings>
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles/>
-    <currentOpenFile value=""/>
-    <currentCursorLine value="86"/>
+    <openFiles>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/bound_expression.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/intermediate/context.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/intermediate/data.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/class_type_symbol.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/emitter.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/function_symbol.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/interface_type_symbol.cm"/>
+    </openFiles>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/class_type_symbol.cm"/>
+    <currentCursorLine value="1606"/>
     <breakpoints/>
-    <expandedProjects/>
+    <expandedProjects>
+        <item value="intermediate"/>
+    </expandedProjects>
 </solutionSettings>

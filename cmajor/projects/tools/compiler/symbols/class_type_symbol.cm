@@ -9,6 +9,8 @@ using cm.ast;
 
 namespace symbols
 {
+    public const int vmtImtsIndex = 2;
+    
     public Result<bool> Overrides(FunctionSymbol* f, FunctionSymbol* g)
     {
         if (f->GroupName() == g->GroupName())
@@ -27,6 +29,34 @@ namespace symbols
                     if (!TypesEqual(f->ReturnType(), g->ReturnType()))
                     {
                         int errorId = MakeError("the return type of the overriding function differs from the return type of the base class function", f->FullSpan(), g->FullSpan());
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                return Result<bool>(true);
+            }
+        }
+        return Result<bool>(false);
+    }
+
+    public Result<bool> Implements(FunctionSymbol* f, FunctionSymbol* g)
+    {
+        if (f->GroupName() == g->GroupName())
+        {
+            int n = cast<int>(f->Parameters().Count());
+            if (n == cast<int>(g->Parameters().Count()))
+            {
+                for (int i = 1; i < n; ++i)
+                {
+                    ParameterSymbol* p = f->Parameters()[i];
+                    ParameterSymbol* q = g->Parameters()[i];
+                    if (!TypesEqual(p->Type(), q->Type())) return Result<bool>(false);
+                }
+                if (f->ReturnType() != null && g->ReturnType() != null)
+                {
+                    if (!TypesEqual(f->ReturnType(), g->ReturnType()))
+                    {
+                        int errorId = MakeError("the return type of the class member function differs from the return type of the interface member function",
+                            f->FullSpan(), g->FullSpan());
                         return Result<bool>(ErrorId(errorId));
                     }
                 }
@@ -228,6 +258,7 @@ namespace symbols
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Write(SymbolWriter& writer)
         {
             auto result = base->Write(writer);
@@ -258,16 +289,15 @@ namespace symbols
             }
             result = writer.GetBinaryWriter().Write(baseClassId);
             if (result.Error()) return result;
-/*
             int n = cast<int>(implementedInterfaces.Count());
-            writer.GetBinaryWriter().WriteInt(n);
+            result = writer.GetBinaryWriter().Write(n);
+            if (result.Error()) return result;
             for (int i = 0; i < n; ++i)
             {
                 InterfaceTypeSymbol* intf = implementedInterfaces[i];
-                result = writer.GetBinaryStreamWriter().Write(intf->TypeId());
+                result = writer.GetBinaryWriter().Write(intf->TypeId());
                 if (result.Error()) return result;
             }
-*/
             bool hasDefaultConstructor = defaultConstructor != null && !defaultConstructor->IsGenerated();
             result = writer.GetBinaryWriter().Write(hasDefaultConstructor);
             if (result.Error()) return result;
@@ -320,6 +350,22 @@ namespace symbols
                 result = writer.GetBinaryWriter().Write(virtualFunction->FunctionId());
                 if (result.Error()) return result;
             }
+            int imtsCount = cast<int>(imts.Count());
+            result = writer.GetBinaryWriter().Write(imtsCount);
+            if (result.Error()) return result;
+            for (int i = 0; i < imtsCount; ++i)
+            {
+                const List<FunctionSymbol*>& imt = imts[i];
+                int imtSize = cast<int>(imt.Count());
+                result = writer.GetBinaryWriter().Write(imtSize);
+                if (result.Error()) return result;
+                for (int j = 0; j < imtSize; ++j)
+                {
+                    FunctionSymbol* method = imt[j];
+                    result = writer.GetBinaryWriter().Write(method->FunctionId());
+                    if (result.Error()) return result;
+                }
+            }
             int objectLayoutCount = cast<int>(objectLayout.Count());
             result = writer.GetBinaryWriter().Write(objectLayoutCount);
             if (result.Error()) return result;
@@ -366,7 +412,16 @@ namespace symbols
             Result<Uuid> baseClassIdResult = reader.GetBinaryReader().ReadUuid();
             if (baseClassIdResult.Error()) return Result<bool>(ErrorId(baseClassIdResult.GetErrorId()));
             baseClassId = baseClassIdResult.Value();
-/*          read implemented interface ids */
+            Result<int> nintfResult = reader.GetBinaryReader().ReadInt();
+            if (nintfResult.Error()) return Result<bool>(ErrorId(nintfResult.GetErrorId()));
+            int nintf = nintfResult.Value();
+            for (int i = 0; i < nintf; ++i)
+            {
+                Result<Uuid> interfaceIdResult = reader.GetBinaryReader().ReadUuid();
+                if (interfaceIdResult.Error()) return Result<bool>(ErrorId(interfaceIdResult.GetErrorId()));
+                Uuid interfaceId = interfaceIdResult.Value();
+                interfaceIds.Add(interfaceId);
+            }
             Result<bool> hasDefaultConstructorResult = reader.GetBinaryReader().ReadBool();
             if (hasDefaultConstructorResult.Error()) return Result<bool>(ErrorId(hasDefaultConstructorResult.GetErrorId()));
             bool hasDefaultConstructor = hasDefaultConstructorResult.Value();
@@ -426,6 +481,23 @@ namespace symbols
                 if (functionIdResult.Error()) return Result<bool>(ErrorId(functionIdResult.GetErrorId()));
                 vmtIds.Add(functionIdResult.Value());
             }
+            Result<int> imtsCountResult = reader.GetBinaryReader().ReadInt();
+            if (imtsCountResult.Error()) return Result<bool>(ErrorId(imtsCountResult.GetErrorId()));
+            int imtsCount = imtsCountResult.Value();
+            for (int i = 0; i < imtsCount; ++i)
+            {
+                Result<int> imtCountResult = reader.GetBinaryReader().ReadInt();
+                if (imtCountResult.Error()) return Result<bool>(ErrorId(imtCountResult.GetErrorId()));
+                int imtCount = imtCountResult.Value();
+                List<Uuid> imt;
+                for (int j = 0; j < imtCount; ++j)
+                {
+                    Result<Uuid> functionIdResult = reader.GetBinaryReader().ReadUuid();
+                    if (functionIdResult.Error()) return Result<bool>(ErrorId(functionIdResult.GetErrorId()));
+                    imt.Add(functionIdResult.Value());
+                }
+                imtIds.Add(Rvalue(imt));
+            }
             Result<int> objectLayoutCountResult = reader.GetBinaryReader().ReadInt();
             if (objectLayoutCountResult.Error()) return Result<bool>(ErrorId(objectLayoutCountResult.GetErrorId()));
             int objectLayoutCount = objectLayoutCountResult.Value();
@@ -462,6 +534,13 @@ namespace symbols
                 if (baseClassResult.Error()) return Result<bool>(ErrorId(baseClassResult.GetErrorId()));
                 #assert(baseClassResult.Value()->IsClassTypeSymbol());
                 baseClass = cast<ClassTypeSymbol*>(baseClassResult.Value());
+            }
+            for (const auto& interfaceId : interfaceIds)
+            {
+                Result<TypeSymbol*> interfaceResult = symbolTable->GetType(interfaceId);
+                if (interfaceResult.Error()) return Result<bool>(ErrorId(interfaceResult.GetErrorId()));
+                #assert(interfaceResult.Value()->IsInterfaceTypeSymbol());
+                implementedInterfaces.Add(cast<InterfaceTypeSymbol*>(interfaceResult.Value()));
             }
             if (!defaultConstructorId.IsNil())
             {
@@ -551,6 +630,24 @@ namespace symbols
                     RtmDisposeError(functionResult.GetErrorId());
                 }
             }
+            int nimts = cast<int>(imtIds.Count());
+            for (int i = 0; i < nimts; ++i)
+            {
+                List<FunctionSymbol*> imt;
+                const List<Uuid>& imtId = imtIds[i];
+                int nimt = cast<int>(imtId.Count());
+                for (int j = 0; j < nimt; ++j)
+                {
+                    Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(imtId[j]);
+                    if (functionResult.Error())
+                    {
+                        return Result<bool>(ErrorId(functionResult.GetErrorId()));
+                    }
+                    FunctionSymbol* function = functionResult.Value();
+                    imt.Add(function);
+                }
+                imts.Add(Rvalue(imt));
+            }
             for (const Uuid& typeId : objectLayoutIds)
             {
                 Result<TypeSymbol*> typeResult = symbolTable->GetType(typeId);
@@ -624,6 +721,14 @@ namespace symbols
         {
             baseClass = baseClass_;
         }
+        public inline const List<InterfaceTypeSymbol*>& ImplementedInterfaces() const
+        {
+            return implementedInterfaces;
+        }
+        public void AddImplementedInterface(InterfaceTypeSymbol* interfaceType)
+        {
+            implementedInterfaces.Add(interfaceType);
+        }
         public bool HasBaseClass(ClassTypeSymbol* cls) const
         {
             if (baseClass == null) return false;
@@ -688,6 +793,14 @@ namespace symbols
         public inline void SetVmtInitialized()
         {
             SetFlag(ClassTypeSymbolFlags.vmtInitialized);
+        }
+        public inline bool IsImtsInitialized() const
+        {
+            return GetFlag(ClassTypeSymbolFlags.imtsInitialized);
+        }
+        public inline void SetImtsInitialized()
+        {
+            SetFlag(ClassTypeSymbolFlags.imtsInitialized);
         }
         public inline bool VmtEmitted() const
         {
@@ -1083,7 +1196,55 @@ namespace symbols
         [nodiscard]
         public Result<bool> InitImts()
         {
-            // todo
+            if (IsImtsInitialized()) return Result<bool>(false);
+            SetImtsInitialized();
+            int n = cast<int>(implementedInterfaces.Count());
+            if (n > 0)
+            {
+                SetPolymorphic();
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                InterfaceTypeSymbol* intf = implementedInterfaces[i];
+                List<FunctionSymbol*> imt;
+                int m = cast<int>(intf->Methods().Count());
+                for (int j = 0; j < m; ++j)
+                {
+                    FunctionSymbol* interfaceMethod = intf->Methods()[j];
+                    bool found = false;
+                    for (FunctionSymbol* mfn : memberFunctions)
+                    {
+                        Result<bool> implementsResult = Implements(mfn, interfaceMethod);
+                        if (implementsResult.Error())
+                        {
+                            return implementsResult;
+                        }
+                        if (implementsResult.Value())
+                        {
+                            imt.Add(mfn);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        Result<string> classNameResult = ToUtf8(FullName());
+                        if (classNameResult.Error()) return Result<bool>(ErrorId(classNameResult.GetErrorId()));
+                        string className = Rvalue(classNameResult.Value());
+                        Result<string> interfaceNameResult = ToUtf8(intf->FullName());
+                        if (interfaceNameResult.Error()) return Result<bool>(ErrorId(interfaceNameResult.GetErrorId()));
+                        string interfaceName = Rvalue(interfaceNameResult.Value());
+                        Result<string> interfaceMethodNameResult = ToUtf8(interfaceMethod->FullName());
+                        if (interfaceMethodNameResult.Error()) return Result<bool>(ErrorId(interfaceMethodNameResult.GetErrorId()));
+                        string interfaceMethodName = Rvalue(interfaceMethodNameResult.Value());
+                        int errorId = MakeError("class '" + className + "' does not implement interface '" + interfaceName +
+                            "' because implementation of interface member function '" +
+                            interfaceMethodName + "' is missing", FullSpan(), interfaceMethod->FullSpan());
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                imts.Add(Rvalue(imt));
+            }
             return Result<bool>(true);
         }
         [nodiscard]
@@ -1336,6 +1497,134 @@ namespace symbols
             }
             return Result<intermediate.StructureType*>(staticObjectType);
         }
+        public Result<intermediate.Value*> ImtObject(InterfaceTypeSymbol* interfaceType, Emitter& emitter, bool create)
+        {
+            Result<intermediate.ArrayType*> imtArrayTypeResult = ImtArrayType(interfaceType, emitter);
+            if (imtArrayTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(imtArrayTypeResult.GetErrorId()));
+            intermediate.ArrayType* imtArrayType = imtArrayTypeResult.Value();
+            Result<string> imtObjectNameResult = ImtObjectName(interfaceType);
+            if (imtObjectNameResult.Error()) return Result<intermediate.Value*>(ErrorId(imtObjectNameResult.GetErrorId()));
+            string imtObjectName = Rvalue(imtObjectNameResult.Value());
+            Result<intermediate.GlobalVariable*> imtObjectResult = emitter.GetOrInsertGlobal(imtObjectName, imtArrayType);
+            if (imtObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(imtObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* imtObject = imtObjectResult.Value();
+            if (create)
+            {
+                int interfaceIndex = GetInterfaceIndex(interfaceType);
+                if (interfaceIndex == -1)
+                {
+                    Result<string> interfaceNameResult = ToUtf8(interfaceType->FullName());
+                    if (interfaceNameResult.Error()) return Result<intermediate.Value*>(ErrorId(interfaceNameResult.GetErrorId()));
+                    string interfaceName = Rvalue(interfaceNameResult.Value());
+                    int errorId = MakeError("interface '" + interfaceName + "' not found", FullSpan());
+                    return Result<intermediate.Value*>(ErrorId(errorId));
+                }
+                const List<FunctionSymbol*>& imt = imts[interfaceIndex];
+                List<intermediate.Value*> imtArray;
+                for (FunctionSymbol* fn : imt)
+                {
+                    Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(fn);
+                    if (functionTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(functionTypeResult.GetErrorId()));
+                    intermediate.FunctionType* functionType = functionTypeResult.Value();
+                    Result<string> instantiatedNameResult = ToUtf8(fn->InstantiatedName(emitter.GetSymbolsContext()));
+                    if (instantiatedNameResult.Error()) return Result<intermediate.Value*>(ErrorId(instantiatedNameResult.GetErrorId()));
+                    string instantiatedName = Rvalue(instantiatedNameResult.Value());
+                    Result<intermediate.Function*> functionValueResult = emitter.GetOrInsertFunction(instantiatedName, functionType);
+                    if (functionValueResult.Error()) return Result<intermediate.Value*>(ErrorId(functionValueResult.GetErrorId()));
+                    intermediate.Value* functionValue = functionValueResult.Value();
+                    intermediate.Value* symbolValue = emitter.MakeSymbolValue(functionValue->GetType(), functionValue->ToString());
+                    imtArray.Add(emitter.GetConversionValue(emitter.GetVoidPtrType(), symbolValue));
+                }
+                intermediate.Value* initializer = emitter.GetArrayValue(imtArray, imtArrayType);
+                imtObject->SetInitializer(initializer);
+            }
+            return Result<intermediate.Value*>(imtObject);
+        }
+        public int GetInterfaceIndex(InterfaceTypeSymbol* interfaceType) const
+        {
+            int n = cast<int>(implementedInterfaces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (implementedInterfaces[i] == interfaceType) return i;
+            }
+            return -1;
+        }
+        public Result<intermediate.ArrayType*> ImtArrayType(InterfaceTypeSymbol* interfaceType, Emitter& emitter)
+        {
+            return emitter.GetArrayType(emitter.GetVoidPtrType(), interfaceType->Methods().Count());
+        }
+        public Result<string> ImtObjectName(InterfaceTypeSymbol* interfaceType)
+        {
+            string imtObjectName = "imt_@";
+            Result<string> simpleNameResult = ToUtf8(SimpleName());
+            if (simpleNameResult.Error()) return simpleNameResult;
+            string simpleName = Rvalue(simpleNameResult.Value());
+            Result<string> interfaceSimpleNameResult = ToUtf8(interfaceType->SimpleName());
+            if (interfaceSimpleNameResult.Error()) return interfaceSimpleNameResult;
+            string interfaceSimpleName = Rvalue(interfaceSimpleNameResult.Value());
+            Result<ustring> fnspResult = FullNameWithSpecifiers();
+            if (fnspResult.Error()) return Result<string>(ErrorId(fnspResult.GetErrorId()));
+            ustring fnsp = Rvalue(fnspResult.Value());
+            Result<string> fullNameResult = ToUtf8(fnsp);
+            if (fullNameResult.Error()) return fullNameResult;
+            string fullName = Rvalue(fullNameResult.Value());
+            Result<string> interfaceFullNameResult = ToUtf8(interfaceType->FullName());
+            if (interfaceFullNameResult.Error()) return interfaceFullNameResult;
+            string interfaceFullName = Rvalue(interfaceFullNameResult.Value());
+            Result<string> digestResult = System.Security.GetSha1MessageDigest(fullName + "." + interfaceFullName);
+            if (digestResult.Error()) return digestResult;
+            string digest = Rvalue(digestResult.Value());
+            imtObjectName.Append(simpleName).Append('_').Append(interfaceSimpleName).Append('_').Append(digest);
+            return Result<string>(imtObjectName);
+        }
+        public Result<intermediate.Value*> ImtsObject(Emitter& emitter, bool create)
+        {
+            Result<intermediate.ArrayType*> imtsArrayTypeResult = ImtsArrayType(emitter);
+            if (imtsArrayTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(imtsArrayTypeResult.GetErrorId()));
+            intermediate.ArrayType* imtsArrayType = imtsArrayTypeResult.Value();
+            Result<string> imtsObjectNameResult = ImtsObjectName();
+            if (imtsObjectNameResult.Error()) return Result<intermediate.Value*>(ErrorId(imtsObjectNameResult.GetErrorId()));
+            string imtsObjectName = Rvalue(imtsObjectNameResult.Value());
+            Result<intermediate.GlobalVariable*> imtsObjectResult = emitter.GetOrInsertGlobal(imtsObjectName, imtsArrayType);
+            if (imtsObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(imtsObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* imtsObject = imtsObjectResult.Value();
+            if (create)
+            {
+                List<intermediate.Value*> imtsArray;
+                for (InterfaceTypeSymbol* interfaceType : implementedInterfaces)
+                {
+                    Result<intermediate.Value*> imtObjectResult = ImtObject(interfaceType, emitter, true);
+                    if (imtObjectResult.Error()) return imtObjectResult;
+                    intermediate.Value* imtObject = imtObjectResult.Value();
+                    imtsArray.Add(emitter.GetConversionValue(emitter.GetVoidPtrType(), imtObject));
+                }
+                intermediate.Value* initializer = emitter.GetArrayValue(imtsArray, imtsArrayType);
+                imtsObject->SetInitializer(initializer);
+            }
+            return Result<intermediate.Value*>(imtsObject);
+        }
+        public Result<intermediate.ArrayType*> ImtsArrayType(Emitter& emitter)
+        {
+            return emitter.GetArrayType(emitter.GetVoidPtrType(), implementedInterfaces.Count());
+        }
+        public Result<string> ImtsObjectName()
+        {
+            string imtsObjectName = "imts_@";
+            Result<string> simpleNameResult = ToUtf8(SimpleName());
+            if (simpleNameResult.Error()) return simpleNameResult;
+            string simpleName = Rvalue(simpleNameResult.Value());
+            Result<ustring> fnspResult = FullNameWithSpecifiers();
+            if (fnspResult.Error()) return Result<string>(ErrorId(fnspResult.GetErrorId()));
+            ustring fnsp = Rvalue(fnspResult.Value());
+            Result<string> fullNameResult = ToUtf8(fnsp);
+            if (fullNameResult.Error()) return fullNameResult;
+            string fullName = Rvalue(fullNameResult.Value());
+            Result<string> digestResult = System.Security.GetSha1MessageDigest(fullName);
+            if (digestResult.Error()) return digestResult;
+            string digest = Rvalue(digestResult.Value());
+            imtsObjectName.Append(simpleName).Append('_').Append(digest);
+            return Result<string>(imtsObjectName);
+        }
         public Result<intermediate.Value*> VmtObject(Emitter& emitter, bool create)
         {
             if (!IsPolymorphic())
@@ -1361,7 +1650,17 @@ namespace symbols
                 List<intermediate.Value*> vmtArray;
                 vmtArray.Add(emitter.GetConversionValue(emitter.GetVoidPtrType(), emitter.GetULongValue(typeId1)));
                 vmtArray.Add(emitter.GetConversionValue(emitter.GetVoidPtrType(), emitter.GetULongValue(typeId2)));
-                vmtArray.Add(emitter.GetNullValue(emitter.GetVoidPtrType())); // todo interfaces
+                if (!implementedInterfaces.IsEmpty())
+                {
+                    Result<intermediate.Value*> imtsObjectResult = ImtsObject(emitter, true);
+                    if (imtsObjectResult.Error()) return imtsObjectResult;
+                    intermediate.Value* imtsObject = imtsObjectResult.Value();
+                    vmtArray.Add(emitter.GetConversionValue(emitter.GetVoidPtrType(), imtsObject));
+                }
+                else
+                {
+                    vmtArray.Add(emitter.GetNullValue(emitter.GetVoidPtrType()));
+                }
                 for (FunctionSymbol* virtualFunction : vmt)
                 {
                     if (virtualFunction == null || virtualFunction->IsAbstract())
@@ -1445,6 +1744,10 @@ namespace symbols
         {
             return vmt;
         }
+        public inline const List<List<FunctionSymbol*>>& Imts() const
+        {
+            return imts;
+        }
         public bool IsLiteralClassType() const
         {
             if (IsPolymorphic()) return false;
@@ -1465,6 +1768,8 @@ namespace symbols
         private int minArity;
         private ClassTypeSymbol* baseClass;
         private Uuid baseClassId;
+        private List<InterfaceTypeSymbol*> implementedInterfaces;
+        private List<Uuid> interfaceIds;
         private ClassTypeSymbolFlags flags;
         private List<TemplateParameterSymbol*> templateParameters;
         private List<MemberVariableSymbol*> memberVariables;
@@ -1492,6 +1797,8 @@ namespace symbols
         private NodeList<Node> usingNodes;
         private List<FunctionSymbol*> vmt;
         private List<Uuid> vmtIds;
+        private List<List<FunctionSymbol*>> imts;
+        private List<List<Uuid>> imtIds;
         private List<TypeSymbol*> objectLayout;
         private List<Uuid> objectLayoutIds;
         private List<TypeSymbol*> staticLayout;

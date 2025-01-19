@@ -229,8 +229,7 @@ namespace optimizer
     public Result<bool> InlineExpand(intermediate.Function* fn, intermediate.Context* context)
     {
         bool optimized = false;
-        //int inlineDepth = context->InlineDepth();
-        int inlineDepth = 1;
+        int inlineDepth = context->InlineDepth();
         int inlineCount = 0;
         bool inlined = false;
         do
@@ -275,10 +274,6 @@ namespace optimizer
                                 if (result.Error()) return result;
                                 inlined = true;
                                 optimized = true;
-                                if (callee->NumBasicBlocks() > 1)
-                                {
-                                    Console.Out() << "INLINED MANY " << fn->Name() << " <- " << callee->Name() << endl();
-                                }
                             }
                         }
                     }

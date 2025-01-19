@@ -78,6 +78,7 @@ void MergeSingleBasicBlock(cmajor::masm::intermediate::Function* function, cmajo
     MoveInstructions(basicBlock, callInst, rets);
     cmajor::masm::intermediate::Function* callee = basicBlock->Parent();
     callee->MoveRegValues(function);
+    function->SetNumbers();
     if (callInst->IsFunctionCallInstruction())
     {
         if (rets.size() == 1)
@@ -129,6 +130,7 @@ void MergeManyBasicBlocks(cmajor::masm::intermediate::Function* function, cmajor
         cmajor::masm::intermediate::BasicBlock* next = toMerge->Next();
         std::unique_ptr<cmajor::masm::intermediate::BasicBlock> removedBasicBlock = callee->RemoveBasicBlock(toMerge);
         removedBasicBlock->SetId(function->GetNextBasicBlockNumber());
+        removedBasicBlock->SetContainer(function->BasicBlocks());
         cmajor::masm::intermediate::Instruction* lastInst = removedBasicBlock->LastInstruction();
         if (lastInst->IsRetInstruction())
         {
@@ -154,6 +156,7 @@ void MergeManyBasicBlocks(cmajor::masm::intermediate::Function* function, cmajor
             ret->RemoveFromUses();
             removedBasicBlock->RemoveInstruction(ret);
         }
+        removedBasicBlock->SetContainer(nullptr);
         function->InsertBasicBlockBefore(removedBasicBlock.release(), targetBB);
         toMerge = next;
     }

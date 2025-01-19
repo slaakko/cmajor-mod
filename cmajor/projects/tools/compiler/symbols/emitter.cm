@@ -15,12 +15,30 @@ namespace symbols
         {
         }
         public default virtual ~EmittingDelegate();
-        public abstract int Install(const string& str);
-        public abstract int Install(const wstring& str);
-        public abstract int Install(const ustring& str);
-        public abstract Result<intermediate.Value*> GetGlobalStringValue(int stringId);
-        public abstract Result<intermediate.Value*> GetGlobalWStringValue(int stringId);
-        public abstract Result<intermediate.Value*> GetGlobalUStringValue(int stringId);
+        public virtual int Install(const string& str)
+        {
+            return -1;
+        }
+        public virtual int Install(const wstring& str)
+        {
+            return -1;
+        }
+        public virtual int Install(const ustring& str)
+        {
+            return -1;
+        }
+        public virtual Result<intermediate.Value*> GetGlobalStringValue(int stringId)
+        {
+            return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
+        }
+        public virtual Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
+        {
+            return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
+        }
+        public virtual Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
+        {
+            return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
+        }
     }
 
     public class Emitter
@@ -294,6 +312,47 @@ namespace symbols
                 intermediate.StructureType* structureType = cast<intermediate.StructureType*>(irType);
                 classDelegateTypeMap[classDelegateTypeSymbol] = structureType;
                 return Result<intermediate.StructureType*>(structureType);
+            }
+        }
+        public Result<intermediate.Type*> GetImtPtrType(InterfaceTypeSymbol* interfaceTypeSymbol)
+        {
+            auto it = imtPtrTypeMap.Find(interfaceTypeSymbol);
+            if (it != imtPtrTypeMap.End())
+            {
+                return Result<intermediate.Type*>(it->second);
+            }
+            else
+            {
+                intermediate.Type* elementType = GetVoidPtrType();
+                long elementCount = interfaceTypeSymbol->Methods().Count();
+                Result<intermediate.ArrayType*> arrayTypeResult = GetArrayType(elementType, elementCount);
+                if (arrayTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(arrayTypeResult.GetErrorId()));
+                intermediate.ArrayType* arrayType = arrayTypeResult.Value();
+                Result<intermediate.Type*> arrayPtrTypeResult = GetPointerType(arrayType);
+                if (arrayPtrTypeResult.Error()) return arrayPtrTypeResult;
+                intermediate.Type* imtPtrType = arrayPtrTypeResult.Value();
+                imtPtrTypeMap[interfaceTypeSymbol] = imtPtrType;
+                return Result<intermediate.Type*>(imtPtrType);
+            }
+        }
+        public Result<intermediate.Type*> GetInterfaceType(InterfaceTypeSymbol* interfaceTypeSymbol)
+        {
+            auto it = interfaceTypeMap.Find(interfaceTypeSymbol);
+            if (it != interfaceTypeMap.End())
+            {
+                return Result<intermediate.Type*>(it->second);
+            }
+            else
+            {
+                intermediate.Type* voidPtrType = GetVoidPtrType();
+                List<intermediate.Type*> elementTypes;
+                elementTypes.Add(voidPtrType);
+                elementTypes.Add(voidPtrType);
+                Result<intermediate.StructureType*> irTypeResult = GetStructureType(elementTypes);
+                if (irTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(irTypeResult.GetErrorId()));
+                intermediate.StructureType* irType = irTypeResult.Value();
+                interfaceTypeMap[interfaceTypeSymbol] = irType;
+                return Result<intermediate.Type*>(irType);
             }
         }
         public inline Result<intermediate.Function*> GetOrInsertFunction(const string& name, intermediate.FunctionType* type)
@@ -612,6 +671,26 @@ namespace symbols
         {
             return context.CreateElemAddr(arrayPtr, context.GetData()->GetLongValue(size));
         }
+        public inline Result<intermediate.Value*> GetObjectFromReceiver(intermediate.Value* receiver)
+        {
+            return context.CreateElemAddr(receiver, context.GetData()->GetLongValue(0));
+        }
+        public inline Result<intermediate.Value*> GetInterfacePtrFromReceiver(intermediate.Value* receiver)
+        {
+            return context.CreateElemAddr(receiver, context.GetData()->GetLongValue(1));
+        }
+        public inline Result<intermediate.Value*> GetMethodPtrFromInterfacePtr(intermediate.Value* interfacePtr, int imtIndex)
+        {
+            return context.CreateElemAddr(interfacePtr, context.GetData()->GetLongValue(imtIndex));
+        }
+        public inline Result<intermediate.Value*> GetImtsArrayPtrFromVmt(intermediate.Value* vmtObjectPtr, int imtsIndex)
+        {
+            return context.CreateElemAddr(vmtObjectPtr, context.GetData()->GetLongValue(imtsIndex));
+        }
+        public inline Result<intermediate.Value*> GetImtPtrFromImtsPtr(intermediate.Value* imtsPtr, int interfaceIndex)
+        {
+            return context.CreateElemAddr(imtsPtr, context.GetData()->GetLongValue(interfaceIndex));
+        }
         public inline Result<intermediate.Value*> CreateArrayIndexAddress(intermediate.Value* arrayPtr, intermediate.Value* index)
         {
             return context.CreateElemAddr(arrayPtr, index);
@@ -760,6 +839,8 @@ namespace symbols
         private Map<ClassDelegateTypeSymbol*, intermediate.StructureType*> classDelegateTypeMap;
         private Map<ClassTypeSymbol*, string> staticObjectNameMap;
         private Map<ClassTypeSymbol*, intermediate.StructureType*> staticObjectTypeMap;
+        private Map<InterfaceTypeSymbol*, intermediate.Type*> interfaceTypeMap;
+        private Map<InterfaceTypeSymbol*, intermediate.Type*> imtPtrTypeMap;
         private intermediate.Value* objectPointer;
         private EmittingDelegate* emittingDelegate;
         private bool substituteLineNumber;

@@ -151,15 +151,24 @@ namespace optimizer
                     }
                     if (succeeded)
                     {
-                        if (HasOptimization(Optimizations.arithmetic))
+                        bool optimized = true;
+                        while (optimized && succeeded)
                         {
-                            Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
-                            if (result.Error())
+                            optimized = false;
+                            if (HasOptimization(Optimizations.arithmetic))
                             {
-                                string errorMessage = result.GetErrorMessage();
-                                result = LogMessage(-1, "error optimizing arithmetic for function '" + fn->Name() + "': " + errorMessage);
-                                if (result.Error()) return result;
-                                succeeded = false;
+                                Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
+                                if (result.Error())
+                                {
+                                    string errorMessage = result.GetErrorMessage();
+                                    result = LogMessage(-1, "error optimizing arithmetic for function '" + fn->Name() + "': " + errorMessage);
+                                    if (result.Error()) return result;
+                                    succeeded = false;
+                                }
+                                else if (result.Value())
+                                {
+                                    optimized = true;
+                                }
                             }
                         }
                     }

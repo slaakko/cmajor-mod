@@ -906,21 +906,7 @@ void* MasmEmitter::CreateNeg(void* value)
 
 void* MasmEmitter::CreateFNeg(void* value)
 {
-    cmajor::masm::ir::Value* val = static_cast<cmajor::masm::ir::Value*>(value);
-    if (val->GetType(*context)->Id() == cmajor::masm::ir::doubleTypeId)
-    {
-        cmajor::masm::ir::Value* minusOne = context->GetDoubleValue(-1.0);
-        return context->CreateMul(minusOne, val);
-    }
-    else if (val->GetType(*context)->Id() == cmajor::masm::ir::floatTypeId)
-    {
-        cmajor::masm::ir::Value* minusOne = context->GetFloatValue(-1.0f);
-        return context->CreateMul(minusOne, val);
-    }
-    else
-    {
-        throw std::runtime_error("invalid FNeg operand type");
-    }
+    return context->CreateNeg(static_cast<cmajor::masm::ir::Value*>(value));
 }
 
 void* MasmEmitter::CreateNop()
@@ -1268,6 +1254,22 @@ void* MasmEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t
     return callee;
 }
 
+void* MasmEmitter::GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset)
+{
+    cmajor::masm::ir::Value* imtsArrayPtrAddr = context->CreateElemAddr(static_cast<cmajor::masm::ir::Value*>(vmtPtr), context->GetLongValue(imtsVmtIndexOffset));
+    cmajor::masm::ir::Value* imtsArrayPtr = context->CreateLoad(imtsArrayPtrAddr);
+    return imtsArrayPtr;
+}
+
+void* MasmEmitter::GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount)
+{
+    cmajor::masm::ir::Value* imtsArrayPtr = context->CreateBitCast(static_cast<cmajor::masm::ir::Value*>(imtsPtr), 
+        context->GetPtrType(context->GetArrayType(context->GetPtrType(context->GetVoidType()), static_cast<uint64_t>(interfaceCount))));
+    cmajor::masm::ir::Value* imtPtrAddr = context->CreateElemAddr(imtsArrayPtr, context->GetLongValue(interfaceIndex));
+    cmajor::masm::ir::Value* imtPtr = context->CreateLoad(imtPtrAddr);
+    return imtPtr;
+}
+
 void* MasmEmitter::GetFunctionIrType(void* functionSymbol) const
 {
     auto it = functionIrTypeMap.find(functionSymbol);
@@ -1299,6 +1301,7 @@ void* MasmEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
     return context->CreateLoad(funPtrPtr);
 }
 
+/*
 void* MasmEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     cmajor::masm::ir::Value* imtsArrayPtrPtr = context->CreateElemAddr(static_cast<cmajor::masm::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset));
@@ -1311,6 +1314,7 @@ void* MasmEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceI
     cmajor::masm::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::masm::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
     return context->CreateLoad(imtArrayPtr);
 }
+*/
 
 void* MasmEmitter::GetIrObject(void* symbol) const
 {

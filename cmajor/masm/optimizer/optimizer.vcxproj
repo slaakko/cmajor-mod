@@ -150,12 +150,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="arithmetics.cpp" />
+    <ClCompile Include="arithmetics.cppm" />
+    <ClCompile Include="dead_code_elimination.cpp" />
+    <ClCompile Include="dead_code_elimination.cppm" />
     <ClCompile Include="identity_operation_remover.cpp" />
     <ClCompile Include="identity_operation_remover.cppm" />
     <ClCompile Include="inline_expander.cpp" />
     <ClCompile Include="inline_expander.cppm" />
     <ClCompile Include="jump_optimizer.cpp" />
     <ClCompile Include="jump_optimizer.cppm" />
+    <ClCompile Include="locals.cpp" />
+    <ClCompile Include="locals.cppm" />
     <ClCompile Include="optimize.cpp" />
     <ClCompile Include="optimize.cppm" />
     <ClCompile Include="optimizing_code_generator.cpp" />

@@ -21,7 +21,11 @@ public:
     void Emit(cmajor::masm::assembly::Instruction* assemblyInstruction) override;
     void Visit(cmajor::masm::intermediate::SwitchInstruction& inst) override;
     void Visit(cmajor::masm::intermediate::JmpInstruction& inst) override;
+    void Visit(cmajor::masm::intermediate::RetInstruction& inst) override;
     void Visit(cmajor::masm::intermediate::NoOperationInstruction& inst) override;
+    int ExitLabelId() const override;
+    void EmitJumpToExit(cmajor::masm::intermediate::RetInstruction& retInst) override;
+    void EmitBranchJumps(cmajor::masm::intermediate::BranchInstruction& branchInst) override;
 private:
     void EmitXorInst(const std::string& label, cmajor::masm::assembly::Register* reg);
 };

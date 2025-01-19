@@ -93,7 +93,8 @@ namespace build
 
     public Result<bool> AnalyzeControlFlow(BoundCompileUnit* boundCompileUnit)
     {
-        // todo
+        Result<bool> result = binder.AnalyzeControlFlow(boundCompileUnit);
+        if (result.Error()) return result;
         return Result<bool>(true);
     }
 
@@ -126,7 +127,7 @@ namespace build
             if (result.Error()) return result;
             if (boundCompileUnit->HasGotos())
             {
-                Result<bool> result = AnalyzeControlFlow(boundCompileUnit.Get());
+                Result<bool> result = build.AnalyzeControlFlow(boundCompileUnit.Get());
                 if (result.Error()) return result;
             }
             result = GenerateCode(boundCompileUnit.Get());
@@ -229,7 +230,7 @@ namespace build
             }
             if (compileUnit->HasGotos())
             {
-                result = AnalyzeControlFlow(compileUnit);
+                result = build.AnalyzeControlFlow(compileUnit);
                 if (result.Error())
                 {
                     stop = true;

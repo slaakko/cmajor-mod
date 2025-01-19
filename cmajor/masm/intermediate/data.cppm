@@ -69,6 +69,8 @@ public:
     bool IsAggregateValue() const { return IsArrayValue() || IsStructureValue(); }
     bool IsStringValue() const { return kind == ValueKind::stringValue; }
     bool IsStringArrayValue() const { return kind == ValueKind::stringArrayValue; }
+    bool IsTrue() const;
+    bool IsFalse() const;
     int64_t GetIntegerValue() const;
     const soul::ast::Span& Span() const { return span; }
     ValueKind Kind() const { return kind; }
@@ -77,6 +79,11 @@ public:
     virtual void SetType(Type* type_);
     virtual std::string ToString() const { return std::string(); }
     Instruction* GetInstruction() const;
+    virtual bool IsZero() const { return false; }
+    virtual bool IsOne() const { return false; }
+    virtual bool IsTwo() const { return false; }
+    virtual Value* Log2(Context* context) const { return nullptr; }
+    virtual Value* ModPowerOfTwo(Context* context) const { return nullptr; }
 private:
     soul::ast::Span span;
     ValueKind kind;
@@ -102,6 +109,11 @@ public:
     int8_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override  { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     int8_t value;
 };
@@ -113,6 +125,11 @@ public:
     uint8_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     uint8_t value;
 };
@@ -124,6 +141,11 @@ public:
     int16_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     int16_t value;
 };
@@ -135,6 +157,11 @@ public:
     uint16_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     uint16_t value;
 };
@@ -146,6 +173,11 @@ public:
     int32_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     int32_t value;
 };
@@ -157,6 +189,11 @@ public:
     uint32_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     uint32_t value;
 };
@@ -168,6 +205,11 @@ public:
     int64_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     int64_t value;
 };
@@ -179,6 +221,11 @@ public:
     uint64_t GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
+    bool IsZero() const override { return value == 0; }
+    bool IsOne() const override { return value == 1; }
+    bool IsTwo() const override { return value == 2; }
+    Value* Log2(Context* context) const override;
+    Value* ModPowerOfTwo(Context* context) const override;
 private:
     uint64_t value;
 };
@@ -216,11 +263,14 @@ public:
 class AddressValue : public Value
 {
 public:
-    AddressValue(const soul::ast::Span& span_, GlobalVariable* globalVariable_, Type* type);
+    AddressValue(const soul::ast::Span& span_, const std::string& id_, Type* type);
+    const std::string& Id() const { return id; }
     GlobalVariable* GetValue() const { return globalVariable; }
+    void SetValue(GlobalVariable* globalVariable_) { globalVariable = globalVariable_; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
 private:
+    std::string id;
     GlobalVariable* globalVariable;
 };
 
@@ -344,6 +394,7 @@ public:
     Context* GetContext() const { return context; }
     void SetContext(Context* context_) { context = context_; }
     void AddGlobalVariable(const soul::ast::Span& span, Type* type, const std::string& variableName, Value* initializer, Context* context);
+    Value* GetBoolValue(bool value, const Types& types);
     Value* GetTrueValue(const Types& types);
     Value* GetFalseValue(const Types& types);
     Value* GetSByteValue(int8_t value, const Types& types);
@@ -375,14 +426,15 @@ public:
     Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr);
     Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol);
     Value* MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue, const Types& types, Context* context);
-    Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, Context* context);
+    Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, Context* context, bool resolve);
+    void ResolveAddressValue(AddressValue* addressValue);
+    void ResolveAddressValues();
     void VisitGlobalVariables(Visitor& visitor);
     void Write(util::CodeFormatter& formatter);
 private:
     Context* context;
     std::vector<std::unique_ptr<Value>> values;
     std::vector<GlobalVariable*> globalVariables;
-    std::map<std::string, GlobalVariable*> globalVariableMap;
     std::unique_ptr<BoolValue> trueValue;
     std::unique_ptr<BoolValue> falseValue;
     ValueMap<int8_t> sbyteValueMap;
@@ -396,6 +448,8 @@ private:
     ValueMap<float> floatValueMap;
     ValueMap<double> doubleValueMap;
     std::map<Type*, NullValue*> nullValueMap;
+    std::vector<AddressValue*> addressValues;
+    std::map<std::string, GlobalVariable*> globalVariableMap;
 };
 
 template<class T>
