@@ -3,24 +3,36 @@
 <h2>Release notes</h2>
 
 <ul>
-<li><p>Bug fix: compile error 'class not bound' resolved</p></li>
-<li><p>Bug fix: sorting algorithm in the System.Base library reimplemented</p></li>
-<li><p>Bug fix: one bug in the red-black tree in the System.Base library fixed</p></li>
-<li><p><a href="https://slaakko.github.io/cmajor/">XML serialization</a> reimplemented.</p></li>
-<li><p><a href="https://slaakko.github.io/cmajor/">[nodiscard]</a> attribute: when the return value of a function with <strong>[nodiscard]</strong> attribute is discarded, the compiler issues a warning.</p></li>
-<li><p>Error handling scheme changed: exceptions are no longer supported. 
-Now error handling is based on using the <a href="https://slaakko.github.io/cmajor/">Result</a> template.
-The result template represents either a valid function return value of type T or an error result.
-This change is likely to break existing code: many APIs especially in the System.IO and System.Windows namespaces are changed to return Result of type T instead of T or Result of type bool instead of void.</p></li>
-<li><p>Two new backends and two new compilers: masmcmc and cmcmc:</p>
+    <li><p>Bug fix: compile error 'class not bound' resolved</p></li>
+    <li><p>Bug fix: sorting algorithm in the System.Base library reimplemented</p></li>
+    <li><p>Bug fix: one bug in the red-black tree in the System.Base library fixed</p></li>
+    <li><p><a href="https://slaakko.github.io/cmajor/xml_serialization/xml_serialization.html">XML serialization</a> reimplemented.</p></li>
+    <li><p><a href="https://slaakko.github.io/cmajor/langref/langref.html#attributes">[nodiscard]</a> attribute: when the return value of a function with <strong>[nodiscard]</strong> attribute is discarded, the compiler issues a warning.</p></li>
+    <li>
+        <p>
+            Error handling scheme changed: exceptions are no longer supported.
+            Now error handling is based on using the <a href="https://slaakko.github.io/cmajor/system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a> template.
+            The result template represents either a valid function return value of type T or an error result.
+            This change is likely to break existing code: many APIs especially in the System.IO and System.Windows namespaces are changed to return Result of type T instead of T or Result of type bool instead of void.
+        </p>
+    </li>
+    <li>
+        <p>Two new backends and two new compilers: <a href="https://slaakko.github.io/cmajor/tools/masmcmc/masmcmc.html">masmcmc</a> and <a href="https://slaakko.github.io/cmajor/tools/cmcmc/cmcmc.html">cmcmc</a>:</p>
 
-<ul><li>These compilers generate x64 assembly code.</li>
-<li>They use MSBuild to compile assembly code to object code, to generate libraries and to link programs.</li>
-<li>The difference between them is that the MASM backend compiler masmcmc is written in C++ while the CM/MASM backend compiler cmcmc is written in Cmajor.</li>
-<li>The source code of the cmcmc is included in the cmajor/projects/tools/compiler directory.</li></ul></li>
-<li><p><a href="https://slaakko.github.io/cmajor/">auto</a>: If a local variable is declared to have type 'auto', the compiler deduces its type from its initializer.</p></li>
-<li><p>The mapped type of a <a href="https://slaakko.github.io/cmajor/">map</a> and the mapped type of a <a href="https://slaakko.github.io/cmajor/">hashmap</a> 
-can be a <a href="https://slaakko.github.io/cmajor/">UniquePtr</a> or other move-only type.</p></li>
-<li><p>Compile error diagnostics improved.</p></li>
+        <ul>
+            <li>These compilers generate x64 assembly code.</li>
+            <li>They use MSBuild to compile assembly code to object code, to generate libraries and to link programs.</li>
+            <li>The difference between them is that the MASM backend compiler masmcmc is written in C++ while the CM/MASM backend compiler cmcmc is written in Cmajor.</li>
+            <li>The source code of the cmcmc is included in the cmajor/projects/tools/compiler directory.</li>
+        </ul>
+    </li>
+    <li><p><a href="https://slaakko.github.io/cmajor/langref/langref.html#construction-statement-with-auto">auto</a>: If a local variable is declared to have type 'auto', the compiler deduces its type from its initializer.</p></li>
+    <li>
+        <p>
+            The mapped type of a <a href="https://slaakko.github.io/cmajor/system/content/System.Base/doc/class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043.html">map</a> and
+            the mapped type of a <a href="https://slaakko.github.io/cmajor/system/content/System.Base/doc/class_HashMap_BB3420CE995DD84A15F47648DF3CF2414C2EA334.html">hashmap</a>
+            can be a <a href="https://slaakko.github.io/cmajor/system/content/System.Base/doc/class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992.html">UniquePtr</a> or other move-only type.
+        </p>
+    </li>
+    <li><p>Compile error diagnostics improved.</p></li>
 </ul>
-
