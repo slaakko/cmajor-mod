@@ -1,0 +1,195 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>SharedCount&lt;T> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>SharedCount&lt;T> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#81">81</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="8be57b72-692d-d2c3-3c4d-e59a1ec50012">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#default_constructor_SharedCount_40953C97906B9E230DDA88496CEAEF983544D39D">SharedCount</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#constructor_SharedCount_1652FE0659ABF1395893EE549C05A13047000CFD">SharedCount</a>(<a href="../../System.Base/doc/class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E.html">Counter</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>*&nbsp;counter_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#move_constructor_SharedCount_56827C7A67A98458584E494F32F8E1F645C960DE">SharedCount</a>(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#constructor_SharedCount_CD2732A4829707D8055BE0F723D1E37F2C6F9CAA">SharedCount</a>(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>*&nbsp;ptr_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#copy_constructor_SharedCount_BEAEB7EFCBAE5D73E0B4F1CC0DEEC691E2E10F4A">SharedCount</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#constructor_SharedCount_2F6DD4520BD0DCD295D63E32301CCC786DDC516E">SharedCount</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_WeakCount_BD6DB2FE56F577E602485433A9B7627A83FE7315.html">WeakCount</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#destructor_SharedCount_5FCA0B14A72063EA2E2ACDFA377B21B778631D5B">~SharedCount</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E.html">Counter</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#member_function_GetCounter_SharedCount_3DBBE2F7A1EE1C8F13E116B680737DC9040C42E5">GetCounter</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#member_function_GetUseCount_SharedCount_7F4CCD36C93485D4DC49C875F940B33E0C4F628D">GetUseCount</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#member_function_IsUnique_SharedCount_E6888E43F06AB5B9CF0CC6E16D086837301D93E7">IsUnique</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#member_function_Swap_SharedCount_5E40C3F2B0704FBA831E07A7DDDE9BAD738E942E">Swap</a>(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#move_assignment_op_assign_SharedCount_CDD844FCBC73B02723B7E6658DE9F600E03FD6ED">operator=</a>(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#copy_assignment_op_assign_SharedCount_3328F290EBC2BB5F47594F742C927287053EBF3C">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&nbsp;that)</td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_CounterPtrType_37FC467953D1798739FA3935C4D428EA8317FEE1">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;CounterPtrType</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E.html">Counter</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>*</td>
+   </tr>
+   <tr id="aliasType_Self_5C2B79B89CC1FFB8FC924BD6A20DE0A480343C26">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;Self</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_counter_690C2C7667A3B51B3E3BD18CDC4CE116CF46432E" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E.html">Counter</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>*</td>
+    <td xml:space="preserve">counter</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_SharedCount_40953C97906B9E230DDA88496CEAEF983544D39D" xml:space="preserve">SharedCount&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;SharedCount()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#86">86</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_SharedCount_1652FE0659ABF1395893EE549C05A13047000CFD" xml:space="preserve">SharedCount&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;SharedCount(<a href="../../System.Base/doc/class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E.html">Counter</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>*&nbsp;counter_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#92">92</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_SharedCount_56827C7A67A98458584E494F32F8E1F645C960DE" xml:space="preserve">SharedCount&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;SharedCount(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#106">106</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_SharedCount_CD2732A4829707D8055BE0F723D1E37F2C6F9CAA" xml:space="preserve">SharedCount&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;SharedCount(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>*&nbsp;ptr_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#89">89</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_SharedCount_BEAEB7EFCBAE5D73E0B4F1CC0DEEC691E2E10F4A" xml:space="preserve">SharedCount&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;SharedCount(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#99">99</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_SharedCount_2F6DD4520BD0DCD295D63E32301CCC786DDC516E" xml:space="preserve">SharedCount&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;SharedCount(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_WeakCount_BD6DB2FE56F577E602485433A9B7627A83FE7315.html">WeakCount</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#110">110</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_SharedCount_5FCA0B14A72063EA2E2ACDFA377B21B778631D5B" xml:space="preserve">~SharedCount&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~SharedCount()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#132">132</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_GetCounter_SharedCount_3DBBE2F7A1EE1C8F13E116B680737DC9040C42E5" xml:space="preserve">GetCounter&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E.html">Counter</a>&lt;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html#8be57b72-692d-d2c3-3c4d-e59a1ec50012">T</a>>*&nbsp;GetCounter()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#157">157</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetUseCount_SharedCount_7F4CCD36C93485D4DC49C875F940B33E0C4F628D" xml:space="preserve">GetUseCount&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span>&nbsp;GetUseCount()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#145">145</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsUnique_SharedCount_E6888E43F06AB5B9CF0CC6E16D086837301D93E7" xml:space="preserve">IsUnique&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;IsUnique()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#153">153</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Swap_SharedCount_5E40C3F2B0704FBA831E07A7DDDE9BAD738E942E" xml:space="preserve">Swap&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Swap(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#139">139</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_SharedCount_CDD844FCBC73B02723B7E6658DE9F600E03FD6ED" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#128">128</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_SharedCount_3328F290EBC2BB5F47594F742C927287053EBF3C" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedCount_556B9A2F572A9830A4B0B7F32DA626B98FDA01BA.html">SharedCount</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html#115">115</a>&nbsp;of&nbsp;<a href="../../System.Base/file/SharedPtr.cm.html">System.Base/SharedPtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

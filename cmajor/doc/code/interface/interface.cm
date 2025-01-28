@@ -1,0 +1,30 @@
+using System;
+
+public interface Fooable
+{
+    void Foo();
+}
+
+public class Fooer : Fooable
+{
+    public Fooer() : foo("foo")
+    {
+    }
+    public void Foo()
+    {
+        Console.Out() << foo << endl();
+    }
+    private string foo;
+}
+
+void main()
+{
+    Fooer fooer;
+    Fooable fooable = fooer;
+    fooable.Foo();
+
+    UniquePtr<Fooer> fooer2(new Fooer());
+    Fooer* fooerPtr = fooer2.Get();
+    Fooable fooable2 = *fooerPtr;
+    fooable2.Foo();
+}

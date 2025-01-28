@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -37,7 +37,7 @@ void PrintHelp()
         "--opt=LEVEL (-O=LEVEL)\n" <<
         "   set release mode optimization level to LEVEL=0-3\n" <<
         "   default is 2\n" <<
-        "--disable-warnings=WARNING_LIST | -w=WARNING_LIST" << "\n" <<
+        "--disable-warnings=WARNING_LIST (-w=WARNING_LIST)" << "\n" <<
         "  disable warning messages for specified warnings in WARNING_LIST that is a semicolon-separated list of warning numbers." << "\n" <<
         "--verbose (-v)\n" <<
         "   print verbose messages\n" <<
@@ -51,8 +51,6 @@ void PrintHelp()
         "   build all dependencies\n" <<
         "--define SYMBOL (-D SYMBOL)\n" <<
         "   define a conditional compilation symbol SYMBOL.\n" <<
-        "--link-with-debug-runtime (-d)\n" <<
-        "   link with debug runtime 'cmrtmasmd.lib'\n" <<
         "--single-threaded (-s)\n" <<
         "   compile using a single thread\n" <<
         "--time (-t)\n" <<
@@ -360,11 +358,7 @@ int main(int argc, const char** argv)
                 }
                 if (fp.extension() == ".cms")
                 {
-                    if (GetGlobalFlag(cmajor::symbols::GlobalFlags::msbuild))
-                    {
-                        throw std::runtime_error("solution file '" + fp.generic_string() + "'  cannot be given in --msbuild mode");
-                    }
-                    else if (!std::filesystem::exists(fp))
+                    if (!std::filesystem::exists(fp))
                     {
                         throw std::runtime_error("solution file '" + fp.generic_string() + "' not found");
                     }
@@ -375,11 +369,7 @@ int main(int argc, const char** argv)
                 }
                 else if (fp.extension() == ".cmp")
                 {
-                    if (GetGlobalFlag(cmajor::symbols::GlobalFlags::msbuild))
-                    {
-                        throw std::runtime_error("project file '" + fp.generic_string() + "'  cannot be given in --msbuild mode");
-                    }
-                    else if (!std::filesystem::exists(fp))
+                    if (!std::filesystem::exists(fp))
                     {
                         throw std::runtime_error("project file '" + fp.generic_string() + "' not found");
                     }

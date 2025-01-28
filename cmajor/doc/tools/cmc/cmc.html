@@ -3,14 +3,15 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>Compiler</title>
+    <title>Compiler with LLVM backend</title>
     <link rel="stylesheet" type="text/css" href="../../style/tool.css" />
 </head>
 <body>
-    <h1>Compiler</h1>
+    <h1>Compiler with LLVM backend</h1>
     <p>
-        <b>cmc</b> is a command-line compiler for Windows, Linux and Windows subsystem for Linux.
-        It compiles Cmajor code to LLVM intermediate code that is then compiled to native code using LLVM libraries and tools.
+        <b>cmc</b> is a command-line compiler for Windows x64.
+        It compiles Cmajor code to LLVM intermediate code that is then compiled to native code using LLVM libraries.
+        Programs are linked by calling clang++.
     </p>
 
     <p>
@@ -40,21 +41,22 @@
             <td class="opt">--quiet</td>
             <td class="opt">-q</td>
             <td class="opt"></td>
-            <td class="opt">Be quite, only return exit code.</td>
+            <td class="opt">Be quiet, only return exit code.</td>
         </tr>
         <tr>
             <td class="opt">&#8209;&#8209;config=CONFIG</td>
             <td class="opt">&#8209;c=CONFIG</td>
-            <td class="opt">Configuration combo box</td>
-            <td class="opt">Build usig CONFIG configuration. CONFIG can be "debug" or "release".
-            Default optimization level for debug build is 0 and for release build is 2.
-    </td>
+            <td class="opt">Debug and Release buttons</td>
+            <td class="opt">
+                Build usig CONFIG configuration. CONFIG can be "debug" or "release".
+                Default optimization level for debug build is 0 and for release build is 2.
+            </td>
         </tr>
         <tr>
-            <td class="opt">&#8209;&#8209;optimization&#8209;level=LEVEL</td>
+            <td class="opt">&#8209;&#8209;opt=LEVEL</td>
             <td class="opt">-O=LEVEL</td>
-            <td class="opt"></td>
-            <td class="opt">Set optimization level to LEVEL (0-3).</td>
+            <td class="opt">Optimization level buttons 0..3</td>
+            <td class="opt">Set release mode optimization level to LEVEL (0-3).</td>
         </tr>
         <tr>
             <td class="opt">--clean</td>
@@ -63,64 +65,34 @@
             <td class="opt">Clean given projects and solutions.</td>
         </tr>
         <tr>
-            <td class="opt">--strict-nothrow</td>
-            <td class="opt">-s</td>
-            <td class="opt">Build | Options | Strict nothrow</td>
-            <td class="opt">Treat a nothrow violation as an error.</td>
+            <td class="opt">--rebuild</td>
+            <td class="opt">-r</td>
+            <td class="opt">Build | Rebuild project/solution</td>
+            <td class="opt">Rebuild given projects and solutions.</td>
+        </tr>
+        <tr>
+            <td class="opt">&#8209;&#8209;disable&#8209;warnings=WARNING_LIST</td>
+            <td class="opt">&#8209;w=WARNING_LIST</td>
+            <td class="opt">Build | Settings... | Disabled warnings</td>
+            <td class="opt">Disable warning messages for specified warnings in WARNING_LIST that is a semicolon-separated list of warning numbers.</td>
         </tr>
         <tr>
             <td class="opt">--emit-llvm</td>
             <td class="opt">-l</td>
-            <td class="opt">Build | Options | Emit LLVM intermediate code</td>
+            <td class="opt">Build | Settings... | Generate intermediate code</td>
             <td class="opt">Emit LLVM intermediate code to .ll files while compiling.</td>
         </tr>
         <tr>
-            <td class="opt">--emit-opt-llvm</td>
-            <td class="opt">-o</td>
-            <td class="opt">Build | Options | Emit optimized LLVM intermediate code</td>
-            <td class="opt">Emit optimized LLVM intermediate code to .opt.ll files while compiling.</td>
-        </tr>
-        <tr>
-            <td class="opt">--link-with-debug-runtime</td>
-            <td class="opt">-d</td>
-            <td class="opt">Build | Options | Link with debug runtime</td>
-            <td class="opt">Link with debug version of the runtime library cmrt2xx(d).dll.</td>
-        </tr>
-        <tr>
-            <td class="opt">--link-using-ms-link</td>
-            <td class="opt">-m</td>
-            <td class="opt">Build | Options | Use Microsoft's link.exe as the linker</td>
-            <td class="opt">Use Microsoft's link.exe as the linker. Link.exe must be found from the PATH. If this option not given, uses LLVM's lld-link as the linker.</td>
-        </tr>
-        <tr>
             <td class="opt">--define SYMBOL</td>
-            <td class="opt">-D SYMBOL</td>
-            <td class="opt">Project | Properties | Conditional compilation symbols</td>
+            <td class="opt">&#8209;D&nbsp;SYMBOL</td>
+            <td class="opt"></td>
             <td class="opt">Define a conditional compilation symbol SYMBOL.</td>
         </tr>
         <tr>
-            <td class="opt">--gen-debug-info</td>
-            <td class="opt">-g</td>
-            <td class="opt"></td>
-            <td class="opt">Generate debug info (on by default on debug configuration)</td>
-        </tr>
-        <tr>
-            <td class="opt">--no-debug-info</td>
-            <td class="opt">-n</td>
-            <td class="opt"></td>
-            <td class="opt">Don't generate debug info even for debug build</td>
-        </tr>
-        <tr>
-            <td class="opt">--build-threads=N</td>
-            <td class="opt">-bt=N</td>
-            <td class="opt">Build | Options | Number of build threads combo box.</td>
-            <td class="opt">Use N threads for building a solution. Default is 2 x C, where C is the number of cores.</td>
-        </tr>
-        <tr>
-            <td class="opt">--single-threaded-compile</td>
-            <td class="opt">-st</td>
-            <td class="opt"></td>
-            <td class="opt">Compile source files in a project using a single thread.</td>
+            <td class="opt">--single-threaded</td>
+            <td class="opt">-s</td>
+            <td class="opt">Build | Settings... | Compile using only one thread</td>
+            <td class="opt">Compile projects and source files in projects using a single thread.</td>
         </tr>
         <tr>
             <td class="opt">--all</td>
@@ -128,7 +100,6 @@
             <td class="opt"></td>
             <td class="opt">Build all dependencies.</td>
         </tr>
-        
     </table>
 </body>
 </html>

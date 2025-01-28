@@ -1,0 +1,27 @@
+<symbolTable id="XPathTester" module="XPathTester">
+ <files>
+  <file name="XPathTester/main.cm" path="file/main.cm.html"/>
+ </files>
+ <namespace docPath="../../XPathTester/doc/ns_.html" extPath="XPathTester/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../XPathTester/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="XPathTester/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="XPathTester/main.cm" filePath="../../XPathTester/file/main.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="3" name="PrintHelp" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers=""/>
+   <function docPath="../../XPathTester/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="XPathTester/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="XPathTester/main.cm" filePath="../../XPathTester/file/main.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="19" name="main" returnType="984a98e5-de3d-c1ce-0a9c-62ede34bff80" specifiers="">
+    <parameters>
+     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="984a98e5-de3d-c1ce-0a9c-62ede34bff80"/>
+     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="321722d0-25cd-17c6-65a3-079f9c2ba981"/>
+    </parameters>
+   </function>
+  </functions>
+ </namespace>
+ <types>
+  <basicType id="5d7c020c-5b18-97b6-16eb-4e3f72643126" name="void"/>
+  <basicType id="984a98e5-de3d-c1ce-0a9c-62ede34bff80" name="int"/>
+  <basicType id="bd20de85-a3a1-b456-dc96-8dd963044b3d" name="char"/>
+  <derivedType id="321722d0-25cd-17c6-65a3-079f9c2ba981" name="const char**">
+   <derivation name="const"/>
+   <derivation baseType="bd20de85-a3a1-b456-dc96-8dd963044b3d"/>
+   <derivation name="*"/>
+   <derivation name="*"/>
+  </derivedType>
+ </types>
+</symbolTable>

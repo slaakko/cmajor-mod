@@ -1,0 +1,31 @@
+<symbolTable id="Auto" module="Auto">
+ <files>
+  <file name="Auto/Auto.cm" path="file/Auto.cm.html"/>
+ </files>
+ <namespace docPath="../../Auto/doc/ns_.html" extPath="Auto/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../Auto/doc/../index.html#function_MakeStringSet_A078EBBC7786947D342A9D83FD1FD2C41DC0423A" extPath="Auto/doc/../index.html#function_MakeStringSet_A078EBBC7786947D342A9D83FD1FD2C41DC0423A" fileName="Auto/Auto.cm" filePath="../../Auto/file/Auto.cm.html" id="function_MakeStringSet_A078EBBC7786947D342A9D83FD1FD2C41DC0423A" kind="Function" line="4" name="MakeStringSet" returnType="a6b0ce78-620b-94e7-8aff-37551baaff16" specifiers=""/>
+   <function docPath="../../Auto/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Auto/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Auto/Auto.cm" filePath="../../Auto/file/Auto.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="13" name="main" returnType="984a98e5-de3d-c1ce-0a9c-62ede34bff80" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <basicType id="bd20de85-a3a1-b456-dc96-8dd963044b3d" name="char"/>
+  <specialization id="216996e6-c009-3c1f-4450-009c20c2acd8" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
+   <templateArgumentTypes>
+    <templateArgumentType ref="bd20de85-a3a1-b456-dc96-8dd963044b3d"/>
+   </templateArgumentTypes>
+  </specialization>
+  <specialization id="68e63c2f-cad4-87dd-d7aa-3b9972039c02" name="Less" primaryType="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57">
+   <templateArgumentTypes>
+    <templateArgumentType ref="216996e6-c009-3c1f-4450-009c20c2acd8"/>
+   </templateArgumentTypes>
+  </specialization>
+  <specialization id="a6b0ce78-620b-94e7-8aff-37551baaff16" name="Set" primaryType="class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3">
+   <templateArgumentTypes>
+    <templateArgumentType ref="216996e6-c009-3c1f-4450-009c20c2acd8"/>
+    <templateArgumentType ref="68e63c2f-cad4-87dd-d7aa-3b9972039c02"/>
+   </templateArgumentTypes>
+  </specialization>
+  <basicType id="984a98e5-de3d-c1ce-0a9c-62ede34bff80" name="int"/>
+ </types>
+</symbolTable>

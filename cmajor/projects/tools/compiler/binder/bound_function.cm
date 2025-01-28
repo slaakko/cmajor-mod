@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -56,6 +56,7 @@ namespace binder
                     if (destructorSymbol->Parent()->IsClassTypeSymbol())
                     {
                         ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(destructorSymbol->Parent());
+                        #assert(compileUnit != null);
                         if (destructorSymbol->IsGenerated() && !compileUnit->IsGeneratedDestructorInstantiated(destructorSymbol) || destructorSymbol->IsTemplateSpecialization())
                         {
                             if (destructorSymbol->IsGenerated())

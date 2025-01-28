@@ -1,3 +1,0 @@
-<grammar source="BasicTypeParser" title="Basic Type Grammar">
-    <rule source="BasicType" name="basic-type"/>
-</grammar>

@@ -1,0 +1,1190 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+using symbols;
+
+namespace binder
+{
+    public const int destructorId = 0;
+    public const int staticClassNameId = 1;
+    public const int createId = 2;
+    public const int registerId = 3;
+    public const int classIdId = 4;
+    public const int setObjectXmlAttributesId = 5;
+    public const int toXmlId = 6;
+    public const int fromXmlId = 7;
+
+    public class XmlAttributeProcessor : AttributeProcessor
+    {
+        public XmlAttributeProcessor() : base(u"xml")
+        {
+            reservedMemberFunctionNames.Insert(u"StaticClassName");
+            reservedMemberFunctionNames.Insert(u"Register");
+            reservedMemberFunctionNames.Insert(u"Create");
+            reservedMemberFunctionNames.Insert(u"SetObjectXmlAttributes");
+            reservedMemberVariableNames.Insert(u"classId");
+        }
+        [nodiscard]
+        public override Result<bool> TypeCheck(AttributeNode* attribute, Symbol* symbol)
+        {
+            switch (symbol->Kind())
+            {
+                case SymbolKind.classTypeSymbol:
+                case SymbolKind.classTemplateSpecializationSymbol:
+                case SymbolKind.memberVariableSymbol:
+                {
+                    if (attribute->Value() == u"true" || attribute->Value() == u"false")
+                    {
+                        if (attribute->Value() == u"true" && symbol->IsClassTypeSymbol())
+                        {
+                            Result<bool> result = TypeCheckClass(cast<ClassTypeSymbol*>(symbol));
+                            if (result.Error()) return result;
+                        }
+                        return Result<bool>(true);
+                    }
+                    else
+                    {
+                        Result<string> attributeValueResult = ToUtf8(attribute->Value());
+                        if (attributeValueResult.Error()) return Result<bool>(ErrorId(attributeValueResult.GetErrorId()));
+                        string attributeValue = Rvalue(attributeValueResult.Value());
+                        Result<string> attributeNameResult = ToUtf8(attribute->Name());
+                        if (attributeNameResult.Error()) return Result<bool>(ErrorId(attributeNameResult.GetErrorId()));
+                        string attributeName = Rvalue(attributeNameResult.Value());
+                        int errorId = MakeError("unknown attribute value '" + attributeValue + "' for attribute '" + attributeName + "'", attribute->GetFullSpan());
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    break;
+                }
+            }
+            return base->TypeCheck(attribute, symbol);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateSymbols(AttributeNode* attribute, Symbol* symbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+            if (symbol->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classTypeSymbol = cast<ClassTypeSymbol*>(symbol);
+                if (attribute->Value() == u"true")
+                {
+                    Result<bool> result = SetBaseClass(classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateMemberSymbols(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateMemberVariableSymbols(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateStaticClassNameSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateCreateFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateRegisterFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateClassIdFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateSetObjectXmlAttributesSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateToXmlSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                    result = GenerateFromXmlSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateImplementation(AttributeNode* attribute, Symbol* symbol, StatementBinder* statementBinder)
+        {
+            if (symbol->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classTypeSymbol = cast<ClassTypeSymbol*>(symbol);
+                auto it = functionSymbolMap.Find(classTypeSymbol);
+                if (it != functionSymbolMap.End())
+                {
+                    const auto& m = it->second;
+                    if (m.IsEmpty())
+                    {
+                        Result<string> classNameResult = ToUtf8(classTypeSymbol->FullName());
+                        if (classNameResult.Error()) return Result<bool>(ErrorId(classNameResult.GetErrorId()));
+                        string className = Rvalue(classNameResult.Value());
+                        int errorId = MakeError("internal error in XML attribute implementation: member function symbol map for class type symbol '" + className + "' is empty",
+                            attribute->GetFullSpan(), classTypeSymbol->FullSpan());
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    for (const auto& p : m)
+                    {
+                        FunctionSymbol* functionSymbol = p.first;
+                        switch (p.second)
+                        {
+                            case destructorId:
+                            {
+                                Result<bool> result = GenerateDestructorImplementation(attribute, cast<DestructorSymbol*>(functionSymbol), statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case staticClassNameId:
+                            {
+                                Result<bool> result = GenerateStaticClassNameImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol),
+                                    statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case createId:
+                            {
+                                Result<bool> result = GenerateCreateImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol),
+                                    statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case registerId:
+                            {
+                                Result<bool> result = GenerateRegisterImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol),
+                                    statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case classIdId:
+                            {
+                                Result<bool> result = GenerateClassIdImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol),
+                                    statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case setObjectXmlAttributesId:
+                            {
+                                Result<bool> result = GenerateSetObjectXmlAttributesImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol),
+                                    statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case toXmlId:
+                            {
+                                Result<bool> result = GenerateToXmlImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case fromXmlId:
+                            {
+                                Result<bool> result = GenerateFromXmlImplementation(attribute, classTypeSymbol, cast<MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            default:
+                            {
+                                Result<string> classNameResult = ToUtf8(classTypeSymbol->FullName());
+                                if (classNameResult.Error()) return Result<bool>(ErrorId(classNameResult.GetErrorId()));
+                                string className = Rvalue(classNameResult.Value());
+                                int errorId = MakeError("internal error in XML attribute implementation: member function symbol map for class type symbol '" + className +
+                                    "' contains invalid member function id", attribute->GetFullSpan(), classTypeSymbol->FullSpan());
+                                return Result<bool>(ErrorId(errorId));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Result<string> classNameResult = ToUtf8(classTypeSymbol->FullName());
+                    if (classNameResult.Error()) return Result<bool>(ErrorId(classNameResult.GetErrorId()));
+                    string className = Rvalue(classNameResult.Value());
+                    int errorId = MakeError("internal error in XML attribute implementation: member function symbol map for class type symbol '" + className + "' not found",
+                        attribute->GetFullSpan(), classTypeSymbol->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateDestructorImplementation(AttributeNode* attribute, DestructorSymbol* destructorSymbol, StatementBinder* statementBinder)
+        {
+            BoundCompileUnit* boundCompileUnit = statementBinder->GetBoundCompileUnit();
+            if (!boundCompileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
+            {
+                boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                Result<bool> result = binder.GenerateDestructorImplementation(statementBinder->CurrentClass(), destructorSymbol, boundCompileUnit,
+                    statementBinder->GetContainerScope(), statementBinder->CurrentFunction(), attribute);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateStaticClassNameImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, MemberFunctionSymbol* staticClassNameSymbol,
+            StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), staticClassNameSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            Result<string> fullClassNameResult = ToUtf8(classTypeSymbol->FullName());
+            if (fullClassNameResult.Error()) return Result<bool>(ErrorId(fullClassNameResult.GetErrorId()));
+            string fullClassName = Rvalue(fullClassNameResult.Value());
+            StringLiteralNode* classNameLiteralNode = new StringLiteralNode(attribute->GetSpan(), attribute->FileIndex(), fullClassName);
+            ReturnStatementNode* returnStatementNode = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), classNameLiteralNode);
+            compoundStatementNode.AddStatement(returnStatementNode);
+            Result<bool> result = CompileMemberFunction(staticClassNameSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateCreateImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, MemberFunctionSymbol* createSymbol,
+            StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), createSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            IdentifierNode* classNode = new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), classTypeSymbol->FullName());
+            NewNode* newNode = new NewNode(attribute->GetSpan(), attribute->FileIndex(), classNode);
+            ReturnStatementNode* returnStatementNode = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), newNode);
+            compoundStatementNode.AddStatement(returnStatementNode);
+            Result<bool> result = CompileMemberFunction(createSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateRegisterImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, MemberFunctionSymbol* registerSymbol,
+            StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), registerSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            Result<string> fullNameResult = ToUtf8(classTypeSymbol->FullName());
+            if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
+            string fullName = Rvalue(fullNameResult.Value());
+            int classId = cast<int>(GetHashCode(fullName) & 0x7FFFFFFFu);
+            AssignmentStatementNode* assignClassIdStatement = new AssignmentStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"classId"), new IntLiteralNode(attribute->GetSpan(), attribute->FileIndex(), classId));
+            compoundStatementNode.AddStatement(assignClassIdStatement);
+            TemplateIdNode* xmlRegister = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(),
+                u"System.Xml.Serialization.XmlRegister"));
+            xmlRegister->AddTemplateArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), classTypeSymbol->FullName()));
+            InvokeNode* invokeXmlRegisterFunction = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), xmlRegister);
+            invokeXmlRegisterFunction->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"classId"));
+            ReturnStatementNode* invokeXmlRegisterStatement = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeXmlRegisterFunction);
+            compoundStatementNode.AddStatement(invokeXmlRegisterStatement);
+            Result<bool> result = CompileMemberFunction(registerSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateClassIdImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, MemberFunctionSymbol* classIdSymbol,
+            StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), classIdSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            ReturnStatementNode* returnStatementNode = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"classId"));
+            compoundStatementNode.AddStatement(returnStatementNode);
+            Result<bool> result = CompileMemberFunction(classIdSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateSetObjectXmlAttributesImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol,
+            MemberFunctionSymbol* setObjectXmlAttributesSymbol, StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), setObjectXmlAttributesSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            ArrowNode* setClassIdArrowNode = new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"SetAttribute"));
+            InvokeNode* invokeSetClassIdAttribute = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), setClassIdArrowNode);
+            StringLiteralNode* classIdLiteralArg = new StringLiteralNode(attribute->GetSpan(), attribute->FileIndex(), "classId");
+            invokeSetClassIdAttribute->AddArgument(classIdLiteralArg);
+            InvokeNode* invokeClassIdToStringFun = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ToString"));
+            invokeClassIdToStringFun->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"classId"));
+            invokeSetClassIdAttribute->AddArgument(invokeClassIdToStringFun);
+            ExpressionStatementNode* setClassIdAttributeStatementNode = new ExpressionStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeSetClassIdAttribute);
+            compoundStatementNode.AddStatement(setClassIdAttributeStatementNode);
+            ConstructionStatementNode* constructObjectIdResult = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                new AutoNode(attribute->GetSpan(), attribute->FileIndex()), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdResult"));
+            InvokeNode* invokeObjectIdToStringFun = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ToString"));
+            invokeObjectIdToStringFun->AddArgument(new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ObjectId")));
+            constructObjectIdResult->AddArgument(invokeObjectIdToStringFun);
+            compoundStatementNode.AddStatement(constructObjectIdResult);
+            DotNode* objectIdResultErrorCond = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdResult"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Error"));
+            InvokeNode* invokeObjectIdResultErrorCond = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), objectIdResultErrorCond);
+            TemplateIdNode* resultBoolNode = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Result"));
+            resultBoolNode->AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+            InvokeNode* invokeResultBoolNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultBoolNode);
+            IdentifierNode * systemErrorIdNode = new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.ErrorId");
+            InvokeNode* invokeSystemErrorIdNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), systemErrorIdNode);
+            DotNode* getErrorIdNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdResult"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"GetErrorId"));
+            InvokeNode* invokeGetErrorIdNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), getErrorIdNode);
+            invokeSystemErrorIdNode->AddArgument(invokeGetErrorIdNode);
+            invokeResultBoolNode->AddArgument(invokeSystemErrorIdNode);
+            ReturnStatementNode* returnErrorIdStatement = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultBoolNode);
+            IfStatementNode* ifObjectIdResultStatement = new IfStatementNode(
+                attribute->GetSpan(), attribute->FileIndex(), invokeObjectIdResultErrorCond, returnErrorIdStatement, null);
+            compoundStatementNode.AddStatement(ifObjectIdResultStatement);
+            ArrowNode* setObjectIdArrowNode = new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"SetAttribute"));
+            InvokeNode* invokeSetObjectIdAttribute = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), setObjectIdArrowNode);
+            StringLiteralNode* objectIdLiteralArg = new StringLiteralNode(attribute->GetSpan(), attribute->FileIndex(), "objectId");
+            invokeSetObjectIdAttribute->AddArgument(objectIdLiteralArg);
+            DotNode* objectIdResultValueNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdResult"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Value"));
+            InvokeNode* invokeObjectIdResultValue = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), objectIdResultValueNode);
+            invokeSetObjectIdAttribute->AddArgument(invokeObjectIdResultValue);
+            ExpressionStatementNode* setObjectIdAttributeStatementNode = new ExpressionStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeSetObjectIdAttribute);
+            compoundStatementNode.AddStatement(setObjectIdAttributeStatementNode);
+            ArrowNode* setClassNameArrowNode = new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"SetAttribute"));
+            InvokeNode* invokeSetClassNameAttribute = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), setClassNameArrowNode);
+            StringLiteralNode* classNameLiteralArg = new StringLiteralNode(attribute->GetSpan(), attribute->FileIndex(), "className");
+            invokeSetClassNameAttribute->AddArgument(classNameLiteralArg);
+            invokeSetClassNameAttribute->AddArgument(new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ClassName")));
+            ExpressionStatementNode* setClassNameAttributeStatementNode = new ExpressionStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeSetClassNameAttribute);
+            compoundStatementNode.AddStatement(setClassNameAttributeStatementNode);
+            TemplateIdNode* resultBool = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Result"));
+            resultBool->AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+            InvokeNode* invokeResultBoolTrue = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultBool);
+            invokeResultBoolTrue->AddArgument(new BooleanLiteralNode(attribute->GetSpan(), attribute->FileIndex(), true));
+            ReturnStatementNode* returnStatmentNode = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultBoolTrue);
+            compoundStatementNode.AddStatement(returnStatmentNode);
+            Result<bool> result = CompileMemberFunction(setObjectXmlAttributesSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateToXmlImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, MemberFunctionSymbol* toXmlSymbol,
+            StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), toXmlSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            if (HasXmlBaseClass(classTypeSymbol))
+            {
+                ConstructionStatementNode* constructionStatementNode = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new AutoNode(attribute->GetSpan(), attribute->FileIndex()), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"));
+                ArrowNode* arrowNode = new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new BaseNode(attribute->GetSpan(), attribute->FileIndex()),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ToXml"));
+                InvokeNode* invokeNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), arrowNode);
+                invokeNode->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"elementName"));
+                invokeNode->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ctx"));
+                constructionStatementNode->AddArgument(invokeNode);
+                constructionStatementNode->SetAssignment();
+                compoundStatementNode.AddStatement(constructionStatementNode);
+                DotNode* resultDotError = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Error"));
+                InvokeNode* invokeResultError = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultDotError);
+                ReturnStatementNode* returnResultStmt = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"));
+                IfStatementNode* ifStmt = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultError, returnResultStmt, null);
+                compoundStatementNode.AddStatement(ifStmt);
+                DotNode* resultValueNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Value"));
+                InvokeNode* invokeResultValueNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultValueNode);
+                ConstructionStatementNode* constructElementNode = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new PointerNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Xml.Element")),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"));
+                constructElementNode->SetAssignment();
+                constructElementNode->AddArgument(invokeResultValueNode);
+                compoundStatementNode.AddStatement(constructElementNode);
+            }
+            else
+            {
+                ConstructionStatementNode* constructionStatementNode = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new PointerNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Xml.Element")),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"));
+                InvokeNode* makeElementNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Xml.MakeElement"));
+                makeElementNode->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"elementName"));
+                constructionStatementNode->AddArgument(makeElementNode);
+                constructionStatementNode->SetAssignment();
+                compoundStatementNode.AddStatement(constructionStatementNode);
+                DotNode* dotNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ctx"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"GetFlag"));
+                InvokeNode* invokeNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), dotNode);
+                invokeNode->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.XmlSerialization.XmlSerializationFlags.suppressMetadata"));
+                NotNode* cond = new NotNode(attribute->GetSpan(), attribute->FileIndex(), invokeNode);
+                InvokeNode* invokeSetObjectXmlAttributesNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"SetObjectXmlAttributes"));
+                invokeSetObjectXmlAttributesNode->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"));
+                ConstructionStatementNode* constructSetResultStatementNode = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new AutoNode(attribute->GetSpan(), attribute->FileIndex()),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"setResult"));
+                constructSetResultStatementNode->SetAssignment();
+                constructSetResultStatementNode->AddArgument(invokeSetObjectXmlAttributesNode);
+                DotNode* setResultErrorCond = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"setResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Error"));
+                InvokeNode* invokeSetResultErrorCond = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), setResultErrorCond);
+                TemplateIdNode* systemResultNode = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Result"));
+                PointerNode* systemXmlElement = new PointerNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Xml.Element"));
+                systemResultNode->AddTemplateArgument(systemXmlElement);
+                InvokeNode* invokeSystemResultNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), systemResultNode);
+                IdentifierNode* systemErrorId = new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.ErrorId");
+                InvokeNode* invokeSystemErrorId = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), systemErrorId);
+                DotNode* getErrorIdNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"setResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"GetErrorId"));
+                InvokeNode* invokeGetErrorId = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), getErrorIdNode);
+                invokeSystemErrorId->AddArgument(invokeGetErrorId);
+                invokeSystemResultNode->AddArgument(invokeSystemErrorId);
+                ReturnStatementNode* returnErrorStatement = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeSystemResultNode);
+                IfStatementNode* ifSetResultErrorStatement = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeSetResultErrorCond, returnErrorStatement, null);
+                CompoundStatementNode* compoundSetObjectXmlAttributesStatement = new CompoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+                compoundSetObjectXmlAttributesStatement->AddStatement(constructSetResultStatementNode);
+                compoundSetObjectXmlAttributesStatement->AddStatement(ifSetResultErrorStatement);
+                IfStatementNode* ifStatementNode = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(), cond, compoundSetObjectXmlAttributesStatement, null);
+                compoundStatementNode.AddStatement(ifStatementNode);
+            }
+            bool first = true;
+            for (MemberVariableSymbol* memberVariableSymbol : classTypeSymbol->MemberVariables())
+            {
+                System.Lex.Span span = memberVariableSymbol->Span();
+                int fileIndex = memberVariableSymbol->FileIndex();
+                AttributesNode* attributes = memberVariableSymbol->Attributes();
+                if (attributes != null)
+                {
+                    AttributeNode* xmlAttribute = attributes->GetAttribute(u"xml");
+                    if (xmlAttribute != null)
+                    {
+                        if (xmlAttribute->Value() == u"false")
+                        {
+                            continue;
+                        }
+                    }
+                }
+                if (reservedMemberVariableNames.Find(memberVariableSymbol->Name()) != reservedMemberVariableNames.End())
+                {
+                    continue;
+                }
+                DotNode* toXmlDotNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                        new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                            new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System"),
+                            new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Xml")),
+                        new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Serialization")),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ToXml"));
+                InvokeNode* toXmlInvokeNode = new InvokeNode(span, fileIndex, toXmlDotNode);
+                toXmlInvokeNode->AddArgument(new IdentifierNode(span, fileIndex, memberVariableSymbol->Name()));
+                Result<string> memberVariableNameResult = ToUtf8(memberVariableSymbol->Name());
+                if (memberVariableNameResult.Error()) return Result<bool>(ErrorId(memberVariableNameResult.GetErrorId()));
+                string memberVariableName = Rvalue(memberVariableNameResult.Value());
+                toXmlInvokeNode->AddArgument(new StringLiteralNode(span, fileIndex, memberVariableName));
+                toXmlInvokeNode->AddArgument(new IdentifierNode(span, fileIndex, u"ctx"));
+                if (first)
+                {
+                    first = false;
+                    ConstructionStatementNode* constructionStatement = new ConstructionStatementNode(span, fileIndex,
+                        new AutoNode(span, fileIndex),
+                        new IdentifierNode(span, fileIndex, u"memberResult"));
+                    constructionStatement->SetAssignment();
+                    constructionStatement->AddArgument(toXmlInvokeNode);
+                    compoundStatementNode.AddStatement(constructionStatement);
+                }
+                else
+                {
+                    AssignmentStatementNode* assignmentStatement = new AssignmentStatementNode(span, fileIndex,
+                        new IdentifierNode(span, fileIndex, u"memberResult"), toXmlInvokeNode);
+                    compoundStatementNode.AddStatement(assignmentStatement);
+                }
+                DotNode* memberResultDotError = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"memberResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Error"));
+                InvokeNode* invokeMemberResultError = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), memberResultDotError);
+                ReturnStatementNode* returnMemberResultStmt = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"memberResult"));
+                IfStatementNode* ifStmt = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeMemberResultError, returnMemberResultStmt, null);
+                compoundStatementNode.AddStatement(ifStmt);
+                DotNode* memberResultValueNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"memberResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Value"));
+                InvokeNode* invokeMemberResultValueNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), memberResultValueNode);
+                ArrowNode* appendChildArrowNode = new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"AppendChild"));
+                InvokeNode* appendChildInvokeNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), appendChildArrowNode);
+                appendChildInvokeNode->AddArgument(invokeMemberResultValueNode);
+                ExpressionStatementNode* appendChildStatement = new ExpressionStatementNode(attribute->GetSpan(), attribute->FileIndex(), appendChildInvokeNode);
+                compoundStatementNode.AddStatement(appendChildStatement);
+            }
+            TemplateIdNode* resultNode = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Result"));
+            resultNode->AddTemplateArgument(new PointerNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Xml.Element")));
+            InvokeNode* invokeResultNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultNode);
+            invokeResultNode->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"));
+            ReturnStatementNode* returnStatement = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultNode);
+            compoundStatementNode.AddStatement(returnStatement);
+            Result<bool> result = CompileMemberFunction(toXmlSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateFromXmlImplementation(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, MemberFunctionSymbol* fromXmlSymbol,
+            StatementBinder* statementBinder)
+        {
+            FileScope* fileScope = new FileScope();
+            statementBinder->GetBoundCompileUnit()->AddFileScope(fileScope);
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(attribute->GetSpan(), fromXmlSymbol, attribute->ModuleId(), attribute->FileIndex()));
+            MemberFunctionNode memberFunctionNode(attribute->GetSpan(), attribute->FileIndex());
+            CompoundStatementNode compoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+            if (HasXmlBaseClass(classTypeSymbol))
+            {
+                InvokeNode* invokeBaseFromXml = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                        new BaseNode(attribute->GetSpan(), attribute->FileIndex()),
+                        new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"FromXml")));
+                invokeBaseFromXml->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"));
+                invokeBaseFromXml->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ctx"));
+                ConstructionStatementNode* baseFromXmlStatement = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new AutoNode(attribute->GetSpan(), attribute->FileIndex()),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"));
+                baseFromXmlStatement->SetAssignment();
+                baseFromXmlStatement->AddArgument(invokeBaseFromXml);
+                compoundStatementNode.AddStatement(baseFromXmlStatement);
+                DotNode* resultDotError = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Error"));
+                InvokeNode* invokeResultError = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultDotError);
+                ReturnStatementNode* returnResultStmt = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"result"));
+                IfStatementNode* ifStmt = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultError, returnResultStmt, null);
+                compoundStatementNode.AddStatement(ifStmt);
+            }
+            else
+            {
+                ConstructionStatementNode* constructionStatementNode = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.string"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdAttr"));
+                constructionStatementNode->SetAssignment();
+                ArrowNode* arrowNode = new ArrowNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"element"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"GetAttribute"));
+                StringLiteralNode* objectIdLiteral = new StringLiteralNode(attribute->GetSpan(), attribute->FileIndex(), "objectId");
+                InvokeNode* elementGetAttributeNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), arrowNode);
+                elementGetAttributeNode->AddArgument(objectIdLiteral);
+                constructionStatementNode->AddArgument(elementGetAttributeNode);
+                constructionStatementNode->SetAssignment();
+                compoundStatementNode.AddStatement(constructionStatementNode);
+                DotNode* dotNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdAttr"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"IsEmpty"));
+                NotNode* notObjectIdAttrIsEmpty = new NotNode(attribute->GetSpan(), attribute->FileIndex(), new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), dotNode));
+                CompoundStatementNode* assignObjectIdCompoundStatement = new CompoundStatementNode(attribute->GetSpan(), attribute->FileIndex());
+                IfStatementNode* ifStatementNode = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(), notObjectIdAttrIsEmpty, assignObjectIdCompoundStatement, null);
+                compoundStatementNode.AddStatement(ifStatementNode);
+                InvokeNode* invokeParseUuid = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"ParseUuid"));
+                invokeParseUuid->AddArgument(new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"objectIdAttr"));
+                ConstructionStatementNode* constructParseResultNode = new ConstructionStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new AutoNode(attribute->GetSpan(), attribute->FileIndex()),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"uuidResult"));
+                constructParseResultNode->SetAssignment();
+                constructParseResultNode->AddArgument(invokeParseUuid);
+                assignObjectIdCompoundStatement->AddStatement(constructParseResultNode);
+                DotNode* uuidResultErrorNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"uuidResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Error"));
+                InvokeNode* invokeUuidResultErrorNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), uuidResultErrorNode);
+                TemplateIdNode* resultBoolNode = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Result"));
+                resultBoolNode->AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+                InvokeNode* invokeResultBoolNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultBoolNode);
+                IdentifierNode* errorIdNode = new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.ErrorId");
+                InvokeNode* invokeErrorIdNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), errorIdNode);
+                DotNode* uuidResultGetErrorIdNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"uuidResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"GetErrorId"));
+                InvokeNode* invokeUuidResultGetErrorIdNode = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), uuidResultGetErrorIdNode);
+                invokeErrorIdNode->AddArgument(invokeUuidResultGetErrorIdNode);
+                invokeResultBoolNode->AddArgument(invokeErrorIdNode);
+                ReturnStatementNode* returnUuidResultErrorNode = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultBoolNode);
+                IfStatementNode* ifUuidResultError = new IfStatementNode(attribute->GetSpan(), attribute->FileIndex(),
+                    invokeUuidResultErrorNode, returnUuidResultErrorNode, null);
+                assignObjectIdCompoundStatement->AddStatement(ifUuidResultError);
+                DotNode* uuidResultValue = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"uuidResult"),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Value"));
+                InvokeNode* invokeUuidResultValue = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), uuidResultValue);
+                InvokeNode* invokeSetObjectId = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"SetObjectId"));
+                invokeSetObjectId->AddArgument(invokeUuidResultValue);
+                ExpressionStatementNode* setObjectIdStatement = new ExpressionStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeSetObjectId);
+                assignObjectIdCompoundStatement->AddStatement(setObjectIdStatement);
+            }
+            bool first = true;
+            for (MemberVariableSymbol* memberVariableSymbol : classTypeSymbol->MemberVariables())
+            {
+                System.Lex.Span span = memberVariableSymbol->Span();
+                int fileIndex = memberVariableSymbol->FileIndex();
+                Result<string> memberVariableNameResult = ToUtf8(memberVariableSymbol->Name());
+                if (memberVariableNameResult.Error()) return Result<bool>(ErrorId(memberVariableNameResult.GetErrorId()));
+                string memberVariableName = Rvalue(memberVariableNameResult.Value());
+                AttributesNode* attributes = memberVariableSymbol->Attributes();
+                if (attributes != null)
+                {
+                    AttributeNode* xmlAttribute = attributes->GetAttribute(u"xml");
+                    if (xmlAttribute != null)
+                    {
+                        if (xmlAttribute->Value() == u"false")
+                        {
+                            continue;
+                        }
+                    }
+                }
+                if (reservedMemberVariableNames.Find(memberVariableSymbol->Name()) != reservedMemberVariableNames.End())
+                {
+                    continue;
+                }
+                DotNode* fromXmlDotNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                    new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                        new DotNode(attribute->GetSpan(), attribute->FileIndex(),
+                            new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System"),
+                            new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Xml")),
+                        new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Serialization")),
+                    new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"FromXml"));
+                InvokeNode* fromXmlInvokeNode = new InvokeNode(span, fileIndex, fromXmlDotNode);
+                fromXmlInvokeNode->AddArgument(new IdentifierNode(span, fileIndex, u"element"));
+                fromXmlInvokeNode->AddArgument(new IdentifierNode(span, fileIndex, u"ctx"));
+                fromXmlInvokeNode->AddArgument(new StringLiteralNode(span, fileIndex, memberVariableName));
+                fromXmlInvokeNode->AddArgument(new IdentifierNode(span, fileIndex, memberVariableSymbol->Name()));
+                if (first)
+                {
+                    first = false;
+                    ConstructionStatementNode* constructMemberResult = new ConstructionStatementNode(span, fileIndex,
+                        new AutoNode(span, fileIndex),
+                        new IdentifierNode(span, fileIndex, u"memberResult"));
+                    constructMemberResult->AddArgument(fromXmlInvokeNode);
+                    compoundStatementNode.AddStatement(constructMemberResult);
+                }
+                else
+                {
+                    AssignmentStatementNode* assignmentStatement = new AssignmentStatementNode(span, fileIndex,
+                        new IdentifierNode(span, fileIndex, u"memberResult"), fromXmlInvokeNode);
+                    compoundStatementNode.AddStatement(assignmentStatement);
+                }
+                DotNode* memberResultErrorCond = new DotNode(span, fileIndex,
+                    new IdentifierNode(span, fileIndex, u"memberResult"),
+                    new IdentifierNode(span, fileIndex, u"Error"));
+                InvokeNode* invokeMemberResultErrorCond = new InvokeNode(span, fileIndex, memberResultErrorCond);
+                ReturnStatementNode* returnMemberResultStatement = new ReturnStatementNode(span, fileIndex, new IdentifierNode(span, fileIndex, u"memberResult"));
+                IfStatementNode* ifStatementNode = new IfStatementNode(span, fileIndex, invokeMemberResultErrorCond, returnMemberResultStatement, null);
+                compoundStatementNode.AddStatement(ifStatementNode);
+            }
+            TemplateIdNode* resultBool = new TemplateIdNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Result"));
+            resultBool->AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+            InvokeNode* invokeResultBoolTrue = new InvokeNode(attribute->GetSpan(), attribute->FileIndex(), resultBool);
+            invokeResultBoolTrue->AddArgument(new BooleanLiteralNode(attribute->GetSpan(), attribute->FileIndex(), true));
+            ReturnStatementNode* returnStatmentNode = new ReturnStatementNode(attribute->GetSpan(), attribute->FileIndex(), invokeResultBoolTrue);
+            compoundStatementNode.AddStatement(returnStatmentNode);
+            Result<bool> result = CompileMemberFunction(fromXmlSymbol, compoundStatementNode, memberFunctionNode, Rvalue(boundFunction), statementBinder);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> CompileMemberFunction(MemberFunctionSymbol* memberFunctionSymbol,
+            CompoundStatementNode& compoundStatementNode, MemberFunctionNode& memberFunctionNode,
+            UniquePtr<BoundFunction>&& boundFunction, StatementBinder* statementBinder)
+        {
+            boundFunction->SetBoundCompileUnit(statementBinder->GetBoundCompileUnit());
+            SymbolsContext& context = statementBinder->GetBoundCompileUnit()->Context();
+            SymbolTable* symbolTable = statementBinder->GetBoundCompileUnit()->GetSymbolTable();
+            symbolTable->BeginContainer(memberFunctionSymbol);
+            Result<bool> result = CreateSymbols(&compoundStatementNode, symbolTable, context);
+            if (result.Error()) return result;
+            symbolTable->EndContainer();
+            TypeBinder typeBinder(statementBinder->GetBoundCompileUnit());
+            ContainerScope* containerScope = statementBinder->GetContainerScope();
+            typeBinder.SetContainerScope(containerScope);
+            statementBinder->SetContainerScope(memberFunctionSymbol->GetContainerScope());
+            typeBinder.SetCurrentFunctionSymbol(memberFunctionSymbol);
+            compoundStatementNode.Accept(typeBinder);
+            if (typeBinder.Error()) return Result<bool>(ErrorId(typeBinder.GetErrorId()));
+            BoundFunction* prevFunction = statementBinder->CurrentFunction();
+            statementBinder->SetCurrentFunction(boundFunction.Get());
+            MemberFunctionSymbol* prevMemberFunctionSymbol = statementBinder->CurrentMemberFunctionSymbol();
+            MemberFunctionNode* prevMemberFunctionNode = statementBinder->CurrentMemberFunctionNode();
+            statementBinder->SetCurrentMemberFunction(memberFunctionSymbol, &memberFunctionNode);
+            compoundStatementNode.Accept(*statementBinder);
+            if (statementBinder->Error()) return Result<bool>(ErrorId(statementBinder->GetErrorId()));
+            statementBinder->SetContainerScope(containerScope);
+            BoundStatement* boundStatement = statementBinder->ReleaseStatement();
+            #assert(boundStatement->IsBoundCompoundStatement());
+            BoundCompoundStatement* compoundStatement = cast<BoundCompoundStatement*>(boundStatement);
+            boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(compoundStatement));
+            statementBinder->CurrentClass()->AddMember(UniquePtr<BoundNode>(boundFunction.Release()));
+            statementBinder->SetCurrentMemberFunction(prevMemberFunctionSymbol, prevMemberFunctionNode);
+            statementBinder->SetCurrentFunction(prevFunction);
+            statementBinder->GetBoundCompileUnit()->RemoveLastFileScope();
+            return Result<bool>(true);
+        }
+        private bool HasXmlBaseClass(ClassTypeSymbol* classType) const
+        {
+            ClassTypeSymbol* baseClass = classType->BaseClass();
+            if (baseClass != null)
+            {
+                return baseClass->HasXmlAttribute();
+            }
+            return false;
+        }
+        [nodiscard]
+        private Result<bool> TypeCheckClass(ClassTypeSymbol* classType)
+        {
+            for (FunctionSymbol* memberFunction : classType->AllMemberFunctions())
+            {
+                if (reservedMemberFunctionNames.Find(memberFunction->GroupName()) != reservedMemberFunctionNames.End())
+                {
+                    Result<string> memberFunctionNameResult = ToUtf8(memberFunction->GroupName());
+                    if (memberFunctionNameResult.Error()) return Result<bool>(ErrorId(memberFunctionNameResult.GetErrorId()));
+                    string memberFunctionName = Rvalue(memberFunctionNameResult.Value());
+                    int errorId = MakeError("member function name '" + memberFunctionName + "' is reserved for the implementation when using the '[xml]' attribute for a class",
+                        memberFunction->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            for (MemberVariableSymbol* memberVariable : classType->StaticMemberVariables())
+            {
+                if (reservedMemberVariableNames.Find(memberVariable->Name()) != reservedMemberVariableNames.End())
+                {
+                    Result<string> memberVariableNameResult = ToUtf8(memberVariable->Name());
+                    if (memberVariableNameResult.Error()) return Result<bool>(ErrorId(memberVariableNameResult.GetErrorId()));
+                    string memberVariableName = Rvalue(memberVariableNameResult.Value());
+                    int errorId = MakeError("member variable name '" + memberVariableName + "' is reserved for the implementation when using the '[xml]' attribute for a class",
+                        memberVariable->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            for (MemberVariableSymbol* memberVariable : classType->MemberVariables())
+            {
+                if (reservedMemberVariableNames.Find(memberVariable->Name()) != reservedMemberVariableNames.End())
+                {
+                    Result<string> memberVariableNameResult = ToUtf8(memberVariable->Name());
+                    if (memberVariableNameResult.Error()) return Result<bool>(ErrorId(memberVariableNameResult.GetErrorId()));
+                    string memberVariableName = Rvalue(memberVariableNameResult.Value());
+                    int errorId = MakeError("member variable name '" + memberVariableName + "' is reserved for the implementation when using the '[xml]' attribute for a class",
+                        memberVariable->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            classType->SetHasXmlAttribute();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> SetBaseClass(ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+            if (classTypeSymbol->BaseClass() == null)
+            {
+                IdentifierNode xmlSerializableNode(classTypeSymbol->Span(), classTypeSymbol->FileIndex(), u"System.Xml.Serialization.XmlSerializable");
+                Result<TypeSymbol*> baseClassTypeResult = ResolveType(&xmlSerializableNode, boundCompileUnit, containerScope);
+                if (baseClassTypeResult.Error()) return Result<bool>(ErrorId(baseClassTypeResult.GetErrorId()));
+                TypeSymbol* baseClassType = baseClassTypeResult.Value();
+                if (baseClassType->IsClassTypeSymbol())
+                {
+                    classTypeSymbol->SetBaseClass(cast<ClassTypeSymbol*>(baseClassType));
+                }
+                else
+                {
+                    int errorId = MakeError("class type expected", classTypeSymbol->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else if (!classTypeSymbol->BaseClass()->HasXmlAttribute())
+            {
+                Result<string> classNameResult = ToUtf8(classTypeSymbol->FullName());
+                if (classNameResult.Error()) return Result<bool>(ErrorId(classNameResult.GetErrorId()));
+                string className = Rvalue(classNameResult.Value());
+                int errorId = MakeError("base class of class '" + className + "' should have an [xml] attribute", classTypeSymbol->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateMemberSymbols(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+            for (MemberVariableSymbol* memberVariableSymbol : classTypeSymbol->MemberVariables())
+            {
+                AttributesNode* attributes = memberVariableSymbol->Attributes();
+                if (attributes != null)
+                {
+                    AttributeNode* xmlAttribute = attributes->GetAttribute(u"xml");
+                    if (xmlAttribute != null)
+                    {
+                        if (xmlAttribute->Value() == u"false")
+                        {
+                            continue;
+                        }
+                    }
+                }
+                if (reservedMemberVariableNames.Find(memberVariableSymbol->Name()) != reservedMemberVariableNames.End())
+                {
+                    continue;
+                }
+                TypeSymbol* memberVariableType = memberVariableSymbol->Type();
+                if (memberVariableType->IsClassTypeSymbol())
+                {
+                    ClassTypeSymbol* memberVarClassType = cast<ClassTypeSymbol*>(memberVariableType);
+                    Node* node = boundCompileUnit->GetSymbolTable()->GetNode(memberVarClassType);
+                    if (node != null)
+                    {
+                        #assert(node->IsClassNode());
+                        ClassNode* classNode = cast<ClassNode*>(node);
+                        TypeBinder typeBinder(boundCompileUnit);
+                        typeBinder.BindClass(memberVarClassType, classNode, false);
+                        if (typeBinder.Error()) return Result<bool>(ErrorId(typeBinder.GetErrorId()));
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateMemberVariableSymbols(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit,
+            ContainerScope* containerScope)
+        {
+            MemberVariableSymbol* classIdSymbol = new MemberVariableSymbol(attribute->GetSpan(), u"classId");
+            classIdSymbol->SetModule(boundCompileUnit->GetModule());
+            classIdSymbol->SetStatic();
+            classIdSymbol->SetAccess(SymbolAccess.public_);
+            Result<TypeSymbol*> typeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"int");
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            TypeSymbol* type = typeResult.Value();
+            classIdSymbol->SetType(type);
+            Result<bool> result = classTypeSymbol->AddMember(classIdSymbol, boundCompileUnit->Context());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateStaticClassNameSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit,
+            ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* staticClassNameSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"StaticClassName");
+            staticClassNameSymbol->SetModule(boundCompileUnit->GetModule());
+            staticClassNameSymbol->SetGroupName(u"StaticClassName");
+            staticClassNameSymbol->SetStatic();
+            staticClassNameSymbol->SetAccess(SymbolAccess.public_);
+            symbolTable->SetFunctionIdFor(staticClassNameSymbol);
+            Result<TypeSymbol*> stringTypeSymbolResult = symbolTable->GetTypeByName(u"System.String<char>");
+            if (stringTypeSymbolResult.Error()) return Result<bool>(ErrorId(stringTypeSymbolResult.GetErrorId()));
+            TypeSymbol* stringTypeSymbol= stringTypeSymbolResult.Value();
+            staticClassNameSymbol->SetReturnType(stringTypeSymbol);
+            ParameterSymbol* returnParam = new ParameterSymbol(attribute->GetSpan(), u"@return");
+            returnParam->SetParent(staticClassNameSymbol);
+            Result<TypeSymbol*> stringPtrTypeResult = stringTypeSymbol->AddPointer(context);
+            if (stringPtrTypeResult.Error()) return Result<bool>(ErrorId(stringPtrTypeResult.GetErrorId()));
+            TypeSymbol* stringPtrType = stringPtrTypeResult.Value();
+            returnParam->SetType(stringPtrType);
+            staticClassNameSymbol->SetReturnParam(returnParam);
+            Result<bool> result = classTypeSymbol->AddMember(staticClassNameSymbol, context);
+            if (result.Error()) return result;
+            result = staticClassNameSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(staticClassNameSymbol, staticClassNameId));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateCreateFunctionSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit,
+            ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* createSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"Create");
+            createSymbol->SetModule(boundCompileUnit->GetModule());
+            createSymbol->SetGroupName(u"Create");
+            createSymbol->SetStatic();
+            createSymbol->SetAccess(SymbolAccess.public_);
+            symbolTable->SetFunctionIdFor(createSymbol);
+            Result<TypeSymbol*> serializableTypeSymbolResult = symbolTable->GetTypeByName(u"System.Xml.Serialization.XmlSerializable");
+            if (serializableTypeSymbolResult.Error()) return Result<bool>(ErrorId(serializableTypeSymbolResult.GetErrorId()));
+            TypeSymbol* serializableType = serializableTypeSymbolResult.Value();
+            Result<TypeSymbol*> serializablePtrTypeSymbolResult = serializableType->AddPointer(context);
+            if (serializablePtrTypeSymbolResult.Error()) return Result<bool>(ErrorId(serializablePtrTypeSymbolResult.GetErrorId()));
+            TypeSymbol* serializablePtrTypeSymbol = serializablePtrTypeSymbolResult.Value();
+            createSymbol->SetReturnType(serializablePtrTypeSymbol);
+            Result<bool> result = classTypeSymbol->AddMember(createSymbol, context);
+            if (result.Error()) return result;
+            result = createSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(createSymbol, createId));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateRegisterFunctionSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit,
+            ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* registerSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"Register");
+            registerSymbol->SetModule(boundCompileUnit->GetModule());
+            registerSymbol->SetGroupName(u"Register");
+            registerSymbol->SetStatic();
+            registerSymbol->SetAccess(SymbolAccess.public_);
+            symbolTable->SetFunctionIdFor(registerSymbol);
+            DotNode* systemResultNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Result"));
+            TemplateIdNode resultBoolNode(attribute->GetSpan(), attribute->FileIndex(), systemResultNode);
+            resultBoolNode.AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+            Result<TypeSymbol*> returnTypeResult = ResolveType(&resultBoolNode, boundCompileUnit, containerScope);
+            if (returnTypeResult.Error()) return Result<bool>(ErrorId(returnTypeResult.GetErrorId()));
+            TypeSymbol* returnType = returnTypeResult.Value();
+            registerSymbol->SetReturnType(returnType);
+            ParameterSymbol* returnParam = new ParameterSymbol(attribute->GetSpan(), u"@return");
+            returnParam->SetParent(registerSymbol);
+            Result<TypeSymbol*> returnPtrTypeResult = returnType->AddPointer(context);
+            if (returnPtrTypeResult.Error()) return Result<bool>(ErrorId(returnPtrTypeResult.GetErrorId()));
+            TypeSymbol* returnPtrType = returnPtrTypeResult.Value();
+            returnParam->SetType(returnPtrType);
+            registerSymbol->SetReturnParam(returnParam);
+            Result<bool> result = classTypeSymbol->AddMember(registerSymbol, context);
+            if (result.Error()) return result;
+            result = registerSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(registerSymbol, registerId));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateClassIdFunctionSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit,
+            ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* classIdSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"ClassId");
+            classIdSymbol->SetModule(boundCompileUnit->GetModule());
+            classIdSymbol->SetGroupName(u"ClassId");
+            classIdSymbol->SetAccess(SymbolAccess.public_);
+            classIdSymbol->SetConst();
+            classIdSymbol->SetOverride();
+            ParameterSymbol* thisParam = new ParameterSymbol(attribute->GetSpan(), u"this");
+            Result<TypeSymbol*> classPtrTypeResult = classTypeSymbol->AddPointer(context);
+            if (classPtrTypeResult.Error()) return Result<bool>(ErrorId(classPtrTypeResult.GetErrorId()));
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
+            Result<bool> result = classIdSymbol->AddMember(thisParam, context);
+            if (result.Error()) return result;
+            symbolTable->SetFunctionIdFor(classIdSymbol);
+            Result<TypeSymbol*> intTypeResult = symbolTable->GetTypeByName(u"int");
+            if (intTypeResult.Error()) return Result<bool>(ErrorId(intTypeResult.GetErrorId()));
+            TypeSymbol* intType = intTypeResult.Value();
+            classIdSymbol->SetReturnType(intType);
+            result = classTypeSymbol->AddMember(classIdSymbol, context);
+            if (result.Error()) return result;
+            result = classIdSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(classIdSymbol, classIdId));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateSetObjectXmlAttributesSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit,
+            ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* setObjectXmlAttributesSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"SetObjectXmlAttributes");
+            setObjectXmlAttributesSymbol->SetModule(boundCompileUnit->GetModule());
+            setObjectXmlAttributesSymbol->SetGroupName(u"SetObjectXmlAttributes");
+            setObjectXmlAttributesSymbol->SetAccess(SymbolAccess.public_);
+            setObjectXmlAttributesSymbol->SetOverride();
+            ParameterSymbol* thisParam = new ParameterSymbol(attribute->GetSpan(), u"this");
+            Result<TypeSymbol*> classPtrTypeResult = classTypeSymbol->AddPointer(context);
+            if (classPtrTypeResult.Error()) return Result<bool>(ErrorId(classPtrTypeResult.GetErrorId()));
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
+            Result<bool> result = setObjectXmlAttributesSymbol->AddMember(thisParam, context);
+            if (result.Error()) return result;
+            symbolTable->SetFunctionIdFor(setObjectXmlAttributesSymbol);
+            Result<TypeSymbol*> xmlElementTypeSymbolResult = symbolTable->GetTypeByName(u"System.Xml.Element");
+            if (xmlElementTypeSymbolResult.Error()) return Result<bool>(ErrorId(xmlElementTypeSymbolResult.GetErrorId()));
+            TypeSymbol* xmlElementTypeSymbol = xmlElementTypeSymbolResult.Value();
+            ParameterSymbol* elementParam = new ParameterSymbol(attribute->GetSpan(), u"element");
+            Result<TypeSymbol*> xmlElementPtrTypeResult = xmlElementTypeSymbol->AddPointer(context);
+            if (xmlElementPtrTypeResult.Error()) return Result<bool>(ErrorId(xmlElementPtrTypeResult.GetErrorId()));
+            TypeSymbol* xmlElementPtrType = xmlElementPtrTypeResult.Value();
+            elementParam->SetType(xmlElementPtrType);
+            result = setObjectXmlAttributesSymbol->AddMember(elementParam, context);
+            if (result.Error()) return result;
+            DotNode* systemResultNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Result"));
+            TemplateIdNode resultBoolNode(attribute->GetSpan(), attribute->FileIndex(), systemResultNode);
+            resultBoolNode.AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+            Result<TypeSymbol*> returnTypeResult = ResolveType(&resultBoolNode, boundCompileUnit, containerScope);
+            if (returnTypeResult.Error()) return Result<bool>(ErrorId(returnTypeResult.GetErrorId()));
+            TypeSymbol* returnType = returnTypeResult.Value();
+            setObjectXmlAttributesSymbol->SetReturnType(returnType);
+            ParameterSymbol* returnParam = new ParameterSymbol(attribute->GetSpan(), u"@return");
+            returnParam->SetParent(setObjectXmlAttributesSymbol);
+            Result<TypeSymbol*> returnPtrTypeResult = returnType->AddPointer(context);
+            if (returnPtrTypeResult.Error()) return Result<bool>(ErrorId(returnPtrTypeResult.GetErrorId()));
+            TypeSymbol* returnPtrType = returnPtrTypeResult.Value();
+            returnParam->SetType(returnPtrType);
+            setObjectXmlAttributesSymbol->SetReturnParam(returnParam);
+            result = classTypeSymbol->AddMember(setObjectXmlAttributesSymbol, context);
+            if (result.Error()) return result;
+            result = setObjectXmlAttributesSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(setObjectXmlAttributesSymbol, setObjectXmlAttributesId));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateToXmlSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* toXmlSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"ToXml");
+            toXmlSymbol->SetModule(boundCompileUnit->GetModule());
+            toXmlSymbol->SetGroupName(u"ToXml");
+            toXmlSymbol->SetAccess(SymbolAccess.public_);
+            toXmlSymbol->SetOverride();
+            ParameterSymbol* thisParam = new ParameterSymbol(attribute->GetSpan(), u"this");
+            Result<TypeSymbol*> classPtrTypeResult = classTypeSymbol->AddPointer(context);
+            if (classPtrTypeResult.Error()) return Result<bool>(ErrorId(classPtrTypeResult.GetErrorId()));
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
+            Result<bool> result = toXmlSymbol->AddMember(thisParam, context);
+            if (result.Error()) return result;
+            ParameterSymbol* elementNameParam = new ParameterSymbol(attribute->GetSpan(), u"elementName");
+            Result<TypeSymbol*> stringTypeSymbolResult = symbolTable->GetTypeByName(u"System.String<char>");
+            if (stringTypeSymbolResult.Error()) return Result<bool>(ErrorId(stringTypeSymbolResult.GetErrorId()));
+            TypeSymbol* stringTypeSymbol= stringTypeSymbolResult.Value();
+            Result<TypeSymbol*> constTypeSymbolResult = stringTypeSymbol->AddConst(context);
+            if (constTypeSymbolResult.Error()) return Result<bool>(ErrorId(constTypeSymbolResult.GetErrorId()));
+            TypeSymbol* constTypeSymbol = constTypeSymbolResult.Value();
+            Result<TypeSymbol*> lvalueRefTypeResult = constTypeSymbol->AddLvalueReference(context);
+            if (lvalueRefTypeResult.Error()) return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+            elementNameParam->SetType(lvalueRefType);
+            result = toXmlSymbol->AddMember(elementNameParam, context);
+            if (result.Error()) return result;
+            ParameterSymbol* ctxParam = new ParameterSymbol(attribute->GetSpan(), u"ctx");
+            Result<TypeSymbol*> xmlSerializationContextTypeResult = symbolTable->GetTypeByName(u"System.Xml.Serialization.XmlSerializationContext");
+            if (xmlSerializationContextTypeResult.Error()) return Result<bool>(ErrorId(xmlSerializationContextTypeResult.GetErrorId()));
+            TypeSymbol* xmlSerializationContextType = xmlSerializationContextTypeResult.Value();
+            Result<TypeSymbol*> ctxLvalueRefTypeResult = xmlSerializationContextType->AddLvalueReference(context);
+            if (ctxLvalueRefTypeResult.Error()) return Result<bool>(ErrorId(ctxLvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* ctxLvalueRefType = ctxLvalueRefTypeResult.Value();
+            ctxParam->SetType(ctxLvalueRefType);
+            result = toXmlSymbol->AddMember(ctxParam, context);
+            if (result.Error()) return result;
+            symbolTable->SetFunctionIdFor(toXmlSymbol);
+            DotNode* systemResultNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Result"));
+            TemplateIdNode resultXmlElementNode(attribute->GetSpan(), attribute->FileIndex(), systemResultNode);
+            resultXmlElementNode.AddTemplateArgument(new PointerNode(attribute->GetSpan(), attribute->FileIndex(),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System.Xml.Element")));
+            Result<TypeSymbol*> returnTypeResult = ResolveType(&resultXmlElementNode, boundCompileUnit, containerScope);
+            if (returnTypeResult.Error()) return Result<bool>(ErrorId(returnTypeResult.GetErrorId()));
+            TypeSymbol* returnType = returnTypeResult.Value();
+            toXmlSymbol->SetReturnType(returnType);
+            ParameterSymbol* returnParam = new ParameterSymbol(attribute->GetSpan(), u"@return");
+            returnParam->SetParent(toXmlSymbol);
+            Result<TypeSymbol*> returnPtrTypeResult = returnType->AddPointer(context);
+            if (returnPtrTypeResult.Error()) return Result<bool>(ErrorId(returnPtrTypeResult.GetErrorId()));
+            TypeSymbol* returnPtrType = returnPtrTypeResult.Value();
+            returnParam->SetType(returnPtrType);
+            toXmlSymbol->SetReturnParam(returnParam);
+            result = classTypeSymbol->AddMember(toXmlSymbol, context);
+            if (result.Error()) return result;
+            result = toXmlSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(toXmlSymbol, toXmlId));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> GenerateFromXmlSymbol(AttributeNode* attribute, ClassTypeSymbol* classTypeSymbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            SymbolsContext& context = boundCompileUnit->Context();
+            FunctionSymbol* fromXmlSymbol = new MemberFunctionSymbol(attribute->GetSpan(), u"FromXml");
+            fromXmlSymbol->SetModule(boundCompileUnit->GetModule());
+            fromXmlSymbol->SetGroupName(u"FromXml");
+            fromXmlSymbol->SetAccess(SymbolAccess.public_);
+            fromXmlSymbol->SetOverride();
+            ParameterSymbol* thisParam = new ParameterSymbol(attribute->GetSpan(), u"this");
+            Result<TypeSymbol*> classPtrTypeResult = classTypeSymbol->AddPointer(context);
+            if (classPtrTypeResult.Error()) return Result<bool>(ErrorId(classPtrTypeResult.GetErrorId()));
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
+            Result<bool> result = fromXmlSymbol->AddMember(thisParam, context);
+            if (result.Error()) return result;
+            ParameterSymbol* elementParam = new ParameterSymbol(attribute->GetSpan(), u"element");
+            Result<TypeSymbol*> elementTypeResult = symbolTable->GetTypeByName(u"System.Xml.Element");
+            if (elementTypeResult.Error()) return Result<bool>(ErrorId(elementTypeResult.GetErrorId()));
+            TypeSymbol* elementType = elementTypeResult.Value();
+            Result<TypeSymbol*> elementPtrTypeResult = elementType->AddPointer(context);
+            if (elementPtrTypeResult.Error()) return Result<bool>(ErrorId(elementPtrTypeResult.GetErrorId()));
+            TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+            elementParam->SetType(elementPtrType);
+            result = fromXmlSymbol->AddMember(elementParam, context);
+            if (result.Error()) return result;
+            ParameterSymbol* ctxParam = new ParameterSymbol(attribute->GetSpan(), u"ctx");
+            Result<TypeSymbol*> xmlSerializationContextTypeResult = symbolTable->GetTypeByName(u"System.Xml.Serialization.XmlSerializationContext");
+            if (xmlSerializationContextTypeResult.Error()) return Result<bool>(ErrorId(xmlSerializationContextTypeResult.GetErrorId()));
+            TypeSymbol* xmlSerializationContextType = xmlSerializationContextTypeResult.Value();
+            Result<TypeSymbol*> ctxLvalueRefTypeResult = xmlSerializationContextType->AddLvalueReference(context);
+            if (ctxLvalueRefTypeResult.Error()) return Result<bool>(ErrorId(ctxLvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* ctxLvalueRefType = ctxLvalueRefTypeResult.Value();
+            ctxParam->SetType(ctxLvalueRefType);
+            result = fromXmlSymbol->AddMember(ctxParam, context);
+            if (result.Error()) return result;
+            symbolTable->SetFunctionIdFor(fromXmlSymbol);
+            DotNode* systemResultNode = new DotNode(attribute->GetSpan(), attribute->FileIndex(), new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"System"),
+                new IdentifierNode(attribute->GetSpan(), attribute->FileIndex(), u"Result"));
+            TemplateIdNode resultBoolNode(attribute->GetSpan(), attribute->FileIndex(), systemResultNode);
+            resultBoolNode.AddTemplateArgument(new BoolNode(attribute->GetSpan(), attribute->FileIndex()));
+            Result<TypeSymbol*> returnTypeResult = ResolveType(&resultBoolNode, boundCompileUnit, containerScope);
+            if (returnTypeResult.Error()) return Result<bool>(ErrorId(returnTypeResult.GetErrorId()));
+            TypeSymbol* returnType = returnTypeResult.Value();
+            fromXmlSymbol->SetReturnType(returnType);
+            ParameterSymbol* returnParam = new ParameterSymbol(attribute->GetSpan(), u"@return");
+            returnParam->SetParent(fromXmlSymbol);
+            Result<TypeSymbol*> returnPtrTypeResult = returnType->AddPointer(context);
+            if (returnPtrTypeResult.Error()) return Result<bool>(ErrorId(returnPtrTypeResult.GetErrorId()));
+            TypeSymbol* returnPtrType = returnPtrTypeResult.Value();
+            returnParam->SetType(returnPtrType);
+            fromXmlSymbol->SetReturnParam(returnParam);
+            result = classTypeSymbol->AddMember(fromXmlSymbol, context);
+            if (result.Error()) return result;
+            result = fromXmlSymbol->ComputeName(context);
+            if (result.Error()) return result;
+            List<Pair<FunctionSymbol*, int>>& m = functionSymbolMap[classTypeSymbol];
+            m.Add(MakePair(fromXmlSymbol, fromXmlId));
+            return Result<bool>(true);
+        }
+        private Set<ustring> reservedMemberFunctionNames;
+        private Set<ustring> reservedMemberVariableNames;
+        private Map<Symbol*, List<Pair<FunctionSymbol*, int>>> functionSymbolMap;
+    }
+}
+

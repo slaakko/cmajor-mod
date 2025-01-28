@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,8 +20,8 @@ import cmajor.ir.emitter;
 namespace cmajor::symbols {
 
 InterfaceTypeSymbol::InterfaceTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::interfaceTypeSymbol, span_, name_), defaultConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr), copyAssignment(nullptr),
-    moveAssignment(nullptr), equal(nullptr)
+    TypeSymbol(SymbolType::interfaceTypeSymbol, span_, name_), 
+    defaultConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr), copyAssignment(nullptr), moveAssignment(nullptr)
 {
 }
 
@@ -53,11 +53,6 @@ void InterfaceTypeSymbol::AddMember(Symbol* member)
         case SymbolType::interfaceTypeMoveAssignment:
         {
             moveAssignment = static_cast<InterfaceTypeMoveAssignment*>(member);
-            break;
-        }
-        case SymbolType::interfaceTypeEqual:
-        {
-            equal = static_cast<InterfaceTypeEqual*>(member);
             break;
         }
         case SymbolType::memberFunctionSymbol:
@@ -744,6 +739,95 @@ void InterfaceTypeEqual::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
     void* interfacesEqual = emitter.CreateICmpEQ(leftInterfaceValue, rightIntefaceValue);
     void* equal = emitter.CreateAnd(objectsEqual, interfacesEqual);
     emitter.Stack().Push(equal);
+}
+
+InterfaceTypeLess::InterfaceTypeLess(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeLess, span_, U"@interfaceTypeLess"), interfaceType(nullptr)
+{
+}
+
+InterfaceTypeLess::InterfaceTypeLess(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType) :
+    FunctionSymbol(SymbolType::interfaceTypeLess, interfaceType_->GetSpan(), U"@interfaceTypeLess"),
+    interfaceType(interfaceType_)
+{
+    SetGroupName(U"operator<");
+    SetAccess(SymbolAccess::public_);
+    ParameterSymbol* leftParam = new ParameterSymbol(interfaceType->GetSpan(), U"left");
+    leftParam->SetType(interfaceType->AddConst()->AddLvalueReference());
+    AddMember(leftParam);
+    ParameterSymbol* rightParam = new ParameterSymbol(interfaceType->GetSpan(), U"right");
+    rightParam->SetType(interfaceType->AddConst()->AddLvalueReference());
+    AddMember(rightParam);
+    SetReturnType(boolType);
+    ComputeName();
+}
+
+void InterfaceTypeLess::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(interfaceType->TypeId());
+}
+
+void InterfaceTypeLess::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void InterfaceTypeLess::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected");
+        interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
+}
+
+void InterfaceTypeLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+{
+    void* retVal = emitter.CreateAlloca(emitter.GetIrTypeForBool());
+    void* retBlock = emitter.CreateBasicBlock("ret");
+    genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
+    void* leftPtr = emitter.Stack().Pop();
+    void* leftObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), leftPtr);
+    void* leftObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), leftObjectPtr); // TODO
+    genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
+    void* rightPtr = emitter.Stack().Pop();
+    void* rightObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), rightPtr);
+    void* rightObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), rightObjectPtr); // TODO
+    void* leftObjectLessThanRightObject = emitter.CreateICmpULT(leftObjectValue, rightObjectValue);
+    void* leftLessBlock = emitter.CreateBasicBlock("leftLess");
+    void* leftNotLessBlock = emitter.CreateBasicBlock("leftNotLess");
+    emitter.CreateCondBr(leftObjectLessThanRightObject, leftLessBlock, leftNotLessBlock);
+    emitter.SetCurrentBasicBlock(leftLessBlock);
+    emitter.CreateStore(emitter.CreateTrue(), retVal);
+    emitter.CreateBr(retBlock);
+    emitter.SetCurrentBasicBlock(leftNotLessBlock);
+    void* rightObjectLessThanLeftObject = emitter.CreateICmpULT(rightObjectValue, leftObjectValue);
+    void* rightLessBlock = emitter.CreateBasicBlock("rightLess");
+    void* rightNotLessBlock = emitter.CreateBasicBlock("rightNotLess");
+    emitter.CreateCondBr(rightObjectLessThanLeftObject, rightLessBlock, rightNotLessBlock);
+    emitter.SetCurrentBasicBlock(rightLessBlock);
+    emitter.CreateStore(emitter.CreateFalse(), retVal);
+    emitter.CreateBr(retBlock);
+    emitter.SetCurrentBasicBlock(rightNotLessBlock);
+    void* interfaceIrType = interfaceType->IrType(emitter);
+    void* leftInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), leftPtr);
+    void* leftInterfaceValue = emitter.CreateLoad(interfaceIrType, leftInterfacePtr); // TODO
+    void* rightInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), rightPtr);
+    void* rightIntefaceValue = emitter.CreateLoad(interfaceIrType, rightInterfacePtr); // TODO
+    void* interfaceLess = emitter.CreateICmpULT(leftInterfaceValue, rightIntefaceValue);
+    emitter.CreateStore(interfaceLess, retVal);
+    emitter.CreateBr(retBlock);
+    emitter.SetCurrentBasicBlock(retBlock);
+    void* rv = emitter.CreateLoad(emitter.GetIrTypeForBool(), retVal);
+    emitter.Stack().Push(rv);
 }
 
 ClassToInterfaceConversion::ClassToInterfaceConversion(const soul::ast::Span& span_, const std::u32string& name_) :

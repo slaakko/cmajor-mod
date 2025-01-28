@@ -1,0 +1,42 @@
+using System;
+using System.Collections;
+
+interface Fooable
+{
+    void Foo();
+}
+
+class Fooer : Fooable
+{
+    public Fooer(const string& foo_) : foo(foo_)
+    {
+    }
+    public void Foo()
+    {
+        Console.Out() << foo << endl();
+    }
+    private string foo;
+}
+
+void main()
+{
+    Fooer* fooer1 = new Fooer("fooer 1");
+    Fooer* fooer2 = new Fooer("fooer 2");
+    Set<Fooable> s;
+    Fooable f1 = *fooer1;
+    Fooable f2 = *fooer2;
+    s.Insert(f1);
+    s.Insert(f2);
+    auto it1 = s.Find(f1);
+    if (it1 != s.End())
+    {
+        Fooable f = *it1;
+        f.Foo();
+    }
+    auto it2 = s.Find(f2);
+    if (it2 != s.End())
+    {
+        Fooable f = *it2;
+        f.Foo();
+    }
+}

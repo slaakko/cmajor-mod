@@ -1,0 +1,166 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Result&lt;T> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Result&lt;T> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <p class="description" xml:space="preserve">Represents either an expected function return value of type T or an error result.</p>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#19">19</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="9de5c31c-8af3-10d8-7736-7c6675e4533f">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#default_constructor_Result_686183F01AE5FC23D766D212410314E2A03D76F2">Result</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#constructor_Result_A0F8F9322155971CD2A1C20B4D17588596F90AF0">Result</a>(<a href="../../System.Base/doc/class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B.html">ErrorId</a>&nbsp;errorId_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#constructor_Result_D9CD023D38F541D366A299C4CC0C518AAAAF8CCB">Result</a>(<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;&amp;&nbsp;value_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#constructor_Result_F6943209C4CEF028E8EAD0AF01A03C30D0AC5E97">Result</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;&nbsp;value_)</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_AndThen_Result_86B617A2236D834830D2EEEE6AB2C009F47A9D32">AndThen</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&amp;&nbsp;second)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_Error_Result_FE71F351F89CE4B361001F69C3C1E9C8446D7872">Error</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_GetErrorId_Result_F8ADACB47FDC358606A018BF1373DC6FF70DEAEE">GetErrorId</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_GetErrorMessage_Result_AAAC160B18D34E9B88D4AFBCC79A23AB8DA6FDA7">GetErrorMessage</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_SetErrorId_Result_0D1FB24DF6D59E5779E87DC044A8AFFD621D4C23">SetErrorId</a>(<span class="kw">int</span>&nbsp;errorId_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_Value_Result_15ABF92BAAF822468D82E8DDBC24026ADAAA3C0A">Value</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#member_function_Value_Result_FDD18C65A72DA0618001F1316951DCAA7443AB86">Value</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_errorId_0F2697E47037B4814DD9A95B44F1FFEBEB3CD349" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">errorId</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_value_CA6EA6914E036A2E0D5D37ADCD7C1E2F04C1A30E" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a></td>
+    <td xml:space="preserve">value</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_Result_686183F01AE5FC23D766D212410314E2A03D76F2" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#21">21</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_Result_A0F8F9322155971CD2A1C20B4D17588596F90AF0" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result(<a href="../../System.Base/doc/class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B.html">ErrorId</a>&nbsp;errorId_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_Result_D9CD023D38F541D366A299C4CC0C518AAAAF8CCB" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result(<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;&amp;&nbsp;value_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_Result_F6943209C4CEF028E8EAD0AF01A03C30D0AC5E97" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;&nbsp;value_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#22">22</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AndThen_Result_86B617A2236D834830D2EEEE6AB2C009F47A9D32" xml:space="preserve">AndThen&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&nbsp;AndThen(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&amp;&nbsp;second)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#25">25</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Error_Result_FE71F351F89CE4B361001F69C3C1E9C8446D7872" xml:space="preserve">Error&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;Error()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#28">28</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetErrorId_Result_F8ADACB47FDC358606A018BF1373DC6FF70DEAEE" xml:space="preserve">GetErrorId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">int</span>&nbsp;GetErrorId()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#29">29</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetErrorMessage_Result_AAAC160B18D34E9B88D4AFBCC79A23AB8DA6FDA7" xml:space="preserve">GetErrorMessage&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">char</span>>&nbsp;GetErrorMessage()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#31">31</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetErrorId_Result_0D1FB24DF6D59E5779E87DC044A8AFFD621D4C23" xml:space="preserve">SetErrorId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetErrorId(<span class="kw">int</span>&nbsp;errorId_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Value_Result_15ABF92BAAF822468D82E8DDBC24026ADAAA3C0A" xml:space="preserve">Value&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;&nbsp;Value()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#27">27</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Value_Result_FDD18C65A72DA0618001F1316951DCAA7443AB86" xml:space="preserve">Value&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html#9de5c31c-8af3-10d8-7736-7c6675e4533f">T</a>&amp;&nbsp;Value()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#26">26</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

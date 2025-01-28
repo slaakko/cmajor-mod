@@ -269,10 +269,10 @@ function drawDiagram(diagramNodes) {
 function drawInheritanceDiagram() {
     var diagramNodes = [
         { name: "FileExplorer.Node", id: "diagram_node_0", level: 0, subject: true, hasDerivedNodes: true, link: "../../FileExplorer/doc/class_Node_9449662AAFD3D948F6ADD1544D51D285E5459635.html" },
-        { name: "FileExplorer.ComputerNode", id: "diagram_node_3", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_ComputerNode_D1BFF7AE99C3EBF5DF411C69CBFC4553AB13ED83.html" },
-        { name: "FileExplorer.DirectoryNode", id: "diagram_node_4", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_DirectoryNode_DCD191B11AE1B0AA741BB513316CC0A4C981B7B5.html" },
-        { name: "FileExplorer.DriveNode", id: "diagram_node_2", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_DriveNode_ABBA2E6A5AAEBCA5DF015FE7D95B5697FB042B2C.html" },
-        { name: "FileExplorer.FileNode", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_FileNode_B8AD69702265A8F49A11881CAEB402AE749543DF.html" }];
+        { name: "FileExplorer.ComputerNode", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_ComputerNode_D1BFF7AE99C3EBF5DF411C69CBFC4553AB13ED83.html" },
+        { name: "FileExplorer.DirectoryNode", id: "diagram_node_2", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_DirectoryNode_DCD191B11AE1B0AA741BB513316CC0A4C981B7B5.html" },
+        { name: "FileExplorer.DriveNode", id: "diagram_node_3", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_DriveNode_ABBA2E6A5AAEBCA5DF015FE7D95B5697FB042B2C.html" },
+        { name: "FileExplorer.FileNode", id: "diagram_node_4", level: 1, subject: false, hasDerivedNodes: false, link: "../../FileExplorer/doc/class_FileNode_B8AD69702265A8F49A11881CAEB402AE749543DF.html" }];
     drawDiagram(diagramNodes);
 }
 

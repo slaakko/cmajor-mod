@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -1338,6 +1338,11 @@ void SymbolTableXmlBuilder::GenerateTypes()
             soul::xml::Element* typeElement = CreateSymbolElement("basicType", *type);
             typesElement->AppendChild(typeElement);
         }
+        else if (type->IsNullPtrTypeSymbol())
+        {
+            soul::xml::Element* typeElement = CreateSymbolElement("basicType", *type);
+            typesElement->AppendChild(typeElement);
+        }
         else if (type->GetSymbolType() == cmajor::symbols::SymbolType::derivedTypeSymbol)
         {
             cmajor::symbols::DerivedTypeSymbol* derivedTypeSymbol = static_cast<cmajor::symbols::DerivedTypeSymbol*>(type);
@@ -1450,6 +1455,12 @@ std::string SymbolTableXmlBuilder::GetOrInsertType(cmajor::symbols::TypeSymbol* 
         else
         {
             if (type->IsBasicTypeSymbol())
+            {
+                typeIdSet.insert(typeId);
+                types.push_back(type);
+                return typeId;
+            }
+            else if (type->IsNullPtrTypeSymbol())
             {
                 typeIdSet.insert(typeId);
                 types.push_back(type);

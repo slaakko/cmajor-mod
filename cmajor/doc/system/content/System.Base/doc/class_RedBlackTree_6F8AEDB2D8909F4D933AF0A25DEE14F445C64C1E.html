@@ -1,0 +1,609 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>RedBlackTree&lt;KeyType, ValueType, KeyOfValue, Compare> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>RedBlackTree&lt;KeyType, ValueType, KeyOfValue, Compare> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#constraint">Constraint</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">A red-black tree.</p><span xml:space="preserve"><p class="description" xml:space="preserve">Model of <a href="../../System.Base/doc/concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7.html">BidirectionalContainer</a> .</p></span></span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#529">529</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="43293a69-6f78-5ba9-51e4-5ff8a1667f80">
+    <td class="rightAlignedCol" xml:space="preserve">KeyType</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="d51e0c11-5dc3-985b-43f8-404f81d07d03">
+    <td class="rightAlignedCol" xml:space="preserve">ValueType</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="9147623e-a0b9-395b-1053-c904f70e8cbf">
+    <td class="rightAlignedCol" xml:space="preserve">KeyOfValue</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="7d10551e-fb96-0271-e405-db61a3db66d1">
+    <td class="rightAlignedCol" xml:space="preserve">Compare</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="constraint">Constraint</h2>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7.html">Semiregular</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7.html">Semiregular</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/concept_KeySelectionFunction_719538A539328921CB0D528AECE6DCBE1B8C6E19.html">KeySelectionFunction</a>
+   &lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#9147623e-a0b9-395b-1053-c904f70e8cbf">KeyOfValue</a>
+   , <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>
+   , <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   >&nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#7d10551e-fb96-0271-e405-db61a3db66d1">Compare</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746.html">Relation</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#7d10551e-fb96-0271-e405-db61a3db66d1">Compare</a>
+   .Domain&nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>
+  </span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#default_constructor_RedBlackTree_CDEB48773001B448B09A6E6F708A5DF1FC5B631D">RedBlackTree</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#move_constructor_RedBlackTree_2FE01030E5DD9637897B7F153E7AC0B97855C1FA">RedBlackTree</a>(<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#copy_constructor_RedBlackTree_2F1EB1E8D4954471878780744AEAFAB9022BC2EF">RedBlackTree</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#destructor_RedBlackTree_10A2F3F5A83D2C94758D6056EC4BD43360D97158">~RedBlackTree</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Begin_RedBlackTree_05AA69E4AD8F5907576A6E66AFF0FEDAB6BC7E68">Begin</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Begin_RedBlackTree_6C7A5F58C068A57DFD6B4A8A90ECD8D8FD106B55">Begin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_CBegin_RedBlackTree_10D3CBDF01AD3A18FD39BD7B854241384245C185">CBegin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_CEnd_RedBlackTree_4C1C503C8EB37FBDB1043D7596393DD4E1F52470">CEnd</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_CFind_RedBlackTree_EFAF99C28DFE2D9E38D585B9C81A5106407AE9C8">CFind</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_CLowerBound_RedBlackTree_4CD526FFA4947109B290D3EB1A290C4BECECE605">CLowerBound</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Clear_RedBlackTree_CFD4A4FDCCD59C1D042540243464A5FD04B35952">Clear</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_CloneNode_RedBlackTree_4BAA0B387D0AB051F640D5466A50A14DAE7C407F">CloneNode</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Comp_RedBlackTree_14FBEDF59599D3E67CE4926D7FB53F1080528397">Comp</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;right)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Copy_RedBlackTree_D107BA709228E5F0AE86D1D2DDFF9D8AB4DDCBCE">Copy</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_CopyFrom_RedBlackTree_F62EB44C444085650BAA73091F280DA310020799">CopyFrom</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Count_RedBlackTree_A57DA7DDC8871494C2AFCF1F6B3697D76046BBAC">Count</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_End_RedBlackTree_8D6066713214DF4860908122B86F5A7001BD210E">End</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_End_RedBlackTree_56D7F8549F006E89641548ADEEB9266E53A63BFC">End</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Find_RedBlackTree_9ECBD0C49294F328221CA90A87000E447934A418">Find</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Find_RedBlackTree_09E6DC78E9B9F6D322394879C0AA34A1C2E15DEA">Find</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Init_RedBlackTree_1F0F6CE5E523187870020D8290E15155208FB963">Init</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Insert_RedBlackTree_D9C3466E8B665FCC6C773589DCDFC61D99B6943B">Insert</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Insert_RedBlackTree_3C22284579F48A3ED59485091518CE3B50B10A4F">Insert</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_111F33A6F81E0D298F0B71F32F044CCC1907F243.html">Pair</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>, <span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Insert_RedBlackTree_E22F006F10A0EEC66830C0B19EAD01D3EC6BA1F0">Insert</a>(<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_111F33A6F81E0D298F0B71F32F044CCC1907F243.html">Pair</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>, <span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Insert_RedBlackTree_8D6581ECE00E2CAA123EA6155E74D73C2BC998B4">Insert</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_IsEmpty_RedBlackTree_97C8857348E906C13541333BA0AE498AE9653E14">IsEmpty</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_KeyOf_RedBlackTree_5D93B0FDE5DC527BBF351124B2755DBB4B0047F2">KeyOf</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&nbsp;value)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Leftmost_RedBlackTree_CF7C645688BB325C6C55C269D07D9F824E454DA1">Leftmost</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html">RedBlackTreeNodeBase</a>*&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_LeftmostRef_RedBlackTree_655EA473E6FB8E33FBD65698D8212CC203C7397D">LeftmostRef</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_LowerBound_RedBlackTree_1A7EBB9347D5DF2DB962E69388253FEBD0A3D168">LowerBound</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_LowerBound_RedBlackTree_7645519B69ED2E1A825AC5E044528FEBE1C03B7E">LowerBound</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Remove_RedBlackTree_AC11AE7A9AFF1D90667859E7F1FA73EB1A40A3A3">Remove</a>(<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;pos)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Remove_RedBlackTree_41BB1471F5B8970FC777D547F804FE6892B170F9">Remove</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Rightmost_RedBlackTree_CE5AD77F39BB28EFF0C267FEBEF967CEC76E8B79">Rightmost</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html">RedBlackTreeNodeBase</a>*&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_RightmostRef_RedBlackTree_A901DEB1EBE398EB077B395FA874DCCC6ABFF5DF">RightmostRef</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_Root_RedBlackTree_CECA1391375ABCDE91AF613C4E00B2415B7371FC">Root</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html">RedBlackTreeNodeBase</a>*&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_RootRef_RedBlackTree_86CEEE7A101592E0C9D266E71FD6C10FD85676F5">RootRef</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_SetLeftmost_RedBlackTree_39C294F26471967ADD96772A06B7856274CDF651">SetLeftmost</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;lm)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_SetRightmost_RedBlackTree_67258059001422B6D82C66EFF93384FE874B680D">SetRightmost</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;rm)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#member_function_SetRoot_RedBlackTree_98E27D2EBFBA0F8FAE37C4EC86BFD56D0C22AA04">SetRoot</a>(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;root)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#move_assignment_op_assign_RedBlackTree_E19D29DDF76878C6B8C95B8B523F02D505061C24">operator=</a>(<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#copy_assignment_op_assign_RedBlackTree_DD7B31AFD4693BC1A664A58F1B21722D22A0919D">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&nbsp;that)</td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_ConstIterator_281040C11EB596BB9E88DFAC72311B8739F60C0C">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ConstIterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+   </tr>
+   <tr id="aliasType_Iterator_61851BC1B0BCCB48BEAFBD207AC61E64957EFF81">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;Iterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*></td>
+   </tr>
+   <tr id="aliasType_Self_8554DC97643BAB512883697148033677FB74A3EE">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;Self</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_comp_CC17F71C3ED1BE3A0210CE18A771803B7F8EABAD" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#7d10551e-fb96-0271-e405-db61a3db66d1">Compare</a></td>
+    <td xml:space="preserve">comp</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_count_EDF7010340A91E9C6FDEC3FEDB06FEE08A06E57C" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">count</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_header_AE2EBAEDB64DA5534180EFEF26FA37C14E2B8EA9" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992.html">UniquePtr</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>></td>
+    <td xml:space="preserve">header</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_keyOf_8955F274C1B2B306A4A2695BCBE673998D97C52C" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#9147623e-a0b9-395b-1053-c904f70e8cbf">KeyOfValue</a></td>
+    <td xml:space="preserve">keyOf</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_RedBlackTree_CDEB48773001B448B09A6E6F708A5DF1FC5B631D" xml:space="preserve">RedBlackTree&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;RedBlackTree()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#537">537</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_RedBlackTree_2FE01030E5DD9637897B7F153E7AC0B97855C1FA" xml:space="preserve">RedBlackTree&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;RedBlackTree(<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#547">547</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_RedBlackTree_2F1EB1E8D4954471878780744AEAFAB9022BC2EF" xml:space="preserve">RedBlackTree&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;RedBlackTree(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#541">541</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_RedBlackTree_10A2F3F5A83D2C94758D6056EC4BD43360D97158" xml:space="preserve">~RedBlackTree&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~RedBlackTree()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#567">567</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Begin_RedBlackTree_05AA69E4AD8F5907576A6E66AFF0FEDAB6BC7E68" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#582">582</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_RedBlackTree_6C7A5F58C068A57DFD6B4A8A90ECD8D8FD106B55" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#571">571</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CBegin_RedBlackTree_10D3CBDF01AD3A18FD39BD7B854241384245C185" xml:space="preserve">CBegin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;CBegin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#593">593</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CEnd_RedBlackTree_4C1C503C8EB37FBDB1043D7596393DD4E1F52470" xml:space="preserve">CEnd&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;CEnd()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#612">612</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CFind_RedBlackTree_EFAF99C28DFE2D9E38D585B9C81A5106407AE9C8" xml:space="preserve">CFind&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;CFind(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#702">702</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CLowerBound_RedBlackTree_4CD526FFA4947109B290D3EB1A290C4BECECE605" xml:space="preserve">CLowerBound&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;CLowerBound(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#776">776</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Clear_RedBlackTree_CFD4A4FDCCD59C1D042540243464A5FD04B35952" xml:space="preserve">Clear&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Clear()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#626">626</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CloneNode_RedBlackTree_4BAA0B387D0AB051F640D5466A50A14DAE7C407F" xml:space="preserve">CloneNode&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;CloneNode(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1032">1032</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Comp_RedBlackTree_14FBEDF59599D3E67CE4926D7FB53F1080528397" xml:space="preserve">Comp&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;Comp(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;right)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1043">1043</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Copy_RedBlackTree_D107BA709228E5F0AE86D1D2DDFF9D8AB4DDCBCE" xml:space="preserve">Copy&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;Copy(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1009">1009</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CopyFrom_RedBlackTree_F62EB44C444085650BAA73091F280DA310020799" xml:space="preserve">CopyFrom&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;CopyFrom(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&nbsp;that)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#997">997</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Count_RedBlackTree_A57DA7DDC8871494C2AFCF1F6B3697D76046BBAC" xml:space="preserve">Count&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Count()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#616">616</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_RedBlackTree_8D6066713214DF4860908122B86F5A7001BD210E" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#608">608</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_RedBlackTree_56D7F8549F006E89641548ADEEB9266E53A63BFC" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#604">604</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Find_RedBlackTree_9ECBD0C49294F328221CA90A87000E447934A418" xml:space="preserve">Find&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;Find(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#642">642</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Find_RedBlackTree_09E6DC78E9B9F6D322394879C0AA34A1C2E15DEA" xml:space="preserve">Find&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;Find(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#672">672</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Init_RedBlackTree_1F0F6CE5E523187870020D8290E15155208FB963" xml:space="preserve">Init&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Init()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#990">990</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_RedBlackTree_D9C3466E8B665FCC6C773589DCDFC61D99B6943B" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;Insert(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&amp;&nbsp;value)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#913">913</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_RedBlackTree_3C22284579F48A3ED59485091518CE3B50B10A4F" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;Insert(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;x, <a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;p, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&nbsp;value)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#880">880</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_RedBlackTree_E22F006F10A0EEC66830C0B19EAD01D3EC6BA1F0" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_111F33A6F81E0D298F0B71F32F044CCC1907F243.html">Pair</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>, <span class="kw">bool</span>>&nbsp;Insert(<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&amp;&nbsp;value)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#839">839</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_RedBlackTree_8D6581ECE00E2CAA123EA6155E74D73C2BC998B4" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_111F33A6F81E0D298F0B71F32F044CCC1907F243.html">Pair</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>, <span class="kw">bool</span>>&nbsp;Insert(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&nbsp;value)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#798">798</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsEmpty_RedBlackTree_97C8857348E906C13541333BA0AE498AE9653E14" xml:space="preserve">IsEmpty&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;IsEmpty()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#621">621</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_KeyOf_RedBlackTree_5D93B0FDE5DC527BBF351124B2755DBB4B0047F2" xml:space="preserve">KeyOf&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;KeyOf(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1039">1039</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Leftmost_RedBlackTree_CF7C645688BB325C6C55C269D07D9F824E454DA1" xml:space="preserve">Leftmost&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;Leftmost()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1059">1059</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_LeftmostRef_RedBlackTree_655EA473E6FB8E33FBD65698D8212CC203C7397D" xml:space="preserve">LeftmostRef&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html">RedBlackTreeNodeBase</a>*&amp;&nbsp;LeftmostRef()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1063">1063</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_LowerBound_RedBlackTree_1A7EBB9347D5DF2DB962E69388253FEBD0A3D168" xml:space="preserve">LowerBound&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;LowerBound(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#732">732</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_LowerBound_RedBlackTree_7645519B69ED2E1A825AC5E044528FEBE1C03B7E" xml:space="preserve">LowerBound&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;LowerBound(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#754">754</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_RedBlackTree_AC11AE7A9AFF1D90667859E7F1FA73EB1A40A3A3" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>&amp;, <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>*>&nbsp;pos)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#982">982</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_RedBlackTree_41BB1471F5B8970FC777D547F804FE6892B170F9" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;Remove(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#43293a69-6f78-5ba9-51e4-5ff8a1667f80">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#946">946</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Rightmost_RedBlackTree_CE5AD77F39BB28EFF0C267FEBEF967CEC76E8B79" xml:space="preserve">Rightmost&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;Rightmost()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1071">1071</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RightmostRef_RedBlackTree_A901DEB1EBE398EB077B395FA874DCCC6ABFF5DF" xml:space="preserve">RightmostRef&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html">RedBlackTreeNodeBase</a>*&amp;&nbsp;RightmostRef()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1075">1075</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Root_RedBlackTree_CECA1391375ABCDE91AF613C4E00B2415B7371FC" xml:space="preserve">Root&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;Root()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1047">1047</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RootRef_RedBlackTree_86CEEE7A101592E0C9D266E71FD6C10FD85676F5" xml:space="preserve">RootRef&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html">RedBlackTreeNodeBase</a>*&amp;&nbsp;RootRef()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1051">1051</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetLeftmost_RedBlackTree_39C294F26471967ADD96772A06B7856274CDF651" xml:space="preserve">SetLeftmost&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;SetLeftmost(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;lm)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1067">1067</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetRightmost_RedBlackTree_67258059001422B6D82C66EFF93384FE874B680D" xml:space="preserve">SetRightmost&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;SetRightmost(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;rm)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1079">1079</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetRoot_RedBlackTree_98E27D2EBFBA0F8FAE37C4EC86BFD56D0C22AA04" xml:space="preserve">SetRoot&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;SetRoot(<a href="../../System.Base/doc/class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996.html">RedBlackTreeNode</a>&lt;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>>*&nbsp;root)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#1055">1055</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_RedBlackTree_E19D29DDF76878C6B8C95B8B523F02D505061C24" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#559">559</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_RedBlackTree_DD7B31AFD4693BC1A664A58F1B21722D22A0919D" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&amp;&nbsp;that)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html#d51e0c11-5dc3-985b-43f8-404f81d07d03">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html#552">552</a>&nbsp;of&nbsp;<a href="../../System.Base/file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

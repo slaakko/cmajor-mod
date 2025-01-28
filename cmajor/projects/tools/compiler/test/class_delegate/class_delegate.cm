@@ -1,0 +1,42 @@
+using System;
+using System.Collections;
+
+public class delegate void foo_cls_dlg();
+
+public class Foo
+{
+    public Foo() : fns("fn")
+    {
+    }
+    public void fn()
+    {
+        Console.Out() << fns << endl();
+    }
+    private string fns;
+}
+
+void main()
+{
+    Foo foo;
+    foo_cls_dlg f = foo.fn;
+    List<foo_cls_dlg> foos;
+    foos.Add(f);
+    auto it = Find(foos.Begin(), foos.End(), f);
+    if (it != foos.End())
+    {
+        foo_cls_dlg x = *it;
+        x();
+    }
+    foo_cls_dlg g = foo.fn;
+    Console.Out() << (f < g) << endl();
+    Console.Out() << (g < f) << endl();
+    Console.Out() << (f == g) << endl();
+    Set<foo_cls_dlg> s;
+    s.Insert(f);
+    auto it2 = s.Find(f);
+    if (it2 != s.End())
+    {
+        foo_cls_dlg x = *it2;
+        x();
+    }
+}

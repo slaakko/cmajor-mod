@@ -1,0 +1,2 @@
+project interface_less;
+source <interface_less.cm>;

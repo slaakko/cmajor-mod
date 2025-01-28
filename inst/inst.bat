@@ -22,4 +22,5 @@ cminst -v ..\cmajor\projects\tools\ref2html\bin\llvm\release\2\ref2html.exe ..\c
 cminst -v ..\cmajor\projects\tools\soulcm\cm2html\bin\llvm\release\2\cm2html.exe ..\cmajor\bin
 cminst -v ..\cmajor\projects\tools\soulcm\soul2html\bin\llvm\release\2\soul2html.exe ..\cmajor\bin
 cminst -v ..\cmajor\projects\tools\txt2html\bin\llvm\release\2\txt2html.exe ..\cmajor\bin
-cminst -v ..\cmajor\projects\tools\compiler\cmcmc\bin\llvm\release\2\cmcmc.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\spring\bin\llvm\release\2\spring.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\compiler\cmcmc\bin\masm\release\2\cmcmc.exe ..\cmajor\bin

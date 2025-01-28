@@ -10,6 +10,7 @@
    <a href="#namespaces">Namespaces</a>
     | <a href="#files">Files</a>
     | <a href="#functions">Functions</a>
+    | <a href="#delegates">Delegates</a>
   </span>
   <p class="description" xml:space="preserve">The System.Base module contains basic facilities, containers, algorithms, and I/O.</p>
   <h2 id="namespaces">Namespaces</h2>
@@ -77,6 +78,9 @@
   </table>
   <h2 id="files">Files</h2>
   <table>
+   <tr>
+    <td xml:space="preserve"><a href="file/00_StringInstantiation.cm.html">System.Base/00_StringInstantiation.cm</a></td>
+   </tr>
    <tr>
     <td xml:space="preserve"><a href="file/Algorithm.cm.html">System.Base/Algorithm.cm</a></td>
    </tr>
@@ -171,6 +175,9 @@
     <td xml:space="preserve"><a href="file/List.cm.html">System.Base/List.cm</a></td>
    </tr>
    <tr>
+    <td xml:space="preserve"><a href="file/Log.cm.html">System.Base/Log.cm</a></td>
+   </tr>
+   <tr>
     <td xml:space="preserve"><a href="file/LogWriter.cm.html">System.Base/LogWriter.cm</a></td>
    </tr>
    <tr>
@@ -243,6 +250,9 @@
     <td xml:space="preserve"><a href="file/StringWriter.cm.html">System.Base/StringWriter.cm</a></td>
    </tr>
    <tr>
+    <td xml:space="preserve"><a href="file/SynchronizedQueue.cm.html">System.Base/SynchronizedQueue.cm</a></td>
+   </tr>
+   <tr>
     <td xml:space="preserve"><a href="file/TextUtil.cm.html">System.Base/TextUtil.cm</a></td>
    </tr>
    <tr>
@@ -276,6 +286,10 @@
   <h2 id="functions">Functions</h2>
   <table>
    <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#function_Print_B6E70EBE572C6989E7EC9DFA230EA242483A9DF3">Print</a>()</td>
+   </tr>
+   <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmGetHardwareConcurrency">RtmGetHardwareConcurrency</a>()</td>
    </tr>
@@ -303,8 +317,27 @@
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmThisThreadId">RtmThisThreadId</a>()</td>
    </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#function_SetPrintFn_4245E204FBED62E46268BE0DD007164C9BD98676">SetPrintFn</a>(<a href="doc/../../System.Base/doc/ns_.html#delegate_PrintFn_C8100E9F9676C9730326138C7B0A2D967A448DEB">PrintFn</a>&nbsp;fn)</td>
+   </tr>
+  </table>
+  <h2 id="delegates">Delegates</h2>
+  <table>
+   <tr id="delegate_PrintFn_C8100E9F9676C9730326138C7B0A2D967A448DEB">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">delegate</span>&nbsp;<span class="kw">void</span></td>
+    <td>
+     PrintFn()</td>
+   </tr>
   </table>
   <h2>Function Details</h2>
+  <h3 id="function_Print_B6E70EBE572C6989E7EC9DFA230EA242483A9DF3" xml:space="preserve">Print&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Print()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Uuid.cm.html#17">17</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Uuid.cm.html">System.Base/Uuid.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
   <h3 id="RtmGetHardwareConcurrency" xml:space="preserve">RtmGetHardwareConcurrency&nbsp;Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmGetHardwareConcurrency()</h4>
   <h5>Definition</h5>
@@ -351,6 +384,13 @@
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmThisThreadId()</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#14">14</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="function_SetPrintFn_4245E204FBED62E46268BE0DD007164C9BD98676" xml:space="preserve">SetPrintFn&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetPrintFn(<a href="doc/../../System.Base/doc/ns_.html#delegate_PrintFn_C8100E9F9676C9730326138C7B0A2D967A448DEB">PrintFn</a>&nbsp;fn)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Uuid.cm.html#12">12</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Uuid.cm.html">System.Base/Uuid.cm</a></span>
   <br/>
   <br/>
   <hr/>

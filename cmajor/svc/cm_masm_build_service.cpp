@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -316,7 +316,7 @@ void RunCmMasmCompiler(const cmajor::info::bs::BuildCommand& buildCommand)
 {
     std::string commandLine("cmcmc");
     commandLine.append(" --client");
-    //commandLine.append(" --wait");
+    commandLine.append(" --wait=1");
     if (buildCommand.verbose)
     {
         commandLine.append(" --verbose");

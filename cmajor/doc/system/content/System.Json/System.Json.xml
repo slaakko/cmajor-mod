@@ -11,18 +11,18 @@
   <namespaces>
    <namespace docPath="../../System.Json/doc/ns_JsonTokens.html" extPath="System.Json/doc/ns_JsonTokens.html" id="ns_JsonTokens" name="JsonTokens">
     <constants>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_COLON_B7420423014C0D28B3262795F7D01E552402EC0C" extPath="System.Json/doc/ns_JsonTokens.html#constant_COLON_B7420423014C0D28B3262795F7D01E552402EC0C" id="constant_COLON_B7420423014C0D28B3262795F7D01E552402EC0C" name="COLON" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 8"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_COMMA_CAAA3FC747D09497117F8A9140066361FDD79AF6" extPath="System.Json/doc/ns_JsonTokens.html#constant_COMMA_CAAA3FC747D09497117F8A9140066361FDD79AF6" id="constant_COMMA_CAAA3FC747D09497117F8A9140066361FDD79AF6" name="COMMA" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 7"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_FALSE_4B6FCA6A01C058A39EF9621B2B0498120CE65441" extPath="System.Json/doc/ns_JsonTokens.html#constant_FALSE_4B6FCA6A01C058A39EF9621B2B0498120CE65441" id="constant_FALSE_4B6FCA6A01C058A39EF9621B2B0498120CE65441" name="FALSE" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 10"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_LBRACE_EDDE5BA83C1F74FA4219C944463A18B9936DA9B8" extPath="System.Json/doc/ns_JsonTokens.html#constant_LBRACE_EDDE5BA83C1F74FA4219C944463A18B9936DA9B8" id="constant_LBRACE_EDDE5BA83C1F74FA4219C944463A18B9936DA9B8" name="LBRACE" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 5"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_LBRACKET_C7574768E5CEEEF34C03305B0D4CC5DCE7FEE01B" extPath="System.Json/doc/ns_JsonTokens.html#constant_LBRACKET_C7574768E5CEEEF34C03305B0D4CC5DCE7FEE01B" id="constant_LBRACKET_C7574768E5CEEEF34C03305B0D4CC5DCE7FEE01B" name="LBRACKET" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 3"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_NULL_D5AAE5841AD5D106D0922898CB1F4A223B689CEE" extPath="System.Json/doc/ns_JsonTokens.html#constant_NULL_D5AAE5841AD5D106D0922898CB1F4A223B689CEE" id="constant_NULL_D5AAE5841AD5D106D0922898CB1F4A223B689CEE" name="NULL" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 11"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_NUMBER_53E5354BBC1CAE733F9AB70F2696A3C462C66B40" extPath="System.Json/doc/ns_JsonTokens.html#constant_NUMBER_53E5354BBC1CAE733F9AB70F2696A3C462C66B40" id="constant_NUMBER_53E5354BBC1CAE733F9AB70F2696A3C462C66B40" name="NUMBER" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 2"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_RBRACE_98E2A37BE3103DEDDFC37D58D8CAD01158BED58E" extPath="System.Json/doc/ns_JsonTokens.html#constant_RBRACE_98E2A37BE3103DEDDFC37D58D8CAD01158BED58E" id="constant_RBRACE_98E2A37BE3103DEDDFC37D58D8CAD01158BED58E" name="RBRACE" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 6"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_RBRACKET_C020E558DCDAE61CF7F27A837008A2BF6DA31685" extPath="System.Json/doc/ns_JsonTokens.html#constant_RBRACKET_C020E558DCDAE61CF7F27A837008A2BF6DA31685" id="constant_RBRACKET_C020E558DCDAE61CF7F27A837008A2BF6DA31685" name="RBRACKET" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 4"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_STRING_5177AD40A69B398B23FBD2469327D0EFB3921455" extPath="System.Json/doc/ns_JsonTokens.html#constant_STRING_5177AD40A69B398B23FBD2469327D0EFB3921455" id="constant_STRING_5177AD40A69B398B23FBD2469327D0EFB3921455" name="STRING" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 1"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_TRUE_F2C566256C9BB8C7D2EC2E0D2F7D6DC015AA92EC" extPath="System.Json/doc/ns_JsonTokens.html#constant_TRUE_F2C566256C9BB8C7D2EC2E0D2F7D6DC015AA92EC" id="constant_TRUE_F2C566256C9BB8C7D2EC2E0D2F7D6DC015AA92EC" name="TRUE" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="(tokenSetID &lt;&lt; 32) | 9"/>
-     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_tokenSetID_C4264E0B1E0146A60E039C1FF9199D66F4A7FA10" extPath="System.Json/doc/ns_JsonTokens.html#constant_tokenSetID_C4264E0B1E0146A60E039C1FF9199D66F4A7FA10" id="constant_tokenSetID_C4264E0B1E0146A60E039C1FF9199D66F4A7FA10" name="tokenSetID" specifiers="public" type="0ca5ce73-e943-269d-f945-640fa675c6e0" value="1929506153"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_COLON_B7420423014C0D28B3262795F7D01E552402EC0C" extPath="System.Json/doc/ns_JsonTokens.html#constant_COLON_B7420423014C0D28B3262795F7D01E552402EC0C" id="constant_COLON_B7420423014C0D28B3262795F7D01E552402EC0C" name="COLON" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 8"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_COMMA_CAAA3FC747D09497117F8A9140066361FDD79AF6" extPath="System.Json/doc/ns_JsonTokens.html#constant_COMMA_CAAA3FC747D09497117F8A9140066361FDD79AF6" id="constant_COMMA_CAAA3FC747D09497117F8A9140066361FDD79AF6" name="COMMA" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 7"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_FALSE_4B6FCA6A01C058A39EF9621B2B0498120CE65441" extPath="System.Json/doc/ns_JsonTokens.html#constant_FALSE_4B6FCA6A01C058A39EF9621B2B0498120CE65441" id="constant_FALSE_4B6FCA6A01C058A39EF9621B2B0498120CE65441" name="FALSE" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 10"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_LBRACE_EDDE5BA83C1F74FA4219C944463A18B9936DA9B8" extPath="System.Json/doc/ns_JsonTokens.html#constant_LBRACE_EDDE5BA83C1F74FA4219C944463A18B9936DA9B8" id="constant_LBRACE_EDDE5BA83C1F74FA4219C944463A18B9936DA9B8" name="LBRACE" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 5"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_LBRACKET_C7574768E5CEEEF34C03305B0D4CC5DCE7FEE01B" extPath="System.Json/doc/ns_JsonTokens.html#constant_LBRACKET_C7574768E5CEEEF34C03305B0D4CC5DCE7FEE01B" id="constant_LBRACKET_C7574768E5CEEEF34C03305B0D4CC5DCE7FEE01B" name="LBRACKET" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 3"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_NULL_D5AAE5841AD5D106D0922898CB1F4A223B689CEE" extPath="System.Json/doc/ns_JsonTokens.html#constant_NULL_D5AAE5841AD5D106D0922898CB1F4A223B689CEE" id="constant_NULL_D5AAE5841AD5D106D0922898CB1F4A223B689CEE" name="NULL" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 11"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_NUMBER_53E5354BBC1CAE733F9AB70F2696A3C462C66B40" extPath="System.Json/doc/ns_JsonTokens.html#constant_NUMBER_53E5354BBC1CAE733F9AB70F2696A3C462C66B40" id="constant_NUMBER_53E5354BBC1CAE733F9AB70F2696A3C462C66B40" name="NUMBER" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 2"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_RBRACE_98E2A37BE3103DEDDFC37D58D8CAD01158BED58E" extPath="System.Json/doc/ns_JsonTokens.html#constant_RBRACE_98E2A37BE3103DEDDFC37D58D8CAD01158BED58E" id="constant_RBRACE_98E2A37BE3103DEDDFC37D58D8CAD01158BED58E" name="RBRACE" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 6"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_RBRACKET_C020E558DCDAE61CF7F27A837008A2BF6DA31685" extPath="System.Json/doc/ns_JsonTokens.html#constant_RBRACKET_C020E558DCDAE61CF7F27A837008A2BF6DA31685" id="constant_RBRACKET_C020E558DCDAE61CF7F27A837008A2BF6DA31685" name="RBRACKET" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 4"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_STRING_5177AD40A69B398B23FBD2469327D0EFB3921455" extPath="System.Json/doc/ns_JsonTokens.html#constant_STRING_5177AD40A69B398B23FBD2469327D0EFB3921455" id="constant_STRING_5177AD40A69B398B23FBD2469327D0EFB3921455" name="STRING" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 1"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_TRUE_F2C566256C9BB8C7D2EC2E0D2F7D6DC015AA92EC" extPath="System.Json/doc/ns_JsonTokens.html#constant_TRUE_F2C566256C9BB8C7D2EC2E0D2F7D6DC015AA92EC" id="constant_TRUE_F2C566256C9BB8C7D2EC2E0D2F7D6DC015AA92EC" name="TRUE" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="(tokenSetID &lt;&lt; 32) | 9"/>
+     <constant docPath="../../System.Json/doc/ns_JsonTokens.html#constant_tokenSetID_C4264E0B1E0146A60E039C1FF9199D66F4A7FA10" extPath="System.Json/doc/ns_JsonTokens.html#constant_tokenSetID_C4264E0B1E0146A60E039C1FF9199D66F4A7FA10" id="constant_tokenSetID_C4264E0B1E0146A60E039C1FF9199D66F4A7FA10" name="tokenSetID" specifiers="public" type="bec36ecc-7c9b-74a3-2072-8d462d845c77" value="1929506153"/>
     </constants>
    </namespace>
    <namespace docPath="../../System.Json/doc/ns_System.html" extPath="System.Json/doc/ns_System.html" id="ns_System" name="System">
@@ -31,307 +31,307 @@
       <classes>
        <class baseClass="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18" line="370" name="JsonArray" specifiers="public">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#default_constructor_JsonArray_77BE90DB501A930A39202B4A010E54F5E2A9DB14" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#default_constructor_JsonArray_77BE90DB501A930A39202B4A010E54F5E2A9DB14" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonArray_77BE90DB501A930A39202B4A010E54F5E2A9DB14" kind="Constructor" line="372" name="JsonArray" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#default_constructor_JsonArray_610DC08E09BCF3058F8E493D07F9CAEAED6AC2D8" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#default_constructor_JsonArray_610DC08E09BCF3058F8E493D07F9CAEAED6AC2D8" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonArray_610DC08E09BCF3058F8E493D07F9CAEAED6AC2D8" kind="Constructor" line="372" name="JsonArray" specifiers="public"/>
         </ctorsDtors>
         <functions>
-         <function docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_3A49E8764250B714C54701BF31185BFD8A3151EC" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_3A49E8764250B714C54701BF31185BFD8A3151EC" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddItem_JsonArray_3A49E8764250B714C54701BF31185BFD8A3151EC" kind="Member Function" line="379" name="AddItem" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_10593159141AFC1AB3590B7E5F793B627CD32504" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_10593159141AFC1AB3590B7E5F793B627CD32504" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddItem_JsonArray_10593159141AFC1AB3590B7E5F793B627CD32504" kind="Member Function" line="379" name="AddItem" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public">
           <parameters>
-           <parameter id="parameter_item_5CCF1844FEED70B3ACD04E1F1366FE54E02CBF6A" name="item" type="c173fb60-0f04-6210-62ed-5b49b0e06904"/>
+           <parameter id="parameter_item_5CCF1844FEED70B3ACD04E1F1366FE54E02CBF6A" name="item" type="f6caeb00-0008-d3cf-518d-4cc3c4d0769f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_DACA300807885824203441863A3ABB52C6863D6A" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_DACA300807885824203441863A3ABB52C6863D6A" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddItem_JsonArray_DACA300807885824203441863A3ABB52C6863D6A" kind="Member Function" line="375" name="AddItem" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_E2655E68B8AAABD5C7EA0D008C49D03269500F93" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_AddItem_JsonArray_E2655E68B8AAABD5C7EA0D008C49D03269500F93" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddItem_JsonArray_E2655E68B8AAABD5C7EA0D008C49D03269500F93" kind="Member Function" line="375" name="AddItem" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public">
           <parameters>
-           <parameter id="parameter_item_AD207D17AD83446BF9DAC791C2041F0EC6BC1DF9" name="item" type="ab42fdff-5f58-f451-a470-4a5ce5d04382"/>
+           <parameter id="parameter_item_AD207D17AD83446BF9DAC791C2041F0EC6BC1DF9" name="item" type="fb217b33-f314-1e52-0ca2-2088276dc476"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Count_JsonArray_60656D3B4C3AC9C456F046A366DAA339841FE673" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Count_JsonArray_60656D3B4C3AC9C456F046A366DAA339841FE673" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Count_JsonArray_60656D3B4C3AC9C456F046A366DAA339841FE673" kind="Member Function" line="391" name="Count" returnType="0ca5ce73-e943-269d-f945-640fa675c6e0" specifiers="public inline"/>
-         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_GetItem_JsonArray_41C93989D80BD7F99E01B75F801C74FA1392092E" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_GetItem_JsonArray_41C93989D80BD7F99E01B75F801C74FA1392092E" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetItem_JsonArray_41C93989D80BD7F99E01B75F801C74FA1392092E" kind="Member Function" line="383" name="GetItem" returnType="c173fb60-0f04-6210-62ed-5b49b0e06904" specifiers="public">
+         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Count_JsonArray_AE396E37A716FEC2F8818270CFF4F70A028F22ED" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Count_JsonArray_AE396E37A716FEC2F8818270CFF4F70A028F22ED" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Count_JsonArray_AE396E37A716FEC2F8818270CFF4F70A028F22ED" kind="Member Function" line="391" name="Count" returnType="bec36ecc-7c9b-74a3-2072-8d462d845c77" specifiers="public inline"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_GetItem_JsonArray_FA06BD4BB7CEEB9A57B1DBEBE72705C90989D81B" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_GetItem_JsonArray_FA06BD4BB7CEEB9A57B1DBEBE72705C90989D81B" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetItem_JsonArray_FA06BD4BB7CEEB9A57B1DBEBE72705C90989D81B" kind="Member Function" line="383" name="GetItem" returnType="f6caeb00-0008-d3cf-518d-4cc3c4d0769f" specifiers="public">
           <parameters>
-           <parameter id="parameter_index_E07CFCE7A956B9D5DC25C74597AA706CCF4BD8A9" name="index" type="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
+           <parameter id="parameter_index_E07CFCE7A956B9D5DC25C74597AA706CCF4BD8A9" name="index" type="bec36ecc-7c9b-74a3-2072-8d462d845c77"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_ToString_JsonArray_8CD0A022444A716EC34E92732E7CD8C2933A7BA5" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_ToString_JsonArray_8CD0A022444A716EC34E92732E7CD8C2933A7BA5" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonArray_8CD0A022444A716EC34E92732E7CD8C2933A7BA5" kind="Member Function" line="395" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public override"/>
-         <function docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Write_JsonArray_69E2A4BCE680A3EF901164A99644AC4EF2CB4A8D" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Write_JsonArray_69E2A4BCE680A3EF901164A99644AC4EF2CB4A8D" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Write_JsonArray_69E2A4BCE680A3EF901164A99644AC4EF2CB4A8D" kind="Member Function" line="420" name="Write" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public override">
+         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_ToString_JsonArray_D76126EFD57C5BB434FB35B3368420D1EC07AFB2" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_ToString_JsonArray_D76126EFD57C5BB434FB35B3368420D1EC07AFB2" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonArray_D76126EFD57C5BB434FB35B3368420D1EC07AFB2" kind="Member Function" line="395" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public override"/>
+         <function docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Write_JsonArray_91A20A7CBB2708FFC2044DED86521CA6A846A532" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_Write_JsonArray_91A20A7CBB2708FFC2044DED86521CA6A846A532" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Write_JsonArray_91A20A7CBB2708FFC2044DED86521CA6A846A532" kind="Member Function" line="420" name="Write" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public override">
           <parameters>
-           <parameter id="parameter_formatter_0A5B696DEDB6F104BFB1F9030DAC788CAEDCEC5E" name="formatter" type="faabf0a1-f06d-c9d2-51a6-bd5cdfb5a01f"/>
+           <parameter id="parameter_formatter_0A5B696DEDB6F104BFB1F9030DAC788CAEDCEC5E" name="formatter" type="4f438b0e-2dd0-e93d-c063-c551c4cbb68c"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_op_index_JsonArray_6895B43BA84445027322FCDF68E1EA8972DEE5BE" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_op_index_JsonArray_6895B43BA84445027322FCDF68E1EA8972DEE5BE" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_op_index_JsonArray_6895B43BA84445027322FCDF68E1EA8972DEE5BE" kind="Member Function" line="387" name="operator[]" returnType="c173fb60-0f04-6210-62ed-5b49b0e06904" specifiers="public">
+         <function const="true" docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_op_index_JsonArray_AE5C415E85CC0A36829BA3D4337534589133FB1F" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_function_op_index_JsonArray_AE5C415E85CC0A36829BA3D4337534589133FB1F" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_op_index_JsonArray_AE5C415E85CC0A36829BA3D4337534589133FB1F" kind="Member Function" line="387" name="operator[]" returnType="f6caeb00-0008-d3cf-518d-4cc3c4d0769f" specifiers="public">
           <parameters>
-           <parameter id="parameter_index_EA635868DB09D57DCB256B6BED729F01725CB589" name="index" type="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
+           <parameter id="parameter_index_EA635868DB09D57DCB256B6BED729F01725CB589" name="index" type="bec36ecc-7c9b-74a3-2072-8d462d845c77"/>
           </parameters>
          </function>
         </functions>
         <variables>
-         <variable docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_variable_items_2891F80E54FCA1608B6A38E947FE29CB81BF1A86" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_variable_items_2891F80E54FCA1608B6A38E947FE29CB81BF1A86" id="member_variable_items_2891F80E54FCA1608B6A38E947FE29CB81BF1A86" name="items" specifiers="private" type="9bc84f80-27a6-f1b1-e4eb-63c51968c7e8"/>
+         <variable docPath="../../System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_variable_items_2891F80E54FCA1608B6A38E947FE29CB81BF1A86" extPath="System.Json/doc/class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18.html#member_variable_items_2891F80E54FCA1608B6A38E947FE29CB81BF1A86" id="member_variable_items_2891F80E54FCA1608B6A38E947FE29CB81BF1A86" name="items" specifiers="private" type="2d18d300-427a-e23b-2d3d-5586155da1cd"/>
         </variables>
        </class>
        <class baseClass="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79" line="73" name="JsonBool" specifiers="public">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#default_constructor_JsonBool_8E624B03453820522A0E7CA490E5D1D24ED39CB1" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#default_constructor_JsonBool_8E624B03453820522A0E7CA490E5D1D24ED39CB1" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonBool_8E624B03453820522A0E7CA490E5D1D24ED39CB1" kind="Constructor" line="75" name="JsonBool" specifiers="public"/>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#constructor_JsonBool_E26B7814E62897F1A8CAF9529FD35E4468F4A2FB" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#constructor_JsonBool_E26B7814E62897F1A8CAF9529FD35E4468F4A2FB" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="constructor_JsonBool_E26B7814E62897F1A8CAF9529FD35E4468F4A2FB" kind="Constructor" line="78" name="JsonBool" specifiers="public explicit">
+         <ctorDtor docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#default_constructor_JsonBool_E6B60DA61B90219C9A9823AC735357460F63A9F1" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#default_constructor_JsonBool_E6B60DA61B90219C9A9823AC735357460F63A9F1" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonBool_E6B60DA61B90219C9A9823AC735357460F63A9F1" kind="Constructor" line="75" name="JsonBool" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#constructor_JsonBool_6096F157C8D7831A75C64221D6DB07F7412E26DE" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#constructor_JsonBool_6096F157C8D7831A75C64221D6DB07F7412E26DE" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="constructor_JsonBool_6096F157C8D7831A75C64221D6DB07F7412E26DE" kind="Constructor" line="78" name="JsonBool" specifiers="public explicit">
           <parameters>
-           <parameter id="parameter_value__FB500CDAAF2778063CA1ED699C138375C572E059" name="value_" type="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
+           <parameter id="parameter_value__FB500CDAAF2778063CA1ED699C138375C572E059" name="value_" type="1a4f2385-895c-688b-95ec-4436e3b909c5"/>
           </parameters>
          </ctorDtor>
         </ctorsDtors>
         <functions>
-         <function docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_SetValue_JsonBool_38890E0376BB928AABC41B2AD586AB23996D5620" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_SetValue_JsonBool_38890E0376BB928AABC41B2AD586AB23996D5620" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_SetValue_JsonBool_38890E0376BB928AABC41B2AD586AB23996D5620" kind="Member Function" line="89" name="SetValue" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public inline">
+         <function docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_SetValue_JsonBool_DEA28424F3B5E7D83C26ABD99852C268918C292A" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_SetValue_JsonBool_DEA28424F3B5E7D83C26ABD99852C268918C292A" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_SetValue_JsonBool_DEA28424F3B5E7D83C26ABD99852C268918C292A" kind="Member Function" line="89" name="SetValue" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_value__F8F1766110EAEF6AC22E86201CF4DF8051A5CD65" name="value_" type="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
+           <parameter id="parameter_value__F8F1766110EAEF6AC22E86201CF4DF8051A5CD65" name="value_" type="1a4f2385-895c-688b-95ec-4436e3b909c5"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_ToString_JsonBool_9CB3DE33988F61249731A003AEC3B8EA17B6880B" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_ToString_JsonBool_9CB3DE33988F61249731A003AEC3B8EA17B6880B" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonBool_9CB3DE33988F61249731A003AEC3B8EA17B6880B" kind="Member Function" line="81" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public override"/>
-         <function const="true" docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_Value_JsonBool_08248C27F17B36C018C98CC2FEE238DAB31D7565" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_Value_JsonBool_08248C27F17B36C018C98CC2FEE238DAB31D7565" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Value_JsonBool_08248C27F17B36C018C98CC2FEE238DAB31D7565" kind="Member Function" line="85" name="Value" returnType="459b4621-91d8-c8e8-2760-c3c17c571c11" specifiers="public inline"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_ToString_JsonBool_F293826635F1DEB17081F16407DA62C048A88C3F" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_ToString_JsonBool_F293826635F1DEB17081F16407DA62C048A88C3F" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonBool_F293826635F1DEB17081F16407DA62C048A88C3F" kind="Member Function" line="81" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public override"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_Value_JsonBool_451576C1DB0EA630AE4C8687935B18E2950E211D" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_function_Value_JsonBool_451576C1DB0EA630AE4C8687935B18E2950E211D" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Value_JsonBool_451576C1DB0EA630AE4C8687935B18E2950E211D" kind="Member Function" line="85" name="Value" returnType="1a4f2385-895c-688b-95ec-4436e3b909c5" specifiers="public inline"/>
         </functions>
         <variables>
-         <variable docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_variable_value_9E0E2CCB4343F6C4B7CD6CE425118D508E6EE1D0" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_variable_value_9E0E2CCB4343F6C4B7CD6CE425118D508E6EE1D0" id="member_variable_value_9E0E2CCB4343F6C4B7CD6CE425118D508E6EE1D0" name="value" specifiers="private" type="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
+         <variable docPath="../../System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_variable_value_9E0E2CCB4343F6C4B7CD6CE425118D508E6EE1D0" extPath="System.Json/doc/class_JsonBool_DECA0A9F59CE58DA61371982ADCFCD31F1497F79.html#member_variable_value_9E0E2CCB4343F6C4B7CD6CE425118D508E6EE1D0" id="member_variable_value_9E0E2CCB4343F6C4B7CD6CE425118D508E6EE1D0" name="value" specifiers="private" type="1a4f2385-895c-688b-95ec-4436e3b909c5"/>
         </variables>
        </class>
        <class baseClass="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" docPath="../../System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html" extPath="System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2" line="34" name="JsonNull" specifiers="public">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#default_constructor_JsonNull_B26790E8DA1EBA15ED5EF385F65F91069143351B" extPath="System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#default_constructor_JsonNull_B26790E8DA1EBA15ED5EF385F65F91069143351B" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonNull_B26790E8DA1EBA15ED5EF385F65F91069143351B" kind="Constructor" line="36" name="JsonNull" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#default_constructor_JsonNull_836081EC31589AE6C0113C883388CE62CDD61C82" extPath="System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#default_constructor_JsonNull_836081EC31589AE6C0113C883388CE62CDD61C82" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonNull_836081EC31589AE6C0113C883388CE62CDD61C82" kind="Constructor" line="36" name="JsonNull" specifiers="public"/>
         </ctorsDtors>
         <functions>
-         <function const="true" docPath="../../System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#member_function_ToString_JsonNull_1AA19AE7FAD756E8DEAA6832821279D27E88EE65" extPath="System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#member_function_ToString_JsonNull_1AA19AE7FAD756E8DEAA6832821279D27E88EE65" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonNull_1AA19AE7FAD756E8DEAA6832821279D27E88EE65" kind="Member Function" line="39" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public override"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#member_function_ToString_JsonNull_2B00DF8E643F6BB50139E623BCF7706B46DFCFA1" extPath="System.Json/doc/class_JsonNull_E0746AE6880508740D5FFC8AF4E0FB0A7AE20ED2.html#member_function_ToString_JsonNull_2B00DF8E643F6BB50139E623BCF7706B46DFCFA1" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonNull_2B00DF8E643F6BB50139E623BCF7706B46DFCFA1" kind="Member Function" line="39" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public override"/>
         </functions>
        </class>
        <class baseClass="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonNumber_BA94887A1742701B420D069040E7953026161429" line="45" name="JsonNumber" specifiers="public">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#default_constructor_JsonNumber_19CF19FA39C964FBA2600CD981F8CF6AF936F449" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#default_constructor_JsonNumber_19CF19FA39C964FBA2600CD981F8CF6AF936F449" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonNumber_19CF19FA39C964FBA2600CD981F8CF6AF936F449" kind="Constructor" line="47" name="JsonNumber" specifiers="public"/>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#constructor_JsonNumber_0C816A140BE5B66E53DFCF708602B7C4246CB566" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#constructor_JsonNumber_0C816A140BE5B66E53DFCF708602B7C4246CB566" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="constructor_JsonNumber_0C816A140BE5B66E53DFCF708602B7C4246CB566" kind="Constructor" line="50" name="JsonNumber" specifiers="public explicit">
+         <ctorDtor docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#default_constructor_JsonNumber_30321B58C8E0F69B992416B9DF6ADB9CE46133D1" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#default_constructor_JsonNumber_30321B58C8E0F69B992416B9DF6ADB9CE46133D1" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonNumber_30321B58C8E0F69B992416B9DF6ADB9CE46133D1" kind="Constructor" line="47" name="JsonNumber" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#constructor_JsonNumber_49F83D84FB2CD2D78206B4CD738FBBDE188CA0F3" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#constructor_JsonNumber_49F83D84FB2CD2D78206B4CD738FBBDE188CA0F3" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="constructor_JsonNumber_49F83D84FB2CD2D78206B4CD738FBBDE188CA0F3" kind="Constructor" line="50" name="JsonNumber" specifiers="public explicit">
           <parameters>
-           <parameter id="parameter_value__7D4A99F33FD03D68627C16D42FF68B0BAA5F8671" name="value_" type="958ef888-762a-f0e8-2306-f788cfe0fa86"/>
+           <parameter id="parameter_value__7D4A99F33FD03D68627C16D42FF68B0BAA5F8671" name="value_" type="f26920d6-5a84-16e9-a439-8bea6a1b2876"/>
           </parameters>
          </ctorDtor>
         </ctorsDtors>
         <functions>
-         <function docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_SetValue_JsonNumber_FB38C4B2FA2456ED13B4825305B0F839E819E614" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_SetValue_JsonNumber_FB38C4B2FA2456ED13B4825305B0F839E819E614" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_SetValue_JsonNumber_FB38C4B2FA2456ED13B4825305B0F839E819E614" kind="Member Function" line="66" name="SetValue" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public inline">
+         <function docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_SetValue_JsonNumber_9721514142120FD175ABCC4E7BFD35613FB7548C" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_SetValue_JsonNumber_9721514142120FD175ABCC4E7BFD35613FB7548C" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_SetValue_JsonNumber_9721514142120FD175ABCC4E7BFD35613FB7548C" kind="Member Function" line="66" name="SetValue" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_value__D662F6AEF64436317900270003FDBCCC2CF76738" name="value_" type="958ef888-762a-f0e8-2306-f788cfe0fa86"/>
+           <parameter id="parameter_value__D662F6AEF64436317900270003FDBCCC2CF76738" name="value_" type="f26920d6-5a84-16e9-a439-8bea6a1b2876"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_ToString_JsonNumber_1F47FCED275B5B6D839807D59DD0D5DC90340133" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_ToString_JsonNumber_1F47FCED275B5B6D839807D59DD0D5DC90340133" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonNumber_1F47FCED275B5B6D839807D59DD0D5DC90340133" kind="Member Function" line="53" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public override"/>
-         <function const="true" docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_Value_JsonNumber_95B39AECEB92806728B2BFC5E370491B97CE5FC0" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_Value_JsonNumber_95B39AECEB92806728B2BFC5E370491B97CE5FC0" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Value_JsonNumber_95B39AECEB92806728B2BFC5E370491B97CE5FC0" kind="Member Function" line="62" name="Value" returnType="958ef888-762a-f0e8-2306-f788cfe0fa86" specifiers="public inline"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_ToString_JsonNumber_2A5DC7329EF0BE79EB590909DC5035BC2BADB287" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_ToString_JsonNumber_2A5DC7329EF0BE79EB590909DC5035BC2BADB287" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonNumber_2A5DC7329EF0BE79EB590909DC5035BC2BADB287" kind="Member Function" line="53" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public override"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_Value_JsonNumber_F37A54A582E5A15BA3C4FCB829054F616A3A317D" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_function_Value_JsonNumber_F37A54A582E5A15BA3C4FCB829054F616A3A317D" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Value_JsonNumber_F37A54A582E5A15BA3C4FCB829054F616A3A317D" kind="Member Function" line="62" name="Value" returnType="f26920d6-5a84-16e9-a439-8bea6a1b2876" specifiers="public inline"/>
         </functions>
         <variables>
-         <variable docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_variable_value_FD37A6EDECCB83C3665B394ACA850138C865788D" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_variable_value_FD37A6EDECCB83C3665B394ACA850138C865788D" id="member_variable_value_FD37A6EDECCB83C3665B394ACA850138C865788D" name="value" specifiers="private" type="958ef888-762a-f0e8-2306-f788cfe0fa86"/>
+         <variable docPath="../../System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_variable_value_FD37A6EDECCB83C3665B394ACA850138C865788D" extPath="System.Json/doc/class_JsonNumber_BA94887A1742701B420D069040E7953026161429.html#member_variable_value_FD37A6EDECCB83C3665B394ACA850138C865788D" id="member_variable_value_FD37A6EDECCB83C3665B394ACA850138C865788D" name="value" specifiers="private" type="f26920d6-5a84-16e9-a439-8bea6a1b2876"/>
         </variables>
        </class>
        <class baseClass="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D" line="189" name="JsonObject" specifiers="public">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#default_constructor_JsonObject_129032C3A36DAD9F354F96A0DCAF27721FA0944D" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#default_constructor_JsonObject_129032C3A36DAD9F354F96A0DCAF27721FA0944D" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonObject_129032C3A36DAD9F354F96A0DCAF27721FA0944D" kind="Constructor" line="191" name="JsonObject" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#default_constructor_JsonObject_50B344D505384E30C7FF28690646046B309EDE0A" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#default_constructor_JsonObject_50B344D505384E30C7FF28690646046B309EDE0A" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonObject_50B344D505384E30C7FF28690646046B309EDE0A" kind="Constructor" line="191" name="JsonObject" specifiers="public"/>
         </ctorsDtors>
         <functions>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_A8B59825BFBE3138650EB34A7BDD7957220DD3A5" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_A8B59825BFBE3138650EB34A7BDD7957220DD3A5" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_A8B59825BFBE3138650EB34A7BDD7957220DD3A5" kind="Member Function" line="222" name="AddField" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_5429B5C3C2F2179E9CB66F7B51CC8013C7A0BCB4" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_5429B5C3C2F2179E9CB66F7B51CC8013C7A0BCB4" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_5429B5C3C2F2179E9CB66F7B51CC8013C7A0BCB4" kind="Member Function" line="222" name="AddField" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_8265181684BCDDFA22019E796466262FE1EE9C6A" name="fieldName" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
-           <parameter id="parameter_fieldValue_766C1DFE8514B9D46E225EF3E195A0F1D9213475" name="fieldValue" type="c173fb60-0f04-6210-62ed-5b49b0e06904"/>
+           <parameter id="parameter_fieldName_8265181684BCDDFA22019E796466262FE1EE9C6A" name="fieldName" type="3f74d132-c57d-199c-0ed3-1bf58636d297"/>
+           <parameter id="parameter_fieldValue_766C1DFE8514B9D46E225EF3E195A0F1D9213475" name="fieldValue" type="f6caeb00-0008-d3cf-518d-4cc3c4d0769f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_0CD30D68D80A3B5E5FF180704204A911D63E4D89" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_0CD30D68D80A3B5E5FF180704204A911D63E4D89" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_0CD30D68D80A3B5E5FF180704204A911D63E4D89" kind="Member Function" line="195" name="AddField" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_41F6889EF0055706C40DEB9C81D3C24444198B9F" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_41F6889EF0055706C40DEB9C81D3C24444198B9F" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_41F6889EF0055706C40DEB9C81D3C24444198B9F" kind="Member Function" line="195" name="AddField" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_30DC0997374278263C3AFA93F229367370AC231F" name="fieldName" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
-           <parameter id="parameter_fieldValue_B6ABAA57ED880DA7E254BA108F30B570E8601988" name="fieldValue" type="ab42fdff-5f58-f451-a470-4a5ce5d04382"/>
+           <parameter id="parameter_fieldName_30DC0997374278263C3AFA93F229367370AC231F" name="fieldName" type="3f74d132-c57d-199c-0ed3-1bf58636d297"/>
+           <parameter id="parameter_fieldValue_B6ABAA57ED880DA7E254BA108F30B570E8601988" name="fieldValue" type="fb217b33-f314-1e52-0ca2-2088276dc476"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_78FEC2189271196889B105E52A62F252EC80A677" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_78FEC2189271196889B105E52A62F252EC80A677" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_78FEC2189271196889B105E52A62F252EC80A677" kind="Member Function" line="243" name="AddField" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_AB9AFE9C01D22C2CBBC1DAEFB07F9E415DBC8FBD" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_AB9AFE9C01D22C2CBBC1DAEFB07F9E415DBC8FBD" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_AB9AFE9C01D22C2CBBC1DAEFB07F9E415DBC8FBD" kind="Member Function" line="243" name="AddField" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_40D6B1A16CC1E28AF5C6C41A0DD50309CE70F004" name="fieldName" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
-           <parameter id="parameter_fieldValue_239A204B18BF5BD8823D34406E53182176E2B876" name="fieldValue" type="c173fb60-0f04-6210-62ed-5b49b0e06904"/>
+           <parameter id="parameter_fieldName_40D6B1A16CC1E28AF5C6C41A0DD50309CE70F004" name="fieldName" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
+           <parameter id="parameter_fieldValue_239A204B18BF5BD8823D34406E53182176E2B876" name="fieldValue" type="f6caeb00-0008-d3cf-518d-4cc3c4d0769f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_E04A87B6B366345E631BAA13E0FD82DC77DC5C36" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_E04A87B6B366345E631BAA13E0FD82DC77DC5C36" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_E04A87B6B366345E631BAA13E0FD82DC77DC5C36" kind="Member Function" line="216" name="AddField" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_E1D29A52A70C2A13C24D02CFBC1A9C92FBA61E49" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_E1D29A52A70C2A13C24D02CFBC1A9C92FBA61E49" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_E1D29A52A70C2A13C24D02CFBC1A9C92FBA61E49" kind="Member Function" line="216" name="AddField" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_AC73C2E73C43B6B62B45D849828F320FDA3B1D4A" name="fieldName" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
-           <parameter id="parameter_fieldValue_918441BD7ADED7BFA1E4401B0C2292C4E61C834B" name="fieldValue" type="ab42fdff-5f58-f451-a470-4a5ce5d04382"/>
+           <parameter id="parameter_fieldName_AC73C2E73C43B6B62B45D849828F320FDA3B1D4A" name="fieldName" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
+           <parameter id="parameter_fieldValue_918441BD7ADED7BFA1E4401B0C2292C4E61C834B" name="fieldValue" type="fb217b33-f314-1e52-0ca2-2088276dc476"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_683137355B2F05D68B2905F87A95D31D9E1BD8AA" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_683137355B2F05D68B2905F87A95D31D9E1BD8AA" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_683137355B2F05D68B2905F87A95D31D9E1BD8AA" kind="Member Function" line="233" name="AddField" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_61B0083C5A00969FD4C07E7374D0BEC0433943D4" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_61B0083C5A00969FD4C07E7374D0BEC0433943D4" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_61B0083C5A00969FD4C07E7374D0BEC0433943D4" kind="Member Function" line="233" name="AddField" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_2A419DCF10DB152EAAD9B545A3ABB23E54053D09" name="fieldName" type="6c876f0f-9928-5c87-c6bf-b3bf022c9004"/>
-           <parameter id="parameter_fieldValue_C1A7C9F3E482C029FDDD22D4EBE4FBE29ED7500A" name="fieldValue" type="c173fb60-0f04-6210-62ed-5b49b0e06904"/>
+           <parameter id="parameter_fieldName_2A419DCF10DB152EAAD9B545A3ABB23E54053D09" name="fieldName" type="67d24a9b-bc92-a0d4-514c-40af3b947bb7"/>
+           <parameter id="parameter_fieldValue_C1A7C9F3E482C029FDDD22D4EBE4FBE29ED7500A" name="fieldValue" type="f6caeb00-0008-d3cf-518d-4cc3c4d0769f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_90072A111D014098331CCE6B4AE34EA5A3CB994E" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_90072A111D014098331CCE6B4AE34EA5A3CB994E" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_90072A111D014098331CCE6B4AE34EA5A3CB994E" kind="Member Function" line="206" name="AddField" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_E0D055F81048895BF828C9329202EF9E1EC102C8" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_AddField_JsonObject_E0D055F81048895BF828C9329202EF9E1EC102C8" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_AddField_JsonObject_E0D055F81048895BF828C9329202EF9E1EC102C8" kind="Member Function" line="206" name="AddField" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_06CB38BE3E5335372998B7C593460F74C40ED4B5" name="fieldName" type="6c876f0f-9928-5c87-c6bf-b3bf022c9004"/>
-           <parameter id="parameter_fieldValue_AD2021B42EFB4685227404FC14420B59390581FB" name="fieldValue" type="ab42fdff-5f58-f451-a470-4a5ce5d04382"/>
+           <parameter id="parameter_fieldName_06CB38BE3E5335372998B7C593460F74C40ED4B5" name="fieldName" type="67d24a9b-bc92-a0d4-514c-40af3b947bb7"/>
+           <parameter id="parameter_fieldValue_AD2021B42EFB4685227404FC14420B59390581FB" name="fieldValue" type="fb217b33-f314-1e52-0ca2-2088276dc476"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_B793F75E73E8BEDF79AF832A8C0E11882CE4C7CF" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_B793F75E73E8BEDF79AF832A8C0E11882CE4C7CF" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Fields_JsonObject_B793F75E73E8BEDF79AF832A8C0E11882CE4C7CF" kind="Member Function" line="283" name="Fields" returnType="ada4088f-5a13-c7df-c55e-88aa9f4eb368" specifiers="public"/>
-         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_02AD8533A05C5CA43BA8EBCA870C7AF0E98912E4" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_02AD8533A05C5CA43BA8EBCA870C7AF0E98912E4" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Fields_JsonObject_02AD8533A05C5CA43BA8EBCA870C7AF0E98912E4" kind="Member Function" line="279" name="Fields" returnType="c9ac1a26-6d73-aff2-3110-f804b41a8d9b" specifiers="public"/>
-         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_7FC70BF7FFBFF26183482AEFFA509A5A65E15E60" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_7FC70BF7FFBFF26183482AEFFA509A5A65E15E60" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetField_JsonObject_7FC70BF7FFBFF26183482AEFFA509A5A65E15E60" kind="Member Function" line="248" name="GetField" returnType="eaed6b7e-95f8-4c35-939b-55b0fd308a14" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_264287C8F8DCAEFAA45E003B4B2901183F453892" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_264287C8F8DCAEFAA45E003B4B2901183F453892" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Fields_JsonObject_264287C8F8DCAEFAA45E003B4B2901183F453892" kind="Member Function" line="283" name="Fields" returnType="15cbd116-81ae-e4dc-36b8-8d8cd5a435b1" specifiers="public"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_0A7A98AA861C3DBEF9C69A97B4A3C7374041F5EA" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Fields_JsonObject_0A7A98AA861C3DBEF9C69A97B4A3C7374041F5EA" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Fields_JsonObject_0A7A98AA861C3DBEF9C69A97B4A3C7374041F5EA" kind="Member Function" line="279" name="Fields" returnType="afc6f27f-7cb5-6c86-86cf-b7d7e5a0bf76" specifiers="public"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_FD1054C7F38EBCAED9E8F42B13FD7FF490C64DB5" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_FD1054C7F38EBCAED9E8F42B13FD7FF490C64DB5" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetField_JsonObject_FD1054C7F38EBCAED9E8F42B13FD7FF490C64DB5" kind="Member Function" line="248" name="GetField" returnType="c9b934a6-651f-ca8d-4ae4-7651906fd1c2" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_250D374A928179CF74B080F2DC250C42C44A9EF3" name="fieldName" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+           <parameter id="parameter_fieldName_250D374A928179CF74B080F2DC250C42C44A9EF3" name="fieldName" type="3f74d132-c57d-199c-0ed3-1bf58636d297"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_8BB30E1F0E87735070AB8F1F8E80E1078B03D976" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_8BB30E1F0E87735070AB8F1F8E80E1078B03D976" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetField_JsonObject_8BB30E1F0E87735070AB8F1F8E80E1078B03D976" kind="Member Function" line="270" name="GetField" returnType="c173fb60-0f04-6210-62ed-5b49b0e06904" specifiers="public">
+         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_600B08FB314D5297CDD829886A0CF80F43E9F615" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_600B08FB314D5297CDD829886A0CF80F43E9F615" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetField_JsonObject_600B08FB314D5297CDD829886A0CF80F43E9F615" kind="Member Function" line="270" name="GetField" returnType="f6caeb00-0008-d3cf-518d-4cc3c4d0769f" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_6CE745A279D7A2ACF55F958180ED4BD38196AA6D" name="fieldName" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
+           <parameter id="parameter_fieldName_6CE745A279D7A2ACF55F958180ED4BD38196AA6D" name="fieldName" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_9C34ADD049049385D815F01B603A192C4902EEF8" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_9C34ADD049049385D815F01B603A192C4902EEF8" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetField_JsonObject_9C34ADD049049385D815F01B603A192C4902EEF8" kind="Member Function" line="259" name="GetField" returnType="eaed6b7e-95f8-4c35-939b-55b0fd308a14" specifiers="public">
+         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_BA3B047679815E121969D202384A660C9D8C0BCD" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_GetField_JsonObject_BA3B047679815E121969D202384A660C9D8C0BCD" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_GetField_JsonObject_BA3B047679815E121969D202384A660C9D8C0BCD" kind="Member Function" line="259" name="GetField" returnType="c9b934a6-651f-ca8d-4ae4-7651906fd1c2" specifiers="public">
           <parameters>
-           <parameter id="parameter_fieldName_FE64947E528C0CD5BBAA6AB22B310209FB69C778" name="fieldName" type="6c876f0f-9928-5c87-c6bf-b3bf022c9004"/>
+           <parameter id="parameter_fieldName_FE64947E528C0CD5BBAA6AB22B310209FB69C778" name="fieldName" type="67d24a9b-bc92-a0d4-514c-40af3b947bb7"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_ToString_JsonObject_2F390C9547EC14AA7E3C079C022B91C1DADEA308" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_ToString_JsonObject_2F390C9547EC14AA7E3C079C022B91C1DADEA308" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonObject_2F390C9547EC14AA7E3C079C022B91C1DADEA308" kind="Member Function" line="287" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public override"/>
-         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Write_JsonObject_78AE81594F3440FE5085862466C137E29D819CDE" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Write_JsonObject_78AE81594F3440FE5085862466C137E29D819CDE" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Write_JsonObject_78AE81594F3440FE5085862466C137E29D819CDE" kind="Member Function" line="319" name="Write" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public override">
+         <function const="true" docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_ToString_JsonObject_3839184F6139BB6DA3F47FF355E99B5B9A2F6E7A" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_ToString_JsonObject_3839184F6139BB6DA3F47FF355E99B5B9A2F6E7A" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonObject_3839184F6139BB6DA3F47FF355E99B5B9A2F6E7A" kind="Member Function" line="287" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public override"/>
+         <function docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Write_JsonObject_EB3EAC24FEB6B7958DB88DE0674A1EC22991DDCC" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_function_Write_JsonObject_EB3EAC24FEB6B7958DB88DE0674A1EC22991DDCC" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Write_JsonObject_EB3EAC24FEB6B7958DB88DE0674A1EC22991DDCC" kind="Member Function" line="319" name="Write" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public override">
           <parameters>
-           <parameter id="parameter_formatter_B723EAA98197C2719978E1D6F4ACFA266A7B4E7D" name="formatter" type="faabf0a1-f06d-c9d2-51a6-bd5cdfb5a01f"/>
+           <parameter id="parameter_formatter_B723EAA98197C2719978E1D6F4ACFA266A7B4E7D" name="formatter" type="4f438b0e-2dd0-e93d-c063-c551c4cbb68c"/>
           </parameters>
          </function>
         </functions>
         <variables>
-         <variable docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldMap_C3775ABDB51491DBF1AC38653F0A3A353B4C0246" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldMap_C3775ABDB51491DBF1AC38653F0A3A353B4C0246" id="member_variable_fieldMap_C3775ABDB51491DBF1AC38653F0A3A353B4C0246" name="fieldMap" specifiers="private" type="aaa00fc9-0f32-d873-0163-19ac645517b9"/>
-         <variable docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldValues_78BF223D803DDFE81939D251C3685C64029B5B34" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldValues_78BF223D803DDFE81939D251C3685C64029B5B34" id="member_variable_fieldValues_78BF223D803DDFE81939D251C3685C64029B5B34" name="fieldValues" specifiers="private" type="9bc84f80-27a6-f1b1-e4eb-63c51968c7e8"/>
+         <variable docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldMap_C3775ABDB51491DBF1AC38653F0A3A353B4C0246" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldMap_C3775ABDB51491DBF1AC38653F0A3A353B4C0246" id="member_variable_fieldMap_C3775ABDB51491DBF1AC38653F0A3A353B4C0246" name="fieldMap" specifiers="private" type="3c6e2d9c-bef1-f810-c079-3234209487b0"/>
+         <variable docPath="../../System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldValues_78BF223D803DDFE81939D251C3685C64029B5B34" extPath="System.Json/doc/class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D.html#member_variable_fieldValues_78BF223D803DDFE81939D251C3685C64029B5B34" id="member_variable_fieldValues_78BF223D803DDFE81939D251C3685C64029B5B34" name="fieldValues" specifiers="private" type="2d18d300-427a-e23b-2d3d-5586155da1cd"/>
         </variables>
        </class>
        <class baseClass="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516" line="96" name="JsonString" specifiers="public">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#default_constructor_JsonString_73D4FFC5AA88285DC8FB85FDB84988C62EBFDD6E" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#default_constructor_JsonString_73D4FFC5AA88285DC8FB85FDB84988C62EBFDD6E" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonString_73D4FFC5AA88285DC8FB85FDB84988C62EBFDD6E" kind="Constructor" line="98" name="JsonString" specifiers="public"/>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#constructor_JsonString_C8290C74525675369135FB3E1C59305D6C0B1CD3" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#constructor_JsonString_C8290C74525675369135FB3E1C59305D6C0B1CD3" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="constructor_JsonString_C8290C74525675369135FB3E1C59305D6C0B1CD3" kind="Constructor" line="101" name="JsonString" specifiers="public">
+         <ctorDtor docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#default_constructor_JsonString_1EA8C7E2A226FEC0D21AC5B8A70987306F3FB03E" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#default_constructor_JsonString_1EA8C7E2A226FEC0D21AC5B8A70987306F3FB03E" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonString_1EA8C7E2A226FEC0D21AC5B8A70987306F3FB03E" kind="Constructor" line="98" name="JsonString" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#constructor_JsonString_5B82FE19B35511E10FF5F7AA677FC3BA4F35357B" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#constructor_JsonString_5B82FE19B35511E10FF5F7AA677FC3BA4F35357B" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="constructor_JsonString_5B82FE19B35511E10FF5F7AA677FC3BA4F35357B" kind="Constructor" line="101" name="JsonString" specifiers="public">
           <parameters>
-           <parameter id="parameter_value__C6B463251D98FD1A5068A19F042032007B373309" name="value_" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
+           <parameter id="parameter_value__C6B463251D98FD1A5068A19F042032007B373309" name="value_" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
           </parameters>
          </ctorDtor>
         </ctorsDtors>
         <functions>
-         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_D94A35EDB4D7319640F607227CE9BFB6810F0B95" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_D94A35EDB4D7319640F607227CE9BFB6810F0B95" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Append_JsonString_D94A35EDB4D7319640F607227CE9BFB6810F0B95" kind="Member Function" line="122" name="Append" returnType="03d8cde9-6e1d-53db-9878-59dab988bd8e" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_CBBF854BED59710179B8CE4D6A2D65304093C2CC" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_CBBF854BED59710179B8CE4D6A2D65304093C2CC" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Append_JsonString_CBBF854BED59710179B8CE4D6A2D65304093C2CC" kind="Member Function" line="122" name="Append" returnType="4a018af4-d96f-40ca-6e00-9670fafdda84" specifiers="public">
           <parameters>
-           <parameter id="parameter_s_44404D6EAEA254DC64A68B3F41C072A985D1E460" name="s" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
+           <parameter id="parameter_s_44404D6EAEA254DC64A68B3F41C072A985D1E460" name="s" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_78C83664F635BEA7E1AFCEBB9BC73D8454698C73" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_78C83664F635BEA7E1AFCEBB9BC73D8454698C73" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Append_JsonString_78C83664F635BEA7E1AFCEBB9BC73D8454698C73" kind="Member Function" line="117" name="Append" returnType="03d8cde9-6e1d-53db-9878-59dab988bd8e" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_7CDF1757864DBDA18DC2C362972975DBC5D97B2F" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_7CDF1757864DBDA18DC2C362972975DBC5D97B2F" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Append_JsonString_7CDF1757864DBDA18DC2C362972975DBC5D97B2F" kind="Member Function" line="117" name="Append" returnType="4a018af4-d96f-40ca-6e00-9670fafdda84" specifiers="public">
           <parameters>
-           <parameter id="parameter_s_AE85139F18C0CCF0729AB4930DE6269FFC9D0D5F" name="s" type="896a4512-0d95-6ffb-9703-ce5eb9f2a896"/>
+           <parameter id="parameter_s_AE85139F18C0CCF0729AB4930DE6269FFC9D0D5F" name="s" type="ebacd204-6f77-d5d2-153d-a467079cbaad"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_670CC63BC78B16AAD3F3D6BCECF5A26305D58016" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_670CC63BC78B16AAD3F3D6BCECF5A26305D58016" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Append_JsonString_670CC63BC78B16AAD3F3D6BCECF5A26305D58016" kind="Member Function" line="112" name="Append" returnType="03d8cde9-6e1d-53db-9878-59dab988bd8e" specifiers="public">
+         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_A233DD8D4CBC19E16BFF32E13F3EE737695E3925" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Append_JsonString_A233DD8D4CBC19E16BFF32E13F3EE737695E3925" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Append_JsonString_A233DD8D4CBC19E16BFF32E13F3EE737695E3925" kind="Member Function" line="112" name="Append" returnType="4a018af4-d96f-40ca-6e00-9670fafdda84" specifiers="public">
           <parameters>
-           <parameter id="parameter_c_50B38C905DA56929947953D2FEA12BB43C26C0B5" name="c" type="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+           <parameter id="parameter_c_50B38C905DA56929947953D2FEA12BB43C26C0B5" name="c" type="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_JsonCharStr_JsonString_6787C49E514DA4731DB12C56FBFFAF1F710A8207" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_JsonCharStr_JsonString_6787C49E514DA4731DB12C56FBFFAF1F710A8207" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_JsonCharStr_JsonString_6787C49E514DA4731DB12C56FBFFAF1F710A8207" kind="Member Function" line="141" name="JsonCharStr" returnType="32a02ed5-ea67-3e7e-1aef-c3edb2c57391" specifiers="private">
+         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_JsonCharStr_JsonString_0B4756A74523938FE755B94DC9AE95264B694CF7" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_JsonCharStr_JsonString_0B4756A74523938FE755B94DC9AE95264B694CF7" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_JsonCharStr_JsonString_0B4756A74523938FE755B94DC9AE95264B694CF7" kind="Member Function" line="141" name="JsonCharStr" returnType="db31f12a-8cff-64e7-f7f9-f3467113a637" specifiers="private">
           <parameters>
-           <parameter id="parameter_c_52DAD26C29D567D13547EBD8EA4288BE3CEDFE85" name="c" type="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+           <parameter id="parameter_c_52DAD26C29D567D13547EBD8EA4288BE3CEDFE85" name="c" type="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
           </parameters>
          </function>
-         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_SetValue_JsonString_2AE21D1425E631396C31BAE90C9AE06A278952A2" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_SetValue_JsonString_2AE21D1425E631396C31BAE90C9AE06A278952A2" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_SetValue_JsonString_2AE21D1425E631396C31BAE90C9AE06A278952A2" kind="Member Function" line="108" name="SetValue" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public inline">
+         <function docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_SetValue_JsonString_FF07815CBCFE99AD54C482959550CABF370E9D0D" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_SetValue_JsonString_FF07815CBCFE99AD54C482959550CABF370E9D0D" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_SetValue_JsonString_FF07815CBCFE99AD54C482959550CABF370E9D0D" kind="Member Function" line="108" name="SetValue" returnType="8777ca8f-5398-93c3-ea20-1563d92ba213" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_value__930C03F6C58A71481328DD03CE989DBA69DE76CA" name="value_" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
+           <parameter id="parameter_value__930C03F6C58A71481328DD03CE989DBA69DE76CA" name="value_" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
           </parameters>
          </function>
-         <function const="true" docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_ToString_JsonString_90101F3A6CE1348F3033910F6AF6F5A9EE35E9DF" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_ToString_JsonString_90101F3A6CE1348F3033910F6AF6F5A9EE35E9DF" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonString_90101F3A6CE1348F3033910F6AF6F5A9EE35E9DF" kind="Member Function" line="127" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public override"/>
-         <function const="true" docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Value_JsonString_2204E0D39211119FA99A0D5387CFDA9FA1EDE21F" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Value_JsonString_2204E0D39211119FA99A0D5387CFDA9FA1EDE21F" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Value_JsonString_2204E0D39211119FA99A0D5387CFDA9FA1EDE21F" kind="Member Function" line="104" name="Value" returnType="04b3896d-f97f-abce-8ab0-9c02ea1f73d9" specifiers="public inline"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_ToString_JsonString_25E6D3C555C514477B0DE30D9B7020720D2D19F3" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_ToString_JsonString_25E6D3C555C514477B0DE30D9B7020720D2D19F3" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonString_25E6D3C555C514477B0DE30D9B7020720D2D19F3" kind="Member Function" line="127" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public override"/>
+         <function const="true" docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Value_JsonString_5031538217A07A7C17169AA9DF872273A2EDD180" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_function_Value_JsonString_5031538217A07A7C17169AA9DF872273A2EDD180" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Value_JsonString_5031538217A07A7C17169AA9DF872273A2EDD180" kind="Member Function" line="104" name="Value" returnType="cae70b39-7f49-6c41-cc35-c6185bc9030b" specifiers="public inline"/>
         </functions>
         <variables>
-         <variable docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_variable_value_2842B1B5C8D92CAC132AD0E035BDFD9108922EBD" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_variable_value_2842B1B5C8D92CAC132AD0E035BDFD9108922EBD" id="member_variable_value_2842B1B5C8D92CAC132AD0E035BDFD9108922EBD" name="value" specifiers="private" type="67bf9c82-9b3e-dc4f-bac3-7daa3a50e9fb"/>
+         <variable docPath="../../System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_variable_value_2842B1B5C8D92CAC132AD0E035BDFD9108922EBD" extPath="System.Json/doc/class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516.html#member_variable_value_2842B1B5C8D92CAC132AD0E035BDFD9108922EBD" id="member_variable_value_2842B1B5C8D92CAC132AD0E035BDFD9108922EBD" name="value" specifiers="private" type="594fd4da-bd0d-f8d7-8a83-43fb9efd3bcd"/>
         </variables>
        </class>
        <class docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A" line="12" name="JsonValue" specifiers="public abstract">
         <ctorsDtors>
-         <ctorDtor docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#default_constructor_JsonValue_B342609E2D83D3D306E2E34C1D3B584BC2B66288" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#default_constructor_JsonValue_B342609E2D83D3D306E2E34C1D3B584BC2B66288" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonValue_B342609E2D83D3D306E2E34C1D3B584BC2B66288" kind="Constructor" line="14" name="JsonValue" specifiers="public"/>
+         <ctorDtor docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#default_constructor_JsonValue_CE92B908AA506F980575E38527BD9F0685B75BFB" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#default_constructor_JsonValue_CE92B908AA506F980575E38527BD9F0685B75BFB" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="default_constructor_JsonValue_CE92B908AA506F980575E38527BD9F0685B75BFB" kind="Constructor" line="14" name="JsonValue" specifiers="public"/>
         </ctorsDtors>
         <functions>
-         <function const="true" docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_ToString_JsonValue_A1F5A8829AA78394CCFED1FF3A143C981BAA1D23" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_ToString_JsonValue_A1F5A8829AA78394CCFED1FF3A143C981BAA1D23" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonValue_A1F5A8829AA78394CCFED1FF3A143C981BAA1D23" kind="Member Function" line="19" name="ToString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public abstract"/>
-         <function docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_Write_JsonValue_2F2512D9901A69D9E50AD60EB7AC6C053E4EE146" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_Write_JsonValue_2F2512D9901A69D9E50AD60EB7AC6C053E4EE146" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Write_JsonValue_2F2512D9901A69D9E50AD60EB7AC6C053E4EE146" kind="Member Function" line="21" name="Write" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public virtual">
+         <function const="true" docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_ToString_JsonValue_F08ADA2A25FB20CC4360EAA2CE216F11A9224C63" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_ToString_JsonValue_F08ADA2A25FB20CC4360EAA2CE216F11A9224C63" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_ToString_JsonValue_F08ADA2A25FB20CC4360EAA2CE216F11A9224C63" kind="Member Function" line="19" name="ToString" returnType="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" specifiers="public abstract"/>
+         <function docPath="../../System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_Write_JsonValue_FF68049A5AE0C7D824AAB5A88AA2D26D159A1AA4" extPath="System.Json/doc/class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A.html#member_function_Write_JsonValue_FF68049A5AE0C7D824AAB5A88AA2D26D159A1AA4" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="member_function_Write_JsonValue_FF68049A5AE0C7D824AAB5A88AA2D26D159A1AA4" kind="Member Function" line="21" name="Write" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public virtual">
           <parameters>
-           <parameter id="parameter_formatter_FC9BD9B9023AE9B653C9EF5B2C2115C07E4D67E7" name="formatter" type="faabf0a1-f06d-c9d2-51a6-bd5cdfb5a01f"/>
+           <parameter id="parameter_formatter_FC9BD9B9023AE9B653C9EF5B2C2115C07E4D67E7" name="formatter" type="4f438b0e-2dd0-e93d-c063-c551c4cbb68c"/>
           </parameters>
          </function>
         </functions>
        </class>
       </classes>
       <functions>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseEscape_768891FDDF9831BF04B430F0ADC074F431E99968" extPath="System.Json/doc/ns_System.Json.html#function_ParseEscape_768891FDDF9831BF04B430F0ADC074F431E99968" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseEscape_768891FDDF9831BF04B430F0ADC074F431E99968" kind="Function" line="44" name="ParseEscape" returnType="e9387c96-a76a-fbdd-bd28-6d6f00b145c5" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseEscape_768891FDDF9831BF04B430F0ADC074F431E99968" extPath="System.Json/doc/ns_System.Json.html#function_ParseEscape_768891FDDF9831BF04B430F0ADC074F431E99968" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseEscape_768891FDDF9831BF04B430F0ADC074F431E99968" kind="Function" line="45" name="ParseEscape" returnType="eb074d64-acda-3a31-207e-ecacc8fd50f4" specifiers="public">
         <parameters>
-         <parameter id="parameter_p_135186E47B181058F1BADBB42E5DD212891D7913" name="p" type="4cce6a06-5a46-8e09-2d20-69458306e68f"/>
-         <parameter id="parameter_e_E8D657FC1417B0D126BABFAF3A5C45366951C018" name="e" type="896a4512-0d95-6ffb-9703-ce5eb9f2a896"/>
-         <parameter id="parameter_token_54DDCA6238FEEE824661B2503925AABBDF52C2FF" name="token" type="2a49f959-7f94-6110-9f12-79cdeb1924a7"/>
+         <parameter id="parameter_p_135186E47B181058F1BADBB42E5DD212891D7913" name="p" type="a736748e-b539-3d7f-61ab-e1270544b5cf"/>
+         <parameter id="parameter_e_E8D657FC1417B0D126BABFAF3A5C45366951C018" name="e" type="ebacd204-6f77-d5d2-153d-a467079cbaad"/>
+         <parameter id="parameter_token_54DDCA6238FEEE824661B2503925AABBDF52C2FF" name="token" type="652e879a-6309-cd31-54f7-17c1091e0cc7"/>
         </parameters>
        </function>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseHexChar_E88577955242A02615E8E117341D80613A3F52FF" extPath="System.Json/doc/ns_System.Json.html#function_ParseHexChar_E88577955242A02615E8E117341D80613A3F52FF" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseHexChar_E88577955242A02615E8E117341D80613A3F52FF" kind="Function" line="10" name="ParseHexChar" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseHexChar_E88577955242A02615E8E117341D80613A3F52FF" extPath="System.Json/doc/ns_System.Json.html#function_ParseHexChar_E88577955242A02615E8E117341D80613A3F52FF" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseHexChar_E88577955242A02615E8E117341D80613A3F52FF" kind="Function" line="10" name="ParseHexChar" returnType="00e9c1dc-24fc-cb89-fb3b-660a84d38149" specifiers="public">
         <parameters>
-         <parameter id="parameter_value_B6922E96869F88278A5BF41F95E29C9E988BC11D" name="value" type="2f25dffb-da57-2274-a658-48a37867ced4"/>
-         <parameter id="parameter_p_DB6E0C07C71134C76BFB9C70C14E4504D56B4E1E" name="p" type="4cce6a06-5a46-8e09-2d20-69458306e68f"/>
-         <parameter id="parameter_e_EC1A0175F7138F6939C970368B9FAB3935C2A555" name="e" type="896a4512-0d95-6ffb-9703-ce5eb9f2a896"/>
-         <parameter id="parameter_token_86479CB7610231775B061F452E68CF093D6CEDF0" name="token" type="2a49f959-7f94-6110-9f12-79cdeb1924a7"/>
+         <parameter id="parameter_value_B6922E96869F88278A5BF41F95E29C9E988BC11D" name="value" type="4c0646b5-16de-9e9f-ddb1-f497b7f6d9b9"/>
+         <parameter id="parameter_p_DB6E0C07C71134C76BFB9C70C14E4504D56B4E1E" name="p" type="a736748e-b539-3d7f-61ab-e1270544b5cf"/>
+         <parameter id="parameter_e_EC1A0175F7138F6939C970368B9FAB3935C2A555" name="e" type="ebacd204-6f77-d5d2-153d-a467079cbaad"/>
+         <parameter id="parameter_token_86479CB7610231775B061F452E68CF093D6CEDF0" name="token" type="652e879a-6309-cd31-54f7-17c1091e0cc7"/>
         </parameters>
        </function>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF" extPath="System.Json/doc/ns_System.Json.html#function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF" kind="Function" line="462" name="ParseJson" returnType="dbc6095f-5deb-b299-9280-db670d99f7a8" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF" extPath="System.Json/doc/ns_System.Json.html#function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF" kind="Function" line="462" name="ParseJson" returnType="5bfc0ff4-88fd-1293-d46d-7c50c184968b" specifiers="public">
         <parameters>
-         <parameter id="parameter_jsonText_8E449DE24AEE55F1D477E9CD4654E3B1BC256BF1" name="jsonText" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+         <parameter id="parameter_jsonText_8E449DE24AEE55F1D477E9CD4654E3B1BC256BF1" name="jsonText" type="3f74d132-c57d-199c-0ed3-1bf58636d297"/>
         </parameters>
        </function>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseJson_AA1EB3D4CCCAA45FDB88817F137BB8925D3738A7" extPath="System.Json/doc/ns_System.Json.html#function_ParseJson_AA1EB3D4CCCAA45FDB88817F137BB8925D3738A7" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="function_ParseJson_AA1EB3D4CCCAA45FDB88817F137BB8925D3738A7" kind="Function" line="476" name="ParseJson" returnType="dbc6095f-5deb-b299-9280-db670d99f7a8" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseJson_AA1EB3D4CCCAA45FDB88817F137BB8925D3738A7" extPath="System.Json/doc/ns_System.Json.html#function_ParseJson_AA1EB3D4CCCAA45FDB88817F137BB8925D3738A7" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="function_ParseJson_AA1EB3D4CCCAA45FDB88817F137BB8925D3738A7" kind="Function" line="476" name="ParseJson" returnType="5bfc0ff4-88fd-1293-d46d-7c50c184968b" specifiers="public">
         <parameters>
-         <parameter id="parameter_jsonText_CA27AD60B44C184A5491E68F07386347B662B41E" name="jsonText" type="04b3896d-f97f-abce-8ab0-9c02ea1f73d9"/>
+         <parameter id="parameter_jsonText_CA27AD60B44C184A5491E68F07386347B662B41E" name="jsonText" type="cae70b39-7f49-6c41-cc35-c6185bc9030b"/>
         </parameters>
        </function>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseJson_2F088677CC9179ED41188E987956FF77EB3BEDB4" extPath="System.Json/doc/ns_System.Json.html#function_ParseJson_2F088677CC9179ED41188E987956FF77EB3BEDB4" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="function_ParseJson_2F088677CC9179ED41188E987956FF77EB3BEDB4" kind="Function" line="469" name="ParseJson" returnType="dbc6095f-5deb-b299-9280-db670d99f7a8" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseJson_2F088677CC9179ED41188E987956FF77EB3BEDB4" extPath="System.Json/doc/ns_System.Json.html#function_ParseJson_2F088677CC9179ED41188E987956FF77EB3BEDB4" fileName="System.Json/Json.cm" filePath="../../System.Json/file/Json.cm.html" id="function_ParseJson_2F088677CC9179ED41188E987956FF77EB3BEDB4" kind="Function" line="469" name="ParseJson" returnType="5bfc0ff4-88fd-1293-d46d-7c50c184968b" specifiers="public">
         <parameters>
-         <parameter id="parameter_jsonText_52A75D2B4A111EC1C87870E44A41A2B52E4AA1FF" name="jsonText" type="6c876f0f-9928-5c87-c6bf-b3bf022c9004"/>
+         <parameter id="parameter_jsonText_52A75D2B4A111EC1C87870E44A41A2B52E4AA1FF" name="jsonText" type="67d24a9b-bc92-a0d4-514c-40af3b947bb7"/>
         </parameters>
        </function>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseNumber_68DDFFB7F12E316AA8F2A06C58F6A774A4F3DB6B" extPath="System.Json/doc/ns_System.Json.html#function_ParseNumber_68DDFFB7F12E316AA8F2A06C58F6A774A4F3DB6B" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseNumber_68DDFFB7F12E316AA8F2A06C58F6A774A4F3DB6B" kind="Function" line="169" name="ParseNumber" returnType="dadb9bf0-c244-68bf-82c4-eae9167b3fe0" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseNumber_68DDFFB7F12E316AA8F2A06C58F6A774A4F3DB6B" extPath="System.Json/doc/ns_System.Json.html#function_ParseNumber_68DDFFB7F12E316AA8F2A06C58F6A774A4F3DB6B" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseNumber_68DDFFB7F12E316AA8F2A06C58F6A774A4F3DB6B" kind="Function" line="170" name="ParseNumber" returnType="71f319fc-dea8-c469-a993-51d48f922be1" specifiers="public">
         <parameters>
-         <parameter id="parameter_token_98F70761503347C12DC8A9EA01A8ACF5718C21B9" name="token" type="2a49f959-7f94-6110-9f12-79cdeb1924a7"/>
+         <parameter id="parameter_token_98F70761503347C12DC8A9EA01A8ACF5718C21B9" name="token" type="652e879a-6309-cd31-54f7-17c1091e0cc7"/>
         </parameters>
        </function>
-       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseStringLiteral_0763132D22BD7969CEE87DE349B3FAEE00B2EB9B" extPath="System.Json/doc/ns_System.Json.html#function_ParseStringLiteral_0763132D22BD7969CEE87DE349B3FAEE00B2EB9B" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseStringLiteral_0763132D22BD7969CEE87DE349B3FAEE00B2EB9B" kind="Function" line="130" name="ParseStringLiteral" returnType="f09b694a-4de6-2aa4-3bc7-60edb89334a6" specifiers="public">
+       <function docPath="../../System.Json/doc/ns_System.Json.html#function_ParseStringLiteral_0763132D22BD7969CEE87DE349B3FAEE00B2EB9B" extPath="System.Json/doc/ns_System.Json.html#function_ParseStringLiteral_0763132D22BD7969CEE87DE349B3FAEE00B2EB9B" fileName="System.Json/TokenValueParsers.cm" filePath="../../System.Json/file/TokenValueParsers.cm.html" id="function_ParseStringLiteral_0763132D22BD7969CEE87DE349B3FAEE00B2EB9B" kind="Function" line="131" name="ParseStringLiteral" returnType="042b06db-4e5d-cb8b-de85-7361dd60cfac" specifiers="public">
         <parameters>
-         <parameter id="parameter_token_5654D64A7D29329E5C6A73296006354440641BC2" name="token" type="2a49f959-7f94-6110-9f12-79cdeb1924a7"/>
+         <parameter id="parameter_token_5654D64A7D29329E5C6A73296006354440641BC2" name="token" type="652e879a-6309-cd31-54f7-17c1091e0cc7"/>
         </parameters>
        </function>
       </functions>
      </namespace>
     </namespaces>
    </namespace>
-   <namespace docPath="../../System.Json/doc/ns_unnamed_ns_94762AAF36DF8A4C8A61EB47671F1FACB4A5A806.html" extPath="System.Json/doc/ns_unnamed_ns_94762AAF36DF8A4C8A61EB47671F1FACB4A5A806.html" id="ns_unnamed_ns_94762AAF36DF8A4C8A61EB47671F1FACB4A5A806" name="unnamed_ns_94762AAF36DF8A4C8A61EB47671F1FACB4A5A806">
+   <namespace docPath="../../System.Json/doc/ns_unnamed_ns_007BD6CDDFB7C1CF4A3B92ABFA63DB078B65E76E.html" extPath="System.Json/doc/ns_unnamed_ns_007BD6CDDFB7C1CF4A3B92ABFA63DB078B65E76E.html" id="ns_unnamed_ns_007BD6CDDFB7C1CF4A3B92ABFA63DB078B65E76E" name="unnamed_ns_007BD6CDDFB7C1CF4A3B92ABFA63DB078B65E76E">
     <classes>
-     <class docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622" line="6" name="RuleNameMap" specifiers="public">
+     <class docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52" line="6" name="RuleNameMap" specifiers="public">
       <ctorsDtors>
-       <ctorDtor docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#static_constructor_RuleNameMap_3D249824384392CA9E731023227B9FC07E024D5E" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#static_constructor_RuleNameMap_3D249824384392CA9E731023227B9FC07E024D5E" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="static_constructor_RuleNameMap_3D249824384392CA9E731023227B9FC07E024D5E" kind="Static Constructor" line="8" name="RuleNameMap" specifiers="static"/>
-       <ctorDtor docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#default_constructor_RuleNameMap_3C7A6A9024D7049FD8F9C555CD025BA4233A01C1" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#default_constructor_RuleNameMap_3C7A6A9024D7049FD8F9C555CD025BA4233A01C1" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="default_constructor_RuleNameMap_3C7A6A9024D7049FD8F9C555CD025BA4233A01C1" kind="Constructor" line="19" name="RuleNameMap" specifiers="private"/>
+       <ctorDtor docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#static_constructor_RuleNameMap_B33EEB02A9D6CEC3B9CCC2277EF9FBD45C0685E6" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#static_constructor_RuleNameMap_B33EEB02A9D6CEC3B9CCC2277EF9FBD45C0685E6" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="static_constructor_RuleNameMap_B33EEB02A9D6CEC3B9CCC2277EF9FBD45C0685E6" kind="Static Constructor" line="8" name="RuleNameMap" specifiers="static"/>
+       <ctorDtor docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#default_constructor_RuleNameMap_1BBF2358DC597E8928FAC2242613A10663A0EA71" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#default_constructor_RuleNameMap_1BBF2358DC597E8928FAC2242613A10663A0EA71" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="default_constructor_RuleNameMap_1BBF2358DC597E8928FAC2242613A10663A0EA71" kind="Constructor" line="19" name="RuleNameMap" specifiers="private"/>
       </ctorsDtors>
       <functions>
-       <function const="true" docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_function_GetRuleNameMap_RuleNameMap_FFFB31BDC1D8B27CCC8640A496EBF044B0E4B281" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_function_GetRuleNameMap_RuleNameMap_FFFB31BDC1D8B27CCC8640A496EBF044B0E4B281" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="member_function_GetRuleNameMap_RuleNameMap_FFFB31BDC1D8B27CCC8640A496EBF044B0E4B281" kind="Member Function" line="15" name="GetRuleNameMap" returnType="1f3f5bce-3807-cbfa-bd41-a2bde124eadd" specifiers="public"/>
-       <function docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_function_Instance_RuleNameMap_2AB968C9D8161725A8416F986A85903C83035FA5" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_function_Instance_RuleNameMap_2AB968C9D8161725A8416F986A85903C83035FA5" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="member_function_Instance_RuleNameMap_2AB968C9D8161725A8416F986A85903C83035FA5" kind="Static Member Function" line="11" name="Instance" returnType="8066c663-8241-43a4-08d4-89fc7ea7bb96" specifiers="public static"/>
+       <function const="true" docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_function_GetRuleNameMap_RuleNameMap_6982F5F03755903E15D408374418977DB9B3A1CB" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_function_GetRuleNameMap_RuleNameMap_6982F5F03755903E15D408374418977DB9B3A1CB" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="member_function_GetRuleNameMap_RuleNameMap_6982F5F03755903E15D408374418977DB9B3A1CB" kind="Member Function" line="15" name="GetRuleNameMap" returnType="b9389acd-1f47-c785-47f3-cf594661537f" specifiers="public"/>
+       <function docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_function_Instance_RuleNameMap_FD609BE1B63A4BB3D916C30FBBEF11D86189C456" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_function_Instance_RuleNameMap_FD609BE1B63A4BB3D916C30FBBEF11D86189C456" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="member_function_Instance_RuleNameMap_FD609BE1B63A4BB3D916C30FBBEF11D86189C456" kind="Static Member Function" line="11" name="Instance" returnType="acc03dd6-87ce-f22b-b1fb-d8684f8bd7e7" specifiers="public static"/>
       </functions>
       <variables>
-       <variable docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_variable_instance_D7D97F4CEF1E93AA5A2625B3EC73684A19EFA6CE" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_variable_instance_D7D97F4CEF1E93AA5A2625B3EC73684A19EFA6CE" id="member_variable_instance_D7D97F4CEF1E93AA5A2625B3EC73684A19EFA6CE" name="instance" specifiers="private static" type="1a39c9fd-eb97-1a85-6ee5-80be67802007"/>
-       <variable docPath="../../System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_variable_ruleNameMap_043C6E72802E32B41D80CABB52CF7FBCFB45BF63" extPath="System.Json/doc/class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622.html#member_variable_ruleNameMap_043C6E72802E32B41D80CABB52CF7FBCFB45BF63" id="member_variable_ruleNameMap_043C6E72802E32B41D80CABB52CF7FBCFB45BF63" name="ruleNameMap" specifiers="private" type="da7cd4c8-8d84-f1f4-bc69-c5e8f0fe16bd"/>
+       <variable docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_variable_instance_8F817A91EDA8A2B09703C7ADF686D06A0D8B7079" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_variable_instance_8F817A91EDA8A2B09703C7ADF686D06A0D8B7079" id="member_variable_instance_8F817A91EDA8A2B09703C7ADF686D06A0D8B7079" name="instance" specifiers="private static" type="2c61ef59-3dbc-7a0f-8995-e54c60fb225a"/>
+       <variable docPath="../../System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_variable_ruleNameMap_2432CC66E3B91048F16F98DC035628410D8D9268" extPath="System.Json/doc/class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52.html#member_variable_ruleNameMap_2432CC66E3B91048F16F98DC035628410D8D9268" id="member_variable_ruleNameMap_2432CC66E3B91048F16F98DC035628410D8D9268" name="ruleNameMap" specifiers="private" type="8d3ad19f-a4aa-185e-c9c9-1a4a333f08ad"/>
       </variables>
      </class>
     </classes>
     <functions>
-     <function docPath="../../System.Json/doc/ns_unnamed_ns_94762AAF36DF8A4C8A61EB47671F1FACB4A5A806.html#function_GetRuleNameMapPtr_E7529F7EF289F40FF976908065FA7A10B42496E2" extPath="System.Json/doc/ns_unnamed_ns_94762AAF36DF8A4C8A61EB47671F1FACB4A5A806.html#function_GetRuleNameMapPtr_E7529F7EF289F40FF976908065FA7A10B42496E2" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="function_GetRuleNameMapPtr_E7529F7EF289F40FF976908065FA7A10B42496E2" kind="Function" line="30" name="GetRuleNameMapPtr" returnType="1f3f5bce-3807-cbfa-bd41-a2bde124eadd" specifiers="public"/>
+     <function docPath="../../System.Json/doc/ns_unnamed_ns_007BD6CDDFB7C1CF4A3B92ABFA63DB078B65E76E.html#function_GetRuleNameMapPtr_9F047CC1FCC15F9559EDBFD91D03F29A3933E786" extPath="System.Json/doc/ns_unnamed_ns_007BD6CDDFB7C1CF4A3B92ABFA63DB078B65E76E.html#function_GetRuleNameMapPtr_9F047CC1FCC15F9559EDBFD91D03F29A3933E786" fileName="System.Json/Json_rules.cm" filePath="../../System.Json/file/Json_rules.cm.html" id="function_GetRuleNameMapPtr_9F047CC1FCC15F9559EDBFD91D03F29A3933E786" kind="Function" line="30" name="GetRuleNameMapPtr" returnType="b9389acd-1f47-c785-47f3-cf594661537f" specifiers="public"/>
     </functions>
    </namespace>
   </namespaces>
   <classes>
    <class baseClass="class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23" docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8" line="7" name="JsonLexer" specifiers="public">
     <ctorsDtors>
-     <ctorDtor docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#constructor_JsonLexer_CE6DD7BD9836CD6C140E2AACCC0EE24FB5159145" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#constructor_JsonLexer_CE6DD7BD9836CD6C140E2AACCC0EE24FB5159145" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="constructor_JsonLexer_CE6DD7BD9836CD6C140E2AACCC0EE24FB5159145" kind="Constructor" line="9" name="JsonLexer" specifiers="public">
+     <ctorDtor docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#constructor_JsonLexer_63C9787A988D3FE34CAEE4E11A230AC3948A5DEF" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#constructor_JsonLexer_63C9787A988D3FE34CAEE4E11A230AC3948A5DEF" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="constructor_JsonLexer_63C9787A988D3FE34CAEE4E11A230AC3948A5DEF" kind="Constructor" line="9" name="JsonLexer" specifiers="public">
       <parameters>
-       <parameter id="parameter_start__E245A5D963D34124F1BEDD6EFA02BCAD7CB288D0" name="start_" type="896a4512-0d95-6ffb-9703-ce5eb9f2a896"/>
-       <parameter id="parameter_end__4D6C1CABB4A482C6272260B600ABE6355F5A1C2D" name="end_" type="896a4512-0d95-6ffb-9703-ce5eb9f2a896"/>
-       <parameter id="parameter_fileName__DDDF8860489BB1CCFFDAAE9C0CD5EF468C7C7C3F" name="fileName_" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+       <parameter id="parameter_start__E245A5D963D34124F1BEDD6EFA02BCAD7CB288D0" name="start_" type="ebacd204-6f77-d5d2-153d-a467079cbaad"/>
+       <parameter id="parameter_end__4D6C1CABB4A482C6272260B600ABE6355F5A1C2D" name="end_" type="ebacd204-6f77-d5d2-153d-a467079cbaad"/>
+       <parameter id="parameter_fileName__DDDF8860489BB1CCFFDAAE9C0CD5EF468C7C7C3F" name="fileName_" type="3f74d132-c57d-199c-0ed3-1bf58636d297"/>
       </parameters>
      </ctorDtor>
     </ctorsDtors>
     <functions>
-     <function docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_GetTokenId_JsonLexer_D88E6AC26386EB7C968F7A53B1BC27AA8A3AEB41" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_GetTokenId_JsonLexer_D88E6AC26386EB7C968F7A53B1BC27AA8A3AEB41" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="member_function_GetTokenId_JsonLexer_D88E6AC26386EB7C968F7A53B1BC27AA8A3AEB41" kind="Member Function" line="969" name="GetTokenId" returnType="0ca5ce73-e943-269d-f945-640fa675c6e0" specifiers="public">
+     <function docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_GetTokenId_JsonLexer_49C686391A86265FACE952FF738A9B985642C6D5" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_GetTokenId_JsonLexer_49C686391A86265FACE952FF738A9B985642C6D5" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="member_function_GetTokenId_JsonLexer_49C686391A86265FACE952FF738A9B985642C6D5" kind="Member Function" line="968" name="GetTokenId" returnType="bec36ecc-7c9b-74a3-2072-8d462d845c77" specifiers="public">
       <parameters>
-       <parameter id="parameter_ruleIndex_1DD71FC81B0EECD6F15C241AC6DAF12A22826F2D" name="ruleIndex" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
+       <parameter id="parameter_ruleIndex_1DD71FC81B0EECD6F15C241AC6DAF12A22826F2D" name="ruleIndex" type="430ebddc-b856-de58-60bc-16665e26ddb1"/>
       </parameters>
      </function>
-     <function docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_NextState_JsonLexer_9051B526F53E4056C3A171840D7161D134C47484" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_NextState_JsonLexer_9051B526F53E4056C3A171840D7161D134C47484" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="member_function_NextState_JsonLexer_9051B526F53E4056C3A171840D7161D134C47484" kind="Member Function" line="21" name="NextState" returnType="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65" specifiers="public override">
+     <function docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_NextState_JsonLexer_C8A5FBFC1CA230E4B45AE3DEC6F8674CFD7C9483" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_function_NextState_JsonLexer_C8A5FBFC1CA230E4B45AE3DEC6F8674CFD7C9483" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="member_function_NextState_JsonLexer_C8A5FBFC1CA230E4B45AE3DEC6F8674CFD7C9483" kind="Member Function" line="20" name="NextState" returnType="430ebddc-b856-de58-60bc-16665e26ddb1" specifiers="public override">
       <parameters>
-       <parameter id="parameter_state_30CA96F99F9743E7115275BDEC6E9CE2A97CB6CA" name="state" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
-       <parameter id="parameter_c_2D201612FC55FADE45F8CCDE43DDB461243F90D9" name="c" type="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+       <parameter id="parameter_state_30CA96F99F9743E7115275BDEC6E9CE2A97CB6CA" name="state" type="430ebddc-b856-de58-60bc-16665e26ddb1"/>
+       <parameter id="parameter_c_2D201612FC55FADE45F8CCDE43DDB461243F90D9" name="c" type="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
       </parameters>
      </function>
     </functions>
@@ -339,40 +339,40 @@
      <variable docPath="../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_variable_vars_724AB30DB36B4401FA0E670A1D9644082DD43686" extPath="System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html#member_variable_vars_724AB30DB36B4401FA0E670A1D9644082DD43686" id="member_variable_vars_724AB30DB36B4401FA0E670A1D9644082DD43686" name="vars" specifiers="public" type="class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2"/>
     </variables>
    </class>
-   <class docPath="../../System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html" extPath="System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2" line="1050" name="JsonLexer_Variables" specifiers="public">
+   <class docPath="../../System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html" extPath="System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2" line="1049" name="JsonLexer_Variables" specifiers="public">
     <ctorsDtors>
-     <ctorDtor docPath="../../System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html#default_constructor_JsonLexer_Variables_93380E9BAD71FEDE35109F748AB4332EED283459" extPath="System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html#default_constructor_JsonLexer_Variables_93380E9BAD71FEDE35109F748AB4332EED283459" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="default_constructor_JsonLexer_Variables_93380E9BAD71FEDE35109F748AB4332EED283459" kind="Constructor" line="1052" name="JsonLexer_Variables" specifiers="public"/>
+     <ctorDtor docPath="../../System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html#default_constructor_JsonLexer_Variables_CFE45F005A82724B2611AC293261060150DFDC7B" extPath="System.Json/doc/class_JsonLexer_Variables_1ED478C2B0F21F330E40A744026FA939FDE8E7C2.html#default_constructor_JsonLexer_Variables_CFE45F005A82724B2611AC293261060150DFDC7B" fileName="System.Json/JsonLexer.cm" filePath="../../System.Json/file/JsonLexer.cm.html" id="default_constructor_JsonLexer_Variables_CFE45F005A82724B2611AC293261060150DFDC7B" kind="Constructor" line="1051" name="JsonLexer_Variables" specifiers="public"/>
     </ctorsDtors>
    </class>
-   <class docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html" extPath="System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4" line="8" name="JsonParser" specifiers="public static">
+   <class docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html" extPath="System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054" line="8" name="JsonParser" specifiers="public static">
     <templateParameters>
-     <templateParameter docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#ecbf5ed8-5340-ea15-2c13-acf1236ec193" id="ecbf5ed8-5340-ea15-2c13-acf1236ec193" name="LexerT"/>
+     <templateParameter docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#e2441886-d6fe-64d4-f652-37cac045e6d8" id="e2441886-d6fe-64d4-f652-37cac045e6d8" name="LexerT"/>
     </templateParameters>
     <functions>
-     <function docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Array_JsonParser_3F0B570B9D193C4DB71316C65570D811DF72E3FD" extPath="System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Array_JsonParser_3F0B570B9D193C4DB71316C65570D811DF72E3FD" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Array_JsonParser_3F0B570B9D193C4DB71316C65570D811DF72E3FD" kind="Static Member Function" line="721" name="Array" returnType="f42c3c5c-68fd-c0d2-643a-455643c58a82" specifiers="public static">
+     <function docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Array_JsonParser_8CC3EA4D7AF683E5AEE8524C556DCEE5CACC35BF" extPath="System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Array_JsonParser_8CC3EA4D7AF683E5AEE8524C556DCEE5CACC35BF" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Array_JsonParser_8CC3EA4D7AF683E5AEE8524C556DCEE5CACC35BF" kind="Static Member Function" line="721" name="Array" returnType="9b018068-e345-0cd1-339a-89412cf9d50d" specifiers="public static">
       <parameters>
-       <parameter id="parameter_lexer_EED8A89F2D71751604CB95D288A2558A7F7BE389" name="lexer" type="ebbb599e-0661-f5b9-e82e-3df7d8756542"/>
+       <parameter id="parameter_lexer_EED8A89F2D71751604CB95D288A2558A7F7BE389" name="lexer" type="cbe1e40c-e9a1-7818-0093-8872357554d9"/>
       </parameters>
      </function>
-     <function docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Field_JsonParser_874E056B5A2F1F73DE9838A7E71DEEA0E5CE0959" extPath="System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Field_JsonParser_874E056B5A2F1F73DE9838A7E71DEEA0E5CE0959" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Field_JsonParser_874E056B5A2F1F73DE9838A7E71DEEA0E5CE0959" kind="Static Member Function" line="573" name="Field" returnType="f42c3c5c-68fd-c0d2-643a-455643c58a82" specifiers="public static">
+     <function docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Field_JsonParser_98BEF06C7199BD0E4DB0A8AAF203AE25BD06A6EE" extPath="System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Field_JsonParser_98BEF06C7199BD0E4DB0A8AAF203AE25BD06A6EE" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Field_JsonParser_98BEF06C7199BD0E4DB0A8AAF203AE25BD06A6EE" kind="Static Member Function" line="573" name="Field" returnType="9b018068-e345-0cd1-339a-89412cf9d50d" specifiers="public static">
       <parameters>
-       <parameter id="parameter_lexer_3CF105A098680F5C74E9C17B9C79CA20100C5E7F" name="lexer" type="ebbb599e-0661-f5b9-e82e-3df7d8756542"/>
-       <parameter id="parameter_o_3479AF8CBF5167288CC71ADE89AB270ACA34A556" name="o" type="64541277-610a-561f-dfe9-42243bf40fc4"/>
+       <parameter id="parameter_lexer_3CF105A098680F5C74E9C17B9C79CA20100C5E7F" name="lexer" type="cbe1e40c-e9a1-7818-0093-8872357554d9"/>
+       <parameter id="parameter_o_3479AF8CBF5167288CC71ADE89AB270ACA34A556" name="o" type="4de64d1b-19f0-a4dc-acd8-49c0f81be37a"/>
       </parameters>
      </function>
-     <function docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Object_JsonParser_D41415497E5DF7BC5A1D861D719F74D712DB3111" extPath="System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Object_JsonParser_D41415497E5DF7BC5A1D861D719F74D712DB3111" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Object_JsonParser_D41415497E5DF7BC5A1D861D719F74D712DB3111" kind="Static Member Function" line="364" name="Object" returnType="f42c3c5c-68fd-c0d2-643a-455643c58a82" specifiers="public static">
+     <function docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Object_JsonParser_F693D26C67624D8A2619CFBDEBAE93E30148D562" extPath="System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Object_JsonParser_F693D26C67624D8A2619CFBDEBAE93E30148D562" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Object_JsonParser_F693D26C67624D8A2619CFBDEBAE93E30148D562" kind="Static Member Function" line="364" name="Object" returnType="9b018068-e345-0cd1-339a-89412cf9d50d" specifiers="public static">
       <parameters>
-       <parameter id="parameter_lexer_84DD7B616DD708338E56E380DDDC5FE395A5E5D7" name="lexer" type="ebbb599e-0661-f5b9-e82e-3df7d8756542"/>
+       <parameter id="parameter_lexer_84DD7B616DD708338E56E380DDDC5FE395A5E5D7" name="lexer" type="cbe1e40c-e9a1-7818-0093-8872357554d9"/>
       </parameters>
      </function>
-     <function docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Parse_JsonParser_45155BAA3488C974F41FBBFF0B0EBE610149607A" extPath="System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Parse_JsonParser_45155BAA3488C974F41FBBFF0B0EBE610149607A" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Parse_JsonParser_45155BAA3488C974F41FBBFF0B0EBE610149607A" kind="Static Member Function" line="10" name="Parse" returnType="dbc6095f-5deb-b299-9280-db670d99f7a8" specifiers="public static">
+     <function docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Parse_JsonParser_681A0D5F71AD573F0BC0480B4B8C21D76BF4ACA7" extPath="System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Parse_JsonParser_681A0D5F71AD573F0BC0480B4B8C21D76BF4ACA7" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Parse_JsonParser_681A0D5F71AD573F0BC0480B4B8C21D76BF4ACA7" kind="Static Member Function" line="10" name="Parse" returnType="5bfc0ff4-88fd-1293-d46d-7c50c184968b" specifiers="public static">
       <parameters>
-       <parameter id="parameter_lexer_7FEEDF067B2B0B73D75E37B3BCBD5D11EC498CA8" name="lexer" type="ebbb599e-0661-f5b9-e82e-3df7d8756542"/>
+       <parameter id="parameter_lexer_7FEEDF067B2B0B73D75E37B3BCBD5D11EC498CA8" name="lexer" type="cbe1e40c-e9a1-7818-0093-8872357554d9"/>
       </parameters>
      </function>
-     <function docPath="../../System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Value_JsonParser_04ECFFFCAAA135C7C74255A6E033539D9F94E025" extPath="System.Json/doc/class_JsonParser_AEF18212B0B9E4289864C66D44434FDC116A3FC4.html#member_function_Value_JsonParser_04ECFFFCAAA135C7C74255A6E033539D9F94E025" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Value_JsonParser_04ECFFFCAAA135C7C74255A6E033539D9F94E025" kind="Static Member Function" line="63" name="Value" returnType="f42c3c5c-68fd-c0d2-643a-455643c58a82" specifiers="public static">
+     <function docPath="../../System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Value_JsonParser_88E533A93C9562F7C4B4A67639CF357885BBACA5" extPath="System.Json/doc/class_JsonParser_D795BE24FE737A7E6035ADDC9BFE3D18B7EAC054.html#member_function_Value_JsonParser_88E533A93C9562F7C4B4A67639CF357885BBACA5" fileName="System.Json/Json.parser.cm" filePath="../../System.Json/file/Json.parser.cm.html" id="member_function_Value_JsonParser_88E533A93C9562F7C4B4A67639CF357885BBACA5" kind="Static Member Function" line="63" name="Value" returnType="9b018068-e345-0cd1-339a-89412cf9d50d" specifiers="public static">
       <parameters>
-       <parameter id="parameter_lexer_0CF8FC09D1D923416C1CFB1ACF76E835149FA5A8" name="lexer" type="ebbb599e-0661-f5b9-e82e-3df7d8756542"/>
+       <parameter id="parameter_lexer_0CF8FC09D1D923416C1CFB1ACF76E835149FA5A8" name="lexer" type="cbe1e40c-e9a1-7818-0093-8872357554d9"/>
       </parameters>
      </function>
     </functions>
@@ -380,186 +380,186 @@
   </classes>
  </namespace>
  <types>
-  <basicType id="0ca5ce73-e943-269d-f945-640fa675c6e0" name="long"/>
-  <basicType id="902235b0-efba-2ad9-45b6-babb217797a7" name="void"/>
-  <derivedType id="c173fb60-0f04-6210-62ed-5b49b0e06904" name="JsonValue*">
+  <basicType id="bec36ecc-7c9b-74a3-2072-8d462d845c77" name="long"/>
+  <basicType id="8777ca8f-5398-93c3-ea20-1563d92ba213" name="void"/>
+  <derivedType id="f6caeb00-0008-d3cf-518d-4cc3c4d0769f" name="JsonValue*">
    <derivation baseType="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A"/>
    <derivation name="*"/>
   </derivedType>
-  <specialization id="e5123753-9752-ef93-111e-6ef18d41290f" name="UniquePtr" primaryType="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <specialization id="5f8f2583-7ee3-f19a-b100-25b6a869e472" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
    <templateArgumentTypes>
     <templateArgumentType ref="class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="ab42fdff-5f58-f451-a470-4a5ce5d04382" name="UniquePtr&lt;System.Json.JsonValue>&amp;&amp;">
-   <derivation baseType="e5123753-9752-ef93-111e-6ef18d41290f"/>
+  <derivedType id="fb217b33-f314-1e52-0ca2-2088276dc476" name="UniquePtr&lt;System.Json.JsonValue>&amp;&amp;">
+   <derivation baseType="5f8f2583-7ee3-f19a-b100-25b6a869e472"/>
    <derivation name="&amp;&amp;"/>
   </derivedType>
-  <basicType id="f438d5eb-c88c-615c-997d-7be9a1bfaabe" name="char"/>
-  <specialization id="6d955a40-5c5c-8f8d-c763-2d0773377025" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="71deeca3-c526-ba5e-237c-e3ab9da2f27d" name="char"/>
+  <specialization id="acdc0ed1-0739-8d0a-4865-9e164302ea51" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
    <templateArgumentTypes>
-    <templateArgumentType ref="f438d5eb-c88c-615c-997d-7be9a1bfaabe"/>
+    <templateArgumentType ref="71deeca3-c526-ba5e-237c-e3ab9da2f27d"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="c632db8b-22ae-7acd-2bbb-dc9b36635fba" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="1dd9b96c-e305-22fd-d39f-e2c01d0a1662" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="6d955a40-5c5c-8f8d-c763-2d0773377025"/>
+    <templateArgumentType ref="acdc0ed1-0739-8d0a-4865-9e164302ea51"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="459b4621-91d8-c8e8-2760-c3c17c571c11" name="bool"/>
-  <specialization id="69bba3b1-c597-d58d-e839-ac55e1802420" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="1a4f2385-895c-688b-95ec-4436e3b909c5" name="bool"/>
+  <specialization id="00e9c1dc-24fc-cb89-fb3b-660a84d38149" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
+    <templateArgumentType ref="1a4f2385-895c-688b-95ec-4436e3b909c5"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="faabf0a1-f06d-c9d2-51a6-bd5cdfb5a01f" name="CodeFormatter&amp;">
+  <derivedType id="4f438b0e-2dd0-e93d-c063-c551c4cbb68c" name="CodeFormatter&amp;">
    <derivation baseType="class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="9bc84f80-27a6-f1b1-e4eb-63c51968c7e8" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <specialization id="2d18d300-427a-e23b-2d3d-5586155da1cd" name="List" primaryType="class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894">
    <templateArgumentTypes>
-    <templateArgumentType ref="e5123753-9752-ef93-111e-6ef18d41290f"/>
+    <templateArgumentType ref="5f8f2583-7ee3-f19a-b100-25b6a869e472"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="958ef888-762a-f0e8-2306-f788cfe0fa86" name="double"/>
-  <derivedType id="0e994faf-3e1d-f80c-f710-ccafa378ea07" name="const String&lt;char>&amp;">
+  <basicType id="f26920d6-5a84-16e9-a439-8bea6a1b2876" name="double"/>
+  <derivedType id="3f74d132-c57d-199c-0ed3-1bf58636d297" name="const String&lt;char>&amp;">
    <derivation name="const"/>
-   <derivation baseType="6d955a40-5c5c-8f8d-c763-2d0773377025"/>
+   <derivation baseType="acdc0ed1-0739-8d0a-4865-9e164302ea51"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="2821d8bd-8f76-3dd8-6265-d9a5837c6a05" name="uchar"/>
-  <specialization id="67bf9c82-9b3e-dc4f-bac3-7daa3a50e9fb" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="65a3ba3f-2981-8253-2b70-4b2f42c66bb8" name="uchar"/>
+  <specialization id="594fd4da-bd0d-f8d7-8a83-43fb9efd3bcd" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
    <templateArgumentTypes>
-    <templateArgumentType ref="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+    <templateArgumentType ref="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="04b3896d-f97f-abce-8ab0-9c02ea1f73d9" name="const String&lt;uchar>&amp;">
+  <derivedType id="cae70b39-7f49-6c41-cc35-c6185bc9030b" name="const String&lt;uchar>&amp;">
    <derivation name="const"/>
-   <derivation baseType="67bf9c82-9b3e-dc4f-bac3-7daa3a50e9fb"/>
+   <derivation baseType="594fd4da-bd0d-f8d7-8a83-43fb9efd3bcd"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="40f4b007-a6e2-c5ec-3fcb-34a430105b5e" name="wchar"/>
-  <specialization id="0f8b7ae0-fb69-2b06-f6cc-5217d2630a26" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="983afee0-0322-a41c-7abc-bbca793aa9d7" name="wchar"/>
+  <specialization id="f47a9578-7ed6-3442-17fa-c54cfea04371" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
    <templateArgumentTypes>
-    <templateArgumentType ref="40f4b007-a6e2-c5ec-3fcb-34a430105b5e"/>
+    <templateArgumentType ref="983afee0-0322-a41c-7abc-bbca793aa9d7"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="6c876f0f-9928-5c87-c6bf-b3bf022c9004" name="const String&lt;wchar>&amp;">
+  <derivedType id="67d24a9b-bc92-a0d4-514c-40af3b947bb7" name="const String&lt;wchar>&amp;">
    <derivation name="const"/>
-   <derivation baseType="0f8b7ae0-fb69-2b06-f6cc-5217d2630a26"/>
+   <derivation baseType="f47a9578-7ed6-3442-17fa-c54cfea04371"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="583ab9ea-0260-0389-9775-3ee97990253b" name="Less" primaryType="class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B">
+  <specialization id="676b3506-7cba-6029-9372-bc5e9974f7fb" name="Less" primaryType="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57">
    <templateArgumentTypes>
-    <templateArgumentType ref="67bf9c82-9b3e-dc4f-bac3-7daa3a50e9fb"/>
+    <templateArgumentType ref="594fd4da-bd0d-f8d7-8a83-43fb9efd3bcd"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="aaa00fc9-0f32-d873-0163-19ac645517b9" name="Map" primaryType="class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
+  <specialization id="3c6e2d9c-bef1-f810-c079-3234209487b0" name="Map" primaryType="class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043">
    <templateArgumentTypes>
-    <templateArgumentType ref="67bf9c82-9b3e-dc4f-bac3-7daa3a50e9fb"/>
-    <templateArgumentType ref="c173fb60-0f04-6210-62ed-5b49b0e06904"/>
-    <templateArgumentType ref="583ab9ea-0260-0389-9775-3ee97990253b"/>
+    <templateArgumentType ref="594fd4da-bd0d-f8d7-8a83-43fb9efd3bcd"/>
+    <templateArgumentType ref="f6caeb00-0008-d3cf-518d-4cc3c4d0769f"/>
+    <templateArgumentType ref="676b3506-7cba-6029-9372-bc5e9974f7fb"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="ada4088f-5a13-c7df-c55e-88aa9f4eb368" name="Map&lt;String&lt;uchar>, JsonValue*, Less&lt;String&lt;uchar>>>&amp;">
-   <derivation baseType="aaa00fc9-0f32-d873-0163-19ac645517b9"/>
+  <derivedType id="15cbd116-81ae-e4dc-36b8-8d8cd5a435b1" name="Map&lt;String&lt;uchar>, JsonValue*, Less&lt;String&lt;uchar>>>&amp;">
+   <derivation baseType="3c6e2d9c-bef1-f810-c079-3234209487b0"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="c9ac1a26-6d73-aff2-3110-f804b41a8d9b" name="const Map&lt;String&lt;uchar>, JsonValue*, Less&lt;String&lt;uchar>>>&amp;">
+  <derivedType id="afc6f27f-7cb5-6c86-86cf-b7d7e5a0bf76" name="const Map&lt;String&lt;uchar>, JsonValue*, Less&lt;String&lt;uchar>>>&amp;">
    <derivation name="const"/>
-   <derivation baseType="aaa00fc9-0f32-d873-0163-19ac645517b9"/>
+   <derivation baseType="3c6e2d9c-bef1-f810-c079-3234209487b0"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="eaed6b7e-95f8-4c35-939b-55b0fd308a14" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="c9b934a6-651f-ca8d-4ae4-7651906fd1c2" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="c173fb60-0f04-6210-62ed-5b49b0e06904"/>
+    <templateArgumentType ref="f6caeb00-0008-d3cf-518d-4cc3c4d0769f"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="03d8cde9-6e1d-53db-9878-59dab988bd8e" name="JsonString&amp;">
+  <derivedType id="4a018af4-d96f-40ca-6e00-9670fafdda84" name="JsonString&amp;">
    <derivation baseType="class_JsonString_5806452F49D8C71DEDC42FCEB48EC3A2163F7516"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="896a4512-0d95-6ffb-9703-ce5eb9f2a896" name="const uchar*">
+  <derivedType id="ebacd204-6f77-d5d2-153d-a467079cbaad" name="const uchar*">
    <derivation name="const"/>
-   <derivation baseType="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+   <derivation baseType="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
    <derivation name="*"/>
   </derivedType>
-  <specialization id="32a02ed5-ea67-3e7e-1aef-c3edb2c57391" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="db31f12a-8cff-64e7-f7f9-f3467113a637" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="0f8b7ae0-fb69-2b06-f6cc-5217d2630a26"/>
+    <templateArgumentType ref="f47a9578-7ed6-3442-17fa-c54cfea04371"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="e9387c96-a76a-fbdd-bd28-6d6f00b145c5" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="eb074d64-acda-3a31-207e-ecacc8fd50f4" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+    <templateArgumentType ref="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="4cce6a06-5a46-8e09-2d20-69458306e68f" name="const uchar*&amp;">
+  <derivedType id="a736748e-b539-3d7f-61ab-e1270544b5cf" name="const uchar*&amp;">
    <derivation name="const"/>
-   <derivation baseType="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+   <derivation baseType="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
    <derivation name="*"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="2a49f959-7f94-6110-9f12-79cdeb1924a7" name="const Token&amp;">
+  <derivedType id="652e879a-6309-cd31-54f7-17c1091e0cc7" name="const Token&amp;">
    <derivation name="const"/>
    <derivation baseType="class_Token_E6EEFBE84F923BCFEB8C1E58441CCE09B4F77A1E"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="2f25dffb-da57-2274-a658-48a37867ced4" name="uchar&amp;">
-   <derivation baseType="2821d8bd-8f76-3dd8-6265-d9a5837c6a05"/>
+  <derivedType id="4c0646b5-16de-9e9f-ddb1-f497b7f6d9b9" name="uchar&amp;">
+   <derivation baseType="65a3ba3f-2981-8253-2b70-4b2f42c66bb8"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="dbc6095f-5deb-b299-9280-db670d99f7a8" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="5bfc0ff4-88fd-1293-d46d-7c50c184968b" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="e5123753-9752-ef93-111e-6ef18d41290f"/>
+    <templateArgumentType ref="5f8f2583-7ee3-f19a-b100-25b6a869e472"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="dadb9bf0-c244-68bf-82c4-eae9167b3fe0" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="71f319fc-dea8-c469-a993-51d48f922be1" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="958ef888-762a-f0e8-2306-f788cfe0fa86"/>
+    <templateArgumentType ref="f26920d6-5a84-16e9-a439-8bea6a1b2876"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="f09b694a-4de6-2aa4-3bc7-60edb89334a6" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="042b06db-4e5d-cb8b-de85-7361dd60cfac" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="67bf9c82-9b3e-dc4f-bac3-7daa3a50e9fb"/>
+    <templateArgumentType ref="594fd4da-bd0d-f8d7-8a83-43fb9efd3bcd"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="57064ac1-2e15-e99e-d5e9-9d2977e136d2" name="Less" primaryType="class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B">
+  <specialization id="80331333-b920-3814-8e89-c6de751b542c" name="Less" primaryType="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57">
    <templateArgumentTypes>
-    <templateArgumentType ref="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
+    <templateArgumentType ref="bec36ecc-7c9b-74a3-2072-8d462d845c77"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="da7cd4c8-8d84-f1f4-bc69-c5e8f0fe16bd" name="Map" primaryType="class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
+  <specialization id="8d3ad19f-a4aa-185e-c9c9-1a4a333f08ad" name="Map" primaryType="class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043">
    <templateArgumentTypes>
-    <templateArgumentType ref="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
-    <templateArgumentType ref="6d955a40-5c5c-8f8d-c763-2d0773377025"/>
-    <templateArgumentType ref="57064ac1-2e15-e99e-d5e9-9d2977e136d2"/>
+    <templateArgumentType ref="bec36ecc-7c9b-74a3-2072-8d462d845c77"/>
+    <templateArgumentType ref="acdc0ed1-0739-8d0a-4865-9e164302ea51"/>
+    <templateArgumentType ref="80331333-b920-3814-8e89-c6de751b542c"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="1f3f5bce-3807-cbfa-bd41-a2bde124eadd" name="Map&lt;long, String&lt;char>, Less&lt;long>>*">
-   <derivation baseType="da7cd4c8-8d84-f1f4-bc69-c5e8f0fe16bd"/>
+  <derivedType id="b9389acd-1f47-c785-47f3-cf594661537f" name="Map&lt;long, String&lt;char>, Less&lt;long>>*">
+   <derivation baseType="8d3ad19f-a4aa-185e-c9c9-1a4a333f08ad"/>
    <derivation name="*"/>
   </derivedType>
-  <derivedType id="8066c663-8241-43a4-08d4-89fc7ea7bb96" name="RuleNameMap&amp;">
-   <derivation baseType="class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622"/>
+  <derivedType id="acc03dd6-87ce-f22b-b1fb-d8684f8bd7e7" name="RuleNameMap&amp;">
+   <derivation baseType="class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="1a39c9fd-eb97-1a85-6ee5-80be67802007" name="UniquePtr" primaryType="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <specialization id="2c61ef59-3dbc-7a0f-8995-e54c60fb225a" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
    <templateArgumentTypes>
-    <templateArgumentType ref="class_RuleNameMap_5E5CE53B4ED5192D16427AFD92D1BEA096339622"/>
+    <templateArgumentType ref="class_RuleNameMap_9763DFF75ABDDCEE6F8798C2CC9E038D0A46DE52"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65" name="int"/>
-  <specialization id="f42c3c5c-68fd-c0d2-643a-455643c58a82" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="430ebddc-b856-de58-60bc-16665e26ddb1" name="int"/>
+  <specialization id="9b018068-e345-0cd1-339a-89412cf9d50d" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
     <templateArgumentType ref="class_Match_8CAD3F31E55BF89759E532BC45ED68EEC7D916A5"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="ebbb599e-0661-f5b9-e82e-3df7d8756542" name="LexerT&amp;">
-   <derivation baseType="ecbf5ed8-5340-ea15-2c13-acf1236ec193"/>
+  <derivedType id="cbe1e40c-e9a1-7818-0093-8872357554d9" name="LexerT&amp;">
+   <derivation baseType="e2441886-d6fe-64d4-f652-37cac045e6d8"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="64541277-610a-561f-dfe9-42243bf40fc4" name="JsonObject*">
+  <derivedType id="4de64d1b-19f0-a4dc-acd8-49c0f81be37a" name="JsonObject*">
    <derivation baseType="class_JsonObject_1ACA524ABF05C4E15B709275F66F3BF5C165B69D"/>
    <derivation name="*"/>
   </derivedType>

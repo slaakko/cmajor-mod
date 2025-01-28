@@ -1,0 +1,39 @@
+<symbolTable id="interface_example" module="interface_example">
+ <files>
+  <file name="interface_example/interface.cm" path="file/interface.cm.html"/>
+ </files>
+ <namespace docPath="../../interface_example/doc/ns_.html" extPath="interface_example/doc/ns_.html" id="ns_" name="">
+  <classes>
+   <class docPath="../../interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html" extPath="interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html" fileName="interface_example/interface.cm" filePath="../../interface_example/file/interface.cm.html" id="class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80" line="8" name="Fooer" specifiers="public">
+    <ctorsDtors>
+     <ctorDtor docPath="../../interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html#default_constructor_Fooer_92A92EFFC6C7CAE92AB6F3A156E058858CCEE87C" extPath="interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html#default_constructor_Fooer_92A92EFFC6C7CAE92AB6F3A156E058858CCEE87C" fileName="interface_example/interface.cm" filePath="../../interface_example/file/interface.cm.html" id="default_constructor_Fooer_92A92EFFC6C7CAE92AB6F3A156E058858CCEE87C" kind="Constructor" line="10" name="Fooer" specifiers="public"/>
+    </ctorsDtors>
+    <functions>
+     <function docPath="../../interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html#member_function_Foo_Fooer_511869AC93E61146FEEFF9217A85C17814B10A36" extPath="interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html#member_function_Foo_Fooer_511869AC93E61146FEEFF9217A85C17814B10A36" fileName="interface_example/interface.cm" filePath="../../interface_example/file/interface.cm.html" id="member_function_Foo_Fooer_511869AC93E61146FEEFF9217A85C17814B10A36" kind="Member Function" line="13" name="Foo" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
+    </functions>
+    <variables>
+     <variable docPath="../../interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html#member_variable_foo_E39227DB64F24CA3D92D80133737B72C68ED42E7" extPath="interface_example/doc/class_Fooer_6B77661A5B68AFD2DA68BB9A6C787CCA8CDFBB80.html#member_variable_foo_E39227DB64F24CA3D92D80133737B72C68ED42E7" id="member_variable_foo_E39227DB64F24CA3D92D80133737B72C68ED42E7" name="foo" specifiers="private" type="e81e002a-b66a-aa2b-528a-b6e5b9c4706b"/>
+    </variables>
+   </class>
+  </classes>
+  <interfaces>
+   <interface docPath="../../interface_example/doc/0471f7a3-2c0c-8c43-8c02-d48bc4e5fd96.html" extPath="interface_example/doc/0471f7a3-2c0c-8c43-8c02-d48bc4e5fd96.html" fileName="interface_example/interface.cm" filePath="../../interface_example/file/interface.cm.html" id="0471f7a3-2c0c-8c43-8c02-d48bc4e5fd96" line="3" name="Fooable" specifiers="public">
+    <functions>
+     <function docPath="../../interface_example/doc/0471f7a3-2c0c-8c43-8c02-d48bc4e5fd96.html#member_function_Foo_Fooable_D5A918B402AE00033CDDDBE6D87772BA952E1543" extPath="interface_example/doc/0471f7a3-2c0c-8c43-8c02-d48bc4e5fd96.html#member_function_Foo_Fooable_D5A918B402AE00033CDDDBE6D87772BA952E1543" fileName="interface_example/interface.cm" filePath="../../interface_example/file/interface.cm.html" id="member_function_Foo_Fooable_D5A918B402AE00033CDDDBE6D87772BA952E1543" kind="Member Function" line="5" name="Foo" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+    </functions>
+   </interface>
+  </interfaces>
+  <functions>
+   <function docPath="../../interface_example/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="interface_example/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="interface_example/interface.cm" filePath="../../interface_example/file/interface.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="20" name="main" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
+  <basicType id="10040615-24b0-c4b1-8aba-e3acc70a458a" name="char"/>
+  <specialization id="e81e002a-b66a-aa2b-528a-b6e5b9c4706b" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
+   <templateArgumentTypes>
+    <templateArgumentType ref="10040615-24b0-c4b1-8aba-e3acc70a458a"/>
+   </templateArgumentTypes>
+  </specialization>
+ </types>
+</symbolTable>

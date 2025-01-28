@@ -6,21 +6,26 @@
  </head>
  <body>
   <h1>HexDump Module</h1>
+  <span class="indent">
+   <a href="#files">Files</a>
+    | <a href="#functions">Functions</a>
+    | <a href="#constants">Constants</a>
+  </span>
   <p class="description" xml:space="preserve">Prints hexadecimal dump of a file to console.</p>
-  <h2>Files</h2>
+  <h2 id="files">Files</h2>
   <table>
    <tr>
     <td xml:space="preserve"><a href="file/main.cm.html">HexDump/main.cm</a></td>
    </tr>
   </table>
-  <h2>Functions</h2>
+  <h2 id="functions">Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="doc/../../HexDump/doc/../index.html#function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170">HexDump</a>(<span class="kw">const</span>&nbsp;<a href="doc/../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><a href="doc/../../../../../system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="doc/../../HexDump/doc/../index.html#function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170">HexDump</a>(<span class="kw">const</span>&nbsp;<a href="doc/../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><a href="doc/../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td class="rightAlignedCol" xml:space="preserve"><a href="doc/../../../../../system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&lt;<a href="doc/../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">char</span>>></td>
     <td xml:space="preserve"><a href="doc/../../HexDump/doc/../index.html#function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09">HexDumpLine</a>(<span class="kw">uint</span>&nbsp;addr, <span class="kw">byte</span>*&nbsp;bytes, <span class="kw">uint</span>&nbsp;numBytes)</td>
    </tr>
    <tr>
@@ -32,23 +37,23 @@
     <td xml:space="preserve"><a href="doc/../../HexDump/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC">main</a>(<span class="kw">int</span>&nbsp;argc, <span class="kw">const</span>&nbsp;<span class="kw">char</span>**&nbsp;argv)</td>
    </tr>
   </table>
-  <h2>Constants</h2>
+  <h2 id="constants">Constants</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">const</span>&nbsp;<span class="kw">uint</span></td>
-    <td xml:space="preserve">bytesInLine = 16u</td>
+    <td class="rightAlignedCol" id="constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" xml:space="preserve"><span class="kw">const</span>&nbsp;<span class="kw">uint</span>&nbsp;bytesInLine</td>
+    <td xml:space="preserve">16u</td>
    </tr>
   </table>
   <h2>Function Details</h2>
   <h3 id="function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" xml:space="preserve">HexDump&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">void</span>&nbsp;HexDump(<span class="kw">const</span>&nbsp;<a href="doc/../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName)</h4>
+  <h4 xml:space="preserve"><a href="doc/../../../../../system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;HexDump(<span class="kw">const</span>&nbsp;<a href="doc/../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../HexDump/file/main.cm.html#54">54</a>&nbsp;of&nbsp;<a href="doc/../../HexDump/file/main.cm.html">HexDump/main.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../HexDump/file/main.cm.html#65">65</a>&nbsp;of&nbsp;<a href="doc/../../HexDump/file/main.cm.html">HexDump/main.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" xml:space="preserve">HexDumpLine&nbsp;Function</h3>
-  <h4 xml:space="preserve"><a href="doc/../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;HexDumpLine(<span class="kw">uint</span>&nbsp;addr, <span class="kw">byte</span>*&nbsp;bytes, <span class="kw">uint</span>&nbsp;numBytes)</h4>
+  <h4 xml:space="preserve"><a href="doc/../../../../../system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&lt;<a href="doc/../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">char</span>>>&nbsp;HexDumpLine(<span class="kw">uint</span>&nbsp;addr, <span class="kw">byte</span>*&nbsp;bytes, <span class="kw">uint</span>&nbsp;numBytes)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../HexDump/file/main.cm.html#15">15</a>&nbsp;of&nbsp;<a href="doc/../../HexDump/file/main.cm.html">HexDump/main.cm</a></span>
   <br/>
@@ -64,7 +69,7 @@
   <h3 id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" xml:space="preserve">main&nbsp;Function</h3>
   <h4 xml:space="preserve"><span class="kw">int</span>&nbsp;main(<span class="kw">int</span>&nbsp;argc, <span class="kw">const</span>&nbsp;<span class="kw">char</span>**&nbsp;argv)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../HexDump/file/main.cm.html#84">84</a>&nbsp;of&nbsp;<a href="doc/../../HexDump/file/main.cm.html">HexDump/main.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../HexDump/file/main.cm.html#133">133</a>&nbsp;of&nbsp;<a href="doc/../../HexDump/file/main.cm.html">HexDump/main.cm</a></span>
   <br/>
   <br/>
   <hr/>

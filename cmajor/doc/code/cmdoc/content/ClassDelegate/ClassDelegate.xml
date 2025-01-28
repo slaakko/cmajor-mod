@@ -6,18 +6,18 @@
   <classes>
    <class docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799" line="3" name="Alpha" specifiers="public">
     <functions>
-     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_bar_Alpha_FEA08D80314C738D9BE8F81D76714B1FF5AF5118" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_bar_Alpha_FEA08D80314C738D9BE8F81D76714B1FF5AF5118" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_bar_Alpha_FEA08D80314C738D9BE8F81D76714B1FF5AF5118" kind="Member Function" line="9" name="bar" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public">
+     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_bar_Alpha_6BEA8501181A5D7602EE0E9AE24522B8AF590C8C" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_bar_Alpha_6BEA8501181A5D7602EE0E9AE24522B8AF590C8C" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_bar_Alpha_6BEA8501181A5D7602EE0E9AE24522B8AF590C8C" kind="Member Function" line="9" name="bar" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public">
       <parameters>
-       <parameter id="parameter_x_546F6F19267D5D4F4B70485ECE6D9F77D98DE9B1" name="x" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
+       <parameter id="parameter_x_546F6F19267D5D4F4B70485ECE6D9F77D98DE9B1" name="x" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
       </parameters>
      </function>
-     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_baz_Alpha_FF7D232A228C2DFDFA9A7469654DA9481EB36FAD" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_baz_Alpha_FF7D232A228C2DFDFA9A7469654DA9481EB36FAD" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_baz_Alpha_FF7D232A228C2DFDFA9A7469654DA9481EB36FAD" kind="Member Function" line="13" name="baz" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public"/>
-     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_foo_Alpha_DB6600428AB7A0480A09BB04999D6EF90F67BBD8" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_foo_Alpha_DB6600428AB7A0480A09BB04999D6EF90F67BBD8" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_foo_Alpha_DB6600428AB7A0480A09BB04999D6EF90F67BBD8" kind="Member Function" line="5" name="foo" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public">
+     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_baz_Alpha_51B7B92EADAB1FE36323478B4848C865F378B052" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_baz_Alpha_51B7B92EADAB1FE36323478B4848C865F378B052" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_baz_Alpha_51B7B92EADAB1FE36323478B4848C865F378B052" kind="Member Function" line="13" name="baz" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
+     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_foo_Alpha_CB69BDA88D2FC753C747AC21D066339ED383E797" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_foo_Alpha_CB69BDA88D2FC753C747AC21D066339ED383E797" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_foo_Alpha_CB69BDA88D2FC753C747AC21D066339ED383E797" kind="Member Function" line="5" name="foo" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public">
       <parameters>
-       <parameter id="parameter_x_C5F4928A86AE8F1D2CC3A0114F849E93744AB856" name="x" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
+       <parameter id="parameter_x_C5F4928A86AE8F1D2CC3A0114F849E93744AB856" name="x" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
       </parameters>
      </function>
-     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_fuz_Alpha_477D76811BC04BB7BC840E658D55AF63CBB84C28" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_fuz_Alpha_477D76811BC04BB7BC840E658D55AF63CBB84C28" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_fuz_Alpha_477D76811BC04BB7BC840E658D55AF63CBB84C28" kind="Member Function" line="17" name="fuz" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public"/>
+     <function docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_fuz_Alpha_D218902B7F65DE4BC56E5EE8480E984946230F31" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_function_fuz_Alpha_D218902B7F65DE4BC56E5EE8480E984946230F31" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="member_function_fuz_Alpha_D218902B7F65DE4BC56E5EE8480E984946230F31" kind="Member Function" line="17" name="fuz" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
     </functions>
     <variables>
      <variable docPath="../../ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_variable_barDlg_D338982D90EE78E6EA37FF8FE2DD85A054EDCC86" extPath="ClassDelegate/doc/class_Alpha_938BA1E7FAFA2BEA1EEE3DEC88B6DCE5CDBC3799.html#member_variable_barDlg_D338982D90EE78E6EA37FF8FE2DD85A054EDCC86" id="member_variable_barDlg_D338982D90EE78E6EA37FF8FE2DD85A054EDCC86" name="barDlg" specifiers="private" type="class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E"/>
@@ -25,18 +25,18 @@
    </class>
   </classes>
   <functions>
-   <function docPath="../../ClassDelegate/doc/../index.html#function_main_30D71DA93A80E84640D467E0841F28966485AC6A" extPath="ClassDelegate/doc/../index.html#function_main_30D71DA93A80E84640D467E0841F28966485AC6A" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="function_main_30D71DA93A80E84640D467E0841F28966485AC6A" kind="Function" line="24" name="main" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public"/>
+   <function docPath="../../ClassDelegate/doc/../index.html#function_main_30D71DA93A80E84640D467E0841F28966485AC6A" extPath="ClassDelegate/doc/../index.html#function_main_30D71DA93A80E84640D467E0841F28966485AC6A" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="function_main_30D71DA93A80E84640D467E0841F28966485AC6A" kind="Function" line="24" name="main" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
   </functions>
   <classDelegates>
-   <classDelegate docPath="../../ClassDelegate/doc/ns_.html#class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E" extPath="ClassDelegate/doc/ns_.html#class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E" line="1" name="ClassDelegate" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public">
+   <classDelegate docPath="../../ClassDelegate/doc/ns_.html#class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E" extPath="ClassDelegate/doc/ns_.html#class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E" fileName="ClassDelegate/class_delegate.cm" filePath="../../ClassDelegate/file/class_delegate.cm.html" id="class_delegate_ClassDelegate_FA275C112CE315DCED62C1FEB3E1107FD309126E" line="1" name="ClassDelegate" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public">
     <parameters>
-     <parameter id="parameter_x_11C090AAD769579C5FAFD3A360E6B35A6DB00581" name="x" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
+     <parameter id="parameter_x_11C090AAD769579C5FAFD3A360E6B35A6DB00581" name="x" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
     </parameters>
    </classDelegate>
   </classDelegates>
  </namespace>
  <types>
-  <basicType id="70d3e7e0-6b55-8aac-3977-5a026d7512c9" name="void"/>
-  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
+  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
  </types>
 </symbolTable>

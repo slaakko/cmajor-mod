@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -114,10 +114,6 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(functionInstanceNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
     cmajor::symbols::FunctionSymbol* functionSymbol = static_cast<cmajor::symbols::FunctionSymbol*>(symbol);
-    if (functionSymbol->GroupName() == U"EvaluateShiftLeft")
-    {
-        int x = 0;
-    }
     functionSymbol->SetLinkOnceOdrLinkage();
     functionSymbol->SetTemplateSpecialization();
     functionSymbol->SetFunctionTemplate(functionTemplate);

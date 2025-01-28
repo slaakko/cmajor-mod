@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -62,6 +62,8 @@ public:
     void* GetIrTypeForVoidPtrType() override;
     void* GetIrTypeForStructType(const std::vector<void*>& elementTypes) override;
     void* CreateDefaultIrValueForBool() override;
+    void* CreateTrue() override;
+    void* CreateFalse() override;
     void* CreateDefaultIrValueForSByte() override;
     void* CreateDefaultIrValueForByte() override;
     void* CreateDefaultIrValueForShort() override;

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -33,11 +33,15 @@ namespace binder
                 attribute->GetFullSpan(), symbol->FullSpan());
             return Result<bool>(ErrorId(errorId));
         }
-        public virtual void GenerateSymbols(AttributeNode* attribute, Symbol* symbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        [nodiscard]
+        public virtual Result<bool> GenerateSymbols(AttributeNode* attribute, Symbol* symbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
         {
+            return Result<bool>(true);
         }
-        public virtual void GenerateImplementation(AttributeNode* attribute, Symbol* symbol, StatementBinder* statementBinder)
+        [nodiscard]
+        public virtual Result<bool> GenerateImplementation(AttributeNode* attribute, Symbol* symbol, StatementBinder* statementBinder)
         {
+            return Result<bool>(true);
         }
         private ustring attributeName;
     }
@@ -50,6 +54,8 @@ namespace binder
             attributeProcessors.Add(UniquePtr<AttributeProcessor>(nodiscardAttributeProcessor));
             SystemDefaultAttributeProcessor* systemDefaultAttributeProcessor = new SystemDefaultAttributeProcessor();
             attributeProcessors.Add(UniquePtr<AttributeProcessor>(systemDefaultAttributeProcessor));
+            XmlAttributeProcessor* xmlAttributeProcessor = new XmlAttributeProcessor();
+            attributeProcessors.Add(UniquePtr<AttributeProcessor>(xmlAttributeProcessor));
             for (const auto& attributeProcessor : attributeProcessors)
             {
                 attributeProcessorMap[attributeProcessor->AttributeName()] = attributeProcessor.Get();
@@ -67,7 +73,8 @@ namespace binder
                     AttributeProcessor* processor = it->second;
                     Result<bool> result = processor->TypeCheck(attribute.Get(), symbol);
                     if (result.Error()) return result;
-                    processor->GenerateSymbols(attribute.Get(), symbol, boundCompileUnit, containerScope);
+                    result = processor->GenerateSymbols(attribute.Get(), symbol, boundCompileUnit, containerScope);
+                    if (result.Error()) return result;
                 }
                 else
                 {
@@ -92,7 +99,8 @@ namespace binder
                 if (it != attributeProcessorMap.End())
                 {
                     AttributeProcessor* processor = it->second;
-                    processor->GenerateImplementation(attribute.Get(), symbol, statementBinder);
+                    Result<bool> result = processor->GenerateImplementation(attribute.Get(), symbol, statementBinder);
+                    if (result.Error()) return result;
                 }
                 else
                 {

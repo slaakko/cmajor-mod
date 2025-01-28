@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,7 +12,7 @@ import util;
 
 namespace cmajor::masm::intermediate {
 
-Context::Context() : compileUnit(), inlineDepth(4), flags(ContextFlags::none), functionsInlined(0), totalFunctions(0)
+Context::Context() : compileUnit(), inlineDepth(4), maxArithmeticOptimizationCount(8), flags(ContextFlags::none), functionsInlined(0), totalFunctions(0)
 {
     compileUnit.SetContext(this);
     types.SetContext(this);

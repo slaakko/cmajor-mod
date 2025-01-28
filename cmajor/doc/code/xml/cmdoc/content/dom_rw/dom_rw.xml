@@ -4,50 +4,50 @@
  </files>
  <namespace docPath="../../dom_rw/doc/ns_.html" extPath="dom_rw/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../dom_rw/doc/../index.html#function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" extPath="dom_rw/doc/../index.html#function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" kind="Function" line="5" name="CreateDoc" returnType="8c2ceabf-4db2-fd53-105d-cab7a5940af3" specifiers="public"/>
-   <function docPath="../../dom_rw/doc/../index.html#function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" extPath="dom_rw/doc/../index.html#function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" kind="Function" line="41" name="ReadDocFromFile" returnType="f47caa83-92af-4ed2-f642-ce3b13bac4ec" specifiers="public">
+   <function docPath="../../dom_rw/doc/../index.html#function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" extPath="dom_rw/doc/../index.html#function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" kind="Function" line="5" name="CreateDoc" returnType="86a1c558-de82-2c8b-8e76-03e1cab577cb" specifiers="public"/>
+   <function docPath="../../dom_rw/doc/../index.html#function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" extPath="dom_rw/doc/../index.html#function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" kind="Function" line="41" name="ReadDocFromFile" returnType="73b03c27-852d-ba87-f143-bfdcfebf6681" specifiers="public">
     <parameters>
-     <parameter id="parameter_fileMap_EA242DBB4A45E4B065B1F076043EAD2FDD88C834" name="fileMap" type="775746ce-efd1-3e2c-52c7-d940918df6c9"/>
+     <parameter id="parameter_fileMap_EA242DBB4A45E4B065B1F076043EAD2FDD88C834" name="fileMap" type="5f2382fe-1b03-1d22-70e9-f2291b8dc758"/>
     </parameters>
    </function>
-   <function docPath="../../dom_rw/doc/../index.html#function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" extPath="dom_rw/doc/../index.html#function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" kind="Function" line="53" name="WriteDocToConsole" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public">
+   <function docPath="../../dom_rw/doc/../index.html#function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" extPath="dom_rw/doc/../index.html#function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" kind="Function" line="53" name="WriteDocToConsole" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public">
     <parameters>
-     <parameter id="parameter_doc_C3AFA20C6264DA9CCEE0574A7BE0165F33547A9F" name="doc" type="3d6ca474-5458-2ef0-ae2d-ed5076e422c2"/>
+     <parameter id="parameter_doc_C3AFA20C6264DA9CCEE0574A7BE0165F33547A9F" name="doc" type="c2358647-6612-1362-3bd2-750efb81d619"/>
     </parameters>
    </function>
-   <function docPath="../../dom_rw/doc/../index.html#function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" extPath="dom_rw/doc/../index.html#function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" kind="Function" line="22" name="WriteDocToFile" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public">
+   <function docPath="../../dom_rw/doc/../index.html#function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" extPath="dom_rw/doc/../index.html#function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" kind="Function" line="22" name="WriteDocToFile" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public">
     <parameters>
-     <parameter id="parameter_doc_D0AE00B138D0A08820838071F34959FBF30178E9" name="doc" type="3d6ca474-5458-2ef0-ae2d-ed5076e422c2"/>
+     <parameter id="parameter_doc_D0AE00B138D0A08820838071F34959FBF30178E9" name="doc" type="c2358647-6612-1362-3bd2-750efb81d619"/>
     </parameters>
    </function>
-   <function docPath="../../dom_rw/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="dom_rw/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="66" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers=""/>
+   <function docPath="../../dom_rw/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="dom_rw/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="66" name="main" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers=""/>
   </functions>
  </namespace>
  <types>
-  <specialization id="8c2ceabf-4db2-fd53-105d-cab7a5940af3" name="UniquePtr" primaryType="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <specialization id="86a1c558-de82-2c8b-8e76-03e1cab577cb" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
    <templateArgumentTypes>
     <templateArgumentType ref="class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="f47caa83-92af-4ed2-f642-ce3b13bac4ec" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="73b03c27-852d-ba87-f143-bfdcfebf6681" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="8c2ceabf-4db2-fd53-105d-cab7a5940af3"/>
+    <templateArgumentType ref="86a1c558-de82-2c8b-8e76-03e1cab577cb"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="775746ce-efd1-3e2c-52c7-d940918df6c9" name="FileMap&amp;">
+  <derivedType id="5f2382fe-1b03-1d22-70e9-f2291b8dc758" name="FileMap&amp;">
    <derivation baseType="class_FileMap_00D83B1C90CC59AC4180663F35CB02A6FD057151"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="f55c3601-d0f6-1af1-ad65-52526a905bd2" name="bool"/>
-  <specialization id="4668fcba-a39a-f3fb-f385-70870f44d7f6" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="289f66e8-c348-8277-6767-6e549f2ba5ad" name="bool"/>
+  <specialization id="2dcbbcc2-b0e9-db01-7e13-356586243a27" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="f55c3601-d0f6-1af1-ad65-52526a905bd2"/>
+    <templateArgumentType ref="289f66e8-c348-8277-6767-6e549f2ba5ad"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="3d6ca474-5458-2ef0-ae2d-ed5076e422c2" name="Document*">
+  <derivedType id="c2358647-6612-1362-3bd2-750efb81d619" name="Document*">
    <derivation baseType="class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC"/>
    <derivation name="*"/>
   </derivedType>
-  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
  </types>
 </symbolTable>

@@ -1,0 +1,61 @@
+using System;
+
+// upper layer:
+
+// upper layer knows about lower layer but not vice versa.
+
+public abstract class UpperLayerComponentBase
+{
+    public abstract void SomeMember();
+}
+
+// the UpperLayerComponent class derives from the UpperLayerComponentBase class and implements the UpperLayerInterface interface.
+
+public class UpperLayerComponent : UpperLayerComponentBase, UpperLayerInterface
+{
+    // the UpperLayerComponent passes itself as an implementer of the UpperLayerInterface interface to the LowerLayerComponent:
+    public UpperLayerComponent() : lower(*this)
+    {
+    }
+    public override void SomeMember()
+    {
+        lower.ServiceForUpper(); // the UpperLayerComponent can call directly the member functions of the LowerLayerComponent
+        // ...
+    }
+    public void ServiceForLower()
+    {
+        // ...
+    }
+    private LowerLayerComponent lower;
+}
+
+// -----------------------------------------------
+
+// lower layer:
+
+// Lower layer does not need to know about upper layer. They might be in different libraries.
+
+public interface UpperLayerInterface
+{
+    void ServiceForLower();
+}
+
+// The LowerLayerComponent only need to know about UpperLayerInterface to call UpperLayerComponent.
+
+public class LowerLayerComponent
+{
+    public LowerLayerComponent(UpperLayerInterface upper_) : upper(upper_)
+    {
+    }
+    public void ServiceForUpper()
+    {
+        // ...
+    }
+    public void AnotherMember()
+    {
+        // the LowerLayerComponent can call the member functions of the UpperLayerInterface and thus it can indirectly call the UpperLayerComponent's ServiceForLower method
+        upper.ServiceForLower(); 
+        // ...
+    }
+    private UpperLayerInterface upper;
+}

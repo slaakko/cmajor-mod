@@ -18,4 +18,4 @@ project <System.Xml.Serialization/System.Xml.Serialization.cmp>;
 activeProject System.Windows;
 activeBackEnd=llvm;
 activeConfig=debug;
-activeOptLevel=2;
+activeOptLevel=0;

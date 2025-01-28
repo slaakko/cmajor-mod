@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -26,7 +26,7 @@ AboutDialog::AboutDialog() :
     std::u16string fontFamilyName = u"Segoe UI";
     wing::Font font(wing::FontFamily((const WCHAR*)fontFamilyName.c_str()), 14.0f, wing::FontStyle::FontStyleRegular, wing::Unit::UnitPoint);
     std::unique_ptr<wing::Label> label(new wing::Label(wing::LabelCreateParams().
-        Text("Cmajor Code version " + std::string(cmajorCodeVersion) + "\nCopyright (c) 2024 Seppo Laakko").Location(wing::Point(16, 16)).SetSize(defaultLabelSize).
+        Text("Cmajor Code version " + std::string(cmajorCodeVersion) + "\nCopyright (c) 2025 Seppo Laakko").Location(wing::Point(16, 16)).SetSize(defaultLabelSize).
         SetAnchors(wing::Anchors::left | wing::Anchors::top)));
     label->SetFont(std::move(font));
     AddChild(label.release());

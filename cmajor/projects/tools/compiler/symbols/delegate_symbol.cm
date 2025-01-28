@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -712,6 +712,67 @@ namespace symbols
             Result<intermediate.Value*> equalResult = emitter.CreateEqual(left, right);
             if (equalResult.Error()) return Result<bool>(ErrorId(equalResult.GetErrorId()));
             emitter.Stack().Push(equalResult.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class DelegateTypeLess : FunctionSymbol
+    {
+        public DelegateTypeLess(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeLess, span_, name_)
+        {
+        }
+        public DelegateTypeLess(SymbolsContext& context, DelegateTypeSymbol* delegateType) :
+            base(SymbolKind.delegateTypeLess, delegateType->Span(), u"operator<")
+        {
+            SetGroupName(u"operator<");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(delegateType->Span(), u"left");
+            leftParam->SetType(delegateType);
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(delegateType->Span(), u"right");
+            rightParam->SetType(delegateType);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* left = emitter.Stack().Pop();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* right = emitter.Stack().Pop();
+            Result<intermediate.Value*> lessResult = emitter.CreateLess(left, right);
+            if (lessResult.Error()) return Result<bool>(ErrorId(lessResult.GetErrorId()));
+            emitter.Stack().Push(lessResult.Value());
             return Result<bool>(true);
         }
     }
@@ -1706,6 +1767,144 @@ namespace symbols
             if (equalResult.Error()) return Result<bool>(ErrorId(equalResult.GetErrorId()));
             intermediate.Value* equal = equalResult.Value();
             emitter.Stack().Push(equal);
+            return Result<bool>(true);
+        }
+    }
+
+    public class ClassDelegateTypeLess : FunctionSymbol
+    {
+        public ClassDelegateTypeLess(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.classDelegateTypeLess, span_, name_)
+        {
+        }
+        public ClassDelegateTypeLess(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType) :
+            base(SymbolKind.classDelegateTypeLess, classDelegateType->Span(), u"operator<")
+        {
+            SetGroupName(u"operator<");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(classDelegateType->Span(), u"left");
+            Result<TypeSymbol*> constTypeResult = classDelegateType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            leftParam->SetType(refType);
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(classDelegateType->Span(), u"right");
+            rightParam->SetType(refType);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<intermediate.Value*> retValResult = emitter.CreateLocal(emitter.GetBoolType());
+            if (retValResult.Error()) return Result<bool>(ErrorId(retValResult.GetErrorId()));
+            intermediate.Value* retVal = retValResult.Value();
+            intermediate.BasicBlock* retBlock = emitter.CreateBasicBlock();
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* leftPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> leftObjectPtrResult = emitter.GetObjectFromClassDelegate(leftPtr);
+            if (leftObjectPtrResult.Error()) return Result<bool>(ErrorId(leftObjectPtrResult.GetErrorId()));
+            intermediate.Value* leftObjectPtr = leftObjectPtrResult.Value();
+            Result<intermediate.Value*> leftObjectValueResult = emitter.CreateLoad(leftObjectPtr);
+            if (leftObjectValueResult.Error()) return Result<bool>(ErrorId(leftObjectValueResult.GetErrorId()));
+            intermediate.Value* leftObjectValue = leftObjectValueResult.Value();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* rightPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> rightObjectPtrResult = emitter.GetObjectFromClassDelegate(rightPtr);
+            if (rightObjectPtrResult.Error()) return Result<bool>(ErrorId(rightObjectPtrResult.GetErrorId()));
+            intermediate.Value* rightObjectPtr = rightObjectPtrResult.Value();
+            Result<intermediate.Value*> rightObjectValueResult = emitter.CreateLoad(rightObjectPtr);
+            if (rightObjectValueResult.Error()) return Result<bool>(ErrorId(rightObjectValueResult.GetErrorId()));
+            intermediate.Value* rightObjectValue = rightObjectValueResult.Value();
+            intermediate.BasicBlock* leftObjectLessBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* leftObjectNotLessBlock = emitter.CreateBasicBlock();
+            Result<intermediate.Value*> leftObjectLessResult = emitter.CreateLess(leftObjectValue, rightObjectValue);
+            if (leftObjectLessResult.Error()) return Result<bool>(ErrorId(leftObjectLessResult.GetErrorId()));
+            intermediate.Value* leftObjectLess = leftObjectLessResult.Value();
+            result = emitter.CreateBranch(leftObjectLess, leftObjectLessBlock, leftObjectNotLessBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(leftObjectLessBlock);
+            result = emitter.CreateStore(emitter.GetBoolValue(true), retVal);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(retBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(leftObjectNotLessBlock);
+            Result<intermediate.Value*> rightObjectLessResult = emitter.CreateLess(rightObjectValue, leftObjectValue);
+            if (rightObjectLessResult.Error()) return Result<bool>(ErrorId(rightObjectLessResult.GetErrorId()));
+            intermediate.Value* rightObjectLess = rightObjectLessResult.Value();
+            intermediate.BasicBlock* rightObjectLessBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* rightObjectNotLessBlock = emitter.CreateBasicBlock();
+            result = emitter.CreateBranch(rightObjectLess, rightObjectLessBlock, rightObjectNotLessBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(rightObjectLessBlock);
+            result = emitter.CreateStore(emitter.GetBoolValue(false), retVal);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(retBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(rightObjectNotLessBlock);
+            Result<intermediate.Value*> leftDelegatePtrResult = emitter.GetDelegateFromClassDelegate(leftPtr);
+            if (leftDelegatePtrResult.Error()) return Result<bool>(ErrorId(leftDelegatePtrResult.GetErrorId()));
+            intermediate.Value* leftDelegatePtr = leftDelegatePtrResult.Value();
+            Result<intermediate.Value*> leftDelegateValueResult = emitter.CreateLoad(leftDelegatePtr);
+            if (leftDelegateValueResult.Error()) return Result<bool>(ErrorId(leftDelegateValueResult.GetErrorId()));
+            intermediate.Value* leftDelegateValue = leftDelegateValueResult.Value();
+            Result<intermediate.Value*> rightDelegatePtrResult = emitter.GetDelegateFromClassDelegate(rightPtr);
+            if (rightDelegatePtrResult.Error()) return Result<bool>(ErrorId(rightDelegatePtrResult.GetErrorId()));
+            intermediate.Value* rightDelegatePtr = rightDelegatePtrResult.Value();
+            Result<intermediate.Value*> rightDelegateValueResult = emitter.CreateLoad(rightDelegatePtr);
+            if (rightDelegateValueResult.Error()) return Result<bool>(ErrorId(rightDelegateValueResult.GetErrorId()));
+            intermediate.Value* rightDelegateValue = rightDelegateValueResult.Value();
+            Result<intermediate.Value*> delegatesLessResult = emitter.CreateLess(leftDelegateValue, rightDelegateValue);
+            if (delegatesLessResult.Error()) return Result<bool>(ErrorId(delegatesLessResult.GetErrorId()));
+            intermediate.Value* delegatesLess = delegatesLessResult.Value();
+            result = emitter.CreateStore(delegatesLess, retVal);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(retBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(retBlock);
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(retVal);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* less = loadResult.Value();
+            emitter.Stack().Push(less);
             return Result<bool>(true);
         }
     }

@@ -1,0 +1,291 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Set&lt;T, C> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Set&lt;T, C> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#constraint">Constraint</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">A collection of unique elements that are kept sorted in a <a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a> .</p><span xml:space="preserve"><p class="description" xml:space="preserve">Searching for an element in the set and inserting an element to the set are <em> Olog(n)</em> operations.</p><p class="description" xml:space="preserve">Model of <a href="../../System.Base/doc/concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7.html">BidirectionalContainer</a> .</p></span></span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="366d213a-acd2-2fe8-838a-d603b6bca989">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="a39ebf5a-2552-dbc5-15fd-488b74dcb069">
+    <td class="rightAlignedCol" xml:space="preserve">C</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57.html">Less</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>></td>
+   </tr>
+  </table>
+  <h2 id="constraint">Constraint</h2>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7.html">Semiregular</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#a39ebf5a-2552-dbc5-15fd-488b74dcb069">C</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746.html">Relation</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#a39ebf5a-2552-dbc5-15fd-488b74dcb069">C</a>
+   .Domain&nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>
+  </span>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Begin_Set_8310BC9B3AB1FE12EDD378AD3C910922805C2B46">Begin</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Begin_Set_6948598D8E017904DF1E7C98097B02DDA409A5AB">Begin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_CBegin_Set_58355DFF917FDA845893E2A9BDD257367396CDA0">CBegin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_CEnd_Set_E433E7E04913434030C0811FA2F706DAFCFD2BEF">CEnd</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_CFind_Set_A708CBAF66CEA05EC5C3AB3D3A85331CFA86F7AB">CFind</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_CLowerBound_Set_401D57C16AF9DC37C97961EC3B72292E806295B4">CLowerBound</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Clear_Set_89BCD4BB4655CE6565918EF2125D0EAC1F5E6E19">Clear</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Count_Set_D0C26C2932BA77B1D9BCFC4E4CE2C40691F2095F">Count</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_End_Set_10601EFA0FAFBD93EFEF3C1AAC7D43DBEC8B21BE">End</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_End_Set_8CB3C61E2E6A7787E5B787B73C53869FB245D469">End</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Find_Set_C219BFE98FE444BCAFB051F8078A0CBB2A778DE6">Find</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Find_Set_E698FED7BA4CCB9A04DBF5833CD0F865B498C6AC">Find</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Pair_111F33A6F81E0D298F0B71F32F044CCC1907F243.html">Pair</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>, <span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Insert_Set_9C68FD4F5B243D387958D41D5CF0225F735C7C0F">Insert</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_IsEmpty_Set_3B9D8E295BC2EA0010461BB9A41433754A1C5AB8">IsEmpty</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_LowerBound_Set_279EBB29411DAA5A8918005A48B56557371DE5FD">LowerBound</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_LowerBound_Set_FB7BA80E6264FCCE0674DF74F54D1B7A66A8DFD5">LowerBound</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Remove_Set_3035BCF76C1BC2B6B88EBBCF399523DB69018EFE">Remove</a>(<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;pos)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#member_function_Remove_Set_1FEA70C4963870E743FE7319390E9874D706A58B">Remove</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_Compare_5674BBCEE13AD5C541275A13A6230847AD7CC083">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;Compare</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#a39ebf5a-2552-dbc5-15fd-488b74dcb069">C</a></td>
+   </tr>
+   <tr id="aliasType_ConstIterator_664F4246D09DBF2F9011DB8DDC4F9F56B030F628">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ConstIterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+   </tr>
+   <tr id="aliasType_Iterator_46E8AC3EC674D01F9339E392F6F19F80BECC5532">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;Iterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*></td>
+   </tr>
+   <tr id="aliasType_KeyType_327EF2AF91AC65B86DCFD870F05024AB22519110">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;KeyType</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a></td>
+   </tr>
+   <tr id="aliasType_Self_25F9A78983E548C71E01E38F919C70451D9CBAAA">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;Self</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html">Set</a></td>
+   </tr>
+   <tr id="aliasType_TreeType_F27458ACA1428D6C914BF2FE2BF56E6BE6EEB925">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;TreeType</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Identity_AE4E1A34351D4CA127046281E036550E4FE428D6.html">Identity</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#a39ebf5a-2552-dbc5-15fd-488b74dcb069">C</a>></td>
+   </tr>
+   <tr id="aliasType_ValueType_AC8E6AC932723CA59C5B8879A788C17F90286C2E">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ValueType</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_tree_D299584D04735CCD121A0C06FB0E7B65DAFBF3B5" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E.html">RedBlackTree</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Identity_AE4E1A34351D4CA127046281E036550E4FE428D6.html">Identity</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#a39ebf5a-2552-dbc5-15fd-488b74dcb069">C</a>></td>
+    <td xml:space="preserve">tree</td>
+   </tr>
+  </table>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Begin_Set_8310BC9B3AB1FE12EDD378AD3C910922805C2B46" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_Set_6948598D8E017904DF1E7C98097B02DDA409A5AB" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#27">27</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CBegin_Set_58355DFF917FDA845893E2A9BDD257367396CDA0" xml:space="preserve">CBegin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;CBegin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#31">31</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CEnd_Set_E433E7E04913434030C0811FA2F706DAFCFD2BEF" xml:space="preserve">CEnd&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;CEnd()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#43">43</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CFind_Set_A708CBAF66CEA05EC5C3AB3D3A85331CFA86F7AB" xml:space="preserve">CFind&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;CFind(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#67">67</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CLowerBound_Set_401D57C16AF9DC37C97961EC3B72292E806295B4" xml:space="preserve">CLowerBound&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;CLowerBound(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#79">79</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Clear_Set_89BCD4BB4655CE6565918EF2125D0EAC1F5E6E19" xml:space="preserve">Clear&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Clear()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#55">55</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Count_Set_D0C26C2932BA77B1D9BCFC4E4CE2C40691F2095F" xml:space="preserve">Count&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Count()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#47">47</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_Set_10601EFA0FAFBD93EFEF3C1AAC7D43DBEC8B21BE" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#35">35</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_Set_8CB3C61E2E6A7787E5B787B73C53869FB245D469" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#39">39</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Find_Set_C219BFE98FE444BCAFB051F8078A0CBB2A778DE6" xml:space="preserve">Find&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;Find(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#59">59</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Find_Set_E698FED7BA4CCB9A04DBF5833CD0F865B498C6AC" xml:space="preserve">Find&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;Find(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#63">63</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_Set_9C68FD4F5B243D387958D41D5CF0225F735C7C0F" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Pair_111F33A6F81E0D298F0B71F32F044CCC1907F243.html">Pair</a>&lt;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>, <span class="kw">bool</span>>&nbsp;Insert(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;value)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#83">83</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsEmpty_Set_3B9D8E295BC2EA0010461BB9A41433754A1C5AB8" xml:space="preserve">IsEmpty&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;IsEmpty()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#51">51</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_LowerBound_Set_279EBB29411DAA5A8918005A48B56557371DE5FD" xml:space="preserve">LowerBound&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;LowerBound(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#71">71</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_LowerBound_Set_FB7BA80E6264FCCE0674DF74F54D1B7A66A8DFD5" xml:space="preserve">LowerBound&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;LowerBound(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#75">75</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_Set_3035BCF76C1BC2B6B88EBBCF399523DB69018EFE" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<a href="../../System.Base/doc/class_RedBlackTreeNodeIterator_09E4FA460162F4E54C2D7EF80673D781D81409F7.html">RedBlackTreeNodeIterator</a>&lt;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;, <a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>*>&nbsp;pos)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#92">92</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_Set_1FEA70C4963870E743FE7319390E9874D706A58B" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;Remove(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3.html#366d213a-acd2-2fe8-838a-d603b6bca989">T</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Set.cm.html#88">88</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Set.cm.html">System.Base/Set.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

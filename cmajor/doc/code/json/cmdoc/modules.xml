@@ -1,5 +1,0 @@
-<modules>
- <module name="JsonConstructible"/>
- <module name="JsonExportable"/>
- <module name="vehicles"/>
-</modules>

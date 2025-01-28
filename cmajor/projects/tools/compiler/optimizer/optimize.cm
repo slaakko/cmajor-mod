@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -151,24 +151,15 @@ namespace optimizer
                     }
                     if (succeeded)
                     {
-                        bool optimized = true;
-                        while (optimized && succeeded)
+                        if (HasOptimization(Optimizations.arithmetic))
                         {
-                            optimized = false;
-                            if (HasOptimization(Optimizations.arithmetic))
+                            Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
+                            if (result.Error())
                             {
-                                Result<bool> result = OptimizeArithmetic(fn, intermediateContext);
-                                if (result.Error())
-                                {
-                                    string errorMessage = result.GetErrorMessage();
-                                    result = LogMessage(-1, "error optimizing arithmetic for function '" + fn->Name() + "': " + errorMessage);
-                                    if (result.Error()) return result;
-                                    succeeded = false;
-                                }
-                                else if (result.Value())
-                                {
-                                    optimized = true;
-                                }
+                                string errorMessage = result.GetErrorMessage();
+                                result = LogMessage(-1, "error optimizing arithmetic for function '" + fn->Name() + "': " + errorMessage);
+                                if (result.Error()) return result;
+                                succeeded = false;
                             }
                         }
                     }

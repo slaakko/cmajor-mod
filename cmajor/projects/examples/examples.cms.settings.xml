@@ -1,9 +1,13 @@
 <solutionSettings>
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles/>
-    <currentOpenFile value=""/>
-    <currentCursorLine value="99"/>
+    <openFiles>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Hello/Hello.cm"/>
+    </openFiles>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/Hello/Hello.cm"/>
+    <currentCursorLine value="5"/>
     <breakpoints/>
-    <expandedProjects/>
+    <expandedProjects>
+        <item value="Hello"/>
+    </expandedProjects>
 </solutionSettings>

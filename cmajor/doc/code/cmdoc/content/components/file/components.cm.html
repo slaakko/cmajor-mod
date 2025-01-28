@@ -1,0 +1,144 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>components/components.cm</title>
+  <link href="../../../style/code.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <span class="code" id="1" xml:space="preserve"><span class="lineNumber">&nbsp;1</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="2" xml:space="preserve"><span class="lineNumber">&nbsp;2</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="3" xml:space="preserve"><span class="lineNumber">&nbsp;3</span>&nbsp;<span class="comment">//&nbsp;upper&nbsp;layer:
+</span></span>
+  <br/>
+  <span class="code" id="4" xml:space="preserve"><span class="lineNumber">&nbsp;4</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="5" xml:space="preserve"><span class="lineNumber">&nbsp;5</span>&nbsp;<span class="comment">//&nbsp;upper&nbsp;layer&nbsp;knows&nbsp;about&nbsp;lower&nbsp;layer&nbsp;but&nbsp;not&nbsp;vice&nbsp;versa.
+</span></span>
+  <br/>
+  <span class="code" id="6" xml:space="preserve"><span class="lineNumber">&nbsp;6</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="7" xml:space="preserve"><span class="lineNumber">&nbsp;7</span>&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">abstract</span>&nbsp;<span class="keyword">class</span>&nbsp;<a href="../doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html">UpperLayerComponentBase</a></span>
+  <br/>
+  <span class="code" id="8" xml:space="preserve"><span class="lineNumber">&nbsp;8</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="9" xml:space="preserve"><span class="lineNumber">&nbsp;9</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">abstract</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html#member_function_SomeMember_UpperLayerComponentBase_EAA75689CFA5963CAD707A1558A57D0CC5C46938">SomeMember</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="10" xml:space="preserve"><span class="lineNumber">10</span>&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="11" xml:space="preserve"><span class="lineNumber">11</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="12" xml:space="preserve"><span class="lineNumber">12</span>&nbsp;<span class="comment">//&nbsp;the&nbsp;UpperLayerComponent&nbsp;class&nbsp;derives&nbsp;from&nbsp;the&nbsp;UpperLayerComponentBase&nbsp;class&nbsp;and&nbsp;implements&nbsp;the&nbsp;UpperLayerInterface&nbsp;interface.
+</span></span>
+  <br/>
+  <span class="code" id="13" xml:space="preserve"><span class="lineNumber">13</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="14" xml:space="preserve"><span class="lineNumber">14</span>&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">class</span>&nbsp;<a href="../doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html">UpperLayerComponent</a><span class="other">&nbsp;:&nbsp;</span><a href="../doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html">UpperLayerComponentBase</a><span class="other">,&nbsp;</span><a href="../index.html#65b4c965-6b38-b95c-0e20-b778e6f4fb60">UpperLayerInterface</a></span>
+  <br/>
+  <span class="code" id="15" xml:space="preserve"><span class="lineNumber">15</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="16" xml:space="preserve"><span class="lineNumber">16</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;the&nbsp;UpperLayerComponent&nbsp;passes&nbsp;itself&nbsp;as&nbsp;an&nbsp;implementer&nbsp;of&nbsp;the&nbsp;UpperLayerInterface&nbsp;interface&nbsp;to&nbsp;the&nbsp;LowerLayerComponent:
+</span></span>
+  <br/>
+  <span class="code" id="17" xml:space="preserve"><span class="lineNumber">17</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#default_constructor_UpperLayerComponent_D4480A18125554F5EBAE7B625587CBC629705904">UpperLayerComponent</a><span class="other">(</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="identifier">lower</span><span class="other">(</span><span class="other">*</span><span class="keyword">this</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="18" xml:space="preserve"><span class="lineNumber">18</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="19" xml:space="preserve"><span class="lineNumber">19</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="20" xml:space="preserve"><span class="lineNumber">20</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_function_SomeMember_UpperLayerComponent_EE9DBEA8E01750A0DE0E4B993E019506F4C9D93D">SomeMember</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="21" xml:space="preserve"><span class="lineNumber">21</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="22" xml:space="preserve"><span class="lineNumber">22</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_variable_lower_4E8B122FE764153F623806FDBF9DA50F9E6528F3">lower</a><span class="other">.</span><a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_ServiceForUpper_LowerLayerComponent_8688D578A39CAF170DB1FBC68487B5BE366970AA">ServiceForUpper</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="23" xml:space="preserve"><span class="lineNumber">23</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;...
+</span></span>
+  <br/>
+  <span class="code" id="24" xml:space="preserve"><span class="lineNumber">24</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="25" xml:space="preserve"><span class="lineNumber">25</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_function_ServiceForLower_UpperLayerComponent_D99E7268DA4E12786B1257C5B80769BE993793DA">ServiceForLower</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="26" xml:space="preserve"><span class="lineNumber">26</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="27" xml:space="preserve"><span class="lineNumber">27</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;...
+</span></span>
+  <br/>
+  <span class="code" id="28" xml:space="preserve"><span class="lineNumber">28</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="29" xml:space="preserve"><span class="lineNumber">29</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html">LowerLayerComponent</a>&nbsp;<span class="identifier">lower</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="30" xml:space="preserve"><span class="lineNumber">30</span>&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="31" xml:space="preserve"><span class="lineNumber">31</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="32" xml:space="preserve"><span class="lineNumber">32</span>&nbsp;<span class="comment">//&nbsp;-----------------------------------------------
+</span></span>
+  <br/>
+  <span class="code" id="33" xml:space="preserve"><span class="lineNumber">33</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="34" xml:space="preserve"><span class="lineNumber">34</span>&nbsp;<span class="comment">//&nbsp;lower&nbsp;layer:
+</span></span>
+  <br/>
+  <span class="code" id="35" xml:space="preserve"><span class="lineNumber">35</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="36" xml:space="preserve"><span class="lineNumber">36</span>&nbsp;<span class="comment">//&nbsp;Lower&nbsp;layer&nbsp;does&nbsp;not&nbsp;need&nbsp;to&nbsp;know&nbsp;about&nbsp;upper&nbsp;layer.&nbsp;They&nbsp;might&nbsp;be&nbsp;in&nbsp;different&nbsp;libraries.
+</span></span>
+  <br/>
+  <span class="code" id="37" xml:space="preserve"><span class="lineNumber">37</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="38" xml:space="preserve"><span class="lineNumber">38</span>&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">interface</span>&nbsp;<span class="identifier">UpperLayerInterface</span></span>
+  <br/>
+  <span class="code" id="39" xml:space="preserve"><span class="lineNumber">39</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="40" xml:space="preserve"><span class="lineNumber">40</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">void</span>&nbsp;<a href="../index.html#65b4c965-6b38-b95c-0e20-b778e6f4fb60#member_function_ServiceForLower_UpperLayerInterface_A9B7305A303E1C7AACE0E6A8B4DCB0D24044600F">ServiceForLower</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="41" xml:space="preserve"><span class="lineNumber">41</span>&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="42" xml:space="preserve"><span class="lineNumber">42</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="43" xml:space="preserve"><span class="lineNumber">43</span>&nbsp;<span class="comment">//&nbsp;The&nbsp;LowerLayerComponent&nbsp;only&nbsp;need&nbsp;to&nbsp;know&nbsp;about&nbsp;UpperLayerInterface&nbsp;to&nbsp;call&nbsp;UpperLayerComponent.
+</span></span>
+  <br/>
+  <span class="code" id="44" xml:space="preserve"><span class="lineNumber">44</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="45" xml:space="preserve"><span class="lineNumber">45</span>&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">class</span>&nbsp;<a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html">LowerLayerComponent</a></span>
+  <br/>
+  <span class="code" id="46" xml:space="preserve"><span class="lineNumber">46</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="47" xml:space="preserve"><span class="lineNumber">47</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#constructor_LowerLayerComponent_DA740700F9ADC1283F4D18399CBEB04BB293CB7C">LowerLayerComponent</a><span class="other">(</span><a href="../index.html#65b4c965-6b38-b95c-0e20-b778e6f4fb60">UpperLayerInterface</a>&nbsp;<span class="identifier">upper_</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="identifier">upper</span><span class="other">(</span><span class="identifier">upper_</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="48" xml:space="preserve"><span class="lineNumber">48</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="49" xml:space="preserve"><span class="lineNumber">49</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="50" xml:space="preserve"><span class="lineNumber">50</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_ServiceForUpper_LowerLayerComponent_8688D578A39CAF170DB1FBC68487B5BE366970AA">ServiceForUpper</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="51" xml:space="preserve"><span class="lineNumber">51</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="52" xml:space="preserve"><span class="lineNumber">52</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;...
+</span></span>
+  <br/>
+  <span class="code" id="53" xml:space="preserve"><span class="lineNumber">53</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="54" xml:space="preserve"><span class="lineNumber">54</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_AnotherMember_LowerLayerComponent_6F090A1A06FCD2EE00B88F0D281BA4A9FEA9599C">AnotherMember</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="55" xml:space="preserve"><span class="lineNumber">55</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="56" xml:space="preserve"><span class="lineNumber">56</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;the&nbsp;LowerLayerComponent&nbsp;can&nbsp;call&nbsp;the&nbsp;member&nbsp;functions&nbsp;of&nbsp;the&nbsp;UpperLayerInterface&nbsp;and&nbsp;thus&nbsp;it&nbsp;can&nbsp;indirectly&nbsp;call&nbsp;the&nbsp;UpperLayerComponent's&nbsp;ServiceForLower&nbsp;method
+</span></span>
+  <br/>
+  <span class="code" id="57" xml:space="preserve"><span class="lineNumber">57</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_variable_upper_10C59E86C801DE342C6EF977610205E287BF73FC">upper</a><span class="other">.</span><a href="../index.html#65b4c965-6b38-b95c-0e20-b778e6f4fb60#member_function_ServiceForLower_UpperLayerInterface_A9B7305A303E1C7AACE0E6A8B4DCB0D24044600F">ServiceForLower</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="58" xml:space="preserve"><span class="lineNumber">58</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;...
+</span></span>
+  <br/>
+  <span class="code" id="59" xml:space="preserve"><span class="lineNumber">59</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="60" xml:space="preserve"><span class="lineNumber">60</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<a href="../index.html#65b4c965-6b38-b95c-0e20-b778e6f4fb60">UpperLayerInterface</a>&nbsp;<span class="identifier">upper</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="61" xml:space="preserve"><span class="lineNumber">61</span>&nbsp;<span class="other">}</span></span>
+  <br/>
+ </body>
+</html>

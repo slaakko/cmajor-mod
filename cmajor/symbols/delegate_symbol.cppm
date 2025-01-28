@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -150,6 +150,17 @@ public:
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeEquality"; }
+};
+
+class DelegateTypeLess : public FunctionSymbol
+{
+public:
+    DelegateTypeLess(const soul::ast::Span& span_, const std::u32string& name_);
+    DelegateTypeLess(DelegateTypeSymbol* delegateType, TypeSymbol* boolType);
+    SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    bool IsBasicTypeOperation() const override { return true; }
+    const char* ClassName() const override { return "DelegateTypeLess"; }
 };
 
 class FunctionToDelegateConversion : public FunctionSymbol
@@ -342,6 +353,23 @@ public:
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     const char* ClassName() const override { return "ClassDelegateTypeEquality"; }
+private:
+    ClassDelegateTypeSymbol* classDelegateType;
+};
+
+class ClassDelegateTypeLess : public FunctionSymbol
+{
+public:
+    ClassDelegateTypeLess(const soul::ast::Span& span_, const std::u32string& name_);
+    ClassDelegateTypeLess(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* boolType);
+    SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
+    void EmplaceType(TypeSymbol* typeSymbol, int index) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    bool IsBasicTypeOperation() const override { return true; }
+    bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
+    const char* ClassName() const override { return "ClassDelegateTypeLess"; }
 private:
     ClassDelegateTypeSymbol* classDelegateType;
 };

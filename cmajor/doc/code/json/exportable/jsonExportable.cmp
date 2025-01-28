@@ -1,3 +1,0 @@
-project JsonExportable;
-target=program;
-source <jsonExportable.cm>;

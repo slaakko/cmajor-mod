@@ -1,0 +1,11 @@
+using System;
+
+public enum Foo
+{
+    foo
+}
+
+void main()
+{
+    Foo.UnderlyingType x;
+}

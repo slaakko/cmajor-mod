@@ -1,0 +1,26 @@
+using System;
+
+interface Fooable
+{  
+    void Foo();
+}
+
+class Fooer : Fooable
+{  
+    public void Foo()
+    {
+        Console.Out() << "foo" << endl();
+    }
+}
+
+void main()
+{
+    Fooer* x = new Fooer();
+    Fooer* y = new Fooer();
+    Fooable xf = *x;
+    Fooable yf = *y;
+    bool xfLess = xf < yf;
+    Console.Out() << "X < Y: " << xfLess << endl();
+    bool yfLess = yf < xf;
+    Console.Out() << "Y < X: " << yfLess << endl();
+}

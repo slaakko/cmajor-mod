@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -39,7 +39,7 @@ void RtmFailAssertion(const char* assertion, const char* function, const char* s
         std::string trace = "\nSTACK TRACE:\n" + stackTrace.ToString();
         RtmPrintToFile(stderrx, trace.c_str());
     }
-    std::exit(1);
+    std::exit(254);
 }
 
 namespace cmajor::rt {

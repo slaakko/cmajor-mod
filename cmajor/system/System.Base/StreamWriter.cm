@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,7 +13,7 @@ namespace System.IO
         public StreamWriter() : base(), stream(null)
         {
         }
-        public StreamWriter(Stream* stream_) : base(), stream(stream_)
+        public explicit StreamWriter(Stream* stream_) : base(), stream(stream_)
         {
             if (stream != null && stream->Error())
             {

@@ -269,7 +269,7 @@ function drawDiagram(diagramNodes) {
 function drawInheritanceDiagram() {
     var diagramNodes = [
         { name: "System.Xml.Serialization.XmlPtrBase", id: "diagram_node_0", level: 0, subject: true, hasDerivedNodes: true, link: "../../System.Xml.Serialization/doc/class_XmlPtrBase_118F102367E9E5B890C372D12976532DD05C82A2.html" },
-        { name: "System.Xml.Serialization.XmlPtr&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Xml.Serialization/doc/class_XmlPtr_B1C50A51D00A807B7891EA3973AB3812CB68BD64.html" }];
+        { name: "System.Xml.Serialization.XmlPtr&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Xml.Serialization/doc/class_XmlPtr_8782FB12D7A1C0EF08C818D03EA95DB437FAC55B.html" }];
     drawDiagram(diagramNodes);
 }
 

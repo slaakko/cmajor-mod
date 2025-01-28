@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -2132,7 +2132,9 @@ bool OptimizeLess(cmajor::masm::intermediate::LessInstruction* lessInst, cmajor:
 void OptimizeArithmetics(cmajor::masm::intermediate::Function* fn, cmajor::masm::intermediate::Context* context)
 {
     bool optimized = true;
-    while (optimized)
+    int count = 0;
+    int maxCount = context->MaxArithmeticOptimizationCount();
+    while (optimized && count < maxCount)
     {
         optimized = false;
         cmajor::masm::intermediate::BasicBlock* bb = fn->FirstBasicBlock();
@@ -2286,6 +2288,7 @@ void OptimizeArithmetics(cmajor::masm::intermediate::Function* fn, cmajor::masm:
         }
         if (optimized)
         {
+            ++count;
             fn->SetNumbers();
         }
     }

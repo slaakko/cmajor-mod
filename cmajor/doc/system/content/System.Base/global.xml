@@ -1,31 +1,31 @@
 <global>
     <derivedClassMap>
-        <baseClass classId="class_BinaryFun_C08E8CBE9076AC91A0EC9B3BC2A455014F71ED1F">
-            <derivedClass classId="class_BinaryPred_0A37E09D22B252A20EF8DF63EF9141AFCB031BB4"/>
-            <derivedClass classId="class_BitAnd_0B974EDF5B13F707B3D0529DD839ED0DA8511E14"/>
-            <derivedClass classId="class_BitOr_B976CF7C6B6789B7F1A19FB9E214F89FD71DA9EB"/>
-            <derivedClass classId="class_BitXor_0258B89E5A321BD9AB4D3B5311B00B81711F9DB5"/>
-            <derivedClass classId="class_Divides_530729138FA61A92115CAFDE4F9DB24081BF2E73"/>
-            <derivedClass classId="class_Minus_C7D959DFE0FDC4A65AAF0525637E69033072BBD4"/>
-            <derivedClass classId="class_Multiplies_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381"/>
-            <derivedClass classId="class_Plus_6DE5E429D028D7343BC491CB6AA869D7DF7D5121"/>
-            <derivedClass classId="class_Remainder_CBAFA68783451F41CF284DE14A39D96BDD4AFAFE"/>
-            <derivedClass classId="class_ShiftLeft_4B434B98FFB676F6F792A4AB1E0D383CBE5C8264"/>
-            <derivedClass classId="class_ShiftRight_689A2C425B99A5563C21C4722BF0C2D361AA9D30"/>
+        <baseClass classId="class_BinaryFun_4BEC31F759811F584B56CF562F13A044336985A5">
+            <derivedClass classId="class_BinaryPred_8043984420C1E0941B8E0707922ECE3969587879"/>
+            <derivedClass classId="class_BitAnd_52F582309C098CF561402441EE4C1CAF32B1AECD"/>
+            <derivedClass classId="class_BitOr_09E1B1916A67B356BA53B5845D4257808CD6434F"/>
+            <derivedClass classId="class_BitXor_3EC8B9D8702DD16C8494CA7099868B32170A7281"/>
+            <derivedClass classId="class_Divides_DAF2CB82A6A898CA5D9055A9EAA4FC54D05B3BDB"/>
+            <derivedClass classId="class_Minus_9530187FA20A7AAB6E1CE58BA93A69A1B3956FC7"/>
+            <derivedClass classId="class_Multiplies_570F0D74E3904749989DAA95B6BD40B57C57A11B"/>
+            <derivedClass classId="class_Plus_43AEB018E2FF5F2BA1897067D84435B9265F5F20"/>
+            <derivedClass classId="class_Remainder_032141F252F0E1322F51C12CFFDF5C6C0D2507A7"/>
+            <derivedClass classId="class_ShiftLeft_AB81659004ABB8E31C8A7884C38E3F2DC9472C5E"/>
+            <derivedClass classId="class_ShiftRight_A901B1E92F9341191E39F24C0FF868A734DC43FB"/>
         </baseClass>
-        <baseClass classId="class_BinaryPred_0A37E09D22B252A20EF8DF63EF9141AFCB031BB4">
-            <derivedClass classId="class_EqualTo_5246CB25ED487120E98F2B8A0E795C0CF03A3C9D"/>
-            <derivedClass classId="class_GreaterOrEqualTo_B4DE9B7C0C023429948DD3D6C6018755B584012D"/>
-            <derivedClass classId="class_Greater_20894328C5991937D304402D5BB48ACBCF150664"/>
-            <derivedClass classId="class_LessOrEqualTo_6B4FD2EAAF9B57919CFBF0B07D5B83DFBE7C1C83"/>
-            <derivedClass classId="class_Less_4BF240D04EE3CC14E87CD6D7F17521A032D30FB3"/>
-            <derivedClass classId="class_LogicalAnd_E35A5C58E5FFDEFC94BC4F4A396B315039492654"/>
-            <derivedClass classId="class_LogicalOr_7F2F87F001DF8F564ABE5F63CCA120661CE54294"/>
-            <derivedClass classId="class_NotEqualTo_4F5ED40C402A34550F8A6C43C05A6CE2A0895409"/>
-            <derivedClass classId="class_Rel_E8617BA707A447FA873DA26388F823802164C257"/>
+        <baseClass classId="class_BinaryPred_8043984420C1E0941B8E0707922ECE3969587879">
+            <derivedClass classId="class_EqualTo_CF7DB756BF254594E53CB2861DA8FEE533048F71"/>
+            <derivedClass classId="class_GreaterOrEqualTo_6AA73263DD963D2A2743C8183DD4FF97B77A42E4"/>
+            <derivedClass classId="class_Greater_E9E3DBAA880AB780976998896B6C0F99BCE1F704"/>
+            <derivedClass classId="class_LessOrEqualTo_D485CE252CA67237F99D9795F64B18F49F449D17"/>
+            <derivedClass classId="class_Less_28011B7F00F948AD667B57D43A7FAA27B9832DD5"/>
+            <derivedClass classId="class_LogicalAnd_E10A40E3E60B5F53FB6FAE36C2BAD8197BA833E3"/>
+            <derivedClass classId="class_LogicalOr_EFA1C6588D87E04AE4F6331647AED8DAF236B89C"/>
+            <derivedClass classId="class_NotEqualTo_CF72ABD3E2458396E0A1685E3D923EB890456CDA"/>
+            <derivedClass classId="class_Rel_3FF3EB13A4B33707DDD23A0E639D2524B44F5D26"/>
         </baseClass>
         <baseClass classId="class_CounterBase_10B5255B4C6CEAF6663DDD03CCD6EFED9BFD9254">
-            <derivedClass classId="class_Counter_38A7F42D0E20389A22B581B3FAAD0E018811DD30"/>
+            <derivedClass classId="class_Counter_30115DC70242B785DC4CD1E596BDF63728973C3E"/>
         </baseClass>
         <baseClass classId="class_IOBase_325A635E11759F146842FF3D54DFAE621782FC86">
             <derivedClass classId="class_AnsiEngine_E020B478179ED33FC5043514986AD3C67A975E2B"/>
@@ -51,15 +51,15 @@
             <derivedClass classId="class_UnicodeEngine_4BA56D0BC89EA412C5D44E2EAC43EF3D52AA83DE"/>
         </baseClass>
         <baseClass classId="class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948">
-            <derivedClass classId="class_RedBlackTreeNode_BD43000C158FD97CD38A6569462D590033079629"/>
+            <derivedClass classId="class_RedBlackTreeNode_BD214BC9886847FCCB3173D8D46BD112AF432996"/>
         </baseClass>
-        <baseClass classId="class_Rel_E8617BA707A447FA873DA26388F823802164C257">
-            <derivedClass classId="class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E"/>
-            <derivedClass classId="class_GreaterOrEqualTo_63B80274B5FA0BEE2887E0B5DC6572B68763325F"/>
-            <derivedClass classId="class_Greater_3C4BC43027D3C4A3059EDB4FD3D95FBE491F04EB"/>
-            <derivedClass classId="class_LessOrEqualTo_38A01AF022D23F43DB10172F664C64FD6BEC5451"/>
-            <derivedClass classId="class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B"/>
-            <derivedClass classId="class_NotEqualTo_5131DE08AD9F14B6E85B01ACCD186B5825A00C59"/>
+        <baseClass classId="class_Rel_3FF3EB13A4B33707DDD23A0E639D2524B44F5D26">
+            <derivedClass classId="class_EqualTo_FE4C0B1CEF8E306FE146F7BB46ED2BCED3E4472A"/>
+            <derivedClass classId="class_GreaterOrEqualTo_F0868A513DF19F04D4E6D7C09728A360DEDCACF1"/>
+            <derivedClass classId="class_Greater_8D2EC2CE7E3F6D5209BBEC2CE19EB698F5B4512C"/>
+            <derivedClass classId="class_LessOrEqualTo_E3D56CB633F8E575BF465E61DA6B6CABB2D6EE2A"/>
+            <derivedClass classId="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57"/>
+            <derivedClass classId="class_NotEqualTo_59D52008F2DAC55A349A7B020E693CE17860E162"/>
         </baseClass>
         <baseClass classId="class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B">
             <derivedClass classId="class_BufferedStream_7A56D0141C4BF75E1F868A007875CCF55AB2264A"/>
@@ -68,23 +68,26 @@
             <derivedClass classId="class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C"/>
             <derivedClass classId="class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105"/>
         </baseClass>
+        <baseClass classId="class_SynchronizedQueueBase_686D592B8632F3A7D72D9ED8B298C1B6824ADBEF">
+            <derivedClass classId="class_SynchronizedQueue_793A65ABF7A0AB9476A435E21BE4B92926348A1B"/>
+        </baseClass>
         <baseClass classId="class_TextWriter_95D72C37DDCBB941FE8EC41FF28270B9FFB782C1">
             <derivedClass classId="class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311"/>
             <derivedClass classId="class_StringWriter_E76E62C541769C753BBFB8D27F20ED06AADC7D2D"/>
         </baseClass>
-        <baseClass classId="class_UnaryFun_E072A5660996486516C5B6B1316D83709BA12761">
-            <derivedClass classId="class_BitNot_3C7F4E874164C72710B960115CB74428CB60AB9D"/>
-            <derivedClass classId="class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325"/>
-            <derivedClass classId="class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909"/>
-            <derivedClass classId="class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E"/>
-            <derivedClass classId="class_SelectFirst_EFAA048DB98EF69AD2AF778B9BCDC8A98171057C"/>
-            <derivedClass classId="class_SelectSecond_790D08354EC0D2291CD83DC01D02EB72936757BF"/>
-            <derivedClass classId="class_UnaryPred_09B1A6B80A77304079E63811295D476D692E47B7"/>
+        <baseClass classId="class_UnaryFun_E299E0D859C76BABA64401CE68684CE6BCAB4DE1">
+            <derivedClass classId="class_BitNot_C95605C54D93344457591AB64814E928084B0C1A"/>
+            <derivedClass classId="class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C"/>
+            <derivedClass classId="class_Identity_AE4E1A34351D4CA127046281E036550E4FE428D6"/>
+            <derivedClass classId="class_Negate_601951129A9208F4A372E2B7BBC4EAE820AD2ECB"/>
+            <derivedClass classId="class_SelectFirst_4615EFE5A7971500178C05C96019CC6C7A5DE285"/>
+            <derivedClass classId="class_SelectSecond_EB2A8CD313AF7251EAF3BD78A1E60C678B1449B7"/>
+            <derivedClass classId="class_UnaryPred_443DF67A15002C41DA05CC01E392B5CF33B6E0D1"/>
         </baseClass>
-        <baseClass classId="class_UnaryPred_09B1A6B80A77304079E63811295D476D692E47B7">
-            <derivedClass classId="class_LogicalNot_8969C1691917DD5CA5D11CA01EF0BFCBDC2D486E"/>
-            <derivedClass classId="class_NotXRelOperand_1FA27B45BA158D05A2DC694B82696AAC02777469"/>
-            <derivedClass classId="class_OperandRelX_D7A7B7AF4FE891473F5C5E36A93E6A8C2B2291F7"/>
+        <baseClass classId="class_UnaryPred_443DF67A15002C41DA05CC01E392B5CF33B6E0D1">
+            <derivedClass classId="class_LogicalNot_85BFDF2D929BE885FA1885895863E547919C2FDF"/>
+            <derivedClass classId="class_NotXRelOperand_2DF8D8B6B6DC20BA2148AF1B76CF99A635894C05"/>
+            <derivedClass classId="class_OperandRelX_87FCA4E19E0BC1EABE929E00070E40C2EE68311B"/>
         </baseClass>
         <baseClass classId="concept_AdditiveMonoid_8D82C7092F575679F72B0CA8C2989C67C1966F37">
             <derivedClass classId="concept_AdditiveGroup_F97CD80E909011A4ADD1F7D285678312B63559D8"/>

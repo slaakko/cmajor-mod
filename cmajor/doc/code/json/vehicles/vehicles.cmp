@@ -1,3 +1,0 @@
-project vehicles;
-target=program;
-source <vehicles.cm>;

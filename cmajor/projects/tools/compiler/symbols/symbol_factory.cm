@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -331,6 +331,10 @@ namespace symbols
             {
                 return Result<Symbol*>(new InterfaceTypeEquality(span, name));
             }
+            case SymbolKind.interfaceTypeLess:
+            {
+                return Result<Symbol*>(new InterfaceTypeLess(span, name));
+            }
             case SymbolKind.delegateTypeSymbol:
             {
                 return Result<Symbol*>(new DelegateTypeSymbol(span, name));
@@ -363,6 +367,10 @@ namespace symbols
             {
                 return Result<Symbol*>(new DelegateTypeEquality(span, name));
             }
+            case SymbolKind.delegateTypeLess:
+            {
+                return Result<Symbol*>(new DelegateTypeLess(span, name));
+            }
             case SymbolKind.classDelegateTypeSymbol:
             {
                 return Result<Symbol*>(new ClassDelegateTypeSymbol(span, name));
@@ -390,6 +398,10 @@ namespace symbols
             case SymbolKind.classDelegateTypeEquality:
             {
                 return Result<Symbol*>(new ClassDelegateTypeEquality(span, name));
+            }
+            case SymbolKind.classDelegateTypeLess:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeLess(span, name));
             }
             case SymbolKind.enumTypeDefaultConstructor:
             {

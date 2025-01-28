@@ -28,4 +28,8 @@ void main()
     Fooable fooable = fooer;
     fooable.Foo();
     SayFoo(fooable);
+    UniquePtr<Fooer> ptrFooer(new Fooer());
+    Fooer* f = ptrFooer.Get();
+    Fooable anotherFooable = *f;
+    anotherFooable.Foo();
 }

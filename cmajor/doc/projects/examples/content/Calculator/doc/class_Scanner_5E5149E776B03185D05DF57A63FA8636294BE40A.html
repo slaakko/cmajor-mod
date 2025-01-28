@@ -6,83 +6,88 @@
  </head>
  <body>
   <h1>Scanner Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
-  <h2>Constructors &amp; Destructor</h2>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
-    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#constructor_Scanner_0187014C0E86B7AF04B01BB37E6EABF2FEF3D250">Scanner</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;input_)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#constructor_Scanner_855351C7442D12B070572D584DEBFD5F7BDAA28F">Scanner</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;input_)</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html">Token</a>*</td>
-    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_CurrentToken_Scanner_8195148FACFA857F269DB75F94B3541BAC177367">CurrentToken</a>()&nbsp;<span class="kw">const</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html">Token</a>*</td>
+    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_CurrentToken_Scanner_B737B61260AD5EC66CBA94260F97A4CB3F7868DB">CurrentToken</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_NextToken_Scanner_D9AFE01664450811B8CAFD05B4DC9AE05E3A33AB">NextToken</a>()</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_NextToken_Scanner_A5CF5E8B30D2A8D433D9E92B2968E4B17458D3D6">NextToken</a>()</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_Rewind_Scanner_BC079E4C0846CC9A12D461022F956A383CB533E0">Rewind</a>()</td>
+    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_Rewind_Scanner_52E2EFB7F75DC30F6213F445170601329D43847F">Rewind</a>()</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_SkipWhiteSpace_Scanner_46C935334ACB7CC077B7F6E34DA835431633496C">SkipWhiteSpace</a>()</td>
+    <td xml:space="preserve"><a href="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_SkipWhiteSpace_Scanner_17D96714C38BD35339D18D816004AEEEE7F044F6">SkipWhiteSpace</a>()</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
+    <td class="rightAlignedCol" id="member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">uchar</span>></td>
     <td xml:space="preserve">input</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">pos</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html">Token</a>></td>
+    <td class="rightAlignedCol" id="member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992.html">UniquePtr</a>&lt;<a href="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html">Token</a>></td>
     <td xml:space="preserve">token</td>
    </tr>
   </table>
   <h2>Constructor&amp; Destructor Details</h2>
-  <h3 id="constructor_Scanner_0187014C0E86B7AF04B01BB37E6EABF2FEF3D250" xml:space="preserve">Scanner&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;Scanner(<span class="kw">const</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;input_)</h4>
+  <h3 id="constructor_Scanner_855351C7442D12B070572D584DEBFD5F7BDAA28F" xml:space="preserve">Scanner&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Scanner(<span class="kw">const</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;input_)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
-  <h3 id="member_function_CurrentToken_Scanner_8195148FACFA857F269DB75F94B3541BAC177367" xml:space="preserve">CurrentToken&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html">Token</a>*&nbsp;CurrentToken()</h4>
+  <h3 id="member_function_CurrentToken_Scanner_B737B61260AD5EC66CBA94260F97A4CB3F7868DB" xml:space="preserve">CurrentToken&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html">Token</a>*&nbsp;CurrentToken()</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#15">15</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_NextToken_Scanner_A5CF5E8B30D2A8D433D9E92B2968E4B17458D3D6" xml:space="preserve">NextToken&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;NextToken()</h4>
+  <h3 id="member_function_NextToken_Scanner_D9AFE01664450811B8CAFD05B4DC9AE05E3A33AB" xml:space="preserve">NextToken&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;NextToken()</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#19">19</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Rewind_Scanner_BC079E4C0846CC9A12D461022F956A383CB533E0" xml:space="preserve">Rewind&nbsp;Member Function</h3>
+  <h3 id="member_function_Rewind_Scanner_52E2EFB7F75DC30F6213F445170601329D43847F" xml:space="preserve">Rewind&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Rewind()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#64">64</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#100">100</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_SkipWhiteSpace_Scanner_46C935334ACB7CC077B7F6E34DA835431633496C" xml:space="preserve">SkipWhiteSpace&nbsp;Member Function</h3>
+  <h3 id="member_function_SkipWhiteSpace_Scanner_17D96714C38BD35339D18D816004AEEEE7F044F6" xml:space="preserve">SkipWhiteSpace&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;SkipWhiteSpace()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#68">68</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../Calculator/file/Scanner.cm.html#104">104</a>&nbsp;of&nbsp;<a href="../../Calculator/file/Scanner.cm.html">Calculator/Scanner.cm</a></span>
   <br/>
   <br/>
   <hr/>

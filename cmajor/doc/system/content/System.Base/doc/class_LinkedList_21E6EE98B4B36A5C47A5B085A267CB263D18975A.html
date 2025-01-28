@@ -1,0 +1,369 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>LinkedList&lt;T> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>LinkedList&lt;T> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#constraint">Constraint</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">A doubly linked list of elements.</p><span xml:space="preserve"><p class="description" xml:space="preserve">Inserting an element to the linked list in a known position is <em> O(1)</em> operation. Searching for an element in a linked list is <em> O(n)</em> operation.</p><p class="description" xml:space="preserve">Model of <a href="../../System.Base/doc/concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7.html">BidirectionalContainer</a> , <a href="../../System.Base/doc/concept_FrontInsertionSequence_6E92B081B326D22C296036E5DDC43365491BEBF4.html">FrontInsertionSequence</a> , <a href="../../System.Base/doc/concept_BackInsertionSequence_5885D2D8DDEC40D462924E37DCE754A8F36B52C2.html">BackInsertionSequence</a> and <a href="../../System.Base/doc/concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6.html">InsertionSequence</a> .</p></span></span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#105">105</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="e29c963d-b446-3a8f-eb56-ccce3486b267">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="constraint">Constraint</h2>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Regular_A56EC84F9A51535281FA2B6B074E90F9B3BBCCC1.html">Regular</a>
+  </span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#default_constructor_LinkedList_40999DB3AEE627EFEC4702B363AC769169A44454">LinkedList</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#move_constructor_LinkedList_52EF2EDBBEFFE4980673B762D055F0A96593427C">LinkedList</a>(<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#copy_constructor_LinkedList_3FB4FE660401DF53369C30F57FCB4638C002D109">LinkedList</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#destructor_LinkedList_4A2BCA7EF2A5BF2B025B5744105768A4F311EC50">~LinkedList</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Add_LinkedList_7BF141AE78D9056F452733CB15ADE6BDDDBED4A0">Add</a>(<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Add_LinkedList_42EA937B219CE7C81DC4E3249EB73397BB56A84F">Add</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Back_LinkedList_EA5779C86CA14A4E82284C06B77E4820B033354C">Back</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Begin_LinkedList_B3F89DF984A35D02BCC65ECD53BE978583E07BDB">Begin</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Begin_LinkedList_AE6D98ED9451FA30CDCB9FA3B8A799687FB0FC73">Begin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_CBegin_LinkedList_B8CAE4EF5725D632F919EE74ED9F58357FD61F63">CBegin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_CEnd_LinkedList_E484EE1AFA1A541D66AC66F355D4D9180D111507">CEnd</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Clear_LinkedList_D38B9B1888C3BCB601FB228B6B630DDFCB2A4658">Clear</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_CopyFrom_LinkedList_E370E11B76FB19C55C13BC2A6D26F17348E5114F">CopyFrom</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Count_LinkedList_1C42C3607B90B5C6016B2E8963C1C02DC0AD07E3">Count</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_End_LinkedList_722C93D73EE32F8B8676F691D1A4C72492E8267E">End</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_End_LinkedList_75BF13EC234CEA18566E7320CC6F46BB62B9CD49">End</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Front_LinkedList_CB743481DD16664EB506F3EFF082CE6B644A1542">Front</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Insert_LinkedList_075C5FE818E6BF81C95F18B9947AF0434F84E004">Insert</a>(<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;pos, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_InsertFront_LinkedList_BB1371D84BEA7958683D28DB7FEB5B8250899115">InsertFront</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_IsEmpty_LinkedList_3BD3D1E37ADB5F6F6A6EA429A6DC7643C0400FD3">IsEmpty</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Remove_LinkedList_CD2AFC3B157E3A15F6654356BDC24AD2E16B4B14">Remove</a>(<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;pos)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Remove_LinkedList_834A09D32B8F3E93999B49B3C14358A857AC3606">Remove</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_RemoveFirst_LinkedList_43C26FA064C714C9B04CC8F2D350938F046F4D77">RemoveFirst</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_RemoveLast_LinkedList_1E2E7F0F9C0DCBB29C3C28CD903ED9C5EAD14367">RemoveLast</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNode_1141EB44A6BF7EEE0D5D74C41C68CD322A0DC4D6.html">LinkedListNode</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#member_function_Tail_LinkedList_9785C23E4386121B7B163C8A4A2E4CB6A2A08441">Tail</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#move_assignment_op_assign_LinkedList_2065D59ED3D52C49AEE8070DDC21FC7D4FBA08F3">operator=</a>(<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#copy_assignment_op_assign_LinkedList_0EC9712962176F91E1695C3A75F5723981D2AC03">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&nbsp;that)</td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_ConstIterator_2CED4053E43F86C6DD53CBE7EF53FAEF520AF15C">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ConstIterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+   </tr>
+   <tr id="aliasType_Iterator_9881AA2FEBF7906BDFAE72B13F06210CCA727970">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;Iterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*></td>
+   </tr>
+   <tr id="aliasType_ValueType_6A322A37FE1E4B31E674581AD85DFA4B53582C7C">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ValueType</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_count_FE41D57F65E5524964A95FEF4DC5C308BD16361B" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">count</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_head_16141AAA7567C806D9CE9E3B2BE6C7189EAC22DC" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNode_1141EB44A6BF7EEE0D5D74C41C68CD322A0DC4D6.html">LinkedListNode</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>>*</td>
+    <td xml:space="preserve">head</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_tail_282A51411196EF1AD8F90128C6C75BEEB625AA7B" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNode_1141EB44A6BF7EEE0D5D74C41C68CD322A0DC4D6.html">LinkedListNode</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>>*</td>
+    <td xml:space="preserve">tail</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_LinkedList_40999DB3AEE627EFEC4702B363AC769169A44454" xml:space="preserve">LinkedList&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;LinkedList()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#111">111</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_LinkedList_52EF2EDBBEFFE4980673B762D055F0A96593427C" xml:space="preserve">LinkedList&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;LinkedList(<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#118">118</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_LinkedList_3FB4FE660401DF53369C30F57FCB4638C002D109" xml:space="preserve">LinkedList&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;LinkedList(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#114">114</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_LinkedList_4A2BCA7EF2A5BF2B025B5744105768A4F311EC50" xml:space="preserve">~LinkedList&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~LinkedList()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#135">135</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Add_LinkedList_7BF141AE78D9056F452733CB15ADE6BDDDBED4A0" xml:space="preserve">Add&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Add(<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#238">238</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Add_LinkedList_42EA937B219CE7C81DC4E3249EB73397BB56A84F" xml:space="preserve">Add&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Add(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#224">224</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Back_LinkedList_EA5779C86CA14A4E82284C06B77E4820B033354C" xml:space="preserve">Back&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;Back()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#334">334</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_LinkedList_B3F89DF984A35D02BCC65ECD53BE978583E07BDB" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#139">139</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_LinkedList_AE6D98ED9451FA30CDCB9FA3B8A799687FB0FC73" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#143">143</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CBegin_LinkedList_B8CAE4EF5725D632F919EE74ED9F58357FD61F63" xml:space="preserve">CBegin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;CBegin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#147">147</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CEnd_LinkedList_E484EE1AFA1A541D66AC66F355D4D9180D111507" xml:space="preserve">CEnd&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;CEnd()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#159">159</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Clear_LinkedList_D38B9B1888C3BCB601FB228B6B630DDFCB2A4658" xml:space="preserve">Clear&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Clear()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#171">171</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CopyFrom_LinkedList_E370E11B76FB19C55C13BC2A6D26F17348E5114F" xml:space="preserve">CopyFrom&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;CopyFrom(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#343">343</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Count_LinkedList_1C42C3607B90B5C6016B2E8963C1C02DC0AD07E3" xml:space="preserve">Count&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Count()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#163">163</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_LinkedList_722C93D73EE32F8B8676F691D1A4C72492E8267E" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#151">151</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_LinkedList_75BF13EC234CEA18566E7320CC6F46BB62B9CD49" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#155">155</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Front_LinkedList_CB743481DD16664EB506F3EFF082CE6B644A1542" xml:space="preserve">Front&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;Front()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#329">329</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_LinkedList_075C5FE818E6BF81C95F18B9947AF0434F84E004" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;Insert(<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;pos, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#199">199</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_InsertFront_LinkedList_BB1371D84BEA7958683D28DB7FEB5B8250899115" xml:space="preserve">InsertFront&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;InsertFront(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#184">184</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsEmpty_LinkedList_3BD3D1E37ADB5F6F6A6EA429A6DC7643C0400FD3" xml:space="preserve">IsEmpty&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;IsEmpty()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#167">167</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_LinkedList_CD2AFC3B157E3A15F6654356BDC24AD2E16B4B14" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;Remove(<a href="../../System.Base/doc/class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B.html">LinkedListNodeIterator</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;, <a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>*>&nbsp;pos)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#284">284</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_LinkedList_834A09D32B8F3E93999B49B3C14358A857AC3606" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#311">311</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RemoveFirst_LinkedList_43C26FA064C714C9B04CC8F2D350938F046F4D77" xml:space="preserve">RemoveFirst&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;RemoveFirst()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#252">252</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RemoveLast_LinkedList_1E2E7F0F9C0DCBB29C3C28CD903ED9C5EAD14367" xml:space="preserve">RemoveLast&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;RemoveLast()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#268">268</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Tail_LinkedList_9785C23E4386121B7B163C8A4A2E4CB6A2A08441" xml:space="preserve">Tail&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_LinkedListNode_1141EB44A6BF7EEE0D5D74C41C68CD322A0DC4D6.html">LinkedListNode</a>&lt;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html#e29c963d-b446-3a8f-eb56-ccce3486b267">T</a>>*&nbsp;Tail()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#339">339</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_LinkedList_2065D59ED3D52C49AEE8070DDC21FC7D4FBA08F3" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#129">129</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_LinkedList_0EC9712962176F91E1695C3A75F5723981D2AC03" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A.html">LinkedList</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/LinkedList.cm.html#124">124</a>&nbsp;of&nbsp;<a href="../../System.Base/file/LinkedList.cm.html">System.Base/LinkedList.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

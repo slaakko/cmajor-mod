@@ -4,8 +4,10 @@
  </files>
  <namespace docPath="../../Hello/doc/ns_.html" extPath="Hello/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../Hello/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Hello/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Hello/Hello.cm" filePath="../../Hello/file/Hello.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="3" name="main" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers=""/>
+   <function docPath="../../Hello/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Hello/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Hello/Hello.cm" filePath="../../Hello/file/Hello.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="3" name="main" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers=""/>
   </functions>
  </namespace>
- <types/>
+ <types>
+  <basicType id="5d7c020c-5b18-97b6-16eb-4e3f72643126" name="void"/>
+ </types>
 </symbolTable>

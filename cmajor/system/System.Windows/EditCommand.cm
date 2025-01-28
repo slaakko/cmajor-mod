@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -19,7 +19,7 @@ namespace System.Windows
 
     public class EditCommandList
     {
-        public EditCommandList(TextView* textView_) : textView(textView_), currentIndex(0), inGroup(false)
+        public explicit EditCommandList(TextView* textView_) : textView(textView_), currentIndex(0), inGroup(false)
         {
         }
         [nodiscard]

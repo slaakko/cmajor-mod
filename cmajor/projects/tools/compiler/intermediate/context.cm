@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -28,7 +28,7 @@ namespace intermediate
     {
         public Context() :
             compileUnit(this), types(this), data(this), code(this), metadata(this), currentFunction(null), currentBasicBlock(null), currentSourceLineNumber(0), fileIndex(-1),
-            inlineDepth(4)
+            inlineDepth(4), maxArithmeticOptimizationCount(8)
         {
         }
         public inline CompileUnit* GetCompileUnit() const
@@ -448,6 +448,10 @@ namespace intermediate
         {
             return inlineDepth;
         }
+        public inline int MaxArithmeticOptimizationCount() const
+        {
+            return maxArithmeticOptimizationCount;
+        }
         public inline void SetCurrentSourceLineNumber(int sourceLineNumber)
         {
             currentSourceLineNumber = sourceLineNumber;
@@ -485,6 +489,7 @@ namespace intermediate
         private assembly.AssemblyContext assemblyContext;
         private int callIndex;
         private int inlineDepth;
+        private int maxArithmeticOptimizationCount;
     }
 }
 

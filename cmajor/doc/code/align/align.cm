@@ -1,4 +1,4 @@
-public constexpr nothrow inline long Align(long n, long alignment)
+public constexpr inline long Align(long n, long alignment)
 {
     #assert(alignment > 0);
     return (n + alignment - 1) & -alignment;

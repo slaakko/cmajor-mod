@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,6 +11,10 @@ using cm.ast;
 
 namespace binder
 {
+    public void Break()
+    {
+    }
+
     public class FunctionTemplateKey
     {
         public FunctionTemplateKey(FunctionSymbol* functionTemplate_, const List<TypeSymbol*>& templateArgumentTypes_) :

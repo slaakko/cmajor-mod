@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -214,6 +214,16 @@ void* CppEmitter::CreateDefaultIrValueForArrayType(void* arrayIrType, const std:
 void* CppEmitter::CreateDefaultIrValueForBool()
 {
     return context->GetDefaultBoolValue();
+}
+
+void* CppEmitter::CreateTrue()
+{
+    return context->GetBoolValue(true);
+}
+
+void* CppEmitter::CreateFalse()
+{
+    return context->GetBoolValue(false);
 }
 
 void* CppEmitter::CreateDefaultIrValueForSByte()

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -1252,7 +1252,7 @@ void MainWindow::StartRunning()
     ClearOutput();
     GetConsole()->Clear();
     const std::string& programArguments = projectData->ProgramArguments();
-    RunProgram(backend, config, activeProject, programArguments); 
+    RunProgram(backend, config, optLevel, activeProject, programArguments);
 }
 
 void MainWindow::StopRunning()

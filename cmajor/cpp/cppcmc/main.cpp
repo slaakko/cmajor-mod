@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -57,8 +57,6 @@ void PrintHelp()
         "--gen-debug-info (-g)\n" <<
         "   generate debug info\n" <<
         "   enabled for debug mode\n" <<
-        "--link-with-debug-runtime (-d)\n" <<
-        "   Link with debug rungime.\n" <<
         "--time (-t)\n" <<
         "   print duration of compilation\n" <<
         std::endl;

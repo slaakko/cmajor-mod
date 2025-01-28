@@ -39,3 +39,4 @@ source <string_repository.cm>;
 source <system_default_attribute_processor.cm>;
 source <type_binder.cm>;
 source <type_resolver.cm>;
+source <xml_attribute_processor.cm>;

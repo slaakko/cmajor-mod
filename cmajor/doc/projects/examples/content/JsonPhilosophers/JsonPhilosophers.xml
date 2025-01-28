@@ -1,0 +1,24 @@
+<symbolTable id="JsonPhilosophers" module="JsonPhilosophers">
+ <files>
+  <file name="JsonPhilosophers/main.cm" path="file/main.cm.html"/>
+ </files>
+ <namespace docPath="../../JsonPhilosophers/doc/ns_.html" extPath="JsonPhilosophers/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../JsonPhilosophers/doc/../index.html#function_MakePhilosophers_D6EF850F62CC548A33FBF7D19F34B0284A621196" extPath="JsonPhilosophers/doc/../index.html#function_MakePhilosophers_D6EF850F62CC548A33FBF7D19F34B0284A621196" fileName="JsonPhilosophers/main.cm" filePath="../../JsonPhilosophers/file/main.cm.html" id="function_MakePhilosophers_D6EF850F62CC548A33FBF7D19F34B0284A621196" kind="Function" line="4" name="MakePhilosophers" returnType="fc806fc7-337f-ac37-1d17-ea36d03a66b3" specifiers=""/>
+   <function docPath="../../JsonPhilosophers/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="JsonPhilosophers/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="JsonPhilosophers/main.cm" filePath="../../JsonPhilosophers/file/main.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="24" name="main" returnType="984a98e5-de3d-c1ce-0a9c-62ede34bff80" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <specialization id="fcfe9409-89b1-0f11-7b0c-b45e442abdac" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
+   <templateArgumentTypes>
+    <templateArgumentType ref="class_JsonArray_595A35C98AB243A92CA1C39BB1B07E82AA246D18"/>
+   </templateArgumentTypes>
+  </specialization>
+  <specialization id="fc806fc7-337f-ac37-1d17-ea36d03a66b3" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
+   <templateArgumentTypes>
+    <templateArgumentType ref="fcfe9409-89b1-0f11-7b0c-b45e442abdac"/>
+   </templateArgumentTypes>
+  </specialization>
+  <basicType id="984a98e5-de3d-c1ce-0a9c-62ede34bff80" name="int"/>
+ </types>
+</symbolTable>

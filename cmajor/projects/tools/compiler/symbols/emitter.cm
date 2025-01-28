@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,41 +9,19 @@ using System.Threading;
 
 namespace symbols
 {
-    public abstract class EmittingDelegate
+    public interface EmittingDelegate
     {
-        public EmittingDelegate()
-        {
-        }
-        public default virtual ~EmittingDelegate();
-        public virtual int Install(const string& str)
-        {
-            return -1;
-        }
-        public virtual int Install(const wstring& str)
-        {
-            return -1;
-        }
-        public virtual int Install(const ustring& str)
-        {
-            return -1;
-        }
-        public virtual Result<intermediate.Value*> GetGlobalStringValue(int stringId)
-        {
-            return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
-        }
-        public virtual Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
-        {
-            return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
-        }
-        public virtual Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
-        {
-            return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
-        }
+        int Install(const string& str);
+        int Install(const wstring& str);
+        int Install(const ustring& str);
+        Result<intermediate.Value*> GetGlobalStringValue(int stringId);
+        Result<intermediate.Value*> GetGlobalWStringValue(int stringId);
+        Result<intermediate.Value*> GetGlobalUStringValue(int stringId);
     }
 
     public class Emitter
     {
-        public Emitter(SymbolsContext& symbolsContext_, EmittingDelegate* emittingDelegate_) :
+        public Emitter(SymbolsContext& symbolsContext_, EmittingDelegate emittingDelegate_) :
             symbolsContext(symbolsContext_), emittingDelegate(emittingDelegate_)
         {
         }
@@ -57,27 +35,27 @@ namespace symbols
         }
         public inline int Install(const string& str)
         {
-            return emittingDelegate->Install(str);
+            return emittingDelegate.Install(str);
         }
         public inline int Install(const wstring& str)
         {
-            return emittingDelegate->Install(str);
+            return emittingDelegate.Install(str);
         }
         public inline int Install(const ustring& str)
         {
-            return emittingDelegate->Install(str);
+            return emittingDelegate.Install(str);
         }
         public inline Result<intermediate.Value*> GetGlobalStringValue(int stringId)
         {
-            return emittingDelegate->GetGlobalStringValue(stringId);
+            return emittingDelegate.GetGlobalStringValue(stringId);
         }
         public inline Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
         {
-            return emittingDelegate->GetGlobalWStringValue(stringId);
+            return emittingDelegate.GetGlobalWStringValue(stringId);
         }
         public inline Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
         {
-            return emittingDelegate->GetGlobalUStringValue(stringId);
+            return emittingDelegate.GetGlobalUStringValue(stringId);
         }
         public inline Result<intermediate.Value*> CreateGlobalStringValue(const string& stringValue)
         {
@@ -842,7 +820,7 @@ namespace symbols
         private Map<InterfaceTypeSymbol*, intermediate.Type*> interfaceTypeMap;
         private Map<InterfaceTypeSymbol*, intermediate.Type*> imtPtrTypeMap;
         private intermediate.Value* objectPointer;
-        private EmittingDelegate* emittingDelegate;
+        private EmittingDelegate emittingDelegate;
         private bool substituteLineNumber;
         private int currentLineNumber;
         private bool init;

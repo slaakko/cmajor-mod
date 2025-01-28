@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -40,7 +40,6 @@ public:
     InterfaceTypeMoveConstructor* MoveConstructor() const { return moveConstructor; }
     InterfaceTypeCopyAssignment* CopyAssignment() const { return copyAssignment; }
     InterfaceTypeMoveAssignment* MoveAssigment() const { return moveAssignment; }
-    InterfaceTypeEqual* Equal() const { return equal; }
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "InterfaceTypeSymbol"; }
     void Check() override;
@@ -53,7 +52,6 @@ private:
     InterfaceTypeMoveConstructor* moveConstructor;
     InterfaceTypeCopyAssignment* copyAssignment;
     InterfaceTypeMoveAssignment* moveAssignment;
-    InterfaceTypeEqual* equal;
 };
 
 class InterfaceTypeDefaultConstructor : public FunctionSymbol
@@ -142,6 +140,21 @@ public:
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeEqual"; }
+private:
+    InterfaceTypeSymbol* interfaceType;
+};
+
+class InterfaceTypeLess : public FunctionSymbol
+{
+public:
+    InterfaceTypeLess(const soul::ast::Span& span_, const std::u32string& name_);
+    InterfaceTypeLess(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType);
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
+    void EmplaceType(TypeSymbol* typeSymbol, int index) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    bool IsBasicTypeOperation() const override { return true; }
+    const char* ClassName() const override { return "InterfaceTypeLess"; }
 private:
     InterfaceTypeSymbol* interfaceType;
 };

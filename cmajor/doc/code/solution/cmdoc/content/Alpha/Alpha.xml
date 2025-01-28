@@ -4,10 +4,10 @@
  </files>
  <namespace docPath="../../Alpha/doc/ns_.html" extPath="Alpha/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../Alpha/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Alpha/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Alpha/main.cm" filePath="../../Alpha/file/main.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="4" name="main" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers=""/>
+   <function docPath="../../Alpha/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Alpha/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Alpha/main.cm" filePath="../../Alpha/file/main.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="4" name="main" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
   </functions>
  </namespace>
  <types>
-  <basicType id="70d3e7e0-6b55-8aac-3977-5a026d7512c9" name="void"/>
+  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
  </types>
 </symbolTable>

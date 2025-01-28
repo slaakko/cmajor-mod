@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -214,6 +214,16 @@ void* MasmEmitter::CreateDefaultIrValueForArrayType(void* arrayIrType, const std
 void* MasmEmitter::CreateDefaultIrValueForBool()
 {
     return context->GetDefaultBoolValue();
+}
+
+void* MasmEmitter::CreateTrue()
+{
+    return context->GetBoolValue(true);
+}
+
+void* MasmEmitter::CreateFalse()
+{
+    return context->GetBoolValue(false);
 }
 
 void* MasmEmitter::CreateDefaultIrValueForSByte()

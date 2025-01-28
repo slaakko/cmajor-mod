@@ -1,6 +1,6 @@
 
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -2612,8 +2612,15 @@ namespace binder
         }
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
-            Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
-            if (loadResult.Error()) return loadResult;
+            if (!classPtr.IsNull())
+            {
+                Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
+                if (loadResult.Error()) return loadResult;
+            }
+            else
+            {
+                emitter.Stack().Push(null);
+            }
             return Result<bool>(true);
         }
         public override Result<bool> Store(Emitter& emitter, OperationFlags flags)

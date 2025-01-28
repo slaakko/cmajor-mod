@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -50,6 +50,8 @@ public:
     std::string MakeSymbolName(const std::string& name) override { return "@" + name; } 
     void* CreateDefaultIrValueForArrayType(void* arrayIrType, const std::vector<void*>& arrayOfDefaults) override;
     void* CreateDefaultIrValueForBool() override;
+    void* CreateTrue() override;
+    void* CreateFalse() override;
     void* CreateDefaultIrValueForSByte() override;
     void* CreateDefaultIrValueForByte() override;
     void* CreateDefaultIrValueForShort() override;

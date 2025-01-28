@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -456,7 +456,15 @@ namespace cm.ast
             {
                 executableFilePath = outDirBasePath;
             }
-            executableFilePath = Path.Combine(Path.Combine(Path.Combine(Path.Combine(executableFilePath, "bin"), config), backEndStr), Path.GetFileName(filePath));
+            if (config == "debug")
+            {
+                executableFilePath = Path.Combine(Path.Combine(Path.Combine(Path.Combine(executableFilePath, "bin"), backEndStr), config), Path.GetFileName(filePath));
+            }
+            else
+            {
+                executableFilePath = Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(executableFilePath, "bin"), backEndStr), config), profile),
+                    Path.GetFileName(filePath));
+            }
         #if (WINDOWS)
             if (backend == BackEnd.systemx)
             {

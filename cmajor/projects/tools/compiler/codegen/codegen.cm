@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,28 +12,29 @@ using cm.ast;
 
 namespace codegen
 {
-    public class CodeGenerator : BoundNodeVisitor
+    public class CodeGenerator : BoundNodeVisitor, EmittingDelegate
     {
-        public CodeGenerator(SymbolsContext& context_) : context(context_), emitter(context, this), compileUnit(null), currentFunction(null), currentBlock(null),
+        public CodeGenerator(SymbolsContext& context_) : context(context_), emitter(context, *this),
+            compileUnit(null), currentFunction(null), currentBlock(null),
             trueBlock(null), falseBlock(null), breakTarget(null), breakTargetBlock(null), continueTarget(null), continueTargetBlock(null),
             currentCaseMap(null), defaultDest(null),
             destructorCallGenerated(false), lastInstructionWasRet(false), basicBlockOpen(false), isSystemRuntimeOrCoreModule(false), generateLineNumbers(false),
             inSetLineOrEntryCode(false), prevLineNumber(0), errorId(0)
         {
         }
-        public override int Install(const string& str)
+        public int Install(const string& str)
         {
             return compileUnit->Install(str);
         }
-        public override int Install(const wstring& str)
+        public int Install(const wstring& str)
         {
             return compileUnit->Install(str);
         }
-        public override int Install(const ustring& str)
+        public int Install(const ustring& str)
         {
             return compileUnit->Install(str);
         }
-        public override Result<intermediate.Value*> GetGlobalStringValue(int stringId)
+        public Result<intermediate.Value*> GetGlobalStringValue(int stringId)
         {
             auto it = utf8stringMap.Find(stringId);
             if (it != utf8stringMap.End())
@@ -49,7 +50,7 @@ namespace codegen
                 return Result<intermediate.Value*>(stringValue);
             }
         }
-        public override Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
+        public Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
         {
             auto it = utf16stringMap.Find(stringId);
             if (it != utf16stringMap.End())
@@ -65,7 +66,7 @@ namespace codegen
                 return Result<intermediate.Value*>(stringValue);
             }
         }
-        public override Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
+        public Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
         {
             auto it = utf32stringMap.Find(stringId);
             if (it != utf32stringMap.End())

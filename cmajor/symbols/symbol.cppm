@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -55,12 +55,12 @@ enum class SymbolType : uint8_t
     basicTypeFloatingToUnsignedInt, basicTypeFloatingToSignedInt, basicTypeFloatingExtension, basicTypeFloatingTruncation, trap,
     enumTypeDefaultConstructor, enumTypeCopyConstructor, enumTypeMoveConstructor, enumTypeCopyAssignment, enumTypeMoveAssignment, enumTypeReturn, enumTypeEquality,
     enumTypeToUnderlyingType, underlyingToEnumType,
-    delegateTypeDefaultConstructor, delegateTypeCopyConstructor, delegateTypeMoveConstructor, delegateTypeCopyAssignment, delegateTypeMoveAssignment, delegateTypeReturn, delegateTypeEquality,
-    functionToDelegateSymbol,
+    delegateTypeDefaultConstructor, delegateTypeCopyConstructor, delegateTypeMoveConstructor, delegateTypeCopyAssignment, delegateTypeMoveAssignment, delegateTypeReturn, 
+    delegateTypeEquality, delegateTypeLess, functionToDelegateSymbol,
     classDelegateTypeDefaultConstructor, classDelegateTypeCopyConstructor, classDelegateTypeMoveConstructor, classDelegateTypeCopyAssignment, classDelegateTypeMoveAssignment,
-    classDelegateTypeEquality, memberFunctionToClassDelegateSymbol,
+    classDelegateTypeEquality, classDelegateTypeLess, memberFunctionToClassDelegateSymbol,
     arrayLengthFunctionSymbol, arrayBeginFunctionSymbol, arrayEndFunctionSymbol, arrayCBeginFunctionSymbol, arrayCEndFunctionSymbol,
-    interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment, interfaceTypeEqual,
+    interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment, interfaceTypeEqual, interfaceTypeLess,
     classToInterfaceConversion, getObjectPtrFromInterfaceSymbol, 
     namespaceTypeSymbol, functionGroupTypeSymbol, memberExpressionTypeSymbol, variableValueSymbol, globalVariableSymbol, globalVariableGroupSymbol,
     stringFunctionContainerSymbol, stringLengthFunctionSymbol, axiomSymbol, keywordSymbol, autoTypeSymbol,
@@ -169,6 +169,7 @@ public:
     bool IsAliasTypeSymbol() const { return symbolType == SymbolType::aliasTypeSymbol; }
     bool IsDeclarationBlock() const { return symbolType == SymbolType::declarationBlock; }
     bool IsClassTemplateSpecializationSymbol() const { return symbolType == SymbolType::classTemplateSpecializationSymbol; }
+    bool IsNullPtrTypeSymbol() const { return symbolType == SymbolType::nullPtrTypeSymbol;  }
     void SetMangledName(const std::u32string& mangledName_);
     SymbolAccess Access() const { return SymbolAccess(flags & SymbolFlags::access); }
     void SetAccess(SymbolAccess access_) { flags = flags | SymbolFlags(access_); }

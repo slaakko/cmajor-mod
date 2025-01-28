@@ -6,118 +6,118 @@
   <classes>
    <class baseClass="class_XmlContentHandler_7429223FCBE3A541F14FD9475F2099B20E248715" docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D" line="4" name="XmlStats" specifiers="">
     <ctorsDtors>
-     <ctorDtor docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#constructor_XmlStats_A820D0DE13246F65FF154FE4724DA87C9FAB14AF" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#constructor_XmlStats_A820D0DE13246F65FF154FE4724DA87C9FAB14AF" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="constructor_XmlStats_A820D0DE13246F65FF154FE4724DA87C9FAB14AF" kind="Constructor" line="6" name="XmlStats" specifiers="public">
+     <ctorDtor docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#constructor_XmlStats_9CD83911A37C949B13DCFF800717062992FAF5ED" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#constructor_XmlStats_9CD83911A37C949B13DCFF800717062992FAF5ED" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="constructor_XmlStats_9CD83911A37C949B13DCFF800717062992FAF5ED" kind="Constructor" line="6" name="XmlStats" specifiers="public">
       <parameters>
-       <parameter id="parameter_xmlFileName__271AA15659D0C15E415E053572A3884EEA9BCD06" name="xmlFileName_" type="31c9ab72-f988-9b73-f807-03ecb09a4c84"/>
+       <parameter id="parameter_xmlFileName__271AA15659D0C15E415E053572A3884EEA9BCD06" name="xmlFileName_" type="15f7b6ac-592e-14ef-56b4-14c75e18320d"/>
       </parameters>
      </ctorDtor>
     </ctorsDtors>
     <functions>
-     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleCDataSection_XmlStats_365C41FAAFEF6155F8BDF279E9E13F5D01A1BC95" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleCDataSection_XmlStats_365C41FAAFEF6155F8BDF279E9E13F5D01A1BC95" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandleCDataSection_XmlStats_365C41FAAFEF6155F8BDF279E9E13F5D01A1BC95" kind="Member Function" line="26" name="HandleCDataSection" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public override">
+     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleCDataSection_XmlStats_8D165A2CC981DB3954CD572D80C5952FB0787D0D" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleCDataSection_XmlStats_8D165A2CC981DB3954CD572D80C5952FB0787D0D" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandleCDataSection_XmlStats_8D165A2CC981DB3954CD572D80C5952FB0787D0D" kind="Member Function" line="26" name="HandleCDataSection" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public override">
       <parameters>
-       <parameter id="parameter_span_604443D75DDDD0070F775903F1E3FE5281075A19" name="span" type="f4013b9a-ccb6-7dd5-b47d-073313b5b84a"/>
-       <parameter id="parameter_fileIndex_224049C72C13B0EE796F930406C35D64101CA5A2" name="fileIndex" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-       <parameter id="parameter_cdata_4A970D762CF0EBD298D7A1ECF7666415F40BCB65" name="cdata" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
+       <parameter id="parameter_span_604443D75DDDD0070F775903F1E3FE5281075A19" name="span" type="af147a09-2273-b465-6042-8731e196ad1c"/>
+       <parameter id="parameter_fileIndex_224049C72C13B0EE796F930406C35D64101CA5A2" name="fileIndex" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_cdata_4A970D762CF0EBD298D7A1ECF7666415F40BCB65" name="cdata" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
       </parameters>
      </function>
-     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleComment_XmlStats_2AAD60A3F65D4BCA49C909F0A985BCD3B68984FC" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleComment_XmlStats_2AAD60A3F65D4BCA49C909F0A985BCD3B68984FC" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandleComment_XmlStats_2AAD60A3F65D4BCA49C909F0A985BCD3B68984FC" kind="Member Function" line="21" name="HandleComment" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public override">
+     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleComment_XmlStats_063DEB88F94A846A1062429307EFA7779A564BFD" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleComment_XmlStats_063DEB88F94A846A1062429307EFA7779A564BFD" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandleComment_XmlStats_063DEB88F94A846A1062429307EFA7779A564BFD" kind="Member Function" line="21" name="HandleComment" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public override">
       <parameters>
-       <parameter id="parameter_span_7F91D16C228D00B8E74FB1974810BFB6CC38BF57" name="span" type="f4013b9a-ccb6-7dd5-b47d-073313b5b84a"/>
-       <parameter id="parameter_fileIndex_393882EC27C3633AFC681849D940FB5A5557D9CC" name="fileIndex" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-       <parameter id="parameter_comment_460B6EC4FEF93ECB5476BAA9B085B6E2AD018A4C" name="comment" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
+       <parameter id="parameter_span_7F91D16C228D00B8E74FB1974810BFB6CC38BF57" name="span" type="af147a09-2273-b465-6042-8731e196ad1c"/>
+       <parameter id="parameter_fileIndex_393882EC27C3633AFC681849D940FB5A5557D9CC" name="fileIndex" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_comment_460B6EC4FEF93ECB5476BAA9B085B6E2AD018A4C" name="comment" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
       </parameters>
      </function>
-     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandlePI_XmlStats_2B47F1327D13DC328A9967BBE6CF5876692A8FEE" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandlePI_XmlStats_2B47F1327D13DC328A9967BBE6CF5876692A8FEE" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandlePI_XmlStats_2B47F1327D13DC328A9967BBE6CF5876692A8FEE" kind="Member Function" line="16" name="HandlePI" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public override">
+     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandlePI_XmlStats_96D53CE59CF915CDD02B11C7200F9FF7AB9C79EA" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandlePI_XmlStats_96D53CE59CF915CDD02B11C7200F9FF7AB9C79EA" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandlePI_XmlStats_96D53CE59CF915CDD02B11C7200F9FF7AB9C79EA" kind="Member Function" line="16" name="HandlePI" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public override">
       <parameters>
-       <parameter id="parameter_span_1E65E629223B77291EB01E5136DC74AB06A2B101" name="span" type="f4013b9a-ccb6-7dd5-b47d-073313b5b84a"/>
-       <parameter id="parameter_fileIndex_5B069501E31E7231A17807627D1C9F6DA9F9A581" name="fileIndex" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-       <parameter id="parameter_target_C236F228BBDF8E0D3D955D9EFDD8FD2910CA1AED" name="target" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
-       <parameter id="parameter_data_0A120ECECCBE3EC36FDF0E0D4CF6B872D5483FA9" name="data" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
+       <parameter id="parameter_span_1E65E629223B77291EB01E5136DC74AB06A2B101" name="span" type="af147a09-2273-b465-6042-8731e196ad1c"/>
+       <parameter id="parameter_fileIndex_5B069501E31E7231A17807627D1C9F6DA9F9A581" name="fileIndex" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_target_C236F228BBDF8E0D3D955D9EFDD8FD2910CA1AED" name="target" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
+       <parameter id="parameter_data_0A120ECECCBE3EC36FDF0E0D4CF6B872D5483FA9" name="data" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
       </parameters>
      </function>
-     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleText_XmlStats_B775A497AAC711F9A4E6A18D78A42270D671BFC9" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleText_XmlStats_B775A497AAC711F9A4E6A18D78A42270D671BFC9" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandleText_XmlStats_B775A497AAC711F9A4E6A18D78A42270D671BFC9" kind="Member Function" line="31" name="HandleText" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public override">
+     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleText_XmlStats_DFD53F8FF074B29AB9E0B9D3F01FA47DC60A7347" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_HandleText_XmlStats_DFD53F8FF074B29AB9E0B9D3F01FA47DC60A7347" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_HandleText_XmlStats_DFD53F8FF074B29AB9E0B9D3F01FA47DC60A7347" kind="Member Function" line="31" name="HandleText" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public override">
       <parameters>
-       <parameter id="parameter_span_B44D2D621CA83D932625DE67F691B7FE600EC5D7" name="span" type="f4013b9a-ccb6-7dd5-b47d-073313b5b84a"/>
-       <parameter id="parameter_fileIndex_61A71ABE5FB8D2B3D3D312D354B6F73CB84434EA" name="fileIndex" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-       <parameter id="parameter_text_07E2497CB91A2661C5CF81DB2ABD3F027E064DAD" name="text" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
+       <parameter id="parameter_span_B44D2D621CA83D932625DE67F691B7FE600EC5D7" name="span" type="af147a09-2273-b465-6042-8731e196ad1c"/>
+       <parameter id="parameter_fileIndex_61A71ABE5FB8D2B3D3D312D354B6F73CB84434EA" name="fileIndex" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_text_07E2497CB91A2661C5CF81DB2ABD3F027E064DAD" name="text" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
       </parameters>
      </function>
-     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_Print_XmlStats_19401BEF86225823B806A60B50BC67DA011851E7" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_Print_XmlStats_19401BEF86225823B806A60B50BC67DA011851E7" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_Print_XmlStats_19401BEF86225823B806A60B50BC67DA011851E7" kind="Member Function" line="36" name="Print" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers="public"/>
-     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_StartElement_XmlStats_B712748A40F7797097E8E98123A8EA3F54948A4F" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_StartElement_XmlStats_B712748A40F7797097E8E98123A8EA3F54948A4F" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_StartElement_XmlStats_B712748A40F7797097E8E98123A8EA3F54948A4F" kind="Member Function" line="9" name="StartElement" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public override">
+     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_Print_XmlStats_A4BF7EEECE9F19ECE1BD26E8EC3CF1968FC2C211" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_Print_XmlStats_A4BF7EEECE9F19ECE1BD26E8EC3CF1968FC2C211" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_Print_XmlStats_A4BF7EEECE9F19ECE1BD26E8EC3CF1968FC2C211" kind="Member Function" line="36" name="Print" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
+     <function docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_StartElement_XmlStats_9F97A04768CE424D1355DE75DE47D9F69158C2DB" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_function_StartElement_XmlStats_9F97A04768CE424D1355DE75DE47D9F69158C2DB" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="member_function_StartElement_XmlStats_9F97A04768CE424D1355DE75DE47D9F69158C2DB" kind="Member Function" line="9" name="StartElement" returnType="2dcbbcc2-b0e9-db01-7e13-356586243a27" specifiers="public override">
       <parameters>
-       <parameter id="parameter_span_01830F8C4920C270022D4CF04AA2042DAC1F6AE2" name="span" type="f4013b9a-ccb6-7dd5-b47d-073313b5b84a"/>
-       <parameter id="parameter_fileIndex_915CFA72F16086268DA9632BB57C781160C273FE" name="fileIndex" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-       <parameter id="parameter_namespaceUri_65F6D0CAFF5AE66A9CEB94A78CF22BCCE340533C" name="namespaceUri" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
-       <parameter id="parameter_localName_A1E09061B09376EC9FC5D3706FDD613216B876ED" name="localName" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
-       <parameter id="parameter_qualifiedName_57EC157079868552CC9830F2CF538D71DC59788B" name="qualifiedName" type="3bfa682f-9dd9-4bbc-0394-094cffdb5142"/>
-       <parameter id="parameter_attributes_EA34DACEB328BA751D9D85C9533169880137D51A" name="attributes" type="8f88c551-5aa3-500a-62ea-24d70aa67621"/>
+       <parameter id="parameter_span_01830F8C4920C270022D4CF04AA2042DAC1F6AE2" name="span" type="af147a09-2273-b465-6042-8731e196ad1c"/>
+       <parameter id="parameter_fileIndex_915CFA72F16086268DA9632BB57C781160C273FE" name="fileIndex" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_namespaceUri_65F6D0CAFF5AE66A9CEB94A78CF22BCCE340533C" name="namespaceUri" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
+       <parameter id="parameter_localName_A1E09061B09376EC9FC5D3706FDD613216B876ED" name="localName" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
+       <parameter id="parameter_qualifiedName_57EC157079868552CC9830F2CF538D71DC59788B" name="qualifiedName" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
+       <parameter id="parameter_attributes_EA34DACEB328BA751D9D85C9533169880137D51A" name="attributes" type="f03e585a-0737-c27f-8854-1af58127c85f"/>
       </parameters>
      </function>
     </functions>
     <variables>
-     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numAttributes_BA913F28C694313B1929992F124C940C9C9F5FE4" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numAttributes_BA913F28C694313B1929992F124C940C9C9F5FE4" id="member_variable_numAttributes_BA913F28C694313B1929992F124C940C9C9F5FE4" name="numAttributes" specifiers="private" type="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9"/>
-     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numCharacters_C9DB045805A338590B23AA923EDFBA81328E302A" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numCharacters_C9DB045805A338590B23AA923EDFBA81328E302A" id="member_variable_numCharacters_C9DB045805A338590B23AA923EDFBA81328E302A" name="numCharacters" specifiers="private" type="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9"/>
-     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numComments_548B7E50FF3CDDC4226A3827F1EDA8254F97DB11" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numComments_548B7E50FF3CDDC4226A3827F1EDA8254F97DB11" id="member_variable_numComments_548B7E50FF3CDDC4226A3827F1EDA8254F97DB11" name="numComments" specifiers="private" type="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9"/>
-     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numElements_7B2773776715A4F068B89B4D80F3DE47D4B4B686" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numElements_7B2773776715A4F068B89B4D80F3DE47D4B4B686" id="member_variable_numElements_7B2773776715A4F068B89B4D80F3DE47D4B4B686" name="numElements" specifiers="private" type="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9"/>
-     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numProcessingInstructions_BAAC9185A5AFABAE230DF212BBF6B395F5055353" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numProcessingInstructions_BAAC9185A5AFABAE230DF212BBF6B395F5055353" id="member_variable_numProcessingInstructions_BAAC9185A5AFABAE230DF212BBF6B395F5055353" name="numProcessingInstructions" specifiers="private" type="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9"/>
-     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_xmlFileName_09D57E15F72884FAA502D1A855DBB441CBB0299E" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_xmlFileName_09D57E15F72884FAA502D1A855DBB441CBB0299E" id="member_variable_xmlFileName_09D57E15F72884FAA502D1A855DBB441CBB0299E" name="xmlFileName" specifiers="private" type="69a8af4e-9c1f-ad80-ca48-afa56dd1720d"/>
+     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numAttributes_BA913F28C694313B1929992F124C940C9C9F5FE4" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numAttributes_BA913F28C694313B1929992F124C940C9C9F5FE4" id="member_variable_numAttributes_BA913F28C694313B1929992F124C940C9C9F5FE4" name="numAttributes" specifiers="private" type="500d15a4-0f23-561d-e330-8724c9050764"/>
+     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numCharacters_C9DB045805A338590B23AA923EDFBA81328E302A" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numCharacters_C9DB045805A338590B23AA923EDFBA81328E302A" id="member_variable_numCharacters_C9DB045805A338590B23AA923EDFBA81328E302A" name="numCharacters" specifiers="private" type="500d15a4-0f23-561d-e330-8724c9050764"/>
+     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numComments_548B7E50FF3CDDC4226A3827F1EDA8254F97DB11" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numComments_548B7E50FF3CDDC4226A3827F1EDA8254F97DB11" id="member_variable_numComments_548B7E50FF3CDDC4226A3827F1EDA8254F97DB11" name="numComments" specifiers="private" type="500d15a4-0f23-561d-e330-8724c9050764"/>
+     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numElements_7B2773776715A4F068B89B4D80F3DE47D4B4B686" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numElements_7B2773776715A4F068B89B4D80F3DE47D4B4B686" id="member_variable_numElements_7B2773776715A4F068B89B4D80F3DE47D4B4B686" name="numElements" specifiers="private" type="500d15a4-0f23-561d-e330-8724c9050764"/>
+     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numProcessingInstructions_BAAC9185A5AFABAE230DF212BBF6B395F5055353" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_numProcessingInstructions_BAAC9185A5AFABAE230DF212BBF6B395F5055353" id="member_variable_numProcessingInstructions_BAAC9185A5AFABAE230DF212BBF6B395F5055353" name="numProcessingInstructions" specifiers="private" type="500d15a4-0f23-561d-e330-8724c9050764"/>
+     <variable docPath="../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_xmlFileName_09D57E15F72884FAA502D1A855DBB441CBB0299E" extPath="xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html#member_variable_xmlFileName_09D57E15F72884FAA502D1A855DBB441CBB0299E" id="member_variable_xmlFileName_09D57E15F72884FAA502D1A855DBB441CBB0299E" name="xmlFileName" specifiers="private" type="e81e002a-b66a-aa2b-528a-b6e5b9c4706b"/>
     </variables>
    </class>
   </classes>
   <functions>
-   <function docPath="../../xmlstats/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="xmlstats/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="53" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers="">
+   <function docPath="../../xmlstats/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="xmlstats/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="xmlstats/xmlstats.cm" filePath="../../xmlstats/file/xmlstats.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="53" name="main" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers="">
     <parameters>
-     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="e3853aed-a39a-a82a-40b9-90f85023e490"/>
+     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="b2f44109-1fc7-836a-a76d-f4981b34bd72"/>
     </parameters>
    </function>
   </functions>
  </namespace>
  <types>
-  <basicType id="e5a0727d-47ad-59b9-abb6-584b4a4b7614" name="char"/>
-  <specialization id="69a8af4e-9c1f-ad80-ca48-afa56dd1720d" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="10040615-24b0-c4b1-8aba-e3acc70a458a" name="char"/>
+  <specialization id="e81e002a-b66a-aa2b-528a-b6e5b9c4706b" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
    <templateArgumentTypes>
-    <templateArgumentType ref="e5a0727d-47ad-59b9-abb6-584b4a4b7614"/>
+    <templateArgumentType ref="10040615-24b0-c4b1-8aba-e3acc70a458a"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="31c9ab72-f988-9b73-f807-03ecb09a4c84" name="const String&lt;char>&amp;">
+  <derivedType id="15f7b6ac-592e-14ef-56b4-14c75e18320d" name="const String&lt;char>&amp;">
    <derivation name="const"/>
-   <derivation baseType="69a8af4e-9c1f-ad80-ca48-afa56dd1720d"/>
+   <derivation baseType="e81e002a-b66a-aa2b-528a-b6e5b9c4706b"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="f55c3601-d0f6-1af1-ad65-52526a905bd2" name="bool"/>
-  <specialization id="4668fcba-a39a-f3fb-f385-70870f44d7f6" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="289f66e8-c348-8277-6767-6e549f2ba5ad" name="bool"/>
+  <specialization id="2dcbbcc2-b0e9-db01-7e13-356586243a27" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
    <templateArgumentTypes>
-    <templateArgumentType ref="f55c3601-d0f6-1af1-ad65-52526a905bd2"/>
+    <templateArgumentType ref="289f66e8-c348-8277-6767-6e549f2ba5ad"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="f4013b9a-ccb6-7dd5-b47d-073313b5b84a" name="const Span&amp;">
+  <derivedType id="af147a09-2273-b465-6042-8731e196ad1c" name="const Span&amp;">
    <derivation name="const"/>
    <derivation baseType="class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
-  <basicType id="22533665-d388-a339-6a86-ecdb57c03dc8" name="uchar"/>
-  <specialization id="639b6c13-f84e-7d4f-31db-a50522906fcb" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
+  <basicType id="be039fba-2b73-6802-3a39-9f3629b2434e" name="uchar"/>
+  <specialization id="e80ea46f-cba7-62be-cfc5-1ad41e3721c3" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
    <templateArgumentTypes>
-    <templateArgumentType ref="22533665-d388-a339-6a86-ecdb57c03dc8"/>
+    <templateArgumentType ref="be039fba-2b73-6802-3a39-9f3629b2434e"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="3bfa682f-9dd9-4bbc-0394-094cffdb5142" name="const String&lt;uchar>&amp;">
+  <derivedType id="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5" name="const String&lt;uchar>&amp;">
    <derivation name="const"/>
-   <derivation baseType="639b6c13-f84e-7d4f-31db-a50522906fcb"/>
+   <derivation baseType="e80ea46f-cba7-62be-cfc5-1ad41e3721c3"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="70d3e7e0-6b55-8aac-3977-5a026d7512c9" name="void"/>
-  <derivedType id="8f88c551-5aa3-500a-62ea-24d70aa67621" name="const Attributes&amp;">
+  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
+  <derivedType id="f03e585a-0737-c27f-8854-1af58127c85f" name="const Attributes&amp;">
    <derivation name="const"/>
    <derivation baseType="class_Attributes_C4B2B129CAB6BB03A5BC75E44A8C3E96E227069A"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9" name="long"/>
-  <derivedType id="e3853aed-a39a-a82a-40b9-90f85023e490" name="const char**">
+  <basicType id="500d15a4-0f23-561d-e330-8724c9050764" name="long"/>
+  <derivedType id="b2f44109-1fc7-836a-a76d-f4981b34bd72" name="const char**">
    <derivation name="const"/>
-   <derivation baseType="e5a0727d-47ad-59b9-abb6-584b4a4b7614"/>
+   <derivation baseType="10040615-24b0-c4b1-8aba-e3acc70a458a"/>
    <derivation name="*"/>
    <derivation name="*"/>
   </derivedType>

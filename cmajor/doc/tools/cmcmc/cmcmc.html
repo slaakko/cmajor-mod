@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Compiler with CM/MASM backend</title>
+    <link rel="stylesheet" type="text/css" href="../../style/tool.css" />
+</head>
+<body>
+    <h1>Compiler with CM/MASM backend</h1>
+    <p>
+        <b>cmcmc</b> is a command-line compiler for Windows x64.
+        It compiles Cmajor code to x64 assembly code.
+        Assembly code is compiled to object code, libraries are generated and programs are linked by calling MSBuild.
+    </p>
+
+    <p>
+        Usage: <b>cmcmc [options] { project.cmp | solution.cms }</b>
+    </p>
+
+    <table class="opt">
+        <tr>
+            <th class="opt">Long option</th>
+            <th class="opt">Short option</th>
+            <th class="opt">IDE command</th>
+            <th class="opt">Description</th>
+        </tr>
+        <tr>
+            <td class="opt">--help</td>
+            <td class="opt">-h</td>
+            <td class="opt"></td>
+            <td class="opt">Print help and exit.</td>
+        </tr>
+        <tr>
+            <td class="opt">--verbose</td>
+            <td class="opt">-v</td>
+            <td class="opt"></td>
+            <td class="opt">Be verbose.</td>
+        </tr>
+        <tr>
+            <td class="opt">&#8209;&#8209;config=CONFIG</td>
+            <td class="opt">&#8209;c=CONFIG</td>
+            <td class="opt">Debug and Release buttons</td>
+            <td class="opt">
+                Build usig CONFIG configuration. CONFIG can be "debug" or "release".
+                Default optimization level for debug build is 0 and for release build is 2.
+            </td>
+        </tr>
+        <tr>
+            <td class="opt">&#8209;&#8209;opt=LEVEL</td>
+            <td class="opt">-O=LEVEL</td>
+            <td class="opt">Optimization level buttons 0..3</td>
+            <td class="opt">Set release mode optimization level to LEVEL (0-3).</td>
+        </tr>
+        <tr>
+            <td class="opt">--clean</td>
+            <td class="opt">-e</td>
+            <td class="opt">Build | Clean project/solution</td>
+            <td class="opt">Clean given projects and solutions.</td>
+        </tr>
+        <tr>
+            <td class="opt">--rebuild</td>
+            <td class="opt">-r</td>
+            <td class="opt">Build | Rebuild project/solution</td>
+            <td class="opt">Rebuild given projects and solutions.</td>
+        </tr>
+        <tr>
+            <td class="opt">&#8209;&#8209;disable&#8209;warnings=WARNING_LIST</td>
+            <td class="opt">&#8209;w=WARNING_LIST</td>
+            <td class="opt">Build | Settings... | Disabled warnings</td>
+            <td class="opt">Disable warning messages for specified warnings in WARNING_LIST that is a semicolon-separated list of warning numbers.</td>
+        </tr>
+        <tr>
+            <td class="opt">--define SYMBOL</td>
+            <td class="opt">&#8209;D&nbsp;SYMBOL</td>
+            <td class="opt"></td>
+            <td class="opt">Define a conditional compilation symbol SYMBOL.</td>
+        </tr>
+        <tr>
+            <td class="opt">--single-threaded</td>
+            <td class="opt">-s</td>
+            <td class="opt">Build | Settings... | Compile using only one thread</td>
+            <td class="opt">Compile projects and source files in projects using a single thread.</td>
+        </tr>
+        <tr>
+            <td class="opt">--all</td>
+            <td class="opt">-a</td>
+            <td class="opt"></td>
+            <td class="opt">Build all dependencies.</td>
+        </tr>
+    </table>
+</body>
+</html>

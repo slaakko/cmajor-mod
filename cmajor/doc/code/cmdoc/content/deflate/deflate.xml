@@ -4,16 +4,16 @@
  </files>
  <namespace docPath="../../deflate/doc/ns_.html" extPath="deflate/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../deflate/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="deflate/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="deflate/main.cm" filePath="../../deflate/file/main.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="5" name="PrintHelp" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers=""/>
-   <function docPath="../../deflate/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="deflate/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="deflate/main.cm" filePath="../../deflate/file/main.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="27" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers="">
+   <function docPath="../../deflate/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="deflate/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="deflate/main.cm" filePath="../../deflate/file/main.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="5" name="PrintHelp" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+   <function docPath="../../deflate/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="deflate/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="deflate/main.cm" filePath="../../deflate/file/main.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="27" name="main" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers="">
     <parameters>
-     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
-     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="e3853aed-a39a-a82a-40b9-90f85023e490"/>
+     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="b2f44109-1fc7-836a-a76d-f4981b34bd72"/>
     </parameters>
    </function>
   </functions>
   <enumTypes>
-   <enumType docPath="../../deflate/doc/enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E.html" extPath="deflate/doc/enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E.html" fileName="deflate/main.cm" filePath="../../deflate/file/main.cm.html" id="enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E" line="22" name="Mode" specifiers="public" underlyingType="668cd106-4aa8-ddbe-3479-d3d42161344f">
+   <enumType docPath="../../deflate/doc/enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E.html" extPath="deflate/doc/enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E.html" fileName="deflate/main.cm" filePath="../../deflate/file/main.cm.html" id="enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E" line="22" name="Mode" specifiers="public" underlyingType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b">
     <typedefs/>
     <enumConstants>
      <enumConstant docPath="../../deflate/doc/enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E.html#enumeration_constant_compress_90D3BB67DBD1361F23DBB51EB74D1916969D31AC" extPath="deflate/doc/enumerated_type_Mode_24BE339CF2ABF20A6AFC1EB998FB66F3CA68275E.html#enumeration_constant_compress_90D3BB67DBD1361F23DBB51EB74D1916969D31AC" id="enumeration_constant_compress_90D3BB67DBD1361F23DBB51EB74D1916969D31AC" name="compress" value="0"/>
@@ -23,12 +23,12 @@
   </enumTypes>
  </namespace>
  <types>
-  <basicType id="70d3e7e0-6b55-8aac-3977-5a026d7512c9" name="void"/>
-  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
-  <basicType id="e5a0727d-47ad-59b9-abb6-584b4a4b7614" name="char"/>
-  <derivedType id="e3853aed-a39a-a82a-40b9-90f85023e490" name="const char**">
+  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
+  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
+  <basicType id="10040615-24b0-c4b1-8aba-e3acc70a458a" name="char"/>
+  <derivedType id="b2f44109-1fc7-836a-a76d-f4981b34bd72" name="const char**">
    <derivation name="const"/>
-   <derivation baseType="e5a0727d-47ad-59b9-abb6-584b4a4b7614"/>
+   <derivation baseType="10040615-24b0-c4b1-8aba-e3acc70a458a"/>
    <derivation name="*"/>
    <derivation name="*"/>
   </derivedType>

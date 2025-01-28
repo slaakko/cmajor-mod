@@ -2,7 +2,7 @@ module;
 #include <Windows.h>
 
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 

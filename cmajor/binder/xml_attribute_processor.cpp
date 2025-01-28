@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -21,6 +21,17 @@ import cmajor.binder.bound.expression;
 import util;
 
 namespace cmajor::binder {
+
+uint64_t GetHashCode(const std::string& s)
+{
+    uint64_t hashCode = 14695981039346656037ull;
+    for (char c : s)
+    {
+        hashCode = hashCode ^ static_cast<uint64_t>(static_cast<uint8_t>(c));
+        hashCode = hashCode * 1099511628211ull;
+    }
+    return hashCode;
+}
 
 XmlAttributeProcessor::XmlAttributeProcessor() : AttributeProcessor(U"xml")
 {
@@ -454,8 +465,8 @@ void XmlAttributeProcessor::GenerateRegisterImplementation(cmajor::ast::Attribut
         cmajor::ast::MemberFunctionNode memberFunctionNode(span);
         cmajor::ast::CompoundStatementNode compoundStatementNode(span);
 
-        std::string mangledName = util::ToUtf8(classTypeSymbol->MangledName());
-        int classId = std::hash<std::string>()(mangledName) & 0x7FFFFFFF;
+        std::string fullName = util::ToUtf8(classTypeSymbol->FullName());
+        int32_t classId = GetHashCode(fullName) & 0x7FFFFFFF;
 
         cmajor::ast::AssignmentStatementNode* assignClassIdStatement = new cmajor::ast::AssignmentStatementNode(span, 
             new cmajor::ast::IdentifierNode(span, U"classId"), new cmajor::ast::IntLiteralNode(span, classId));

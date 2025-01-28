@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -85,6 +85,8 @@ public:
     virtual std::string MakeSymbolName(const std::string& name) { return name; }
     virtual void* CreateDefaultIrValueForArrayType(void* arrayIrType, const std::vector<void*>& arrayOfDefaults) = 0;
     virtual void* CreateDefaultIrValueForBool() = 0;
+    virtual void* CreateTrue() = 0;
+    virtual void* CreateFalse() = 0;
     virtual void* CreateDefaultIrValueForSByte() = 0;
     virtual void* CreateDefaultIrValueForByte() = 0;
     virtual void* CreateDefaultIrValueForShort() = 0;

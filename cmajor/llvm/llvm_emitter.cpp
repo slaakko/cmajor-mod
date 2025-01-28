@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -193,6 +193,16 @@ void* LLVMEmitter::GetIrTypeForStructType(const std::vector<void*>& elementTypes
 }
 
 void* LLVMEmitter::CreateDefaultIrValueForBool()
+{
+    return builder.getInt1(false);
+}
+
+void* LLVMEmitter::CreateTrue()
+{
+    return builder.getInt1(true);
+}
+
+void* LLVMEmitter::CreateFalse()
 {
     return builder.getInt1(false);
 }

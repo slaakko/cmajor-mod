@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ using cm.ast;
 namespace symbols
 {
     public const int vmtImtsIndex = 2;
-    
+
     public Result<bool> Overrides(FunctionSymbol* f, FunctionSymbol* g)
     {
         if (f->GroupName() == g->GroupName())
@@ -28,7 +28,14 @@ namespace symbols
                 {
                     if (!TypesEqual(f->ReturnType(), g->ReturnType()))
                     {
-                        int errorId = MakeError("the return type of the overriding function differs from the return type of the base class function", f->FullSpan(), g->FullSpan());
+                        Result<string> fReturnTypeResult = ToUtf8(f->ReturnType()->FullName());
+                        if (fReturnTypeResult.Error()) return Result<bool>(ErrorId(fReturnTypeResult.GetErrorId()));
+                        string fReturnType = Rvalue(fReturnTypeResult.Value());
+                        Result<string> gReturnTypeResult = ToUtf8(g->ReturnType()->FullName());
+                        if (gReturnTypeResult.Error()) return Result<bool>(ErrorId(gReturnTypeResult.GetErrorId()));
+                        string gReturnType = Rvalue(gReturnTypeResult.Value());
+                        int errorId = MakeError("the return type '" + fReturnType + "' of the overriding function differs from the return type '" +
+                            gReturnType + "' of the base class function", f->FullSpan(), g->FullSpan());
                         return Result<bool>(ErrorId(errorId));
                     }
                 }
@@ -842,6 +849,14 @@ namespace symbols
         {
             SetFlag(ClassTypeSymbolFlags.recursive);
         }
+        public inline bool HasXmlAttribute() const
+        {
+            return GetFlag(ClassTypeSymbolFlags.hasXmlAttribute);
+        }
+        public void SetHasXmlAttribute()
+        {
+            SetFlag(ClassTypeSymbolFlags.hasXmlAttribute);
+        }
         public inline ClassGroupSymbol* ClassGroup() const
         {
             return classGroup;
@@ -1168,7 +1183,10 @@ namespace symbols
                     {
                         if (!f->IsOverride())
                         {
-                            int errorId = MakeError("overriding function should be declared with 'override' specifier", f->FullSpan(), v->FullSpan());
+                            Result<string> functionNameResult = ToUtf8(f->FullName());
+                            if (functionNameResult.Error()) return Result<bool>(ErrorId(functionNameResult.GetErrorId()));
+                            string functionName = Rvalue(functionNameResult.Value());
+                            int errorId = MakeError("overriding function '" + functionName + "' should be declared with 'override' specifier", f->FullSpan(), v->FullSpan());
                             return Result<bool>(ErrorId(errorId));
                         }
                         f->SetVmtIndex(j);
@@ -1181,7 +1199,10 @@ namespace symbols
                 {
                     if (f->IsOverride())
                     {
-                        int errorId = MakeError("no suitable function to override", f->FullSpan());
+                        Result<string> functionNameResult = ToUtf8(f->FullName());
+                        if (functionNameResult.Error()) return Result<bool>(ErrorId(functionNameResult.GetErrorId()));
+                        string functionName = Rvalue(functionNameResult.Value());
+                        int errorId = MakeError("no suitable function to override for function '" + functionName + "'", f->FullSpan());
                         return Result<bool>(ErrorId(errorId));
                     }
                     if (f->IsVirtualAbstractOrOverride())

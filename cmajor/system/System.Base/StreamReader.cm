@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,7 +13,7 @@ namespace System.IO
         public StreamReader() : base(), stream(null), buffer(-1), buffered(false), eos(false)
         {
         }
-        public StreamReader(Stream* stream_) : base(), stream(stream_), buffer(-1), buffered(false), eos(false)
+        public explicit StreamReader(Stream* stream_) : base(), stream(stream_), buffer(-1), buffered(false), eos(false)
         {
             if (stream != null && stream->Error())
             {

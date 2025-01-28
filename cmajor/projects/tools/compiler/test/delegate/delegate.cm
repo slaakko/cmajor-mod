@@ -1,0 +1,34 @@
+using System;
+using System.Collections;
+
+public delegate void foo();
+
+public void fn()
+{
+    Console.Out() << "fn" << endl();
+}
+
+void main()
+{
+    foo f = fn;
+    List<foo> foos;
+    foos.Add(f);
+    auto it = Find(foos.Begin(), foos.End(), f);
+    if (it != foos.End())
+    {
+        foo x = *it;
+        x();
+    }
+    foo g = fn;
+    Console.Out() << (f < g) << endl();
+    Console.Out() << (g < f) << endl();
+    Console.Out() << (f == g) << endl();
+    Set<foo> s;
+    s.Insert(f);
+    auto it2 = s.Find(f);
+    if (it2 != s.End())
+    {
+        foo x = *it2;
+        x();
+    }
+}

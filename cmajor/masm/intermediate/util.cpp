@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -29,7 +29,7 @@ bool IsPowerOfTwo(uint64_t n, int& shift)
 {
     uint64_t p = 2;
     shift = 1;
-    while (p < n)
+    while (p != 0 && p < n)
     {
         p <<= 1;
         ++shift;

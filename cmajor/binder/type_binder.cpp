@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -894,6 +894,9 @@ void TypeBinder::BindInterface(cmajor::symbols::InterfaceTypeSymbol* interfaceTy
     cmajor::symbols::InterfaceTypeEqual* equality = new cmajor::symbols::InterfaceTypeEqual(interfaceTypeSymbol, symbolTable.GetTypeByName(U"bool"));
     symbolTable.SetFunctionIdFor(equality);
     interfaceTypeSymbol->Ns()->AddMember(equality);
+    cmajor::symbols::InterfaceTypeLess* less = new cmajor::symbols::InterfaceTypeLess(interfaceTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    symbolTable.SetFunctionIdFor(less);
+    interfaceTypeSymbol->Ns()->AddMember(less);
     boundCompileUnit.GetAttributeBinder()->BindAttributes(interfaceNode->GetAttributes(), interfaceTypeSymbol, boundCompileUnit, containerScope);
     containerScope = prevContainerScope;
 }
@@ -953,6 +956,9 @@ void TypeBinder::Visit(cmajor::ast::DelegateNode& delegateNode)
     cmajor::symbols::DelegateTypeEquality* equality = new cmajor::symbols::DelegateTypeEquality(delegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
     symbolTable.SetFunctionIdFor(equality);
     delegateTypeSymbol->Ns()->AddMember(equality);
+    cmajor::symbols::DelegateTypeLess* less = new cmajor::symbols::DelegateTypeLess(delegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    symbolTable.SetFunctionIdFor(less);
+    delegateTypeSymbol->Ns()->AddMember(less);
 }
 
 void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
@@ -1042,6 +1048,9 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
     cmajor::symbols::ClassDelegateTypeEquality* equality = new cmajor::symbols::ClassDelegateTypeEquality(classDelegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
     symbolTable.SetFunctionIdFor(equality);
     classDelegateTypeSymbol->Ns()->AddMember(equality);
+    cmajor::symbols::ClassDelegateTypeLess* less = new cmajor::symbols::ClassDelegateTypeLess(classDelegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    symbolTable.SetFunctionIdFor(less);
+    classDelegateTypeSymbol->Ns()->AddMember(less);
 }
 
 void TypeBinder::Visit(cmajor::ast::ConceptNode& conceptNode)

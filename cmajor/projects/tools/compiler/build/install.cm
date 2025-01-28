@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -126,6 +126,42 @@ namespace build
         {
             Result<bool> result = LogMessage(systemInstallWindowsModule->LogStreamId(), "System libraries installed.");
             if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> Install(Project* project)
+    {
+        string libExePath = System.IO.Path.ChangeExtension(project->ModuleFilePath(), ".exe");
+        Result<bool> existsResult = System.IO.File.Exists(libExePath);
+        if (existsResult.Error()) return existsResult;
+        bool exists = existsResult.Value();
+        if (exists)
+        {
+            string binExePath = project->ExecutableFilePath();
+            string dirPath = System.IO.Path.GetDirectoryName(binExePath);
+            System.IO.Directory.CreateDirectories(dirPath);
+            existsResult = System.IO.File.Exists(binExePath);
+            if (existsResult.Error()) return existsResult;
+            exists = existsResult.Value();
+            if (exists)
+            {
+                Result<bool> removeResult = System.IO.File.Remove(binExePath);
+                if (removeResult.Error()) return removeResult;
+            }
+            Result<bool> copyResult = System.IO.File.Copy(libExePath, binExePath);
+            if (copyResult.Error()) return copyResult;
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                Result<bool> result = LogMessage(project->LogStreamId(), libExePath + " -> " + binExePath);
+                if (result.Error()) return result;
+            }
+        }
+        else
+        {
+            int errorId = AllocateError("'" + libExePath + "' does not exist");
+            return Result<bool>(ErrorId(errorId));
         }
         return Result<bool>(true);
     }

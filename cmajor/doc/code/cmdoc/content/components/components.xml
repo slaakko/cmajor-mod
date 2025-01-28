@@ -1,0 +1,52 @@
+<symbolTable id="components" module="components">
+ <files>
+  <file name="components/components.cm" path="file/components.cm.html"/>
+ </files>
+ <namespace docPath="../../components/doc/ns_.html" extPath="components/doc/ns_.html" id="ns_" name="">
+  <classes>
+   <class docPath="../../components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html" extPath="components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE" line="45" name="LowerLayerComponent" specifiers="public">
+    <ctorsDtors>
+     <ctorDtor docPath="../../components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#constructor_LowerLayerComponent_DA740700F9ADC1283F4D18399CBEB04BB293CB7C" extPath="components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#constructor_LowerLayerComponent_DA740700F9ADC1283F4D18399CBEB04BB293CB7C" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="constructor_LowerLayerComponent_DA740700F9ADC1283F4D18399CBEB04BB293CB7C" kind="Constructor" line="47" name="LowerLayerComponent" specifiers="public">
+      <parameters>
+       <parameter id="parameter_upper__8FD06F44AA8CE61E7B274DFFEBEE3835A8B7BFFF" name="upper_" type="65b4c965-6b38-b95c-0e20-b778e6f4fb60"/>
+      </parameters>
+     </ctorDtor>
+    </ctorsDtors>
+    <functions>
+     <function docPath="../../components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_AnotherMember_LowerLayerComponent_6F090A1A06FCD2EE00B88F0D281BA4A9FEA9599C" extPath="components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_AnotherMember_LowerLayerComponent_6F090A1A06FCD2EE00B88F0D281BA4A9FEA9599C" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="member_function_AnotherMember_LowerLayerComponent_6F090A1A06FCD2EE00B88F0D281BA4A9FEA9599C" kind="Member Function" line="54" name="AnotherMember" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
+     <function docPath="../../components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_ServiceForUpper_LowerLayerComponent_8688D578A39CAF170DB1FBC68487B5BE366970AA" extPath="components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_function_ServiceForUpper_LowerLayerComponent_8688D578A39CAF170DB1FBC68487B5BE366970AA" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="member_function_ServiceForUpper_LowerLayerComponent_8688D578A39CAF170DB1FBC68487B5BE366970AA" kind="Member Function" line="50" name="ServiceForUpper" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
+    </functions>
+    <variables>
+     <variable docPath="../../components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_variable_upper_10C59E86C801DE342C6EF977610205E287BF73FC" extPath="components/doc/class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE.html#member_variable_upper_10C59E86C801DE342C6EF977610205E287BF73FC" id="member_variable_upper_10C59E86C801DE342C6EF977610205E287BF73FC" name="upper" specifiers="private" type="65b4c965-6b38-b95c-0e20-b778e6f4fb60"/>
+    </variables>
+   </class>
+   <class baseClass="class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05" docPath="../../components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html" extPath="components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649" line="14" name="UpperLayerComponent" specifiers="public">
+    <ctorsDtors>
+     <ctorDtor docPath="../../components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#default_constructor_UpperLayerComponent_D4480A18125554F5EBAE7B625587CBC629705904" extPath="components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#default_constructor_UpperLayerComponent_D4480A18125554F5EBAE7B625587CBC629705904" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="default_constructor_UpperLayerComponent_D4480A18125554F5EBAE7B625587CBC629705904" kind="Constructor" line="17" name="UpperLayerComponent" specifiers="public"/>
+    </ctorsDtors>
+    <functions>
+     <function docPath="../../components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_function_ServiceForLower_UpperLayerComponent_D99E7268DA4E12786B1257C5B80769BE993793DA" extPath="components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_function_ServiceForLower_UpperLayerComponent_D99E7268DA4E12786B1257C5B80769BE993793DA" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="member_function_ServiceForLower_UpperLayerComponent_D99E7268DA4E12786B1257C5B80769BE993793DA" kind="Member Function" line="25" name="ServiceForLower" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public"/>
+     <function docPath="../../components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_function_SomeMember_UpperLayerComponent_EE9DBEA8E01750A0DE0E4B993E019506F4C9D93D" extPath="components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_function_SomeMember_UpperLayerComponent_EE9DBEA8E01750A0DE0E4B993E019506F4C9D93D" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="member_function_SomeMember_UpperLayerComponent_EE9DBEA8E01750A0DE0E4B993E019506F4C9D93D" kind="Member Function" line="20" name="SomeMember" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public override"/>
+    </functions>
+    <variables>
+     <variable docPath="../../components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_variable_lower_4E8B122FE764153F623806FDBF9DA50F9E6528F3" extPath="components/doc/class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649.html#member_variable_lower_4E8B122FE764153F623806FDBF9DA50F9E6528F3" id="member_variable_lower_4E8B122FE764153F623806FDBF9DA50F9E6528F3" name="lower" specifiers="private" type="class_LowerLayerComponent_14E29E365EA537E6EE9A9BF3756B64FB5DD7E0BE"/>
+    </variables>
+   </class>
+   <class docPath="../../components/doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html" extPath="components/doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05" line="7" name="UpperLayerComponentBase" specifiers="public abstract">
+    <functions>
+     <function docPath="../../components/doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html#member_function_SomeMember_UpperLayerComponentBase_EAA75689CFA5963CAD707A1558A57D0CC5C46938" extPath="components/doc/class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05.html#member_function_SomeMember_UpperLayerComponentBase_EAA75689CFA5963CAD707A1558A57D0CC5C46938" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="member_function_SomeMember_UpperLayerComponentBase_EAA75689CFA5963CAD707A1558A57D0CC5C46938" kind="Member Function" line="9" name="SomeMember" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public abstract"/>
+    </functions>
+   </class>
+  </classes>
+  <interfaces>
+   <interface docPath="../../components/doc/65b4c965-6b38-b95c-0e20-b778e6f4fb60.html" extPath="components/doc/65b4c965-6b38-b95c-0e20-b778e6f4fb60.html" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="65b4c965-6b38-b95c-0e20-b778e6f4fb60" line="38" name="UpperLayerInterface" specifiers="public">
+    <functions>
+     <function docPath="../../components/doc/65b4c965-6b38-b95c-0e20-b778e6f4fb60.html#member_function_ServiceForLower_UpperLayerInterface_A9B7305A303E1C7AACE0E6A8B4DCB0D24044600F" extPath="components/doc/65b4c965-6b38-b95c-0e20-b778e6f4fb60.html#member_function_ServiceForLower_UpperLayerInterface_A9B7305A303E1C7AACE0E6A8B4DCB0D24044600F" fileName="components/components.cm" filePath="../../components/file/components.cm.html" id="member_function_ServiceForLower_UpperLayerInterface_A9B7305A303E1C7AACE0E6A8B4DCB0D24044600F" kind="Member Function" line="40" name="ServiceForLower" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+    </functions>
+   </interface>
+  </interfaces>
+ </namespace>
+ <types>
+  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
+ </types>
+</symbolTable>

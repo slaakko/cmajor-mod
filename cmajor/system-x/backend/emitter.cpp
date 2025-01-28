@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -214,6 +214,16 @@ void* SystemXEmitter::CreateDefaultIrValueForArrayType(void* arrayIrType, const 
 void* SystemXEmitter::CreateDefaultIrValueForBool()
 {
     return context->GetDefaultBoolValue();
+}
+
+void* SystemXEmitter::CreateTrue()
+{
+    return context->GetBoolValue(true);
+}
+
+void* SystemXEmitter::CreateFalse()
+{
+    return context->GetBoolValue(false);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForSByte()

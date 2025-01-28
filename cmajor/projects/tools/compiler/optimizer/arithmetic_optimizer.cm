@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -2393,204 +2393,210 @@ namespace optimizer
     [nodiscard]
     public Result<bool> OptimizeArithmetic(intermediate.Function* fn, intermediate.Context* context)
     {
-        bool optimized = false;
-        intermediate.BasicBlock* bb = fn->FirstBasicBlock();
-        while (bb != null)
+        bool optimized = true;
+        int count = 0;
+        int maxArithmeticOptimizationCount = context->MaxArithmeticOptimizationCount();
+        while (optimized && count < maxArithmeticOptimizationCount)
         {
-            intermediate.Instruction* inst = bb->FirstInstruction();
-            while (inst != null)
+            optimized = false;
+            intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+            while (bb != null)
             {
-                intermediate.Instruction* next = inst->Next();
-                switch (inst->GetOpCode())
+                intermediate.Instruction* inst = bb->FirstInstruction();
+                while (inst != null)
                 {
-                    case intermediate.OpCode.not_:
+                    intermediate.Instruction* next = inst->Next();
+                    switch (inst->GetOpCode())
                     {
-                        intermediate.NotInstruction* notInst = cast<intermediate.NotInstruction*>(inst);
-                        Result<bool> result = OptimizeNot(notInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.not_:
                         {
-                            optimized = true;
+                            intermediate.NotInstruction* notInst = cast<intermediate.NotInstruction*>(inst);
+                            Result<bool> result = OptimizeNot(notInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.neg:
-                    {
-                        intermediate.NegInstruction* negInst = cast<intermediate.NegInstruction*>(inst);
-                        Result<bool> result = OptimizeNeg(negInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.neg:
                         {
-                            optimized = true;
+                            intermediate.NegInstruction* negInst = cast<intermediate.NegInstruction*>(inst);
+                            Result<bool> result = OptimizeNeg(negInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.signextend:
-                    {
-                        intermediate.SignExtendInstruction* signExtendInst = cast<intermediate.SignExtendInstruction*>(inst);
-                        Result<bool> result = OptimizeSignExtend(signExtendInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.signextend:
                         {
-                            optimized = true;
+                            intermediate.SignExtendInstruction* signExtendInst = cast<intermediate.SignExtendInstruction*>(inst);
+                            Result<bool> result = OptimizeSignExtend(signExtendInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.zeroextend:
-                    {
-                        intermediate.ZeroExtendInstruction* zeroExtendInst = cast<intermediate.ZeroExtendInstruction*>(inst);
-                        Result<bool> result = OptimizeZeroExtend(zeroExtendInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.zeroextend:
                         {
-                            optimized = true;
+                            intermediate.ZeroExtendInstruction* zeroExtendInst = cast<intermediate.ZeroExtendInstruction*>(inst);
+                            Result<bool> result = OptimizeZeroExtend(zeroExtendInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.add:
-                    {
-                        intermediate.AddInstruction* addInst = cast<intermediate.AddInstruction*>(inst);
-                        Result<bool> result = OptimizeAdd(addInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.add:
                         {
-                            optimized = true;
+                            intermediate.AddInstruction* addInst = cast<intermediate.AddInstruction*>(inst);
+                            Result<bool> result = OptimizeAdd(addInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.sub:
-                    {
-                        intermediate.SubInstruction* subInst = cast<intermediate.SubInstruction*>(inst);
-                        Result<bool> result = OptimizeSub(subInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.sub:
                         {
-                            optimized = true;
+                            intermediate.SubInstruction* subInst = cast<intermediate.SubInstruction*>(inst);
+                            Result<bool> result = OptimizeSub(subInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.mul:
-                    {
-                        intermediate.MulInstruction* mulInst = cast<intermediate.MulInstruction*>(inst);
-                        Result<bool> result = OptimizeMul(mulInst, fn, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.mul:
                         {
-                            optimized = true;
+                            intermediate.MulInstruction* mulInst = cast<intermediate.MulInstruction*>(inst);
+                            Result<bool> result = OptimizeMul(mulInst, fn, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.div_:
-                    {
-                        intermediate.DivInstruction* divInst = cast<intermediate.DivInstruction*>(inst);
-                        Result<bool> result = OptimizeDiv(divInst, fn, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.div_:
                         {
-                            optimized = true;
+                            intermediate.DivInstruction* divInst = cast<intermediate.DivInstruction*>(inst);
+                            Result<bool> result = OptimizeDiv(divInst, fn, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.mod:
-                    {
-                        intermediate.ModInstruction* modInst = cast<intermediate.ModInstruction*>(inst);
-                        Result<bool> result = OptimizeMod(modInst, fn, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.mod:
                         {
-                            optimized = true;
+                            intermediate.ModInstruction* modInst = cast<intermediate.ModInstruction*>(inst);
+                            Result<bool> result = OptimizeMod(modInst, fn, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.and_:
-                    {
-                        intermediate.AndInstruction* andInst = cast<intermediate.AndInstruction*>(inst);
-                        Result<bool> result = OptimizeAnd(andInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.and_:
                         {
-                            optimized = true;
+                            intermediate.AndInstruction* andInst = cast<intermediate.AndInstruction*>(inst);
+                            Result<bool> result = OptimizeAnd(andInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.or_:
-                    {
-                        intermediate.OrInstruction* orInst = cast<intermediate.OrInstruction*>(inst);
-                        Result<bool> result = OptimizeOr(orInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.or_:
                         {
-                            optimized = true;
+                            intermediate.OrInstruction* orInst = cast<intermediate.OrInstruction*>(inst);
+                            Result<bool> result = OptimizeOr(orInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.xor_:
-                    {
-                        intermediate.XorInstruction* xorInst = cast<intermediate.XorInstruction*>(inst);
-                        Result<bool> result = OptimizeXor(xorInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.xor_:
                         {
-                            optimized = true;
+                            intermediate.XorInstruction* xorInst = cast<intermediate.XorInstruction*>(inst);
+                            Result<bool> result = OptimizeXor(xorInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.shl:
-                    {
-                        intermediate.ShlInstruction* shlInst = cast<intermediate.ShlInstruction*>(inst);
-                        Result<bool> result = OptimizeShl(shlInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.shl:
                         {
-                            optimized = true;
+                            intermediate.ShlInstruction* shlInst = cast<intermediate.ShlInstruction*>(inst);
+                            Result<bool> result = OptimizeShl(shlInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.shr:
-                    {
-                        intermediate.ShrInstruction* shrInst = cast<intermediate.ShrInstruction*>(inst);
-                        Result<bool> result = OptimizeShr(shrInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.shr:
                         {
-                            optimized = true;
+                            intermediate.ShrInstruction* shrInst = cast<intermediate.ShrInstruction*>(inst);
+                            Result<bool> result = OptimizeShr(shrInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.equal:
-                    {
-                        intermediate.EqualInstruction* equalInst = cast<intermediate.EqualInstruction*>(inst);
-                        Result<bool> result = OptimizeEqual(equalInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.equal:
                         {
-                            optimized = true;
+                            intermediate.EqualInstruction* equalInst = cast<intermediate.EqualInstruction*>(inst);
+                            Result<bool> result = OptimizeEqual(equalInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case intermediate.OpCode.less:
-                    {
-                        intermediate.LessInstruction* lessInst = cast<intermediate.LessInstruction*>(inst);
-                        Result<bool> result = OptimizeLess(lessInst, context);
-                        if (result.Error()) return result;
-                        if (result.Value())
+                        case intermediate.OpCode.less:
                         {
-                            optimized = true;
+                            intermediate.LessInstruction* lessInst = cast<intermediate.LessInstruction*>(inst);
+                            Result<bool> result = OptimizeLess(lessInst, context);
+                            if (result.Error()) return result;
+                            if (result.Value())
+                            {
+                                optimized = true;
+                            }
+                            break;
                         }
-                        break;
                     }
+                    inst = next;
                 }
-                inst = next;
+                bb = bb->Next();
             }
-            bb = bb->Next();
+            if (optimized)
+            {
+                ++count;
+                Result<bool> result = fn->SetNumbers();
+                if (result.Error()) return result;
+            }
         }
-        if (optimized)
-        {
-            Result<bool> result = fn->SetNumbers();
-            if (result.Error()) return result;
-            Console.Out() << "ARITHMETIC " << fn->Name() << endl();
-        }
-        return Result<bool>(optimized);
+        return Result<bool>(true);
     }
 }
 

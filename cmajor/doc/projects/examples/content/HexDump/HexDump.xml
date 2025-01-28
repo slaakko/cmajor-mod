@@ -4,29 +4,66 @@
  </files>
  <namespace docPath="../../HexDump/doc/ns_.html" extPath="HexDump/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../HexDump/doc/../index.html#function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" extPath="HexDump/doc/../index.html#function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" kind="Function" line="54" name="HexDump" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="">
+   <function docPath="../../HexDump/doc/../index.html#function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" extPath="HexDump/doc/../index.html#function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_HexDump_E82DDD4516B017DC4F7F0066FBAD89D5336A6170" kind="Function" line="65" name="HexDump" returnType="8c1bbf24-e894-ceae-7351-03acc6343098" specifiers="">
     <parameters>
-     <parameter id="parameter_fileName_563409E2BC6BF5B56FF52BA5AECE1CD6CF651C8C" name="fileName" type="c872b49a-6c02-4f8b-8c89-6a5eb9de9d59"/>
+     <parameter id="parameter_fileName_563409E2BC6BF5B56FF52BA5AECE1CD6CF651C8C" name="fileName" type="c314afac-fd53-af91-8a04-a64edb52b8a8"/>
     </parameters>
    </function>
-   <function docPath="../../HexDump/doc/../index.html#function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" extPath="HexDump/doc/../index.html#function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" kind="Function" line="15" name="HexDumpLine" returnType="2a1be628-994a-4e64-8f5f-9a903fe7b05d" specifiers="">
+   <function docPath="../../HexDump/doc/../index.html#function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" extPath="HexDump/doc/../index.html#function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_HexDumpLine_4AAFA45F3B96D65777E7DF9ADB9C8E4614D9DC09" kind="Function" line="15" name="HexDumpLine" returnType="3763bd8c-e8bc-d2b0-908b-63fc7154a087" specifiers="">
     <parameters>
-     <parameter id="parameter_addr_E48AF8160440F533C43D455FF33A7C57980078D3" name="addr" type="b6b5d9f8-217e-49ff-8039-00b50ace77d3"/>
-     <parameter id="parameter_bytes_334251D57A7E1AD75BBB611D046BAF9F507E91E7" name="bytes" type="57f89639-74d0-453c-a869-ce7adc76e7d7"/>
-     <parameter id="parameter_numBytes_044B3C0DDD1EDDC1D024FE0C7315174D2F7ACEC8" name="numBytes" type="b6b5d9f8-217e-49ff-8039-00b50ace77d3"/>
+     <parameter id="parameter_addr_E48AF8160440F533C43D455FF33A7C57980078D3" name="addr" type="2154e482-33e5-d621-3c22-5c8269cfe14c"/>
+     <parameter id="parameter_bytes_334251D57A7E1AD75BBB611D046BAF9F507E91E7" name="bytes" type="dbae2dfc-d500-f9b0-0c51-114dd5025727"/>
+     <parameter id="parameter_numBytes_044B3C0DDD1EDDC1D024FE0C7315174D2F7ACEC8" name="numBytes" type="2154e482-33e5-d621-3c22-5c8269cfe14c"/>
     </parameters>
    </function>
-   <function docPath="../../HexDump/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="HexDump/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="5" name="PrintHelp" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers=""/>
-   <function docPath="../../HexDump/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="HexDump/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="84" name="main" returnType="e6a3c726-d18f-464c-b47a-c90b4e4a7436" specifiers="">
+   <function docPath="../../HexDump/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="HexDump/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="5" name="PrintHelp" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers=""/>
+   <function docPath="../../HexDump/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="HexDump/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="HexDump/main.cm" filePath="../../HexDump/file/main.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="133" name="main" returnType="984a98e5-de3d-c1ce-0a9c-62ede34bff80" specifiers="">
     <parameters>
-     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="e6a3c726-d18f-464c-b47a-c90b4e4a7436"/>
-     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="faab06bf-f861-4392-8f74-230f74d276b1"/>
+     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="984a98e5-de3d-c1ce-0a9c-62ede34bff80"/>
+     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="321722d0-25cd-17c6-65a3-079f9c2ba981"/>
     </parameters>
    </function>
   </functions>
   <constants>
-   <constant docPath="../../HexDump/doc/ns_.html#constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" extPath="HexDump/doc/ns_.html#constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" id="constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" name="bytesInLine" specifiers="" type="b6b5d9f8-217e-49ff-8039-00b50ace77d3" value="bytesInLine = 16u"/>
+   <constant docPath="../../HexDump/doc/ns_.html#constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" extPath="HexDump/doc/ns_.html#constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" id="constant_bytesInLine_3BD97F33573D84C77E0D5F7DB2E62A567497C0E9" name="bytesInLine" specifiers="" type="2154e482-33e5-d621-3c22-5c8269cfe14c" value="16u"/>
   </constants>
  </namespace>
- <types/>
+ <types>
+  <basicType id="c718da31-d638-d6b4-7cb2-1178cfd1948e" name="bool"/>
+  <specialization id="8c1bbf24-e894-ceae-7351-03acc6343098" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
+   <templateArgumentTypes>
+    <templateArgumentType ref="c718da31-d638-d6b4-7cb2-1178cfd1948e"/>
+   </templateArgumentTypes>
+  </specialization>
+  <basicType id="bd20de85-a3a1-b456-dc96-8dd963044b3d" name="char"/>
+  <specialization id="216996e6-c009-3c1f-4450-009c20c2acd8" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
+   <templateArgumentTypes>
+    <templateArgumentType ref="bd20de85-a3a1-b456-dc96-8dd963044b3d"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="c314afac-fd53-af91-8a04-a64edb52b8a8" name="const String&lt;char>&amp;">
+   <derivation name="const"/>
+   <derivation baseType="216996e6-c009-3c1f-4450-009c20c2acd8"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <specialization id="3763bd8c-e8bc-d2b0-908b-63fc7154a087" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
+   <templateArgumentTypes>
+    <templateArgumentType ref="216996e6-c009-3c1f-4450-009c20c2acd8"/>
+   </templateArgumentTypes>
+  </specialization>
+  <basicType id="2154e482-33e5-d621-3c22-5c8269cfe14c" name="uint"/>
+  <basicType id="46fc913e-7629-6a5e-b96a-ab740d11b74e" name="byte"/>
+  <derivedType id="dbae2dfc-d500-f9b0-0c51-114dd5025727" name="byte*">
+   <derivation baseType="46fc913e-7629-6a5e-b96a-ab740d11b74e"/>
+   <derivation name="*"/>
+  </derivedType>
+  <basicType id="5d7c020c-5b18-97b6-16eb-4e3f72643126" name="void"/>
+  <basicType id="984a98e5-de3d-c1ce-0a9c-62ede34bff80" name="int"/>
+  <derivedType id="321722d0-25cd-17c6-65a3-079f9c2ba981" name="const char**">
+   <derivation name="const"/>
+   <derivation baseType="bd20de85-a3a1-b456-dc96-8dd963044b3d"/>
+   <derivation name="*"/>
+   <derivation name="*"/>
+  </derivedType>
+ </types>
 </symbolTable>

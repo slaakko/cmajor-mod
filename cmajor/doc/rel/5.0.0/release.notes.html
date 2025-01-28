@@ -1,0 +1,26 @@
+<h1>Cmajor 5.0.0 for Windows x64</h1>
+
+<h2>Release notes</h2>
+
+<ul>
+<li><p>Bug fix: compile error 'class not bound' resolved</p></li>
+<li><p>Bug fix: sorting algorithm in the System.Base library reimplemented</p></li>
+<li><p>Bug fix: one bug in the red-black tree in the System.Base library fixed</p></li>
+<li><p><a href="https://slaakko.github.io/cmajor/">XML serialization</a> reimplemented.</p></li>
+<li><p><a href="https://slaakko.github.io/cmajor/">[nodiscard]</a> attribute: when the return value of a function with <strong>[nodiscard]</strong> attribute is discarded, the compiler issues a warning.</p></li>
+<li><p>Error handling scheme changed: exceptions are no longer supported. 
+Now error handling is based on using the <a href="https://slaakko.github.io/cmajor/">Result</a> template.
+The result template represents either a valid function return value of type T or an error result.
+This change is likely to break existing code: many APIs especially in the System.IO and System.Windows namespaces are changed to return Result of type T instead of T or Result of type bool instead of void.</p></li>
+<li><p>Two new backends and two new compilers: masmcmc and cmcmc:</p>
+
+<ul><li>These compilers generate x64 assembly code.</li>
+<li>They use MSBuild to compile assembly code to object code, to generate libraries and to link programs.</li>
+<li>The difference between them is that the MASM backend compiler masmcmc is written in C++ while the CM/MASM backend compiler cmcmc is written in Cmajor.</li>
+<li>The source code of the cmcmc is included in the cmajor/projects/tools/compiler directory.</li></ul></li>
+<li><p><a href="https://slaakko.github.io/cmajor/">auto</a>: If a local variable is declared to have type 'auto', the compiler deduces its type from its initializer.</p></li>
+<li><p>The mapped type of a <a href="https://slaakko.github.io/cmajor/">map</a> and the mapped type of a <a href="https://slaakko.github.io/cmajor/">hashmap</a> 
+can be a <a href="https://slaakko.github.io/cmajor/">UniquePtr</a> or other move-only type.</p></li>
+<li><p>Compile error diagnostics improved.</p></li>
+</ul>
+

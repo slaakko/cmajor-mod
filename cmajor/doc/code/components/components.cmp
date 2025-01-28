@@ -1,0 +1,3 @@
+project components;
+target=library;
+source <components.cm>;

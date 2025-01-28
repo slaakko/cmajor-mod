@@ -1,0 +1,2 @@
+project interface_example;
+source <interface.cm>;

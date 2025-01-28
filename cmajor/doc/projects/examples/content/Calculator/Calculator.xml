@@ -1,6 +1,5 @@
 <symbolTable id="Calculator" module="Calculator">
  <files>
-  <file name="Calculator/Error.cm" path="file/Error.cm.html"/>
   <file name="Calculator/Main.cm" path="file/Main.cm.html"/>
   <file name="Calculator/Parser.cm" path="file/Parser.cm.html"/>
   <file name="Calculator/Scanner.cm" path="file/Scanner.cm.html"/>
@@ -11,203 +10,197 @@
   <namespaces>
    <namespace docPath="../../Calculator/doc/ns_Calculator.html" extPath="Calculator/doc/ns_Calculator.html" id="ns_Calculator" name="Calculator">
     <classes>
-     <class baseClass="class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989" docPath="../../Calculator/doc/class_DivisionByZeroException_237679D8150B53FFEE0AE60B7F390182963E8A3D.html" extPath="Calculator/doc/class_DivisionByZeroException_237679D8150B53FFEE0AE60B7F390182963E8A3D.html" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="class_DivisionByZeroException_237679D8150B53FFEE0AE60B7F390182963E8A3D" line="12" name="DivisionByZeroException" specifiers="public">
-      <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_DivisionByZeroException_237679D8150B53FFEE0AE60B7F390182963E8A3D.html#constructor_DivisionByZeroException_5EB822922364DC34F25C7B8D279E77915441E4A3" extPath="Calculator/doc/class_DivisionByZeroException_237679D8150B53FFEE0AE60B7F390182963E8A3D.html#constructor_DivisionByZeroException_5EB822922364DC34F25C7B8D279E77915441E4A3" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="constructor_DivisionByZeroException_5EB822922364DC34F25C7B8D279E77915441E4A3" kind="Constructor" line="14" name="DivisionByZeroException" specifiers="public">
-        <parameters>
-         <parameter id="parameter_message_17FED5C62D14D4875E1BA098F77DD8A49E9523F1" name="message" type="2a1be628-994a-4e64-8f5f-9a903fe7b05d"/>
-        </parameters>
-       </ctorDtor>
-      </ctorsDtors>
-     </class>
      <class baseClass="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0" docPath="../../Calculator/doc/class_EndToken_650460E17E06276FEFCCC5A445430D74B6853AEA.html" extPath="Calculator/doc/class_EndToken_650460E17E06276FEFCCC5A445430D74B6853AEA.html" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="class_EndToken_650460E17E06276FEFCCC5A445430D74B6853AEA" line="57" name="EndToken" specifiers="public"/>
-     <class baseClass="class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989" docPath="../../Calculator/doc/class_LogicErrorException_1B588CDC9BFDB0490B0FD8BA2D9F160428D5DCB2.html" extPath="Calculator/doc/class_LogicErrorException_1B588CDC9BFDB0490B0FD8BA2D9F160428D5DCB2.html" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="class_LogicErrorException_1B588CDC9BFDB0490B0FD8BA2D9F160428D5DCB2" line="26" name="LogicErrorException" specifiers="public">
-      <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_LogicErrorException_1B588CDC9BFDB0490B0FD8BA2D9F160428D5DCB2.html#constructor_LogicErrorException_D65E7C3BCDC7DCD2E46791D1C236BA3AB0B619BF" extPath="Calculator/doc/class_LogicErrorException_1B588CDC9BFDB0490B0FD8BA2D9F160428D5DCB2.html#constructor_LogicErrorException_D65E7C3BCDC7DCD2E46791D1C236BA3AB0B619BF" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="constructor_LogicErrorException_D65E7C3BCDC7DCD2E46791D1C236BA3AB0B619BF" kind="Constructor" line="28" name="LogicErrorException" specifiers="public">
-        <parameters>
-         <parameter id="parameter_message_F5BDDA6BF57767B9C4AF9E88DC2E3569180A476E" name="message" type="2a1be628-994a-4e64-8f5f-9a903fe7b05d"/>
-        </parameters>
-       </ctorDtor>
-      </ctorsDtors>
-     </class>
      <class baseClass="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0" docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255" line="13" name="NumberToken" specifiers="public">
       <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#constructor_NumberToken_8D1CA139EEFC0DF34C0EDA83BE17491C28200F37" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#constructor_NumberToken_8D1CA139EEFC0DF34C0EDA83BE17491C28200F37" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="constructor_NumberToken_8D1CA139EEFC0DF34C0EDA83BE17491C28200F37" kind="Constructor" line="15" name="NumberToken" specifiers="public nothrow">
+       <ctorDtor docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#constructor_NumberToken_3BC08287004B2526A1CA5B646A9D3BACD115FCA6" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#constructor_NumberToken_3BC08287004B2526A1CA5B646A9D3BACD115FCA6" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="constructor_NumberToken_3BC08287004B2526A1CA5B646A9D3BACD115FCA6" kind="Constructor" line="15" name="NumberToken" specifiers="public">
         <parameters>
-         <parameter id="parameter_value__E3AF5FD7C09B4833B154E977BDF6277BFED14D8B" name="value_" type="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5"/>
+         <parameter id="parameter_value__E3AF5FD7C09B4833B154E977BDF6277BFED14D8B" name="value_" type="72256792-935d-ffd9-cde7-f917adbeb8ef"/>
         </parameters>
        </ctorDtor>
       </ctorsDtors>
       <functions>
-       <function const="true" docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_function_Value_NumberToken_4F5CC749904EFA9E6B816839D83CA2D930F7674F" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_function_Value_NumberToken_4F5CC749904EFA9E6B816839D83CA2D930F7674F" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_Value_NumberToken_4F5CC749904EFA9E6B816839D83CA2D930F7674F" kind="Member Function" line="18" name="Value" returnType="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5" specifiers="public inline nothrow"/>
+       <function const="true" docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_function_Value_NumberToken_8C74AB6D8A484ACC9045B38512CEC2613FE22416" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_function_Value_NumberToken_8C74AB6D8A484ACC9045B38512CEC2613FE22416" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_Value_NumberToken_8C74AB6D8A484ACC9045B38512CEC2613FE22416" kind="Member Function" line="18" name="Value" returnType="72256792-935d-ffd9-cde7-f917adbeb8ef" specifiers="public inline"/>
       </functions>
       <variables>
-       <variable docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_variable_value_1F0D44EC0E42ECBDA11FD33EA3F74925B90A83DB" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_variable_value_1F0D44EC0E42ECBDA11FD33EA3F74925B90A83DB" id="member_variable_value_1F0D44EC0E42ECBDA11FD33EA3F74925B90A83DB" name="value" specifiers="private" type="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5"/>
+       <variable docPath="../../Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_variable_value_1F0D44EC0E42ECBDA11FD33EA3F74925B90A83DB" extPath="Calculator/doc/class_NumberToken_164F4C9C9CED5CD8E8393861055B13DDC4633255.html#member_variable_value_1F0D44EC0E42ECBDA11FD33EA3F74925B90A83DB" id="member_variable_value_1F0D44EC0E42ECBDA11FD33EA3F74925B90A83DB" name="value" specifiers="private" type="72256792-935d-ffd9-cde7-f917adbeb8ef"/>
       </variables>
      </class>
      <class baseClass="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8" line="37" name="OperatorToken" specifiers="public">
       <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#constructor_OperatorToken_D2BAB5CD424889820CC67521A3EA8AC0BF29B997" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#constructor_OperatorToken_D2BAB5CD424889820CC67521A3EA8AC0BF29B997" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="constructor_OperatorToken_D2BAB5CD424889820CC67521A3EA8AC0BF29B997" kind="Constructor" line="39" name="OperatorToken" specifiers="public nothrow">
+       <ctorDtor docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#constructor_OperatorToken_01AB843A6D67B3B05F194CA4BBE77DF16440A466" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#constructor_OperatorToken_01AB843A6D67B3B05F194CA4BBE77DF16440A466" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="constructor_OperatorToken_01AB843A6D67B3B05F194CA4BBE77DF16440A466" kind="Constructor" line="39" name="OperatorToken" specifiers="public">
         <parameters>
-         <parameter id="parameter_operatorChar__107386F033ECCA73EB13ABE46E8A804CCE3F66B9" name="operatorChar_" type="a18894bb-2ab1-4fe1-aa92-16022fe574cb"/>
+         <parameter id="parameter_operatorChar__107386F033ECCA73EB13ABE46E8A804CCE3F66B9" name="operatorChar_" type="ee2d4c39-33c2-b519-c251-9f4658753ade"/>
         </parameters>
        </ctorDtor>
       </ctorsDtors>
       <functions>
-       <function const="true" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_Char_OperatorToken_2C727B27B97A33D555E0A8B94A2F92A9C5C54CBE" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_Char_OperatorToken_2C727B27B97A33D555E0A8B94A2F92A9C5C54CBE" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_Char_OperatorToken_2C727B27B97A33D555E0A8B94A2F92A9C5C54CBE" kind="Member Function" line="42" name="Char" returnType="a18894bb-2ab1-4fe1-aa92-16022fe574cb" specifiers="public inline nothrow"/>
-       <function const="true" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsAdditiveOperator_OperatorToken_C3439A37E59C94DD0EEE8DEF596A23F221AF15EF" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsAdditiveOperator_OperatorToken_C3439A37E59C94DD0EEE8DEF596A23F221AF15EF" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_IsAdditiveOperator_OperatorToken_C3439A37E59C94DD0EEE8DEF596A23F221AF15EF" kind="Member Function" line="46" name="IsAdditiveOperator" returnType="a2e95943-672e-4f13-aebf-d4afb41c9bc6" specifiers="public inline nothrow"/>
-       <function const="true" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsMultiplicativeOperator_OperatorToken_263BECF7548912AAB337A65F623CBC5FD2B04DD8" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsMultiplicativeOperator_OperatorToken_263BECF7548912AAB337A65F623CBC5FD2B04DD8" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_IsMultiplicativeOperator_OperatorToken_263BECF7548912AAB337A65F623CBC5FD2B04DD8" kind="Member Function" line="50" name="IsMultiplicativeOperator" returnType="a2e95943-672e-4f13-aebf-d4afb41c9bc6" specifiers="public inline nothrow"/>
+       <function const="true" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_Char_OperatorToken_3F10BBB3BE42A004ECC59CDA36BF6D1F7942031B" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_Char_OperatorToken_3F10BBB3BE42A004ECC59CDA36BF6D1F7942031B" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_Char_OperatorToken_3F10BBB3BE42A004ECC59CDA36BF6D1F7942031B" kind="Member Function" line="42" name="Char" returnType="ee2d4c39-33c2-b519-c251-9f4658753ade" specifiers="public inline"/>
+       <function const="true" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsAdditiveOperator_OperatorToken_925FDD6AFB9C6CB1734F653044A80C7D47228FC9" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsAdditiveOperator_OperatorToken_925FDD6AFB9C6CB1734F653044A80C7D47228FC9" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_IsAdditiveOperator_OperatorToken_925FDD6AFB9C6CB1734F653044A80C7D47228FC9" kind="Member Function" line="46" name="IsAdditiveOperator" returnType="c718da31-d638-d6b4-7cb2-1178cfd1948e" specifiers="public inline"/>
+       <function const="true" docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsMultiplicativeOperator_OperatorToken_8EBD2804B32B409A3E9062D513E5156ABC22E270" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_function_IsMultiplicativeOperator_OperatorToken_8EBD2804B32B409A3E9062D513E5156ABC22E270" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_IsMultiplicativeOperator_OperatorToken_8EBD2804B32B409A3E9062D513E5156ABC22E270" kind="Member Function" line="50" name="IsMultiplicativeOperator" returnType="c718da31-d638-d6b4-7cb2-1178cfd1948e" specifiers="public inline"/>
       </functions>
       <variables>
-       <variable docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_variable_operatorChar_5642F3C1C9BD1E968678383E30736DCE1465B305" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_variable_operatorChar_5642F3C1C9BD1E968678383E30736DCE1465B305" id="member_variable_operatorChar_5642F3C1C9BD1E968678383E30736DCE1465B305" name="operatorChar" specifiers="private" type="a18894bb-2ab1-4fe1-aa92-16022fe574cb"/>
+       <variable docPath="../../Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_variable_operatorChar_5642F3C1C9BD1E968678383E30736DCE1465B305" extPath="Calculator/doc/class_OperatorToken_164091B4AD4653519428A73A8CABF3C39DD441A8.html#member_variable_operatorChar_5642F3C1C9BD1E968678383E30736DCE1465B305" id="member_variable_operatorChar_5642F3C1C9BD1E968678383E30736DCE1465B305" name="operatorChar" specifiers="private" type="ee2d4c39-33c2-b519-c251-9f4658753ade"/>
       </variables>
-     </class>
-     <class baseClass="class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989" docPath="../../Calculator/doc/class_ParsingException_F698CE99F79EC4DB8C8AA1528623F92889AE0768.html" extPath="Calculator/doc/class_ParsingException_F698CE99F79EC4DB8C8AA1528623F92889AE0768.html" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="class_ParsingException_F698CE99F79EC4DB8C8AA1528623F92889AE0768" line="5" name="ParsingException" specifiers="public">
-      <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_ParsingException_F698CE99F79EC4DB8C8AA1528623F92889AE0768.html#constructor_ParsingException_8BD96BC8BC691890800897036D2CF887932960C9" extPath="Calculator/doc/class_ParsingException_F698CE99F79EC4DB8C8AA1528623F92889AE0768.html#constructor_ParsingException_8BD96BC8BC691890800897036D2CF887932960C9" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="constructor_ParsingException_8BD96BC8BC691890800897036D2CF887932960C9" kind="Constructor" line="7" name="ParsingException" specifiers="public">
-        <parameters>
-         <parameter id="parameter_message_94AB0A050EF51C178808CC18166E3FD6812AABAA" name="message" type="2a1be628-994a-4e64-8f5f-9a903fe7b05d"/>
-        </parameters>
-       </ctorDtor>
-      </ctorsDtors>
      </class>
      <class baseClass="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0" docPath="../../Calculator/doc/class_PrintToken_C65217787161D74A5123773C9C7A5C224C550F28.html" extPath="Calculator/doc/class_PrintToken_C65217787161D74A5123773C9C7A5C224C550F28.html" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="class_PrintToken_C65217787161D74A5123773C9C7A5C224C550F28" line="9" name="PrintToken" specifiers="public"/>
      <class docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A" line="10" name="Scanner" specifiers="public">
       <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#constructor_Scanner_0187014C0E86B7AF04B01BB37E6EABF2FEF3D250" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#constructor_Scanner_0187014C0E86B7AF04B01BB37E6EABF2FEF3D250" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="constructor_Scanner_0187014C0E86B7AF04B01BB37E6EABF2FEF3D250" kind="Constructor" line="12" name="Scanner" specifiers="public nothrow">
+       <ctorDtor docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#constructor_Scanner_855351C7442D12B070572D584DEBFD5F7BDAA28F" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#constructor_Scanner_855351C7442D12B070572D584DEBFD5F7BDAA28F" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="constructor_Scanner_855351C7442D12B070572D584DEBFD5F7BDAA28F" kind="Constructor" line="12" name="Scanner" specifiers="public">
         <parameters>
-         <parameter id="parameter_input__B8FE1B1C4115AECEA19AEEDC12AE467B29AD26F8" name="input_" type="f8140c58-27d9-4fde-839c-82e37d3588c5"/>
+         <parameter id="parameter_input__B8FE1B1C4115AECEA19AEEDC12AE467B29AD26F8" name="input_" type="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16"/>
         </parameters>
        </ctorDtor>
       </ctorsDtors>
       <functions>
-       <function const="true" docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_CurrentToken_Scanner_8195148FACFA857F269DB75F94B3541BAC177367" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_CurrentToken_Scanner_8195148FACFA857F269DB75F94B3541BAC177367" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_CurrentToken_Scanner_8195148FACFA857F269DB75F94B3541BAC177367" kind="Member Function" line="15" name="CurrentToken" returnType="b1c50e90-0ce3-43cf-911d-9b9de089d155" specifiers="public inline nothrow"/>
-       <function docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_NextToken_Scanner_A5CF5E8B30D2A8D433D9E92B2968E4B17458D3D6" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_NextToken_Scanner_A5CF5E8B30D2A8D433D9E92B2968E4B17458D3D6" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_NextToken_Scanner_A5CF5E8B30D2A8D433D9E92B2968E4B17458D3D6" kind="Member Function" line="19" name="NextToken" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="public"/>
-       <function docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_Rewind_Scanner_BC079E4C0846CC9A12D461022F956A383CB533E0" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_Rewind_Scanner_BC079E4C0846CC9A12D461022F956A383CB533E0" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_Rewind_Scanner_BC079E4C0846CC9A12D461022F956A383CB533E0" kind="Member Function" line="64" name="Rewind" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="public"/>
-       <function docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_SkipWhiteSpace_Scanner_46C935334ACB7CC077B7F6E34DA835431633496C" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_SkipWhiteSpace_Scanner_46C935334ACB7CC077B7F6E34DA835431633496C" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_SkipWhiteSpace_Scanner_46C935334ACB7CC077B7F6E34DA835431633496C" kind="Member Function" line="68" name="SkipWhiteSpace" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="private"/>
+       <function const="true" docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_CurrentToken_Scanner_B737B61260AD5EC66CBA94260F97A4CB3F7868DB" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_CurrentToken_Scanner_B737B61260AD5EC66CBA94260F97A4CB3F7868DB" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_CurrentToken_Scanner_B737B61260AD5EC66CBA94260F97A4CB3F7868DB" kind="Member Function" line="15" name="CurrentToken" returnType="e1f016fa-244d-f04e-fe8b-b237deaf120a" specifiers="public inline"/>
+       <function docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_NextToken_Scanner_D9AFE01664450811B8CAFD05B4DC9AE05E3A33AB" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_NextToken_Scanner_D9AFE01664450811B8CAFD05B4DC9AE05E3A33AB" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_NextToken_Scanner_D9AFE01664450811B8CAFD05B4DC9AE05E3A33AB" kind="Member Function" line="19" name="NextToken" returnType="8c1bbf24-e894-ceae-7351-03acc6343098" specifiers="public"/>
+       <function docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_Rewind_Scanner_52E2EFB7F75DC30F6213F445170601329D43847F" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_Rewind_Scanner_52E2EFB7F75DC30F6213F445170601329D43847F" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_Rewind_Scanner_52E2EFB7F75DC30F6213F445170601329D43847F" kind="Member Function" line="100" name="Rewind" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers="public"/>
+       <function docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_SkipWhiteSpace_Scanner_17D96714C38BD35339D18D816004AEEEE7F044F6" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_function_SkipWhiteSpace_Scanner_17D96714C38BD35339D18D816004AEEEE7F044F6" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="member_function_SkipWhiteSpace_Scanner_17D96714C38BD35339D18D816004AEEEE7F044F6" kind="Member Function" line="104" name="SkipWhiteSpace" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers="private"/>
       </functions>
       <variables>
-       <variable docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" id="member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" name="input" specifiers="private" type="1a7d5eea-d291-4e31-804a-722dfb0ca5c1"/>
-       <variable docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" id="member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" name="pos" specifiers="private" type="e6a3c726-d18f-464c-b47a-c90b4e4a7436"/>
-       <variable docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" id="member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" name="token" specifiers="private" type="5a007ce5-b017-4f52-8196-7e3cd0680058"/>
+       <variable docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" id="member_variable_input_B5D4094E860CEB6058F2EDEBAE704A45E718FA75" name="input" specifiers="private" type="125e4aff-43b6-1884-3cec-4f251c104f66"/>
+       <variable docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" id="member_variable_pos_F8DC18DB659AE379A7BA98D03A300B5A602751CC" name="pos" specifiers="private" type="984a98e5-de3d-c1ce-0a9c-62ede34bff80"/>
+       <variable docPath="../../Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" extPath="Calculator/doc/class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A.html#member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" id="member_variable_token_348E6B95AC6DDB674B598E9EE435AB1C97676DF0" name="token" specifiers="private" type="e2864464-7acd-07e9-6515-b1c482907c69"/>
       </variables>
      </class>
      <class docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50" line="6" name="SymbolTable" specifiers="public">
       <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#static_constructor_SymbolTable_14C27CAE4447F743060A56939D38BAF9DDA99AD7" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#static_constructor_SymbolTable_14C27CAE4447F743060A56939D38BAF9DDA99AD7" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="static_constructor_SymbolTable_14C27CAE4447F743060A56939D38BAF9DDA99AD7" kind="Static Constructor" line="8" name="SymbolTable" specifiers="static"/>
-       <ctorDtor docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#default_constructor_SymbolTable_DD474164C9E3A36A9813D62CBF962591D40AB273" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#default_constructor_SymbolTable_DD474164C9E3A36A9813D62CBF962591D40AB273" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="default_constructor_SymbolTable_DD474164C9E3A36A9813D62CBF962591D40AB273" kind="Constructor" line="15" name="SymbolTable" specifiers="private"/>
+       <ctorDtor docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#static_constructor_SymbolTable_A1AADB3F9002C37BE5185427F4096FA04A3442BA" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#static_constructor_SymbolTable_A1AADB3F9002C37BE5185427F4096FA04A3442BA" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="static_constructor_SymbolTable_A1AADB3F9002C37BE5185427F4096FA04A3442BA" kind="Static Constructor" line="8" name="SymbolTable" specifiers="static"/>
+       <ctorDtor docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#default_constructor_SymbolTable_3CF40EACB8FC106F20D95AF77389D24A15E12789" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#default_constructor_SymbolTable_3CF40EACB8FC106F20D95AF77389D24A15E12789" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="default_constructor_SymbolTable_3CF40EACB8FC106F20D95AF77389D24A15E12789" kind="Constructor" line="15" name="SymbolTable" specifiers="private"/>
       </ctorsDtors>
       <functions>
-       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_GetVariableValue_SymbolTable_BCE11D25730933A5C7438283F54BE1F0AF76DE41" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_GetVariableValue_SymbolTable_BCE11D25730933A5C7438283F54BE1F0AF76DE41" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_GetVariableValue_SymbolTable_BCE11D25730933A5C7438283F54BE1F0AF76DE41" kind="Member Function" line="22" name="GetVariableValue" returnType="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5" specifiers="public">
+       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_GetVariableValue_SymbolTable_0CB4B6D9A659B936441AC57CA6488E2395FAB0C1" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_GetVariableValue_SymbolTable_0CB4B6D9A659B936441AC57CA6488E2395FAB0C1" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_GetVariableValue_SymbolTable_0CB4B6D9A659B936441AC57CA6488E2395FAB0C1" kind="Member Function" line="22" name="GetVariableValue" returnType="579b2383-0883-0ef9-ddf3-eacc6a06238e" specifiers="public">
         <parameters>
-         <parameter id="parameter_variableName_6F714FC178D9C0B46B85C153711B71B751D3CD96" name="variableName" type="f8140c58-27d9-4fde-839c-82e37d3588c5"/>
+         <parameter id="parameter_variableName_6F714FC178D9C0B46B85C153711B71B751D3CD96" name="variableName" type="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16"/>
         </parameters>
        </function>
-       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Instance_SymbolTable_F203779D0552F0982685369C8E1B0E488EF4743A" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Instance_SymbolTable_F203779D0552F0982685369C8E1B0E488EF4743A" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_Instance_SymbolTable_F203779D0552F0982685369C8E1B0E488EF4743A" kind="Static Member Function" line="11" name="Instance" returnType="a29535d5-985a-47f0-9748-8c54e9892bcf" specifiers="public static"/>
-       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Print_SymbolTable_B159780050AF0B88E557ED7E17EB247C086A8D61" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Print_SymbolTable_B159780050AF0B88E557ED7E17EB247C086A8D61" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_Print_SymbolTable_B159780050AF0B88E557ED7E17EB247C086A8D61" kind="Member Function" line="35" name="Print" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="public"/>
-       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_SetVariable_SymbolTable_9982BA1B26439A9F253DE5D07AB4861865273826" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_SetVariable_SymbolTable_9982BA1B26439A9F253DE5D07AB4861865273826" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_SetVariable_SymbolTable_9982BA1B26439A9F253DE5D07AB4861865273826" kind="Member Function" line="18" name="SetVariable" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="public">
+       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Instance_SymbolTable_0C1EDBBBBA1474066B7DEA9242C334D164294D7F" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Instance_SymbolTable_0C1EDBBBBA1474066B7DEA9242C334D164294D7F" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_Instance_SymbolTable_0C1EDBBBBA1474066B7DEA9242C334D164294D7F" kind="Static Member Function" line="11" name="Instance" returnType="2e028b5c-363d-c0e1-5017-df248cf08065" specifiers="public static"/>
+       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Print_SymbolTable_74C5C22FFCA9EE5DD968D3B1B6D05F9449F0A1FD" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_Print_SymbolTable_74C5C22FFCA9EE5DD968D3B1B6D05F9449F0A1FD" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_Print_SymbolTable_74C5C22FFCA9EE5DD968D3B1B6D05F9449F0A1FD" kind="Member Function" line="42" name="Print" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers="public"/>
+       <function docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_SetVariable_SymbolTable_5B5FC2943BEA2340847D088DA41FF630F78606C6" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_function_SetVariable_SymbolTable_5B5FC2943BEA2340847D088DA41FF630F78606C6" fileName="Calculator/SymbolTable.cm" filePath="../../Calculator/file/SymbolTable.cm.html" id="member_function_SetVariable_SymbolTable_5B5FC2943BEA2340847D088DA41FF630F78606C6" kind="Member Function" line="18" name="SetVariable" returnType="5d7c020c-5b18-97b6-16eb-4e3f72643126" specifiers="public">
         <parameters>
-         <parameter id="parameter_variableName_E57AFC6494E732954B3DA22D70344F1F9C505C60" name="variableName" type="f8140c58-27d9-4fde-839c-82e37d3588c5"/>
-         <parameter id="parameter_variableValue_50C09CA28CB45075844F3E88BBAE2109ED8E6335" name="variableValue" type="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5"/>
+         <parameter id="parameter_variableName_E57AFC6494E732954B3DA22D70344F1F9C505C60" name="variableName" type="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16"/>
+         <parameter id="parameter_variableValue_50C09CA28CB45075844F3E88BBAE2109ED8E6335" name="variableValue" type="72256792-935d-ffd9-cde7-f917adbeb8ef"/>
         </parameters>
        </function>
       </functions>
       <variables>
-       <variable docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_instance_55FF3A85D0A81EE41ED3D6617C18CF380C282DA6" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_instance_55FF3A85D0A81EE41ED3D6617C18CF380C282DA6" id="member_variable_instance_55FF3A85D0A81EE41ED3D6617C18CF380C282DA6" name="instance" specifiers="private static" type="c9587a3c-e1d8-4f61-b10a-d0cb7b2620b8"/>
-       <variable docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_variableMap_B023F402094D45B6826AE00AD7FC09167832FF25" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_variableMap_B023F402094D45B6826AE00AD7FC09167832FF25" id="member_variable_variableMap_B023F402094D45B6826AE00AD7FC09167832FF25" name="variableMap" specifiers="private" type="2ba6a4e3-1b92-4a73-9706-9bc9cd89e94a"/>
+       <variable docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_instance_55FF3A85D0A81EE41ED3D6617C18CF380C282DA6" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_instance_55FF3A85D0A81EE41ED3D6617C18CF380C282DA6" id="member_variable_instance_55FF3A85D0A81EE41ED3D6617C18CF380C282DA6" name="instance" specifiers="private static" type="ef897f5f-44fb-5e42-47f1-57800692fecd"/>
+       <variable docPath="../../Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_variableMap_B023F402094D45B6826AE00AD7FC09167832FF25" extPath="Calculator/doc/class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50.html#member_variable_variableMap_B023F402094D45B6826AE00AD7FC09167832FF25" id="member_variable_variableMap_B023F402094D45B6826AE00AD7FC09167832FF25" name="variableMap" specifiers="private" type="6f601910-c564-57ff-a827-314cd9540ec2"/>
       </variables>
      </class>
      <class docPath="../../Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html" extPath="Calculator/doc/class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0.html" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0" line="5" name="Token" specifiers="public abstract"/>
      <class baseClass="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0" docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D" line="25" name="VariableNameToken" specifiers="public">
       <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#constructor_VariableNameToken_E042DCEA3C161DC6D5093D3BFCCA69AEFBD14E6D" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#constructor_VariableNameToken_E042DCEA3C161DC6D5093D3BFCCA69AEFBD14E6D" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="constructor_VariableNameToken_E042DCEA3C161DC6D5093D3BFCCA69AEFBD14E6D" kind="Constructor" line="27" name="VariableNameToken" specifiers="public nothrow">
+       <ctorDtor docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#constructor_VariableNameToken_DAD54CA3F51038C8A586209C5449CB6B5BE3E759" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#constructor_VariableNameToken_DAD54CA3F51038C8A586209C5449CB6B5BE3E759" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="constructor_VariableNameToken_DAD54CA3F51038C8A586209C5449CB6B5BE3E759" kind="Constructor" line="27" name="VariableNameToken" specifiers="public">
         <parameters>
-         <parameter id="parameter_variableName__26F0962C4ED1ABE09C84677A45337906B528EB7F" name="variableName_" type="f8140c58-27d9-4fde-839c-82e37d3588c5"/>
+         <parameter id="parameter_variableName__26F0962C4ED1ABE09C84677A45337906B528EB7F" name="variableName_" type="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16"/>
         </parameters>
        </ctorDtor>
       </ctorsDtors>
       <functions>
-       <function const="true" docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_function_VariableName_VariableNameToken_E7F7755DB87A861D5547409BF8205F9CD60DEA2F" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_function_VariableName_VariableNameToken_E7F7755DB87A861D5547409BF8205F9CD60DEA2F" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_VariableName_VariableNameToken_E7F7755DB87A861D5547409BF8205F9CD60DEA2F" kind="Member Function" line="30" name="VariableName" returnType="f8140c58-27d9-4fde-839c-82e37d3588c5" specifiers="public inline nothrow"/>
+       <function const="true" docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_function_VariableName_VariableNameToken_2F24357CC509598E7093CE44629D6C468AE0D678" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_function_VariableName_VariableNameToken_2F24357CC509598E7093CE44629D6C468AE0D678" fileName="Calculator/Token.cm" filePath="../../Calculator/file/Token.cm.html" id="member_function_VariableName_VariableNameToken_2F24357CC509598E7093CE44629D6C468AE0D678" kind="Member Function" line="30" name="VariableName" returnType="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16" specifiers="public inline"/>
       </functions>
       <variables>
-       <variable docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_variable_variableName_3B79F2E9CC12C4E916FF7C5527E05DEE7D4199D2" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_variable_variableName_3B79F2E9CC12C4E916FF7C5527E05DEE7D4199D2" id="member_variable_variableName_3B79F2E9CC12C4E916FF7C5527E05DEE7D4199D2" name="variableName" specifiers="private" type="1a7d5eea-d291-4e31-804a-722dfb0ca5c1"/>
+       <variable docPath="../../Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_variable_variableName_3B79F2E9CC12C4E916FF7C5527E05DEE7D4199D2" extPath="Calculator/doc/class_VariableNameToken_E0D19BF1420162F9799480809F5B474540F7B17D.html#member_variable_variableName_3B79F2E9CC12C4E916FF7C5527E05DEE7D4199D2" id="member_variable_variableName_3B79F2E9CC12C4E916FF7C5527E05DEE7D4199D2" name="variableName" specifiers="private" type="125e4aff-43b6-1884-3cec-4f251c104f66"/>
       </variables>
-     </class>
-     <class baseClass="class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989" docPath="../../Calculator/doc/class_VariableNotFoundException_DD255425C185F9BDEFC90075F5F0FB61728BE8C2.html" extPath="Calculator/doc/class_VariableNotFoundException_DD255425C185F9BDEFC90075F5F0FB61728BE8C2.html" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="class_VariableNotFoundException_DD255425C185F9BDEFC90075F5F0FB61728BE8C2" line="19" name="VariableNotFoundException" specifiers="public">
-      <ctorsDtors>
-       <ctorDtor docPath="../../Calculator/doc/class_VariableNotFoundException_DD255425C185F9BDEFC90075F5F0FB61728BE8C2.html#constructor_VariableNotFoundException_0949C273935D080A954A104CF5052065115F1D57" extPath="Calculator/doc/class_VariableNotFoundException_DD255425C185F9BDEFC90075F5F0FB61728BE8C2.html#constructor_VariableNotFoundException_0949C273935D080A954A104CF5052065115F1D57" fileName="Calculator/Error.cm" filePath="../../Calculator/file/Error.cm.html" id="constructor_VariableNotFoundException_0949C273935D080A954A104CF5052065115F1D57" kind="Constructor" line="21" name="VariableNotFoundException" specifiers="public">
-        <parameters>
-         <parameter id="parameter_message_8993D41CABE28031E00C41C2C00B0AA527071F22" name="message" type="2a1be628-994a-4e64-8f5f-9a903fe7b05d"/>
-        </parameters>
-       </ctorDtor>
-      </ctorsDtors>
      </class>
     </classes>
     <functions>
-     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Expr_DD68935FD6B681C71D8E11ED2DFDAFADEA25572D" extPath="Calculator/doc/ns_Calculator.html#function_Expr_DD68935FD6B681C71D8E11ED2DFDAFADEA25572D" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Expr_DD68935FD6B681C71D8E11ED2DFDAFADEA25572D" kind="Function" line="54" name="Expr" returnType="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5" specifiers="internal">
+     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Expr_DD68935FD6B681C71D8E11ED2DFDAFADEA25572D" extPath="Calculator/doc/ns_Calculator.html#function_Expr_DD68935FD6B681C71D8E11ED2DFDAFADEA25572D" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Expr_DD68935FD6B681C71D8E11ED2DFDAFADEA25572D" kind="Function" line="82" name="Expr" returnType="579b2383-0883-0ef9-ddf3-eacc6a06238e" specifiers="internal">
       <parameters>
-       <parameter id="parameter_scanner_EADE1E1D41E4091FD9345001BD79FD1448D7D8BC" name="scanner" type="b5fb6511-eb0f-4334-872c-6261530b747c"/>
+       <parameter id="parameter_scanner_EADE1E1D41E4091FD9345001BD79FD1448D7D8BC" name="scanner" type="ed5d53f1-94a0-10c5-41f1-5b3076c46e40"/>
       </parameters>
      </function>
-     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Factor_F7561B807C9DA6E815E1BF91FBC50E45C69AD1E9" extPath="Calculator/doc/ns_Calculator.html#function_Factor_F7561B807C9DA6E815E1BF91FBC50E45C69AD1E9" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Factor_F7561B807C9DA6E815E1BF91FBC50E45C69AD1E9" kind="Function" line="114" name="Factor" returnType="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5" specifiers="internal">
+     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Factor_F7561B807C9DA6E815E1BF91FBC50E45C69AD1E9" extPath="Calculator/doc/ns_Calculator.html#function_Factor_F7561B807C9DA6E815E1BF91FBC50E45C69AD1E9" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Factor_F7561B807C9DA6E815E1BF91FBC50E45C69AD1E9" kind="Function" line="173" name="Factor" returnType="579b2383-0883-0ef9-ddf3-eacc6a06238e" specifiers="internal">
       <parameters>
-       <parameter id="parameter_scanner_3A11720CACF91DD2D423B2C7836A6E833B83989F" name="scanner" type="b5fb6511-eb0f-4334-872c-6261530b747c"/>
+       <parameter id="parameter_scanner_3A11720CACF91DD2D423B2C7836A6E833B83989F" name="scanner" type="ed5d53f1-94a0-10c5-41f1-5b3076c46e40"/>
       </parameters>
      </function>
-     <function docPath="../../Calculator/doc/ns_Calculator.html#function_IsNumberChar_0C8C067A7336FB1DAB5FCBE95EE27E654305652E" extPath="Calculator/doc/ns_Calculator.html#function_IsNumberChar_0C8C067A7336FB1DAB5FCBE95EE27E654305652E" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="function_IsNumberChar_0C8C067A7336FB1DAB5FCBE95EE27E654305652E" kind="Function" line="5" name="IsNumberChar" returnType="a2e95943-672e-4f13-aebf-d4afb41c9bc6" specifiers="public inline">
+     <function docPath="../../Calculator/doc/ns_Calculator.html#function_IsNumberChar_0C8C067A7336FB1DAB5FCBE95EE27E654305652E" extPath="Calculator/doc/ns_Calculator.html#function_IsNumberChar_0C8C067A7336FB1DAB5FCBE95EE27E654305652E" fileName="Calculator/Scanner.cm" filePath="../../Calculator/file/Scanner.cm.html" id="function_IsNumberChar_0C8C067A7336FB1DAB5FCBE95EE27E654305652E" kind="Function" line="5" name="IsNumberChar" returnType="c718da31-d638-d6b4-7cb2-1178cfd1948e" specifiers="public inline">
       <parameters>
-       <parameter id="parameter_c_99B42EB86BA2F49BDE9267C138EC0C5976B7B7DC" name="c" type="a18894bb-2ab1-4fe1-aa92-16022fe574cb"/>
+       <parameter id="parameter_c_99B42EB86BA2F49BDE9267C138EC0C5976B7B7DC" name="c" type="ee2d4c39-33c2-b519-c251-9f4658753ade"/>
       </parameters>
      </function>
-     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Parse_E1C0184324A64BA42491578B40FD210F4DD4FB30" extPath="Calculator/doc/ns_Calculator.html#function_Parse_E1C0184324A64BA42491578B40FD210F4DD4FB30" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Parse_E1C0184324A64BA42491578B40FD210F4DD4FB30" kind="Function" line="5" name="Parse" returnType="fbaad400-82f5-4692-beb9-4b2b3566de20" specifiers="public">
+     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Parse_E1C0184324A64BA42491578B40FD210F4DD4FB30" extPath="Calculator/doc/ns_Calculator.html#function_Parse_E1C0184324A64BA42491578B40FD210F4DD4FB30" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Parse_E1C0184324A64BA42491578B40FD210F4DD4FB30" kind="Function" line="5" name="Parse" returnType="8c1bbf24-e894-ceae-7351-03acc6343098" specifiers="public">
       <parameters>
-       <parameter id="parameter_input_F4B72B024916D9A9EEE5B846C9A3F34C02933661" name="input" type="f8140c58-27d9-4fde-839c-82e37d3588c5"/>
+       <parameter id="parameter_input_F4B72B024916D9A9EEE5B846C9A3F34C02933661" name="input" type="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16"/>
       </parameters>
      </function>
-     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Primary_7C53AB170B432F331C878B34C71F7335FE46D42F" extPath="Calculator/doc/ns_Calculator.html#function_Primary_7C53AB170B432F331C878B34C71F7335FE46D42F" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Primary_7C53AB170B432F331C878B34C71F7335FE46D42F" kind="Function" line="135" name="Primary" returnType="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5" specifiers="internal">
+     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Primary_7C53AB170B432F331C878B34C71F7335FE46D42F" extPath="Calculator/doc/ns_Calculator.html#function_Primary_7C53AB170B432F331C878B34C71F7335FE46D42F" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Primary_7C53AB170B432F331C878B34C71F7335FE46D42F" kind="Function" line="203" name="Primary" returnType="579b2383-0883-0ef9-ddf3-eacc6a06238e" specifiers="internal">
       <parameters>
-       <parameter id="parameter_scanner_99DF4C7B43771071802FE3A1DB5CA03A979A3987" name="scanner" type="b5fb6511-eb0f-4334-872c-6261530b747c"/>
+       <parameter id="parameter_scanner_99DF4C7B43771071802FE3A1DB5CA03A979A3987" name="scanner" type="ed5d53f1-94a0-10c5-41f1-5b3076c46e40"/>
       </parameters>
      </function>
-     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Term_DE780C79FC0FEDDDFBE1F575B3CA4D877D8C8FDD" extPath="Calculator/doc/ns_Calculator.html#function_Term_DE780C79FC0FEDDDFBE1F575B3CA4D877D8C8FDD" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Term_DE780C79FC0FEDDDFBE1F575B3CA4D877D8C8FDD" kind="Function" line="82" name="Term" returnType="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5" specifiers="internal">
+     <function docPath="../../Calculator/doc/ns_Calculator.html#function_Term_DE780C79FC0FEDDDFBE1F575B3CA4D877D8C8FDD" extPath="Calculator/doc/ns_Calculator.html#function_Term_DE780C79FC0FEDDDFBE1F575B3CA4D877D8C8FDD" fileName="Calculator/Parser.cm" filePath="../../Calculator/file/Parser.cm.html" id="function_Term_DE780C79FC0FEDDDFBE1F575B3CA4D877D8C8FDD" kind="Function" line="125" name="Term" returnType="579b2383-0883-0ef9-ddf3-eacc6a06238e" specifiers="internal">
       <parameters>
-       <parameter id="parameter_scanner_85B7A4F598E4EAFEC1F1FF2F3A0FD0117CB2AA97" name="scanner" type="b5fb6511-eb0f-4334-872c-6261530b747c"/>
+       <parameter id="parameter_scanner_85B7A4F598E4EAFEC1F1FF2F3A0FD0117CB2AA97" name="scanner" type="ed5d53f1-94a0-10c5-41f1-5b3076c46e40"/>
       </parameters>
      </function>
     </functions>
    </namespace>
   </namespaces>
   <functions>
-   <function docPath="../../Calculator/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Calculator/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Calculator/Main.cm" filePath="../../Calculator/file/Main.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="28" name="main" returnType="e6a3c726-d18f-464c-b47a-c90b4e4a7436" specifiers=""/>
+   <function docPath="../../Calculator/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Calculator/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Calculator/Main.cm" filePath="../../Calculator/file/Main.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="28" name="main" returnType="984a98e5-de3d-c1ce-0a9c-62ede34bff80" specifiers=""/>
   </functions>
  </namespace>
  <types>
-  <derivedType id="b1c50e90-0ce3-43cf-911d-9b9de089d155" name="Token*">
+  <basicType id="72256792-935d-ffd9-cde7-f917adbeb8ef" name="double"/>
+  <basicType id="ee2d4c39-33c2-b519-c251-9f4658753ade" name="uchar"/>
+  <basicType id="c718da31-d638-d6b4-7cb2-1178cfd1948e" name="bool"/>
+  <specialization id="125e4aff-43b6-1884-3cec-4f251c104f66" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
+   <templateArgumentTypes>
+    <templateArgumentType ref="ee2d4c39-33c2-b519-c251-9f4658753ade"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="f02373b5-7eec-8b0a-f2b8-e9f7e7805b16" name="const String&lt;uchar>&amp;">
+   <derivation name="const"/>
+   <derivation baseType="125e4aff-43b6-1884-3cec-4f251c104f66"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <derivedType id="e1f016fa-244d-f04e-fe8b-b237deaf120a" name="Calculator.Token*">
    <derivation baseType="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0"/>
    <derivation name="*"/>
   </derivedType>
-  <specialization id="5a007ce5-b017-4f52-8196-7e3cd0680058" name="UniquePtr" primaryType="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <specialization id="8c1bbf24-e894-ceae-7351-03acc6343098" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
+   <templateArgumentTypes>
+    <templateArgumentType ref="c718da31-d638-d6b4-7cb2-1178cfd1948e"/>
+   </templateArgumentTypes>
+  </specialization>
+  <basicType id="5d7c020c-5b18-97b6-16eb-4e3f72643126" name="void"/>
+  <basicType id="984a98e5-de3d-c1ce-0a9c-62ede34bff80" name="int"/>
+  <specialization id="e2864464-7acd-07e9-6515-b1c482907c69" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
    <templateArgumentTypes>
     <templateArgumentType ref="class_Token_C279BEAEFD7BEE6C1DF4938D795520AA91B3ABE0"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="a29535d5-985a-47f0-9748-8c54e9892bcf" name="SymbolTable&amp;">
+  <specialization id="579b2383-0883-0ef9-ddf3-eacc6a06238e" name="Result" primaryType="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
+   <templateArgumentTypes>
+    <templateArgumentType ref="72256792-935d-ffd9-cde7-f917adbeb8ef"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="2e028b5c-363d-c0e1-5017-df248cf08065" name="SymbolTable&amp;">
    <derivation baseType="class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="c9587a3c-e1d8-4f61-b10a-d0cb7b2620b8" name="UniquePtr" primaryType="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <specialization id="ef897f5f-44fb-5e42-47f1-57800692fecd" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
    <templateArgumentTypes>
     <templateArgumentType ref="class_SymbolTable_C44FA82A9EE9189C49B829DDF1464F865D251A50"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="2ba6a4e3-1b92-4a73-9706-9bc9cd89e94a" name="Map" primaryType="class_Map_Key_Value_KeyCompare_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
+  <specialization id="21dee574-b8d9-fe31-0e61-4cd1aa810c3a" name="Less" primaryType="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57">
    <templateArgumentTypes>
-    <templateArgumentType ref="1a7d5eea-d291-4e31-804a-722dfb0ca5c1"/>
-    <templateArgumentType ref="2f9ff91f-24e6-4179-a6eb-7bd5466f45c5"/>
-    <templateArgumentType ref="d2acea9b-593e-43dd-8143-5960a06c7e1c"/>
+    <templateArgumentType ref="125e4aff-43b6-1884-3cec-4f251c104f66"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="b5fb6511-eb0f-4334-872c-6261530b747c" name="Scanner&amp;">
+  <specialization id="6f601910-c564-57ff-a827-314cd9540ec2" name="Map" primaryType="class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043">
+   <templateArgumentTypes>
+    <templateArgumentType ref="125e4aff-43b6-1884-3cec-4f251c104f66"/>
+    <templateArgumentType ref="72256792-935d-ffd9-cde7-f917adbeb8ef"/>
+    <templateArgumentType ref="21dee574-b8d9-fe31-0e61-4cd1aa810c3a"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="ed5d53f1-94a0-10c5-41f1-5b3076c46e40" name="Scanner&amp;">
    <derivation baseType="class_Scanner_5E5149E776B03185D05DF57A63FA8636294BE40A"/>
    <derivation name="&amp;"/>
   </derivedType>

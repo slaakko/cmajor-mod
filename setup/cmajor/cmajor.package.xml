@@ -1,17 +1,166 @@
-<package appName="Cmajor" compression="deflate" id="f3d90054-58ae-4653-bd6d-a3937bbb7ddb" includeUninstaller="true" name="cmajor" publisher="Seppo Laakko" sourceRootDir="C:/work/cmajor-mod/cmajor" targetRootDir="C:/cmajor" version="5.0.0">
+<package appName="Cmajor" compression="deflate" iconFilePath="$TARGET_ROOT_DIR$/bin/cmcodesmall.ico" id="f3d90054-58ae-4653-bd6d-a3937bbb7ddb" includeUninstaller="true" name="cmajor" publisher="Seppo Laakko" sourceRootDir="C:/work/cmajor-mod/cmajor" targetRootDir="C:/cmajor" version="5.0.0">
  <component name="binaries">
   <directory name="bin"/>
  </component>
  <component name="system">
   <directory name="system">
-   <exclude cascade="true" dir="Debug"/>
-   <exclude cascade="true" dir="Release"/>
-   <exclude cascade="true" dir="x64"/>
    <exclude cascade="true" dir=".vs"/>
-   <exclude dir="ext"/>
-   <include dir="platform">
-    <include dir="windows">
-     <exclude file="System.cms.settings.xml"/>
+   <exclude cascade="true" dir="debug"/>
+   <exclude cascade="true" dir="release"/>
+   <include dir="System.Base">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <exclude cascade="true" file="*.o"/>
+   <exclude cascade="true" file="*.cpp"/>
+   <include dir="System.Core">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Dom">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.IO.Compression">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Install">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Json">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Lex">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Net.Sockets">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Parsing">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.RegularExpressions">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Runtime">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Windows">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Windows.Install">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.XPath">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Xml">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="System.Xml.Serialization">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
+    </include>
+   </include>
+   <include dir="lib">
+    <include dir="cm">
+     <include dir="debug"/>
+     <include dir="release"/>
+    </include>
+    <include dir="cpp">
+     <include dir="debug"/>
+     <include dir="release"/>
+    </include>
+    <include dir="llvm">
+     <include dir="debug"/>
+     <include dir="release"/>
+    </include>
+    <include dir="masm">
+     <include dir="debug"/>
+     <include dir="release"/>
+    </include>
+   </include>
+   <include dir="System">
+    <include dir="lib">
+     <include dir="cpp">
+      <include dir="debug"/>
+      <include dir="release"/>
+     </include>
     </include>
    </include>
   </directory>
@@ -20,7 +169,18 @@
   <directory name="projects">
    <exclude cascade="true" dir="bin"/>
    <exclude cascade="true" dir="lib"/>
+   <exclude cascade="true" dir=".vs"/>
    <exclude cascade="true" file="*.settings.xml"/>
+   <include dir="tools">
+    <include dir="compiler">
+     <exclude dir="test"/>
+    </include>
+    <include dir="soulcm">
+     <exclude dir="test"/>
+    </include>
+   </include>
+   <exclude cascade="true" file="*.debug.txt"/>
+   <exclude cascade="true" file="*.classmap"/>
   </directory>
  </component>
  <component name="unicode">
@@ -28,20 +188,20 @@
  </component>
  <component name="configuration">
   <directory name="config">
-   <exclude file="*"/>
-   <include file="passes.xml"/>
-   <include file="sx.machine.config.xml"/>
+   <exclude file="cmcode.config.xml"/>
   </directory>
  </component>
  <component name="libraries">
-  <directory name="lib">
-   <exclude file="*"/>
-   <include file="cmajor.rt.lib"/>
-   <include file="cmajor.rtd.lib"/>
-  </directory>
+  <directory name="lib"/>
  </component>
  <component name="documentation">
-  <directory name="doc"/>
+  <directory name="doc">
+   <exclude cascade="true" dir="bin"/>
+   <exclude cascade="true" dir="lib"/>
+   <include dir="installation">
+    <exclude file="tour.html"/>
+   </include>
+  </directory>
  </component>
  <environment>
   <variable name="CMAJOR_ROOT" value="$TARGET_ROOT_DIR$"/>

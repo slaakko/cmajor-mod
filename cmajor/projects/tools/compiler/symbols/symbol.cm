@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -28,12 +28,13 @@ namespace symbols
         enumTypeDefaultConstructor, enumTypeCopyConstructor, enumTypeMoveConstructor, enumTypeCopyAssignment, enumTypeMoveAssignment, enumTypeReturn, enumTypeEquality,
         enumTypeToUnderlyingType, underlyingToEnumType,
         delegateTypeDefaultConstructor, delegateTypeCopyConstructor, delegateTypeMoveConstructor, delegateTypeCopyAssignment, delegateTypeMoveAssignment,
-        delegateTypeReturn, delegateTypeEquality, functionToDelegateSymbol,
+        delegateTypeReturn, delegateTypeEquality, delegateTypeLess, functionToDelegateSymbol,
         classDelegateTypeDefaultConstructor, classDelegateTypeCopyConstructor, classDelegateTypeMoveConstructor, classDelegateTypeCopyAssignment,
-        classDelegateTypeMoveAssignment, classDelegateTypeEquality, memberFunctionToClassDelegateSymbol,
+        classDelegateTypeMoveAssignment, classDelegateTypeEquality, classDelegateTypeLess, memberFunctionToClassDelegateSymbol,
         arrayLengthFunctionSymbol, arrayBeginFunctionSymbol, arrayEndFunctionSymbol, arrayCBeginFunctionSymbol, arrayCEndFunctionSymbol,
         arrayDefaultConstructorSymbol, arrayCopyConstructorSymbol, arrayMoveConstructorSymbol, arrayCopyAssignmentSymbol, arrayMoveAssignmentSymbol, arrayElementAccessSymbol,
-        interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment, interfaceTypeEquality, 
+        interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment,
+        interfaceTypeEquality, interfaceTypeLess,
         classToInterfaceConversion, getObjectPtrFromInterfaceSymbol, namespaceTypeSymbol, functionGroupTypeSymbol, memberExpressionTypeSymbol, variableValueSymbol,
         globalVariableSymbol, globalVariableGroupSymbol, stringFunctionContainerSymbol, stringLengthFunctionSymbol, axiomSymbol, keywordSymbol, autoTypeSymbol,
         maxSymbol
@@ -147,6 +148,7 @@ namespace symbols
             case SymbolKind.delegateTypeMoveAssignment: return "delegateTypeMoveAssignment";
             case SymbolKind.delegateTypeReturn: return "delegateTypeReturn";
             case SymbolKind.delegateTypeEquality: return "delegateTypeEquality";
+            case SymbolKind.delegateTypeLess: return "delegateTypeLess";
             case SymbolKind.functionToDelegateSymbol: return "functionToDelegateSymbol";
             case SymbolKind.classDelegateTypeDefaultConstructor: return "classDelegateTypeDefaultConstructor";
             case SymbolKind.classDelegateTypeCopyConstructor: return "classDelegateTypeCopyConstructor";
@@ -154,6 +156,7 @@ namespace symbols
             case SymbolKind.classDelegateTypeCopyAssignment: return "classDelegateTypeCopyAssignment";
             case SymbolKind.classDelegateTypeMoveAssignment: return "classDelegateTypeMoveAssignment";
             case SymbolKind.classDelegateTypeEquality: return "classDelegateTypeEquality";
+            case SymbolKind.classDelegateTypeLess: return "classDelegateTypeLess";
             case SymbolKind.memberFunctionToClassDelegateSymbol: return "memberFunctionToClassDelegateSymbol";
             case SymbolKind.arrayLengthFunctionSymbol: return "arrayLengthFunctionSymbol";
             case SymbolKind.arrayBeginFunctionSymbol: return "arrayBeginFunctionSymbol";
@@ -172,6 +175,7 @@ namespace symbols
             case SymbolKind.interfaceTypeCopyAssignment: return "interfaceTypeCopyAssignment";
             case SymbolKind.interfaceTypeMoveAssignment: return "interfaceTypeMoveAssignment";
             case SymbolKind.interfaceTypeEquality: return "interfaceTypeEquality";
+            case SymbolKind.interfaceTypeLess: return "interfaceTypeLess";
             case SymbolKind.classToInterfaceConversion: return "classToInterfaceConversion";
             case SymbolKind.getObjectPtrFromInterfaceSymbol: return "getObjectPtrFromInterfaceSymbol";
             case SymbolKind.namespaceTypeSymbol: return "namespaceTypeSymbol";
@@ -642,7 +646,10 @@ namespace symbols
             {
                 access = SymbolAccess.internal_;
                 classMember = false;
-                // todo interface
+                if (Parent() != null && Parent()->IsInterfaceTypeSymbol())
+                {
+                    access = SymbolAccess.public_;
+                }
             }
             if (accessSpecifiers == Specifiers.public_)
             {
@@ -952,6 +959,7 @@ namespace symbols
                 case SymbolKind.enumTypeSymbol:
                 case SymbolKind.delegateTypeSymbol:
                 case SymbolKind.classDelegateTypeSymbol:
+                case SymbolKind.memberExpressionTypeSymbol:
                 {
                     return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
                 }
@@ -963,7 +971,8 @@ namespace symbols
                     }
                     else
                     {
-                        int errorId = MakeError("class, interface, enumeration, delegate, class delegate or namespace symbol not found", FullSpan());
+                        int errorId = MakeError("class, interface, enumeration, delegate, class delegate or namespace symbol not found. Note: symbol kind is " +
+                            SymbolKindStr(kind), FullSpan());
                         return Result<ContainerSymbol*>(ErrorId(errorId));
                     }
                 }

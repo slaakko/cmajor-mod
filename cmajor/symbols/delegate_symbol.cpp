@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -718,6 +718,36 @@ void DelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vecto
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateICmpEQ(left, right));
+}
+
+DelegateTypeLess::DelegateTypeLess(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeLess, span_, name_)
+{
+}
+
+DelegateTypeLess::DelegateTypeLess(DelegateTypeSymbol* delegateType, TypeSymbol* boolType)
+    : FunctionSymbol(SymbolType::delegateTypeLess, delegateType->GetSpan(), U"operator<")
+{
+    SetGroupName(U"operator<");
+    SetAccess(SymbolAccess::public_);
+    ParameterSymbol* leftParam = new ParameterSymbol(delegateType->GetSpan(), U"left");
+    leftParam->SetType(delegateType);
+    AddMember(leftParam);
+    ParameterSymbol* rightParam = new ParameterSymbol(delegateType->GetSpan(), U"right");
+    rightParam->SetType(delegateType);
+    AddMember(rightParam);
+    SetReturnType(boolType);
+    ComputeName();
+}
+
+void DelegateTypeLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+{
+    Assert(genObjects.size() == 2, "operator< needs two objects");
+    genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
+    void* left = emitter.Stack().Pop();
+    genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
+    void* right = emitter.Stack().Pop();
+    emitter.Stack().Push(emitter.CreateICmpULT(left, right));
 }
 
 FunctionToDelegateConversion::FunctionToDelegateConversion(const soul::ast::Span& span_, const std::u32string& name_) :
@@ -1472,6 +1502,95 @@ void ClassDelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::
     void* delegatesEqual = emitter.CreateICmpEQ(leftDelegateValue, rightDelegateValue);
     void* equal = emitter.CreateAnd(objectsEqual, delegatesEqual);
     emitter.Stack().Push(equal);
+}
+
+ClassDelegateTypeLess::ClassDelegateTypeLess(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeLess, span_, name_), classDelegateType(nullptr)
+{
+}
+
+ClassDelegateTypeLess::ClassDelegateTypeLess(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* boolType) :
+    FunctionSymbol(SymbolType::classDelegateTypeLess, classDelegateType_->GetSpan(), U"operator<"),
+    classDelegateType(classDelegateType_)
+{
+    SetGroupName(U"operator<");
+    SetAccess(SymbolAccess::public_);
+    ParameterSymbol* leftParam = new ParameterSymbol(classDelegateType->GetSpan(), U"left");
+    leftParam->SetType(classDelegateType->AddConst()->AddLvalueReference());
+    AddMember(leftParam);
+    ParameterSymbol* rightParam = new ParameterSymbol(classDelegateType->GetSpan(), U"right");
+    rightParam->SetType(classDelegateType->AddConst()->AddLvalueReference());
+    AddMember(rightParam);
+    SetReturnType(boolType);
+    ComputeName();
+}
+
+void ClassDelegateTypeLess::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(classDelegateType->TypeId());
+}
+
+void ClassDelegateTypeLess::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void ClassDelegateTypeLess::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
+}
+
+void ClassDelegateTypeLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+{
+    void* retVal = emitter.CreateAlloca(emitter.GetIrTypeForBool());
+    void* retBlock = emitter.CreateBasicBlock("ret");
+    genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
+    void* leftPtr = emitter.Stack().Pop();
+    void* leftObjectPtr = emitter.GetObjectFromClassDelegate(classDelegateType->IrType(emitter), leftPtr);
+    void* leftObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), leftObjectPtr); // TODO
+    genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
+    void* rightPtr = emitter.Stack().Pop();
+    void* rightObjectPtr = emitter.GetObjectFromClassDelegate(classDelegateType->IrType(emitter), rightPtr);
+    void* rightObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), rightObjectPtr); // TODO
+    void* leftObjectLessThanRightObject = emitter.CreateICmpULT(leftObjectValue, rightObjectValue);
+    void* leftLessBlock = emitter.CreateBasicBlock("leftLess");
+    void* leftNotLessBlock = emitter.CreateBasicBlock("leftNotLess");
+    emitter.CreateCondBr(leftObjectLessThanRightObject, leftLessBlock, leftNotLessBlock);
+    emitter.SetCurrentBasicBlock(leftLessBlock);
+    emitter.CreateStore(emitter.CreateTrue(), retVal);
+    emitter.CreateBr(retBlock);
+    emitter.SetCurrentBasicBlock(leftNotLessBlock);
+    void* rightObjectLessThanLeftObject = emitter.CreateICmpULT(rightObjectValue, leftObjectValue);
+    void* rightLessBlock = emitter.CreateBasicBlock("rightLess");
+    void* rightNotLessBlock = emitter.CreateBasicBlock("rightNotLess");
+    emitter.CreateCondBr(rightObjectLessThanLeftObject, rightLessBlock, rightNotLessBlock);
+    emitter.SetCurrentBasicBlock(rightLessBlock);
+    emitter.CreateStore(emitter.CreateFalse(), retVal);
+    emitter.CreateBr(retBlock);
+    emitter.SetCurrentBasicBlock(rightNotLessBlock);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* leftDelegatePtr = emitter.GetDelegateFromClassDelegate(classDelegateType->IrType(emitter), leftPtr);
+    void* leftDelegateValue = emitter.CreateLoad(dlgType, leftDelegatePtr); // TODO
+    void* rightDelegatePtr = emitter.GetDelegateFromClassDelegate(classDelegateType->IrType(emitter), rightPtr);
+    void* rightDelegateValue = emitter.CreateLoad(dlgType, rightDelegatePtr); // TODO
+    void* leftDelegateLessThanRightDelegate = emitter.CreateICmpULT(leftDelegateValue, rightDelegateValue);
+    emitter.CreateStore(leftDelegateLessThanRightDelegate, retVal);
+    emitter.CreateBr(retBlock);
+    emitter.SetCurrentBasicBlock(retBlock);
+    void* rv = emitter.CreateLoad(emitter.GetIrTypeForBool(), retVal);
+    emitter.Stack().Push(rv);
 }
 
 MemberFunctionToClassDelegateConversion::MemberFunctionToClassDelegateConversion(const soul::ast::Span& span_, const std::u32string& name_) :

@@ -1,0 +1,548 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>List&lt;T> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>List&lt;T> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#constraint">Constraint</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">Most fundamental container class. The list is like an array that can grow.</p><span xml:space="preserve"><p class="description" xml:space="preserve">Elements can be added by copying ( <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Add_List_51C2A75AC0C4BE9A235C82A41D1FE7EB542D8B78">Add</a> ) or by moving ( <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Add_List_89752FEC74E129D30D43E6A2FF7EABB1710B8619">Add</a> ). Adding takes amortized constant time. When moving you may want to use the <a href="../../System.Base/doc/ns_System.html#function_Rvalue_1B3DB0610C3620EF4E68B21F93F01B306FF74562">Rvalue</a> to convert an argument to an rvalue. Elements of a list can be accessed by index using the <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_op_index_List_754A7E4287036F1DC5E6ED692F2CC7A9BE0031D1">operator[]</a> or <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_op_index_List_8091A4E54B78EFDE17745646E466335F0CCDD76D">operator[]</a> member functions. Element access is <em> O(1)</em> operation.</p><p class="description" xml:space="preserve">Model of <a href="../../System.Base/doc/concept_RandomAccessContainer_7D44EBDB629CA332A20056356A52519C0BB1FADF.html">RandomAccessContainer</a> , <a href="../../System.Base/doc/concept_FrontInsertionSequence_6E92B081B326D22C296036E5DDC43365491BEBF4.html">FrontInsertionSequence</a> , <a href="../../System.Base/doc/concept_BackInsertionSequence_5885D2D8DDEC40D462924E37DCE754A8F36B52C2.html">BackInsertionSequence</a> , and <a href="../../System.Base/doc/concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6.html">InsertionSequence</a> .</p></span></span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="6284a6b9-2427-601f-18a7-89b576dcc0e0">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="constraint">Constraint</h2>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7.html">Semiregular</a>
+  </span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#default_constructor_List_B734929C086244F17D56C6E16955F22EB8FDAED5">List</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#move_constructor_List_A56C18B6D7D54C90DE50F84BD426B4CACF633AE6">List</a>(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#copy_constructor_List_81A1E5413E4DB0B8EDE760F2C9AA89185E254BDD">List</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#constructor_List_D724D51E54B4BC8BD0D64E085079C1B9E95745AD">List</a>(<span class="kw">long</span>&nbsp;n, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#destructor_List_7BB3D7AD40A86B6BD06CD6A5149C85A6F7D28B5E">~List</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Add_List_89752FEC74E129D30D43E6A2FF7EABB1710B8619">Add</a>(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Add_List_51C2A75AC0C4BE9A235C82A41D1FE7EB542D8B78">Add</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Back_List_F6FDF7B18C54588CFC62604EDDBF26B9D2792808">Back</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Back_List_7A601B913E6FFFFC01DE190DBEC8F51EF283ABAE">Back</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Begin_List_320613F787BB2089CA73175066F6F31872983595">Begin</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Begin_List_77BC95359BEFDEE165C08D2B34E2EC16E45B2DDB">Begin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_CBegin_List_71CE456FA70D7334BA6ABC90101B15A528DD3F7A">CBegin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_CEnd_List_B20FF8196D60A7B7C212FD5D006A1D2FC1EE232F">CEnd</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Capacity_List_5D83B6B1D0612DEFB937FBFEF497678646655455">Capacity</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Clear_List_00B472912F74D590ECCB7A8E64EA2B84D157DB9D">Clear</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Count_List_0EFC153635460EA5C0C5EF968AF7FB57E635B120">Count</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Destroy_List_D3DDF09C9561B0D36D81714A596355AD9BD14ABE">Destroy</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_End_List_945936B8B1D5677C14D46445D85D1887A22A8E99">End</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_End_List_195E16A47A373E638B82D74C76076134DFA6ED4F">End</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Front_List_FE091B3447B7AA772239EFD8EA715A90B5FF5EA4">Front</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Front_List_D417E95235A50ACAB7ED1FD4DB11CEC8146CA768">Front</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Grow_List_E9F66556DACF3B930384A94A9B86FD35A0855B00">Grow</a>(<span class="kw">long</span>&nbsp;minRes)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Insert_List_3E8CA83713A0EB72E62AC4569B81E9C58B4EA139">Insert</a>(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;pos, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Insert_List_D6E8ADAE94DD1DC5CD05F638B6CDF51D2D75EF2D">Insert</a>(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;pos, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_InsertFront_List_4FEABF8E77CC4656209F592287FD0A090D31E64E">InsertFront</a>(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_InsertFront_List_398B92035691AFE0A4D76A1E31F21C9280709940">InsertFront</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_IsEmpty_List_10D5B71E0F9651DD1B3416BF318695C1850AEC9F">IsEmpty</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Remove_List_6BF5F395AFC1FEB5B6FE3B00CE201EE2108AA6E2">Remove</a>(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;pos)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Remove_List_4F260E7D0A441C68F74FE9392BFBC90ABFC09165">Remove</a>(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;first, <a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;last)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Remove_List_8092D781365913DCC7F9BDE87BF20077E13172DA">Remove</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_RemoveFirst_List_C4DBD5E53A92799773B78A592963E529A25F483E">RemoveFirst</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_RemoveLast_List_6B51A923C31F7A96A75CE0DAA480A180333DFA52">RemoveLast</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Reserve_List_B3DB30FA4C1CB39F6A2BBDDEBDF5DC68F91320B6">Reserve</a>(<span class="kw">long</span>&nbsp;minRes)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_Resize_List_FA79F16B74713792586A97DECC69BD02A57BF45C">Resize</a>(<span class="kw">long</span>&nbsp;newCount)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#move_assignment_op_assign_List_A59A0FDC4DD490C1421E8F1F6934043FAA9E1C43">operator=</a>(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#copy_assignment_op_assign_List_0E6BB9BFFB77ADD86E74080216F3156C492221C7">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_op_index_List_754A7E4287036F1DC5E6ED692F2CC7A9BE0031D1">operator[]</a>(<span class="kw">long</span>&nbsp;index)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#member_function_op_index_List_8091A4E54B78EFDE17745646E466335F0CCDD76D">operator[]</a>(<span class="kw">long</span>&nbsp;index)&nbsp;<span class="kw">const</span></td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_ConstIterator_1C11E1BEC53176F5C2C3DECB470DC1A6CE5A056F">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ConstIterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+   </tr>
+   <tr id="aliasType_Iterator_E3A4B1A1A0B0DEF218D39C3C1618FABFE9F98FAD">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;Iterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*></td>
+   </tr>
+   <tr id="aliasType_Self_29185086E93639482055FFDB542F5FE351882B62">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;Self</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a></td>
+   </tr>
+   <tr id="aliasType_ValueType_904C9F742BEB9C81717025C2CEDC83B446B4B65F">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ValueType</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_count_B1E53DBAA853F1212C1513E032110BD3A2AB4EC4" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">count</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_items_56A442C6E8880BACD9C349962E6DAA29A7B71748" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*</td>
+    <td xml:space="preserve">items</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_res_E3CD12AE58881D4B1C5CE51F87BECDFC4EE8EB3C" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">res</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_List_B734929C086244F17D56C6E16955F22EB8FDAED5" xml:space="preserve">List&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;List()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#19">19</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_List_A56C18B6D7D54C90DE50F84BD426B4CACF633AE6" xml:space="preserve">List&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;List(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_List_81A1E5413E4DB0B8EDE760F2C9AA89185E254BDD" xml:space="preserve">List&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;List(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#22">22</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_List_D724D51E54B4BC8BD0D64E085079C1B9E95745AD" xml:space="preserve">List&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;List(<span class="kw">long</span>&nbsp;n, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_List_7BB3D7AD40A86B6BD06CD6A5149C85A6F7D28B5E" xml:space="preserve">~List&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~List()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#59">59</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Add_List_89752FEC74E129D30D43E6A2FF7EABB1710B8619" xml:space="preserve">Add&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Add(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&amp;&nbsp;item)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#115">115</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Add_List_51C2A75AC0C4BE9A235C82A41D1FE7EB542D8B78" xml:space="preserve">Add&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Add(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#109">109</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Back_List_F6FDF7B18C54588CFC62604EDDBF26B9D2792808" xml:space="preserve">Back&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;Back()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#297">297</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Back_List_7A601B913E6FFFFC01DE190DBEC8F51EF283ABAE" xml:space="preserve">Back&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;Back()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#292">292</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_List_320613F787BB2089CA73175066F6F31872983595" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#246">246</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_List_77BC95359BEFDEE165C08D2B34E2EC16E45B2DDB" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#250">250</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CBegin_List_71CE456FA70D7334BA6ABC90101B15A528DD3F7A" xml:space="preserve">CBegin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;CBegin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#254">254</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CEnd_List_B20FF8196D60A7B7C212FD5D006A1D2FC1EE232F" xml:space="preserve">CEnd&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;CEnd()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#274">274</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Capacity_List_5D83B6B1D0612DEFB937FBFEF497678646655455" xml:space="preserve">Capacity&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Capacity()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#97">97</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Clear_List_00B472912F74D590ECCB7A8E64EA2B84D157DB9D" xml:space="preserve">Clear&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Clear()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#105">105</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Count_List_0EFC153635460EA5C0C5EF968AF7FB57E635B120" xml:space="preserve">Count&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Count()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#93">93</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Destroy_List_D3DDF09C9561B0D36D81714A596355AD9BD14ABE" xml:space="preserve">Destroy&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;Destroy()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#316">316</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_List_945936B8B1D5677C14D46445D85D1887A22A8E99" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#258">258</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_List_195E16A47A373E638B82D74C76076134DFA6ED4F" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#266">266</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Front_List_FE091B3447B7AA772239EFD8EA715A90B5FF5EA4" xml:space="preserve">Front&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;Front()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#287">287</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Front_List_D417E95235A50ACAB7ED1FD4DB11CEC8146CA768" xml:space="preserve">Front&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;Front()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#282">282</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Grow_List_E9F66556DACF3B930384A94A9B86FD35A0855B00" xml:space="preserve">Grow&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;Grow(<span class="kw">long</span>&nbsp;minRes)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#302">302</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_List_3E8CA83713A0EB72E62AC4569B81E9C58B4EA139" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;Insert(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;pos, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&amp;&nbsp;item)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#141">141</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_List_D6E8ADAE94DD1DC5CD05F638B6CDF51D2D75EF2D" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;Insert(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;pos, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#121">121</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_InsertFront_List_4FEABF8E77CC4656209F592287FD0A090D31E64E" xml:space="preserve">InsertFront&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;InsertFront(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&amp;&nbsp;item)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#165">165</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_InsertFront_List_398B92035691AFE0A4D76A1E31F21C9280709940" xml:space="preserve">InsertFront&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;InsertFront(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#161">161</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsEmpty_List_10D5B71E0F9651DD1B3416BF318695C1850AEC9F" xml:space="preserve">IsEmpty&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;IsEmpty()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#101">101</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_List_6BF5F395AFC1FEB5B6FE3B00CE201EE2108AA6E2" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&nbsp;Remove(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;pos)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#169">169</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_List_4F260E7D0A441C68F74FE9392BFBC90ABFC09165" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;first, <a href="../../System.Base/doc/class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134.html">RandomAccessIter</a>&lt;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;, <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>*>&nbsp;last)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#220">220</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_List_8092D781365913DCC7F9BDE87BF20077E13172DA" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;item)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#192">192</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RemoveFirst_List_C4DBD5E53A92799773B78A592963E529A25F483E" xml:space="preserve">RemoveFirst&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&nbsp;RemoveFirst()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#179">179</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RemoveLast_List_6B51A923C31F7A96A75CE0DAA480A180333DFA52" xml:space="preserve">RemoveLast&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&nbsp;RemoveLast()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#183">183</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Reserve_List_B3DB30FA4C1CB39F6A2BBDDEBDF5DC68F91320B6" xml:space="preserve">Reserve&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Reserve(<span class="kw">long</span>&nbsp;minRes)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#63">63</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Resize_List_FA79F16B74713792586A97DECC69BD02A57BF45C" xml:space="preserve">Resize&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Resize(<span class="kw">long</span>&nbsp;newCount)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#70">70</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_List_A59A0FDC4DD490C1421E8F1F6934043FAA9E1C43" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Movable_67BF70D7114988D4858EF177704CC03346D9240D.html">Movable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#53">53</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_List_0E6BB9BFFB77ADD86E74080216F3156C492221C7" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html">List</a>&amp;&nbsp;that)</h4>
+  <h5>Constraint</h5>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Copyable_555DCA16115160D45CEF63A5F50FCD5E29F3D6E2.html">Copyable</a>
+  </span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#46">46</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_index_List_754A7E4287036F1DC5E6ED692F2CC7A9BE0031D1" xml:space="preserve">operator[]&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;operator[](<span class="kw">long</span>&nbsp;index)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#241">241</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_index_List_8091A4E54B78EFDE17745646E466335F0CCDD76D" xml:space="preserve">operator[]&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894.html#6284a6b9-2427-601f-18a7-89b576dcc0e0">T</a>&amp;&nbsp;operator[](<span class="kw">long</span>&nbsp;index)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/List.cm.html#236">236</a>&nbsp;of&nbsp;<a href="../../System.Base/file/List.cm.html">System.Base/List.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

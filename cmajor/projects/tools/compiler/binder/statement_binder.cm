@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -17,6 +17,30 @@ namespace binder
             boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()), context(boundCompileUnit->Context()),
             containerScope(null), currentClass(null), currentFunction(null), compoundLevel(0), dontCheckDuplicateFunctionSymbols(false), errorId(0)
         {
+        }
+        public inline BoundCompileUnit* GetBoundCompileUnit() const
+        {
+            return boundCompileUnit;
+        }
+        public inline ContainerScope* GetContainerScope() const
+        {
+            return containerScope;
+        }
+        public inline BoundClass* CurrentClass() const
+        {
+            return currentClass;
+        }
+        public inline BoundFunction* CurrentFunction() const
+        {
+            return currentFunction;
+        }
+        public inline MemberFunctionSymbol* CurrentMemberFunctionSymbol() const
+        {
+            return currentMemberFunctionSymbol;
+        }
+        public inline MemberFunctionNode* CurrentMemberFunctionNode() const
+        {
+            return currentMemberFunctionNode;
         }
         public override void Visit(SourceFileNode& sourceFileNode)
         {

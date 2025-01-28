@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -1522,7 +1522,7 @@ namespace System.Windows
         public Image() : base(), nativeImage(null)
         {
         }
-        public Image(void* nativeImage_) : base(), nativeImage(nativeImage_)
+        public explicit Image(void* nativeImage_) : base(), nativeImage(nativeImage_)
         {
         }
         public Image(const string& fileName, bool useEmbeddedColorManagement) : base(), nativeImage(WinGraphicsCreateImage(fileName.Chars(), useEmbeddedColorManagement))
@@ -1630,7 +1630,7 @@ namespace System.Windows
         public Bitmap() : base()
         {
         }
-        public Bitmap(void* nativeHandle_) : base(nativeHandle_)
+        public explicit Bitmap(void* nativeHandle_) : base(nativeHandle_)
         {
         }
         public Bitmap(const string& fileName, bool useEmbeddedColorManagement) : base(WinGraphicsCreateBitmap(fileName.Chars(), useEmbeddedColorManagement))

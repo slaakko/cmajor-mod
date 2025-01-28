@@ -68,12 +68,12 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.4 <a href="#template-id-expression">Template Identifier in Expressions</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.5 <a href="#identifier-expression">Identifiers in Expressions</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.6 <a href="#this-and-base-access">This and Base Access</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.7 <a href="#size-of-expression">Size-of Expresssion</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.8 <a href="#typename-expression">Typename Expresssion</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.9 <a href="#cast-expression">Cast Expresssion</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.10 <a href="#construct-expression">Construction Expresssion</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.11 <a href="#new-expression">New Expresssion</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;3.14 <a href="#constant-expression">Constant Expresssion</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.7 <a href="#size-of-expression">Size-of Expression</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.8 <a href="#typename-expression">Typename Expression</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.9 <a href="#cast-expression">Cast Expression</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.10 <a href="#construct-expression">Construction Expression</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.13.11 <a href="#new-expression">New Expression</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;3.14 <a href="#constant-expression">Constant Expression</a><br />
         4 <a href="#statements">Statements</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.1 <a href="#statements-syntax">Syntax</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.2 <a href="#labeled-statement">Labeled Statement</a><br />
@@ -99,10 +99,8 @@
         &nbsp;&nbsp;&nbsp;&nbsp;4.7 <a href="#construction-statement">Construction Statement</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.7.1 <a href="#construction-statement-with-auto">Declaring a Construction Statement with a Placeholder Type</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.8 <a href="#delete-and-destroy-statements">Delete and Destroy Statements</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;4.9 <a href="#throw-statement">Throw Statement</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;4.10 <a href="#try-statement">Try Statement</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;4.11 <a href="#assert-statement">Assert Statement</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;4.12 <a href="#conditional-compilation-statement">Conditional Compilation Statement</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;4.9 <a href="#assert-statement">Assert Statement</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;4.10 <a href="#conditional-compilation-statement">Conditional Compilation Statement</a><br />
         5 <a href="#access-specifiers">Access Specifiers</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;5.1 <a href="#access-specifiers-syntax">Syntax</a><br />
         6 <a href="#type-expressions">Type Expressions</a><br />
@@ -136,12 +134,10 @@
         &nbsp;&nbsp;&nbsp;&nbsp;10.4 <a href="#functions-inline">Inline Specifier</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;10.5 <a href="#functions-cdecl">CDecl Specifier</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;10.6 <a href="#functions-extern">Extern Specifier</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;10.7 <a href="#functions-nothrow">Nothrow Specifier</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;10.8 <a href="#functions-throw">Throw Specifier</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;10.9 <a href="#functions-template">Function Templates</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;10.10 <a href="#intrinsic-function">Intrinsic Functions</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;10.11 <a href="#functions-system-default">System-default Functions</a><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;10.12 <a href="#overload-resolution">Function Overload Resolution</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;10.7 <a href="#functions-template">Function Templates</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;10.8 <a href="#intrinsic-function">Intrinsic Functions</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;10.9 <a href="#functions-system-default">System-default Functions</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;10.10 <a href="#overload-resolution">Function Overload Resolution</a><br />
         11 <a href="#typedefs">Type Aliases</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;11.1 <a href="#typedefs-syntax">Syntax</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;11.2 <a href="#typedefs-examples">Examples</a><br />
@@ -350,7 +346,6 @@
                 <span class="kw">namespace</span> |
                 <span class="kw">new</span> |
                 <span class="kw">not</span> |
-                <span class="kw">nothrow</span> |
                 <span class="kw">null</span> |
                 <span class="kw">operator</span> |
                 <span class="kw">or</span> |
@@ -366,7 +361,6 @@
                 <span class="kw">suppress</span> |
                 <span class="kw">switch</span> |
                 <span class="kw">this</span> |
-                <span class="kw">throw</span> |
                 <span class="kw">true</span> |
                 <span class="kw">try</span> |
                 <span class="kw">typedef</span> |
@@ -1780,7 +1774,7 @@
         <span class="kw">typename</span>(<span class="mono">*</span><em>p</em>) returns the fully qualified name of type <em>U</em>.
     </p>
 
-    <h4 id="cast-expression">3.13.9 Cast Expresssion</h4>
+    <h4 id="cast-expression">3.13.9 Cast Expression</h4>
 
     <p>
         A <a href="#rule.cast-expr">cast</a> expression performs explicit type conversion. It takes a target type enclosed in angle brackets and a source expression to be converted
@@ -1792,7 +1786,7 @@
         yields a plain reference.
     </p>
 
-    <h4 id="construct-expression">3.13.10 Construction Expresssion</h4>
+    <h4 id="construct-expression">3.13.10 Construction Expression</h4>
 
     <p>
         A <a href="#rule.construct-expr">construction</a> expression constructs an object "in place" into a memory location.
@@ -1802,7 +1796,7 @@
         The expression yields a <em>T</em><span class="mono">*</span> result.
     </p>
 
-    <h4 id="new-expression">3.13.11 New Expresssion</h4>
+    <h4 id="new-expression">3.13.11 New Expression</h4>
 
     <p>
         A <a href="#rule.new-expr">new</a> expression creates an object of the specified type.
@@ -1826,7 +1820,7 @@
     <p>
         Statements are used in programs to define <a href="#control-statements">flow of control</a>, to <a href="#expression-statement">evaluate expressions</a> for side-effects,
         to <a href="#assignment-statement">assign</a> values to variables, to construct <a href="#construction-statement">local variables</a>,
-        to explicitly <a href="#delete-and-destroy-statements">release allocated resources</a>, to <a href="#throw-statement">throw</a> and <a href="#try-statement">handle</a> exceptions, to
+        to explicitly <a href="#delete-and-destroy-statements">release allocated resources</a>, to
         <a href="#assert-statement">test assertions</a> and compile statements <a href="#conditional-compilation-statement">conditionally</a>
     </p>
 
@@ -1845,8 +1839,6 @@
                 <span class="rule"><a href="#rule.construction-statement">construction&#8209;statement</a></span> |
                 <span class="rule"><a href="#rule.delete-statement">delete&#8209;statement</a></span> |
                 <span class="rule"><a href="#rule.destroy-statement">destroy&#8209;statement</a></span> |
-                <span class="rule"><a href="#rule.throw-statement">throw&#8209;statement</a></span> |
-                <span class="rule"><a href="#rule.try-statement">try&#8209;statement</a></span> |
                 <span class="rule"><a href="#rule.assert-statement">assert&#8209;statement</a></span> |
                 <span class="rule"><a href="#rule.conditional-compilation-statement">conditional&#8209;compilation&#8209;statement</a></span>
             </td>
@@ -2125,36 +2117,6 @@
             </td>
         </tr>
         <tr>
-            <td class="rule" id="rule.throw-statement">throw&#8209;statement</td>
-            <td class="sep">&rarr;</td>
-            <td class="rcontent">
-                <span class="kw">throw</span>
-                <span class="rule"><a href="#rule.expression">expression</a></span>?
-                <span class="mono">;</span>
-            </td>
-        </tr>
-        <tr>
-            <td class="rule" id="rule.try-statement">try&#8209;statement</td>
-            <td class="sep">&rarr;</td>
-            <td class="rcontent">
-                <span class="kw">try</span>
-                <span class="rule"><a href="#rule.compound-statement">compound&#8209;statement</a></span>
-                <span class="rule"><a href="#rule.exception-handler">exception&#8209;handler</a></span>+
-            </td>
-        </tr>
-        <tr>
-            <td class="rule" id="rule.exception-handler">exception&#8209;handler</td>
-            <td class="sep">&rarr;</td>
-            <td class="rcontent">
-                <span class="kw">catch</span>
-                <span class="mono">(</span>
-                <span class="rule"><a href="#rule.type-expr">type&#8209;expr</a></span>
-                <span class="rule"><a href="#rule.identifier">identifier</a></span>?
-                <span class="mono">)</span>
-                <span class="rule"><a href="#rule.compound-statement">compound&#8209;statement</a></span>
-            </td>
-        </tr>
-        <tr>
             <td class="rule" id="rule.assert-statement">assert&#8209;statement</td>
             <td class="sep">&rarr;</td>
             <td class="rcontent">
@@ -2416,7 +2378,7 @@
         A <a href="#rule.case-statement">case</a> statement has a number case values that must be <a href="#integral-value">integral</a> compile-time constants and a possibly empty sequence of statements
         that are executed if the condition of the <a href="#switch-statement">switch</a> statement match one of the case values.
         The case statement must be terminated by a <a href="#break-statement">break</a>, <a href="#goto-case-statement">goto case</a>, <a href="#goto-default-statement">goto default</a>,
-        <a href="#return-statement">return</a> or <a href="#throw-statement">throw</a> statement.
+        or <a href="#return-statement">return</a> statement.
     </p>
 
     <h4 id="default-statement">4.3.13 Default Statement</h4>
@@ -2424,7 +2386,7 @@
     <p>
         A <a href="#rule.default-statement">default</a> statement has a possibly empty sequence of statement that are executed if the condition of the <a href="#switch-statement">switch</a> statement does not
         match any of the case values. The default statement must be terminated by a <a href="#break-statement">break</a>, <a href="#goto-case-statement">goto case</a>,
-        <a href="#return-statement">return</a> or <a href="#throw-statement">throw</a> statement.
+        or <a href="#return-statement">return</a> statement.
     </p>
 
     <h4 id="goto-case-statement">4.3.14 Goto Case Statement</h4>
@@ -2513,57 +2475,16 @@
         It is not an error to call <span class="kw">destroy</span> for a type <em>T</em> that has no destructor. In that case the statement has no effect.
     </p>
 
-    <h3 id="throw-statement">4.9 Throw Statement</h3>
-
-    <p>
-        A <a href="#rule.throw-statement">throw</a> statement throws or rethrows an exception.
-        If the throw statement contains an expression, it must be an expression of a class type that is equal to or derived from the <em>System</em><span class="mono">.</span><em>Exception</em> class.
-        If the throw statement does not contain an expression, it can be used only in an <a href="#rule.exception-handler">exception handler</a> block to rethrow the current exception being handled.
-    </p>
-
-    <p>
-        Throwing an exception transfers control to a matching <a href="#rule.exception-handler">exception handler</a>, if any.
-        If no matching exception handler is found, the error message and stack trace of the exception is written to the standard error stream of the process and the execution of the process is ended with exit code 1.
-    </p>
-
-    <p>
-        Exceptions should be thrown by value, and catched by reference (or reference to <span class="kw">const</span>), as in <span class="mono">C++</span>.
-        For example, if <em>AlphaException</em> is a class derived from the <em>System</em><span class="mono">.</span><em>Exception</em> class, statement<br /><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">throw</span> <em>AlphaException</em><span class="mono">("error");</span><br /><br />
-        will throw an exception of type <em>AlphaException</em> with message <span class="mono">"error"</span>.
-    </p>
-
-    <h3 id="try-statement">4.10 Try Statement</h3>
-
-    <p>
-        A <a href="#rule.try-statement">try</a> statement executes a block of code, and handles one or more classes of exceptions that may be thrown from that block of code.
-        The exception classes must be equal to or derived from the <em>System</em><span class="mono">.</span><em>Exception</em> class.
-    </p>
-
-    <p>
-        Exceptions should be thrown by value, and catched by reference (or reference to <span class="kw">const</span>), as in <span class="mono">C++</span>.
-        For example, if <em>AlphaException</em> is a class derived from the <em>System</em><span class="mono">.</span><em>Exception</em> class, the statement<br /><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">try</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="mono">{</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Write</em><span class="mono">();</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="mono">}</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">catch</span> <span class="mono">(</span><span class="kw">const</span> <em>AlphaException</em><span class="mono">&amp;</span> <em>ex</em><span class="mono">)</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="mono">{</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Console</em><span class="mono">.</span><em>WriteLine</em><span class="mono">(</span><em>ex</em><span class="mono">.</span><em>Message</em><span class="mono">());</span><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="mono">}</span><br /><br />
-        will handle an exception thrown from the <em>Write</em><span class="mono">()</span> function call, if that exception is of class <em>AlphaException</em> or of a class derived from the <em>AlphaException</em> class.
-    </p>
-
-    <h3 id="assert-statement">4.11 Assert Statement</h3>
+    <h3 id="assert-statement">4.9 Assert Statement</h3>
 
     <p>
         An <a href="#rule.assert-statement">assert</a> statement can be used to test <a href="#basic-type-bool"><span class="kw">bool</span></a>-valued conditions that should always hold in a valid program.
         If an assertion expression evaluates to <span class="kw">false</span>, an error message "assertion failed" with a function name,
-        source file name and line number along with a possibly incomplete call stack is printed to the standard error stream of the process,
+        source file name and line number along with stack trace is printed to the standard error stream of the process,
         and the execution of the process is ended with exit code 254. Assert statements have no effect in a program compiled using the release configuration.
     </p>
 
-    <h3 id="conditional-compilation-statement">4.12 Conditional Compilation Statement</h3>
+    <h3 id="conditional-compilation-statement">4.10 Conditional Compilation Statement</h3>
 
     <p>
         A <a href="#rule.conditional-compilation-statement">conditional compilation statement</a> includes statements to be compiled conditionally depending on symbols
@@ -3192,9 +3113,7 @@
                 <span class="kw">constexpr</span> |
                 <span class="kw">inline</span> |
                 <span class="kw">cdecl</span> |
-                <span class="kw">extern</span> |
-                <span class="kw">nothrow</span> |
-                <span class="kw">throw</span>)*
+                <span class="kw">extern</span>)*
             </td>
         </tr>
         <tr>
@@ -3337,15 +3256,13 @@
         <a href="#rule.delete-statement">delete</a>, <a href="#rule.destroy-statement">destroy</a>,
         <a href="#rule.switch-statement">switch</a>, <a href="#rule.case-statement">case</a>,
         <a href="#rule.default-statement">default</a>, <a href="#rule.goto-case-statement">goto case</a>,
-        <a href="#rule.goto-default-statement">goto default</a>, <a href="#rule.throw-statement">throw</a>,
-        <a href="#rule.try-statement">try</a>, or a <a href="#rule.conditional-compilation-statement">conditional compilation</a>
+        <a href="#rule.goto-default-statement">goto default</a>, or a <a href="#rule.conditional-compilation-statement">conditional compilation</a>
         statement.
     </p>
 
     <p>
         Often <span class="kw">constexpr</span> specifier is combined with <a href="#functions-inline"><span class="kw">inline</span></a> and
-        <a href="#functions-nothrow"><span class="kw">nothrow</span></a> specifiers because <span class="kw">constexpr</span> functions are
-        typically short and do not throw exceptions.
+        because <span class="kw">constexpr</span> functions are typically short.
     </p>
 
     <p>
@@ -3379,23 +3296,7 @@
     It is almost always used with the <span class="kw">cdecl</span> specifier to prevent the compiler from mangling the name of the function.
     An <span class="kw">extern</span> function cannot have a body.
 
-    <h3 id="functions-nothrow">10.7 Nothrow Specifier</h3>
-
-    <p>
-        The <span class="kw">nothrow</span> specifier is used for indicating that the function is not supposed to throw any exceptions and
-        it either does not call any function that can throw exceptions, or it handles all exceptions arising from the functions it calls.
-        The <span class="kw">nothrow</span> specifier helps the compiler generating efficient code.
-    </p>
-
-    <h3 id="functions-throw">10.8 Throw Specifier</h3>
-
-    <p>
-        The <span class="kw">throw</span> specifier can be used to emphasize the fact that a function may throw exceptions.
-        It has no additional semantics compared to a function without the <span class="kw">throw</span> specifier and it has
-        purely informational value.
-    </p>
-
-    <h3 id="functions-template">10.9 Function Templates</h3>
+    <h3 id="functions-template">10.7 Function Templates</h3>
 
     <p>
         When the function definition has a <a href="#rule.template-parameter-list">template parameter list</a> and possibly a <a href="#rule.where-constraint">constraint</a>,
@@ -3431,7 +3332,7 @@
         For an example of a function template, see <a href="../code/cmdoc/content/Min/file/min.cm.html">min.cm</a>.
     </p>
 
-    <h3 id="intrinsic-function">10.10 Intrinsic Functions</h3>
+    <h3 id="intrinsic-function">10.8 Intrinsic Functions</h3>
 
     <p>
         The <a href="../system/content/System.Core/doc/ns_System.Meta.html">System.Meta</a> is a special namespace that contains <em>intrinsic functions</em>.
@@ -3441,7 +3342,7 @@
         They can be used in the <a href="#predicate-constraint-expression">predicate constraint expressions</a>.
     </p>
 
-    <h3 id="functions-system-default">10.11 System-default Functions</h3>
+    <h3 id="functions-system-default">10.9 System-default Functions</h3>
     
     <p>
         A function marked with a <b>system_default</b> <a href="#attributes">attribute</a> is called a <em>system-default function</em>.
@@ -3455,7 +3356,7 @@
         Those default implementations can be overridden by user-defined output operators.
     </p>
 
-    <h3 id="overload-resolution">10.12 Function Overload Resolution</h3>
+    <h3 id="overload-resolution">10.10 Function Overload Resolution</h3>
 
     <p>
         Overload resolution is done in three stages:
@@ -3748,9 +3649,7 @@
                 <span class="kw">explicit</span> |
                 <span class="kw">inline</span> |
                 <span class="kw">default</span> |
-                <span class="kw">suppress</span> |
-                <span class="kw">nothrow</span> |
-                <span class="kw">throw</span>)*
+                <span class="kw">suppress</span>)*
             </td>
         </tr>
         <tr>
@@ -3805,8 +3704,6 @@
                 <span class="kw">inline</span> |
                 <span class="kw">default</span> |
                 <span class="kw">suppress</span> |
-                <span class="kw">nothrow</span> |
-                <span class="kw">throw</span> |
                 <span class="kw">new</span>)*
             </td>
         </tr>
@@ -3830,9 +3727,7 @@
             <td class="rcontent">
                 (<span class="rule"><a href="#rule.access-specifier">access&#8209;specifier</a></span> |
                 <span class="kw">constexpr</span> |
-                <span class="kw">inline</span> |
-                <span class="kw">nothrow</span> |
-                <span class="kw">throw</span>)*
+                <span class="kw">inline</span>)*
             </td>
         </tr>
         <tr>
@@ -3934,13 +3829,6 @@
         Otherwise the language implementation next locks the recursive mutex, and then checks again whether the the initialization flag is set and unlocks the mutex and returns if it is set.
         This is called the <a href="http://en.wikipedia.org/wiki/Double-checked_locking">double checked locking pattern</a>.
         Otherwise the initialization has not yet been done, so the language implementation sets the initialization flag to true, executes the body of the static constructor, unlocks the mutex and returns.
-    </p>
-
-    <p>
-        Like a destructor, a static constructor should not throw any exceptions.
-        Although the implementation ensures that the recursive mutex gets unlocked regardless whether control leaves the body of the static constructor normally or by throwing an exception,
-        things won't probably work, because critical data has not been fully initialized. When it comes to exceptions, the static constructor should handle them all gracefully,
-        or give up and exit the program.
     </p>
 
     <p>
@@ -4157,12 +4045,6 @@
             <a href="#move-constructor">move constructor</a>.
             The compiler generates an error if trying to call a suppressed constructor.
         </li>
-        <li>
-            <span class="kw">nothrow</span>. A nothrow constructor has the same semantics as a <a href="#functions-nothrow">nonmember nothrow function</a>.
-        </li>
-        <li>
-            <span class="kw">throw</span>. A throw constructor has the same semantics as a <a href="#functions-throw">nonmember throw function</a>.
-        </li>
     </ul>
 
 
@@ -4329,8 +4211,6 @@
                 A suppressed copy assignment or move assignment may not have a body.
                 The compiler generates an error if trying to call a suppressed member function.
             </li>
-            <li><span class="kw">nothrow</span>. A nothrow member function has the same semantics as a <a href="#functions-nothrow">nonmember nothrow function</a>.</li>
-            <li><span class="kw">throw</span>. A throw member function has the same semantics as a <a href="#functions-throw">nonmember throw function</a>.</li>
             <li>
                 <span class="kw">new</span>. A member function that has the same name as some abstract, virtual or overridden member function of its base or ancestor class
                 may be declared new. A member function declared new does not participate in virtual call dispatch. It may not be abstract, virtual or overriddden at the same time.
@@ -4433,7 +4313,7 @@
 
     <p>
         An <a href="#rule.interface">interface</a> is a list of member function signatures that describe some behaviour.
-        A class can <em>implement</em> any number of interfaces.
+        A class can implement any number of interfaces.
         When a class implements an interface it must provide implementation for the member functions contained by the interface.
     </p>
 
@@ -4486,7 +4366,18 @@
         </tr>
     </table>
 
-    For an example of interfaces, see <a href="../code/cmdoc/content/Interface/file/interface.cm.html">interface.cm</a>.
+    <p>
+        The runtime representation of an interface object is a couple of pointers. It is best passed around by value (not by reference).
+    </p>
+
+    <p>
+        See <a href="../code/cmdoc/content/components/file/components.cm.html">components.cm</a> example for some possible design with an interface.
+    </p>
+
+    <p>
+        This <a href="../code/cmdoc/content/interface_example/file/interface.cm.html">interface.cm</a> 
+        example illustrates constructing an interface object from class object and from a pointer to a class object.
+    </p>
 
     <h2 id="delegates">14 Delegates</h2>
 
@@ -4513,9 +4404,7 @@
             <td class="rule" id="rule.delegate-specifiers">delegate&#8209;specifiers</td>
             <td class="sep">&rarr;</td>
             <td class="rcontent">
-                (<span class="rule"><a href="#rule.access-specifier">access&#8209;specifier</a></span> |
-                <span class="kw">nothrow</span> |
-                <span class="kw">throw</span>)*
+                (<span class="rule"><a href="#rule.access-specifier">access&#8209;specifier</a></span>)*
             </td>
         </tr>
         <tr>
@@ -4568,9 +4457,7 @@
             <td class="rule" id="rule.class-delegate-specifiers">class&#8209;delegate&#8209;specifiers</td>
             <td class="sep">&rarr;</td>
             <td class="rcontent">
-                (<span class="rule"><a href="#rule.access-specifier">access&#8209;specifier</a></span> |
-                <span class="kw">nothrow</span> |
-                <span class="kw">throw</span>)*
+                (<span class="rule"><a href="#rule.access-specifier">access&#8209;specifier</a></span>)*
             </td>
         </tr>
         <tr>
@@ -4587,6 +4474,10 @@
         If <code>clsdlg</code> is an object of a class delegate type, the member function that is
         currently bound to the <code>clsdlg</code> object can be called using syntax <code>clsdlg(arg1, arg2, ...)</code>.
         For an example of a class delegate, see <a href="../code/cmdoc/content/ClassDelegate/file/class_delegate.cm.html">class_delegate.cm</a>.
+    </p>
+
+    <p>
+        The runtime repreasentation of a class delegate object is a couple of pointers. It is best passed around by value (not by reference).
     </p>
 
     <h2 id="concepts">16 Concepts</h2>
@@ -5171,36 +5062,25 @@
     </p>
 
     <p>
-        Currently Cmajor compiler recognizes four attributes:
+        Currently Cmajor compiler recognizes three attributes:
         <ul>
-			<li>
-				<strong>xml</strong> attribute can have value "true" or "false".
-				It can be attached to classes and member variables.
-				When a class is attached an <strong>xml</strong> attribute with
-				value of "true" or with no value, the compiler generates two functions for you:
-				a constructor taking an XML <a href="../system/content/System.Dom/doc/class_Element_2A1273470957C607E9B6D2BC48EACE25C2E3FEB9.html">element</a>,
-				that reads the contents of the class from the element,
-				and a <strong>ToXml</strong> member function that serializes the contents of the class to an XML element.
-				See XmlSerializationTest in the examples subdirectory for a usage example.
-			</li>
             <li>
-                <b>json</b> attribute can have value "true" or "false".
-                It can be attached to classes and member variables.
-                It is used to generate JSON serialization code for a class.
+                When the return value of a function with a <strong>nodiscard</strong> attribute is discarded, the compiler will issue a warning.
             </li>
             <li>
-                <b>jsonFieldName</b> attribute can have any string value.
-                It can be attached to member variables.
-                It is used to give a member variable a serialization field name.
-                If the serialization field name is not explitly given, it will be
-                implicitly equal to the name of the member variable.
+                <strong>xml</strong> attribute can have value "true" or "false".
+                It can be attached to classes and member variables.
+                When a class is attached an <strong>xml</strong> attribute with
+                value of "true" or with no value, the compiler will derive the class from the abstract 
+                <a href="../system/content/System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html">System.Xml.Serialization.XmlSerializable</a>
+                class and generates implementation of its abstract member functions.
+                See <a href="../xml_serialization/xml_serialization.html">XML serialization</a> document for usage examples.
             </li>
             <li>
                 <b>system_default</b> attribute with a value "true" or without an explicit value 
                 marks a function as a <a href="#functions-system-default"><em>system-default function</em></a>.
             </li>
         </ul>
-        See <a href="../system/content/System.Json/index.html">System.Json</a> library for an example of using the <b>json</b> and <b>jsonFieldName</b> attributes.
     </p>
 
     <h2 id="compile-units">18 Compile Units</h2>
@@ -5513,6 +5393,7 @@
                 <span class="rule"><a href="#rule.reference-declaration">reference&#8209;declaration</a></span> |
                 <span class="rule"><a href="#rule.source-file-declaration">source&#8209;file&#8209;declaration</a></span> |
                 <span class="rule"><a href="#rule.resource-file-declaration">resource&#8209;file&#8209;declaration</a></span> |
+                <span class="rule"><a href="#rule.resource-script-declaration">resource&#8209;script&#8209;declaration</a></span> |
                 <span class="rule"><a href="#rule.text-file-declaration">text&#8209;file&#8209;declaration</a></span> |
                 <span class="rule"><a href="#rule.target-declaration">target&#8209;declaration</a></span>
             </td>
@@ -5544,6 +5425,16 @@
                 <span class="mono">;</span>
             </td>
         </tr>
+        <tr>
+            <td class="rule" id="rule.resource-script-declaration">resource&#8209;script&#8209;declaration</td>
+            <td class="sep">&rarr;</td>
+            <td class="rcontent">
+                <span class="kw">rc</span>
+                <span class="rule"><a href="#rule.file-path">file&#8209;path</a></span>
+                <span class="mono">;</span>
+            </td>
+        </tr>
+
         <tr>
             <td class="rule" id="rule.text-file-declaration">text&#8209;file&#8209;declaration</td>
             <td class="sep">&rarr;</td>
@@ -5615,6 +5506,8 @@
             The file name must have a <strong>.cm</strong> extension.</li>
             <li><strong>resource file declaration</strong> names a relative or absolute path to a Cmajor resource file that is included in this project.
             The file name must have an <strong>.xml</strong> extension.</li>
+            <li><strong>resource script declaration</strong> names a relative or absolute path to a Windows resource script that is included in this project.
+            The file name must have a <strong>.rc</strong> extension.</li>
             <li><strong>text file declaration</strong> names a relative or absolute path to a text file that is included in this project.
             The file name may have any extension.</li>
         </ul>
@@ -5744,7 +5637,10 @@
             <td class="sep">&rarr;</td>
             <td class="rcontent">
                 <span class="rule"><a href="#rule.solution-project-declaration">solution&#8209;project&#8209;declaration</a></span> |
-                <span class="rule"><a href="#rule.active-project-declaration">active&#8209;project&#8209;declaration</a></span>
+                <span class="rule"><a href="#rule.active-project-declaration">active&#8209;project&#8209;declaration</a></span> |
+                <span class="rule"><a href="#rule.active-backend-declaration">active&#8209;backend&#8209;declaration</a></span> |
+                <span class="rule"><a href="#rule.active-config-declaration">active&#8209;config&#8209;declaration</a></span> |
+                <span class="rule"><a href="#rule.active-opt-level-declaration">active&#8209;opt&#8209;level&#8209;declaration</a></span>
             </td>
         </tr>
         <tr>
@@ -5762,6 +5658,33 @@
             <td class="rcontent">
                 <span class="kw">activeProject</span>
                 <span class="rule"><a href="#rule.qualified-id">qualified&#8209;id</a></span>
+                <span class="mono">;</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="rule" id="rule.active-backend-declaration">active&#8209;backend&#8209;declaration</td>
+            <td class="sep">&rarr;</td>
+            <td class="rcontent">
+                <span class="kw">activeBackEnd</span>
+                <span class="rule"><a href="#rule.identifier">identifier</a></span>
+                <span class="mono">;</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="rule" id="rule.active-config-declaration">active&#8209;config&#8209;declaration</td>
+            <td class="sep">&rarr;</td>
+            <td class="rcontent">
+                <span class="kw">activeConfig</span>
+                <span class="rule"><a href="#rule.identifier">identifier</a></span>
+                <span class="mono">;</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="rule" id="rule.active-opt-level-declaration">active&#8209;opt&#8209;level&#8209;declaration</td>
+            <td class="sep">&rarr;</td>
+            <td class="rcontent">
+                <span class="kw">activeOptLevel</span>
+                <span class="rule"><a href="#rule.integer-literal">integer&#8209;literal</a></span>
                 <span class="mono">;</span>
             </td>
         </tr>
@@ -6282,13 +6205,11 @@
         <b>VMT</b>
         <p>
             Virtual Method Table. There is one virtual method table per <a href="#polymorphic-class-type">polymorphic</a> class. A virtual method table contains:
-            <ul>
-                <li>A 64-bit class identifier initially 0 and dynamically initialized. See <a href="../implementation/implementation.html#is-and-as-expressions">implementation of <span class="kw">is</span> and <span class="kw">as</span> expressions</a>.</li>
+            <ol>
                 <li>A 16-byte type identifier (UUID).</li>
-                <li>Pointer to the full name of the class.</li>
-                <li>Pointer to the table of <a href="#imt">IMT</a> pointers.</li>
+                <li>Pointer to the table of <a href="#imt">IMT</a> pointers. This table contains an entry for each interface the class implements.</li>
                 <li>Pointers to virtual and overridden member functions for this class.</li>
-            </ul>
+            </ol>
         </p>
         <p>
             Each virtual, abstract and overridden member function contains a VMT index that is used for getting the member function pointer from the VMT when doing virtual call dispatch.

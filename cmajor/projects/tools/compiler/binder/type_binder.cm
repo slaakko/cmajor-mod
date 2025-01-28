@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -1178,6 +1178,19 @@ namespace binder
                 SetErrorId(result.GetErrorId());
                 return;
             }
+            DelegateTypeLess* less = new DelegateTypeLess(context, delegateTypeSymbol);
+            if (less->Error())
+            {
+                SetErrorId(less->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(less);
+            result = ns->AddMember(less, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public override void Visit(ClassDelegateNode& classDelegateNode)
         {
@@ -1453,6 +1466,19 @@ namespace binder
             }
             NamespaceSymbol* ns = nsResult.Value();
             result = ns->AddMember(equality, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ClassDelegateTypeLess* less = new ClassDelegateTypeLess(context, classDelegateTypeSymbol);
+            if (less->Error())
+            {
+                SetErrorId(less->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(less);
+            result = ns->AddMember(less, context);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -2369,6 +2395,19 @@ namespace binder
             }
             NamespaceSymbol* ns = nsResult.Value();
             result = ns->AddMember(equality, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            InterfaceTypeLess* less = new InterfaceTypeLess(context, interfaceTypeSymbol);
+            if (less->Error())
+            {
+                SetErrorId(less->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(less);
+            result = ns->AddMember(less, context);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());

@@ -1,7 +1,7 @@
 <global>
     <derivedClassMap>
         <baseClass classId="class_XmlPtrBase_118F102367E9E5B890C372D12976532DD05C82A2">
-            <derivedClass classId="class_XmlPtr_B1C50A51D00A807B7891EA3973AB3812CB68BD64"/>
+            <derivedClass classId="class_XmlPtr_8782FB12D7A1C0EF08C818D03EA95DB437FAC55B"/>
         </baseClass>
     </derivedClassMap>
 </global>

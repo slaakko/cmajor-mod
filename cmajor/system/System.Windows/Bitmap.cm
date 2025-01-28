@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -43,7 +43,7 @@ namespace System.Windows
         public WinBitmap() : bitmapHandle(null), standard(false)
         {
         }
-        public WinBitmap(void* bitmapHandle_) : bitmapHandle(bitmapHandle_), standard(false)
+        public explicit WinBitmap(void* bitmapHandle_) : bitmapHandle(bitmapHandle_), standard(false)
         {
         }
         public WinBitmap(void* bitmapHandle_, bool standard_) : bitmapHandle(bitmapHandle_), standard(standard_)

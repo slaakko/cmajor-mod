@@ -304,7 +304,7 @@
     <details>
       The parser accepts full XML 1.0 syntax including a DTD (modulo bugs) but does not process contained DTD in any way.
       It recognizes only standard XML entities <em>&amp;amp;</em>, <em>&amp;quot;</em>, <em>&amp;apos;</em>, <em>&amp;lt;</em> and <em>&amp;gt;</em>.
-      Other entities are skipped and the <ref>member_function_SkippedEntity_XmlContentHandler_1C87FFE4FBA0625F62626E7E81C26BF633867D75</ref>
+      Other entities are skipped and the <ref>member_function_SkippedEntity_XmlContentHandler_DE473F7932700694C4861AB6FCB14554A9598964</ref>
       member function of the content handler is called for each of them.
     </details>
     <details>
@@ -382,9 +382,9 @@
       The error id value can be obtained by calling the <ref>function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456</ref> function. 
     </details>
   </doc>
-  <doc id="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <doc id="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
     <desc>
-      Represents either an expected function return value or an error result.      
+      Represents either an expected function return value of type T or an error result.      
     </desc>
   </doc>
   <doc id="constructor_Result_180DCE55562CA5F4DA45580226198E172402C1E7">
@@ -534,7 +534,7 @@
   </doc>
   <doc id="member_function_ReadAllLines_File_DC86B4CEA779764618F3663F4CC2710BDFCAA04E">
     <desc>
-      Reads all lines of the given UTF-8 encoded text file into a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of
+      Reads all lines of the given UTF-8 encoded text file into a <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref> of
       <ref>aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3</ref>s and returns the list.
     </desc>
     <details>
@@ -751,16 +751,16 @@
       Represents a shared ownership smart pointer. Keeps count of references to the underlying pointer and deletes it when the last shared pointer goes out of scope.
     </desc>
   </doc>
-  <doc id="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <doc id="class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894">
     <desc>
       Most fundamental container class. The list is like an array that can grow.
     </desc>
     <details>
-      Elements can be added by copying (<ref>member_function_Add_List_1D1B2D3DB629A4EB7D2FF5DC26BAC25844CDC950</ref>) or by 
-      moving (<ref>member_function_Add_List_E3153F8BB52D4AE91B603B901C44A6A6B4D06162</ref>). Adding takes amortized constant time.
+      Elements can be added by copying (<ref>member_function_Add_List_51C2A75AC0C4BE9A235C82A41D1FE7EB542D8B78</ref>) or by 
+      moving (<ref>member_function_Add_List_89752FEC74E129D30D43E6A2FF7EABB1710B8619</ref>). Adding takes amortized constant time.
       When moving you may want to use the <ref>function_Rvalue_1B3DB0610C3620EF4E68B21F93F01B306FF74562</ref> to convert an argument to an rvalue.
-      Elements of a list can be accessed by index using the <ref>member_function_op_index_List_C72C437D1C76647FFBB205AB91C0F41C0AAF799F</ref> or
-      <ref>member_function_op_index_List_56E25E07873F20FD8891B368BB37F65C9E738DF9</ref> member functions.
+      Elements of a list can be accessed by index using the <ref>member_function_op_index_List_754A7E4287036F1DC5E6ED692F2CC7A9BE0031D1</ref> or
+      <ref>member_function_op_index_List_8091A4E54B78EFDE17745646E466335F0CCDD76D</ref> member functions.
       Element access is <em>O(1)</em> operation.
     </details>
     <details>
@@ -770,26 +770,26 @@
       <ref>concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6</ref>.
     </details>
   </doc>
-  <doc id="class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484">
+  <doc id="class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134">
     <desc>
       Model of <ref>concept_RandomAccessIterator_A5A1B6A4EC8E181A67C733002B3BE437554D3484</ref>.
     </desc>
   </doc>
-  <doc id="class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E">
+  <doc id="class_Negate_601951129A9208F4A372E2B7BBC4EAE820AD2ECB">
     <desc>
       Model of <ref>concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344</ref>,
       <ref>concept_UnaryOperation_A42C7312D25FC827BE924605B8EB6CAF29F5668A</ref>.
     </desc>
   </doc>
-  <doc id="class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909">
+  <doc id="class_Identity_AE4E1A34351D4CA127046281E036550E4FE428D6">
     <desc>
       Model of <ref>concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344</ref>.
       <ref>concept_UnaryOperation_A42C7312D25FC827BE924605B8EB6CAF29F5668A</ref>.
     </desc>
   </doc>
-  <doc id="class_Set_00925824F65733E00086D88AA2C7106F3B56C343">
+  <doc id="class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3">
     <desc>
-      A collection of unique elements that are kept sorted in a <ref>class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
+      A collection of unique elements that are kept sorted in a <ref>class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E</ref>.
     </desc>
     <details>
       Searching for an element in the set and inserting an element to the set are <em>Olog(n)</em> operations.
@@ -798,9 +798,9 @@
       Model of <ref>concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7</ref>.
     </details>
   </doc>
-  <doc id="class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
+  <doc id="class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043">
     <desc>
-      An associative array of key-value pairs that are kept sorted in a <ref>class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
+      An associative array of key-value pairs that are kept sorted in a <ref>class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E</ref>.
     </desc>
     <details>
       Searching for an element in the map and inserting an element to the map are <em>Olog(n)</em> operations.
@@ -809,7 +809,7 @@
       Model of <ref>concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7</ref>.
     </details>
   </doc>
-  <doc id="class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED">
+  <doc id="class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E">
     <desc>
       A red-black tree.
     </desc>
@@ -819,7 +819,7 @@
   </doc>
   <doc id="class_RedBlackTreeNodeIterator_T_R_P_6B55278500271829D7E5F7BCD5A22DABD182EF92">
     <desc>
-      Iterator type of a <ref>class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
+      Iterator type of a <ref>class_RedBlackTree_6F8AEDB2D8909F4D933AF0A25DEE14F445C64C1E</ref>.
     </desc>
     <details>
       Model of <ref>concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6</ref>.
@@ -827,13 +827,13 @@
   </doc>
   <doc id="class_HashtableIterator_T_R_P_H_096790EBD70A9327536FC43A710AF00FB8221CA1">
     <desc>
-      Iterator type of a <ref>class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
+      Iterator type of a <ref>class_Hashtable_7F72CBB785DE76648BD6BC898866FE2884EA3EBE</ref>.
     </desc>
     <details>
       Model of <ref>concept_ForwardIterator_4C777D423CF589B8535F29F910C025990ED656D4</ref>.
     </details>
   </doc>
-  <doc id="class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3">
+  <doc id="class_Hashtable_7F72CBB785DE76648BD6BC898866FE2884EA3EBE">
     <desc>
       A hashtable.
     </desc>
@@ -841,20 +841,20 @@
       Model of <ref>concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2</ref>.
     </details>
   </doc>
-  <doc id="class_HashSet_6F412153491DE45DCD64B2BA6D957A207E598099">
+  <doc id="class_HashSet_96FD1A8AB2C77DDB74D29FB1E173D4D08CFD50A3">
     <desc>
-      A collection of unique elements that are organized in a <ref>class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
+      A collection of unique elements that are organized in a <ref>class_Hashtable_7F72CBB785DE76648BD6BC898866FE2884EA3EBE</ref>.
     </desc>
     <details>
-      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>)
+      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_FE4C0B1CEF8E306FE146F7BB46ED2BCED3E4472A</ref>)
       or other equality-like relation provided as the third template argument.
     </details>
     <details>
       The second template argument is a hash function object that is by default the
-      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>
+      <ref>class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C</ref>
       function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_BD15899CCA748FF443AF1574B768E8FF490F2011</ref>
       function overloads. If there is not a <em>GetHashCode</em> overload for the your element type, you can provide your own, and it should work with the standard
-      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>.
+      <ref>class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C</ref>.
     </details>
     <details>
       Adding an element to the hash set depends on the hash function, but can be thought as <em>O(1)</em> operation.
@@ -864,7 +864,7 @@
       Model of <ref>concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2</ref>.
     </details>
   </doc>
-  <doc id="class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325">
+  <doc id="class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C">
     <desc>
       A hash function object that calls one of the <em>GetHashCode</em> function overloads with its argument.
     </desc>
@@ -874,18 +874,18 @@
   </doc>
   <doc id="class_HashMap_D555F9108F5700505E1FCCC02041016E58EE9314">
     <desc>
-      An associative array of key-value pairs that are organized in a <ref>class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
+      An associative array of key-value pairs that are organized in a <ref>class_Hashtable_7F72CBB785DE76648BD6BC898866FE2884EA3EBE</ref>.
     </desc>
     <details>
-      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>)
+      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_FE4C0B1CEF8E306FE146F7BB46ED2BCED3E4472A</ref>)
       or other equality-like relation provided as the fourth template argument.
     </details>
     <details>
       The third template argument is a hash function object that is by default the
-      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>
+      <ref>class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C</ref>
       function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_BD15899CCA748FF443AF1574B768E8FF490F2011</ref>
       function overloads. If there is not a <em>GetHashCode</em> overload for the your element type, you can provide your own, and it should work with the standard
-      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>.
+      <ref>class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C</ref>.
     </details>
     <details>
       Adding an element to the hash map depends on the hash function, but can be thought as <em>O(1)</em> operation.
@@ -895,7 +895,7 @@
       Model of <ref>concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2</ref>.
     </details>
   </doc>
-  <doc id="class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210">
+  <doc id="class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A">
     <desc>
       A doubly linked list of elements.
     </desc>
@@ -910,15 +910,15 @@
       <ref>concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6</ref>.
     </details>
   </doc>
-  <doc id="class_LinkedListNodeIterator_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF">
+  <doc id="class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B">
     <desc>
-      Iterator type of a <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      Iterator type of a <ref>class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A</ref>.
     </desc>
     <details>
       Model of <ref>concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6</ref>.
     </details>
   </doc>
-  <doc id="class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D">
+  <doc id="class_ForwardList_A99897CAB3009D26DA55AC8644BAE9940652F625">
     <desc>
       A singly linked list of elements.
     </desc>
@@ -931,9 +931,9 @@
       <ref>concept_FrontInsertionSequence_6E92B081B326D22C296036E5DDC43365491BEBF4</ref>.
     </details>
   </doc>
-  <doc id="class_ForwardListNodeIterator_F664F07C33DBAABDB2487D2FBE1538C3E6F42EBA">
+  <doc id="class_ForwardListNodeIterator_7AAFDC28F05E51C20CA3EB8A7148DDD64A2EAF99">
     <desc>
-      Iterator type of a <ref>class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
+      Iterator type of a <ref>class_ForwardList_A99897CAB3009D26DA55AC8644BAE9940652F625</ref>.
     </desc>
     <details>
       Model of <ref>concept_ForwardIterator_4C777D423CF589B8535F29F910C025990ED656D4</ref>.
@@ -941,7 +941,7 @@
   </doc>
   <doc id="class_Stack_CAB2AD063212443437B477BD815360F469912604">
     <desc>
-      A last-in-first-out container of elements implemented as a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      A last-in-first-out container of elements implemented as a <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </desc>
     <details>
       Pushing an element to the top of the stack takes amortized constant time. Popping an element from the top of the stack is <em>O(1)</em> operation.
@@ -949,7 +949,7 @@
   </doc>
   <doc id="class_Queue_F0FF1F7FEDEB5A065595E4EC4CFE4E1E748FA14F">
     <desc>
-      A first-in-first-out container of elements implemented as a <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      A first-in-first-out container of elements implemented as a <ref>class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A</ref>.
     </desc>
     <details>
       Putting an element to the end of the queue takes constant time. Getting an element from the start of the queue takes constant time.
@@ -957,7 +957,7 @@
   </doc>
   <doc id="class_Bitset_BA1EE2E68426C5445CB6CAF7F957084ADAFD19CA">
     <desc>
-      A variable length container of bits implemented as a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of ulongs.
+      A variable length container of bits implemented as a <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref> of ulongs.
     </desc>
     <details>
       Setting, resetting and accessing a bit takes constant time.
@@ -974,8 +974,8 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> having an <em>Add</em> operation that appends an element to the end of the container.
     </desc>
     <details title="Examples">
-      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
-      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>,
+      <ref>class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A</ref>.
     </details>
   </doc>
   <doc id="concept_FrontInsertionSequence_6E92B081B326D22C296036E5DDC43365491BEBF4">
@@ -983,9 +983,9 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> having an <em>InsertFront</em> operation that inserts an element to the beginning of the container.
     </desc>
     <details title="Examples">
-      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
-      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>,
-      <ref>class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
+      <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>,
+      <ref>class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A</ref>,
+      <ref>class_ForwardList_A99897CAB3009D26DA55AC8644BAE9940652F625</ref>.
     </details>
   </doc>
   <doc id="concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6.html">
@@ -993,8 +993,8 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> having an <em>Insert</em> operation that inserts an element in the middle of the container.
     </desc>
     <details title="Examples">
-      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
-      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>,
+      <ref>class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A</ref>.
     </details>
   </doc>
   <doc id="concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2">
@@ -1002,8 +1002,8 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> whose iterators are <ref>concept_ForwardIterator_4C777D423CF589B8535F29F910C025990ED656D4</ref>s.
     </desc>
     <details title="Examples">
-      <ref>class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
-      <ref>class_HashSet_6F412153491DE45DCD64B2BA6D957A207E598099</ref>.
+      <ref>class_ForwardList_A99897CAB3009D26DA55AC8644BAE9940652F625</ref>.
+      <ref>class_HashSet_96FD1A8AB2C77DDB74D29FB1E173D4D08CFD50A3</ref>.
     </details>
   </doc>
   <doc id="concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7">
@@ -1011,9 +1011,9 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> whose iterators are <ref>concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6</ref>s.
     </desc>
     <details title="Examples">
-      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>,
-      <ref>class_Set_00925824F65733E00086D88AA2C7106F3B56C343</ref>,
-      <ref>class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE</ref>.
+      <ref>class_LinkedList_21E6EE98B4B36A5C47A5B085A267CB263D18975A</ref>,
+      <ref>class_Set_A458D7CE6492B895868A21E8F3D1FA98A8FFEAA3</ref>,
+      <ref>class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043</ref>.
     </details>
   </doc>
   <doc id="concept_RandomAccessContainer_7D44EBDB629CA332A20056356A52519C0BB1FADF">
@@ -1021,7 +1021,7 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> whose iterators are <ref>concept_RandomAccessIterator_A5A1B6A4EC8E181A67C733002B3BE437554D3484</ref>s.
     </desc>
     <details title="Examples">
-      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </details>
   </doc>
   <doc id="concept_TrivialIterator_63C9CBDE8700FA0C9E6E0CA6C6C65B5DA24A13E5">
@@ -1034,9 +1034,9 @@
       An iterator that can move forwards.
     </desc>
     <details title="Examples">
-      <ref>class_ForwardListNodeIterator_F664F07C33DBAABDB2487D2FBE1538C3E6F42EBA</ref>,
-      <ref>class_LinkedListNodeIterator_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF</ref>,
-      <ref>class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
+      <ref>class_ForwardListNodeIterator_7AAFDC28F05E51C20CA3EB8A7148DDD64A2EAF99</ref>,
+      <ref>class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B</ref>,
+      <ref>class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134</ref>.
     </details>
   </doc>
   <doc id="concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6">
@@ -1044,8 +1044,8 @@
       An iterator that can move forwards and backwards.
     </desc>
     <details title="Examples">
-      <ref>class_LinkedListNodeIterator_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF</ref>,
-      <ref>class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
+      <ref>class_LinkedListNodeIterator_8295384D975538AF58E04CACCB241458E5E9892B</ref>,
+      <ref>class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134</ref>.
     </details>
   </doc>
   <doc id="concept_RandomAccessIterator_A5A1B6A4EC8E181A67C733002B3BE437554D3484">
@@ -1053,7 +1053,7 @@
       An iterator that can move arbitrary offsets.
     </desc>
     <details title="Examples">
-      <ref>class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
+      <ref>class_RandomAccessIter_9F7709A9CDA8A631401243519F438AE84A725134</ref>.
     </details>
   </doc>
   <doc id="concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7">
@@ -1061,7 +1061,7 @@
       A type that can be default constructed and either copied or moved or both.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537</ref>, <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </details>
   </doc>
   <doc id="concept_Regular_A56EC84F9A51535281FA2B6B074E90F9B3BBCCC1">
@@ -1069,7 +1069,7 @@
       A <ref>concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7</ref> type that can be compared for equality and inequality.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537</ref>, <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </details>
   </doc>
   <doc id="concept_EqualityComparable_CBC8491006C76A67817EB0837FEB706E443E77B6">
@@ -1077,7 +1077,7 @@
       A type whose objects can be compared with operators == and !=.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537</ref>, <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </details>
   </doc>
   <doc id="concept_LessThanComparable_90ED44B8D61617C1FB8517CD74D7D087E77A0AA5">
@@ -1085,7 +1085,7 @@
       A type whose objects can be compared with operators &lt;, &gt;, &lt;= and &gt;=.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537</ref>, <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </details>
   </doc>
   <doc id="concept_TotallyOrdered_E99156F9F67A4CDD40DFE7EAC64E14E2CF6B24F2">
@@ -1093,7 +1093,7 @@
       A <ref>concept_Regular_A56EC84F9A51535281FA2B6B074E90F9B3BBCCC1</ref> type whose objects can be compared with operators &lt;, &gt;, &lt;= and &gt;=.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537</ref>, <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>.
     </details>
   </doc>
   <doc id="concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344">
@@ -1101,8 +1101,8 @@
       A function object whose function call operator has one parameter.
     </desc>
     <details title="Examples">
-      <ref>class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E</ref>,
-      <ref>class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909</ref>.
+      <ref>class_Negate_601951129A9208F4A372E2B7BBC4EAE820AD2ECB</ref>,
+      <ref>class_Identity_AE4E1A34351D4CA127046281E036550E4FE428D6</ref>.
     </details>
   </doc>
   <doc id="concept_UnaryPredicate_817CC9DCD26C0954E03389EC0C9357DB1879C53F">
@@ -1110,7 +1110,7 @@
       A Boolean-valued <ref>concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344</ref> object.
     </desc>
     <details title="Examples">
-      <ref>class_LogicalNot_8969C1691917DD5CA5D11CA01EF0BFCBDC2D486E</ref>.
+      <ref>class_LogicalNot_85BFDF2D929BE885FA1885895863E547919C2FDF</ref>.
     </details>
   </doc>
   <doc id="concept_UnaryOperation_A42C7312D25FC827BE924605B8EB6CAF29F5668A">
@@ -1119,8 +1119,8 @@
       the return type and the parameter type of the function call operator are the same type.
     </desc>
     <details title="Examples">
-      <ref>class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E</ref>,
-      <ref>class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909</ref>.
+      <ref>class_Negate_601951129A9208F4A372E2B7BBC4EAE820AD2ECB</ref>,
+      <ref>class_Identity_AE4E1A34351D4CA127046281E036550E4FE428D6</ref>.
     </details>
   </doc>
   <doc id="concept_BinaryFunction_7F3A6EF707F08A997487EC3748D74CC2156DB250">
@@ -1128,8 +1128,8 @@
       A function object whose function call operator has two parameters.
     </desc>
     <details title="Examples">
-      <ref>class_Plus_6DE5E429D028D7343BC491CB6AA869D7DF7D5121</ref>, <ref>class_Minus_C7D959DFE0FDC4A65AAF0525637E69033072BBD4</ref>,
-      <ref>class_Multiplies_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381</ref>.
+      <ref>class_Plus_43AEB018E2FF5F2BA1897067D84435B9265F5F20</ref>, <ref>class_Minus_9530187FA20A7AAB6E1CE58BA93A69A1B3956FC7</ref>,
+      <ref>class_Multiplies_570F0D74E3904749989DAA95B6BD40B57C57A11B</ref>.
     </details>
   </doc>
   <doc id="concept_BinaryPredicate_47B7E65D192BA156398E605E540F0BEF2A7473D7">
@@ -1137,8 +1137,8 @@
       A Boolean-valued <ref>concept_BinaryFunction_7F3A6EF707F08A997487EC3748D74CC2156DB250</ref> object.
     </desc>
     <details title="Examples">
-      <ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>,
-      <ref>class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B</ref>-
+      <ref>class_EqualTo_FE4C0B1CEF8E306FE146F7BB46ED2BCED3E4472A</ref>,
+      <ref>class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57</ref>-
     </details>
   </doc>
   <doc id="concept_BinaryOperation_E7FA71F85EB4750A92189AC872008306AEFD4D01">
@@ -1147,8 +1147,8 @@
       the return type and the first parameter type of the function call operator are the same type.
     </desc>
     <details title="Examples">
-      <ref>class_Plus_6DE5E429D028D7343BC491CB6AA869D7DF7D5121</ref>, <ref>class_Minus_C7D959DFE0FDC4A65AAF0525637E69033072BBD4</ref>,
-      <ref>class_Multiplies_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381</ref>.
+      <ref>class_Plus_43AEB018E2FF5F2BA1897067D84435B9265F5F20</ref>, <ref>class_Minus_9530187FA20A7AAB6E1CE58BA93A69A1B3956FC7</ref>,
+      <ref>class_Multiplies_570F0D74E3904749989DAA95B6BD40B57C57A11B</ref>.
     </details>
   </doc>
   <doc id="concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746">
@@ -1157,8 +1157,8 @@
       The domain of the relation is the type of the parameters.
     </desc>
     <details title="Examples">
-      <ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>,
-      <ref>class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B</ref>-
+      <ref>class_EqualTo_FE4C0B1CEF8E306FE146F7BB46ED2BCED3E4472A</ref>,
+      <ref>class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57</ref>-
     </details>
   </doc>
   <doc id="concept_DefaultConstructible_928F89FC5607554E7244359D8FE40432C96E53DC">
@@ -1235,11 +1235,11 @@
     <details title="Examples">
       This <a href="../../../../code/threading/cmdoc/content/ThreadFunction/file/threadFunction.cm.html">threadFunction</a> example shows how to execute a function
       in a separate thread. Main function starts a thread that executes the <em>ThreadFunction</em> function, and waits the thread to end by calling the
-      <ref>member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750</ref> member function of the started thread.
+      <ref>member_function_Join_Thread_C1E6CF2687F911D52C3B3495CBA24C906969A6A2</ref> member function of the started thread.
     </details>
     <details>
       This <a href="../../../../code/threading/cmdoc/content/threadSynchronization/file/threadSynchronization.cm.html">threadSynchronization</a> example
-      shows how to use <ref>class_LockGuard_71F3BB945476C1B401D53113AACA649C83322BA2</ref>, <ref>class_RecursiveMutex_B9ED5479754BBDDED6A4491348BBD2F20F701D82</ref>
+      shows how to use <ref>class_LockGuard_250D7F4BB3E486F66F913150653C543998ECC408</ref>, <ref>class_RecursiveMutex_B9ED5479754BBDDED6A4491348BBD2F20F701D82</ref>
       and a <ref>class_ConditionVariable_019A80625043CF98EC88D8F55238C84CFD4A9C26</ref> to synchronize threads.
       The main function starts first the <em>Run</em> member function of the
       <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html">OutputCollector</a>
@@ -1247,7 +1247,7 @@
       <ref>function_HardwareConcurrency_1205CA22BE5F7C8523C7C99C25B03568E302190F</ref> function, and starts twice as many output threads.
       The output threads enqueue message lines by calling the <em>EnqueueLine</em> member function of the
       <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html">OutputCollector</a>.
-      Finally main thread <ref>member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750</ref>s the output threads and the output collector thread.
+      Finally main thread <ref>member_function_Join_Thread_C1E6CF2687F911D52C3B3495CBA24C906969A6A2</ref>s the output threads and the output collector thread.
     </details>
   </doc>
   <doc id="member_function_Join_Thread_2321207B993A5A106E72F80F93CBAD2DA409A166">
@@ -1463,7 +1463,7 @@
   </doc>
   <doc id="function_Sort_D5E0D4CCA744D7C9467BD4BD5F0263CFC967F67D">
     <desc>
-      Sorts a forward container with respected to a relation by copying the forward container to a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      Sorts a forward container with respected to a relation by copying the forward container to a <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>,
       sorting the list and then copying elements back to the forward container.
     </desc>
     <details>
@@ -1472,7 +1472,7 @@
   </doc>
   <doc id="function_Sort_1060E96646527D20A7A7F3864F1DAF6250E6E24C">
     <desc>
-      Sorts a forward container with respected to the less than relation by copying the forward container to a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      Sorts a forward container with respected to the less than relation by copying the forward container to a <ref>class_List_C2E3BBDCA5D627AF0AC4163C9A548892D736E894</ref>,
       sorting the list and then copying elements back to the forward container.
     </desc>
     <details>

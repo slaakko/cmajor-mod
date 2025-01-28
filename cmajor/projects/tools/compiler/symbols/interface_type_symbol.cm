@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -142,11 +142,6 @@ namespace symbols
                     moveAssignment = cast<FunctionSymbol*>(member);
                     break;
                 }
-                case SymbolKind.interfaceTypeEquality:
-                {
-                    equality = cast<FunctionSymbol*>(member);
-                    break;
-                }
                 case SymbolKind.memberFunctionSymbol:
                 {
                     FunctionSymbol* method = cast<FunctionSymbol*>(member);
@@ -177,17 +172,12 @@ namespace symbols
         {
             return moveAssignment;
         }
-        public inline FunctionSymbol* Equality() const
-        {
-            return equality;
-        }
         private List<FunctionSymbol*> methods;
         private FunctionSymbol* defaultCtor;
         private FunctionSymbol* copyCtor;
         private FunctionSymbol* moveCtor;
         private FunctionSymbol* copyAssignment;
         private FunctionSymbol* moveAssignment;
-        private FunctionSymbol* equality;
     }
 
     public class InterfaceTypeDefaultConstructor : FunctionSymbol
@@ -311,6 +301,12 @@ namespace symbols
             if (result.Error()) return result;
             intermediate.Value* receiver = emitter.Stack().Pop();
             result = object1->Load(emitter, OperationFlags.none);
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
             if (result.Error()) return result;
             intermediate.Value* thatPtr = emitter.Stack().Pop();
             Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
@@ -398,6 +394,12 @@ namespace symbols
             intermediate.Value* receiver = emitter.Stack().Pop();
             result = object1->Load(emitter, OperationFlags.none);
             if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
             intermediate.Value* thatPtr = emitter.Stack().Pop();
             Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
             if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
@@ -499,6 +501,12 @@ namespace symbols
             intermediate.Value* receiver = emitter.Stack().Pop();
             result = object1->Load(emitter, OperationFlags.none);
             if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
             intermediate.Value* thatPtr = emitter.Stack().Pop();
             Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
             if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
@@ -593,6 +601,12 @@ namespace symbols
             intermediate.Value* receiver = emitter.Stack().Pop();
             result = object1->Load(emitter, OperationFlags.none);
             if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
             intermediate.Value* thatPtr = emitter.Stack().Pop();
             Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromReceiver(thatPtr);
             if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
@@ -725,7 +739,145 @@ namespace symbols
             return Result<bool>(true);
         }
     }
-    
+
+    public class InterfaceTypeLess : FunctionSymbol
+    {
+        public InterfaceTypeLess(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeLess, span_, name_)
+        {
+        }
+        public InterfaceTypeLess(SymbolsContext& context, InterfaceTypeSymbol* interfaceType) :
+            base(SymbolKind.interfaceTypeLess, interfaceType->Span(), u"@interfaceLess")
+        {
+            SetGroupName(u"operator<");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(interfaceType->Span(), u"left");
+            Result<TypeSymbol*> constTypeResult = interfaceType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            leftParam->SetType(refType);
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(interfaceType->Span(), u"right");
+            rightParam->SetType(refType);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<intermediate.Value*> retValResult = emitter.CreateLocal(emitter.GetBoolType());
+            if (retValResult.Error()) return Result<bool>(ErrorId(retValResult.GetErrorId()));
+            intermediate.Value* retVal = retValResult.Value();
+            intermediate.BasicBlock* retBlock = emitter.CreateBasicBlock();
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* leftPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> leftObjectPtrResult = emitter.GetObjectFromReceiver(leftPtr);
+            if (leftObjectPtrResult.Error()) return Result<bool>(ErrorId(leftObjectPtrResult.GetErrorId()));
+            intermediate.Value* leftObjectPtr = leftObjectPtrResult.Value();
+            Result<intermediate.Value*> leftObjectValueResult = emitter.CreateLoad(leftObjectPtr);
+            if (leftObjectValueResult.Error()) return Result<bool>(ErrorId(leftObjectValueResult.GetErrorId()));
+            intermediate.Value* leftObjectValue = leftObjectValueResult.Value();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* rightPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> rightObjectPtrResult = emitter.GetObjectFromReceiver(rightPtr);
+            if (rightObjectPtrResult.Error()) return Result<bool>(ErrorId(rightObjectPtrResult.GetErrorId()));
+            intermediate.Value* rightObjectPtr = rightObjectPtrResult.Value();
+            Result<intermediate.Value*> rightObjectValueResult = emitter.CreateLoad(rightObjectPtr);
+            if (rightObjectValueResult.Error()) return Result<bool>(ErrorId(rightObjectValueResult.GetErrorId()));
+            intermediate.Value* rightObjectValue = rightObjectValueResult.Value();
+            intermediate.BasicBlock* leftObjectLessBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* leftObjectNotLessBlock = emitter.CreateBasicBlock();
+            Result<intermediate.Value*> leftObjectLessResult = emitter.CreateLess(leftObjectValue, rightObjectValue);
+            if (leftObjectLessResult.Error()) return Result<bool>(ErrorId(leftObjectLessResult.GetErrorId()));
+            intermediate.Value* leftObjectLess = leftObjectLessResult.Value();
+            result = emitter.CreateBranch(leftObjectLess, leftObjectLessBlock, leftObjectNotLessBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(leftObjectLessBlock);
+            result = emitter.CreateStore(emitter.GetBoolValue(true), retVal);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(retBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(leftObjectNotLessBlock);
+            Result<intermediate.Value*> rightObjectLessResult = emitter.CreateLess(rightObjectValue, leftObjectValue);
+            if (rightObjectLessResult.Error()) return Result<bool>(ErrorId(rightObjectLessResult.GetErrorId()));
+            intermediate.Value* rightObjectLess = rightObjectLessResult.Value();
+            intermediate.BasicBlock* rightObjectLessBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* rightObjectNotLessBlock = emitter.CreateBasicBlock();
+            result = emitter.CreateBranch(rightObjectLess, rightObjectLessBlock, rightObjectNotLessBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(rightObjectLessBlock);
+            result = emitter.CreateStore(emitter.GetBoolValue(false), retVal);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(retBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(rightObjectNotLessBlock);
+            Result<intermediate.Value*> leftInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(leftPtr);
+            if (leftInterfacePtrResult.Error()) return Result<bool>(ErrorId(leftInterfacePtrResult.GetErrorId()));
+            intermediate.Value* leftInterfacePtr = leftInterfacePtrResult.Value();
+            Result<intermediate.Value*> leftInterfacePtrValueResult = emitter.CreateLoad(leftInterfacePtr);
+            if (leftInterfacePtrValueResult.Error()) return Result<bool>(ErrorId(leftInterfacePtrValueResult.GetErrorId()));
+            intermediate.Value* leftInterfacePtrValue = leftInterfacePtrValueResult.Value();
+            Result<intermediate.Value*> rightInterfacePtrResult = emitter.GetInterfacePtrFromReceiver(rightPtr);
+            if (rightInterfacePtrResult.Error()) return Result<bool>(ErrorId(rightInterfacePtrResult.GetErrorId()));
+            intermediate.Value* rightInterfacePtr = rightInterfacePtrResult.Value();
+            Result<intermediate.Value*> rightInterfacePtrValueResult = emitter.CreateLoad(rightInterfacePtr);
+            if (rightInterfacePtrValueResult.Error()) return Result<bool>(ErrorId(rightInterfacePtrValueResult.GetErrorId()));
+            intermediate.Value* rightInterfacePtrValue = rightInterfacePtrValueResult.Value();
+            Result<intermediate.Value*> interfacesLessResult = emitter.CreateLess(leftInterfacePtrValue, rightInterfacePtrValue);
+            if (interfacesLessResult.Error()) return Result<bool>(ErrorId(interfacesLessResult.GetErrorId()));
+            intermediate.Value* interfacesLess = interfacesLessResult.Value();
+            result = emitter.CreateStore(interfacesLess, retVal);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(retBlock);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(retBlock);
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(retVal);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* less = loadResult.Value();
+            emitter.Stack().Push(less);
+            return Result<bool>(true);
+        }
+    }
+
     public class ClassToInterfaceConversion : FunctionSymbol
     {
         public ClassToInterfaceConversion(SymbolsContext& context, ClassTypeSymbol* sourceClassType, InterfaceTypeSymbol* targetInterfaceType) :

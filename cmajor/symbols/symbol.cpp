@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -63,8 +63,8 @@ const char* symbolTypeStr[uint8_t(SymbolType::maxSymbol)] =
     "classDelegateTypeDefaultConstructor", "classDelegateTypeCopyConstructor", "classDelegateTypeMoveConstructor", "classDelegateTypeCopyAssignment", "classDelegateTypeMoveAssignment",
     "classDelegateTypeEquality", "memberFunctionToClassDelegateSymbol",
     "arrayLengthFunctionSymbol", "arrayBeginFunctionSymbol", "arrayEndFunctionSymbol", "arrayCBeginFunctionSymbol", "arrayCEndFunctionSymbol",
-    "interfaceTypeDefaultCtor", "interfaceTypeCopyCtor", "interfaceTypeMoveCtor", "interfaceTypeCopyAssignment", "interfaceTypeMoveAssignment", "interfaceTypeEqual",
-    "classToInterfaceConversion", "getObjectPtrFromInterfaceSymbol",
+    "interfaceTypeDefaultCtor", "interfaceTypeCopyCtor", "interfaceTypeMoveCtor", "interfaceTypeCopyAssignment", "interfaceTypeMoveAssignment", 
+    "interfaceTypeEqual", "interfaceTypeLess", "classToInterfaceConversion", "getObjectPtrFromInterfaceSymbol",
     "namespaceTypeSymbol", "functionGroupTypeSymbol", "memberExpressionTypeSymbol", "variableValueSymbol", "globalVariableSymbol", "globalVariableGroupSymbol",
     "stringFunctionContainerSymbol", "stringLengthFunctionSymbol", "axiomSymbol", "keywordSymbol", "autoTypeSymbol"
 };
@@ -1312,6 +1312,7 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::delegateTypeMoveAssignment, new ConcreteSymbolCreator<DelegateTypeMoveAssignment>());
     Register(SymbolType::delegateTypeReturn, new ConcreteSymbolCreator<DelegateTypeReturn>());
     Register(SymbolType::delegateTypeEquality, new ConcreteSymbolCreator<DelegateTypeEquality>());
+    Register(SymbolType::delegateTypeLess, new ConcreteSymbolCreator<DelegateTypeLess>());
     Register(SymbolType::functionToDelegateSymbol, new ConcreteSymbolCreator<FunctionToDelegateConversion>());
     Register(SymbolType::classDelegateTypeDefaultConstructor, new ConcreteSymbolCreator<ClassDelegateTypeDefaultConstructor>());
     Register(SymbolType::classDelegateTypeCopyConstructor, new ConcreteSymbolCreator<ClassDelegateTypeCopyConstructor>());
@@ -1319,6 +1320,7 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::classDelegateTypeCopyAssignment, new ConcreteSymbolCreator<ClassDelegateTypeCopyAssignment>());
     Register(SymbolType::classDelegateTypeMoveAssignment, new ConcreteSymbolCreator<ClassDelegateTypeMoveAssignment>());
     Register(SymbolType::classDelegateTypeEquality, new ConcreteSymbolCreator<ClassDelegateTypeEquality>());
+    Register(SymbolType::classDelegateTypeLess, new ConcreteSymbolCreator<ClassDelegateTypeLess>());
     Register(SymbolType::memberFunctionToClassDelegateSymbol, new ConcreteSymbolCreator<MemberFunctionToClassDelegateConversion>());
     Register(SymbolType::arrayLengthFunctionSymbol, new ConcreteSymbolCreator<ArrayLengthFunction>());
     Register(SymbolType::arrayBeginFunctionSymbol, new ConcreteSymbolCreator<ArrayBeginFunction>()),
@@ -1331,6 +1333,7 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::interfaceTypeCopyAssignment, new ConcreteSymbolCreator<InterfaceTypeCopyAssignment>());
     Register(SymbolType::interfaceTypeMoveAssignment, new ConcreteSymbolCreator<InterfaceTypeMoveAssignment>());
     Register(SymbolType::interfaceTypeEqual, new ConcreteSymbolCreator<InterfaceTypeEqual>());
+    Register(SymbolType::interfaceTypeLess, new ConcreteSymbolCreator<InterfaceTypeLess>());
     Register(SymbolType::classToInterfaceConversion, new ConcreteSymbolCreator<ClassToInterfaceConversion>());
     Register(SymbolType::getObjectPtrFromInterfaceSymbol, new ConcreteSymbolCreator<GetObjectPtrFromInterface>());
     Register(SymbolType::globalVariableSymbol, new ConcreteSymbolCreator<GlobalVariableSymbol>());

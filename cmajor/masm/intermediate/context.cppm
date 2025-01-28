@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2024 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -98,6 +98,8 @@ public:
     void Write(const std::string& intermediateFilePath);
     void SetInlineDepth(int inlineDepth_) { inlineDepth = inlineDepth_; }
     int InlineDepth() const { return inlineDepth; }
+    void SetMaxArithmeticOptimizationCount(int maxArithmeticOptimizationCount_) { maxArithmeticOptimizationCount = maxArithmeticOptimizationCount_; }
+    int MaxArithmeticOptimizationCount() const { return maxArithmeticOptimizationCount; }
     void SetContextFlag(ContextFlags flag) { flags = flags | flag; }
     bool GetContextFlag(ContextFlags flag) const { return (flags & flag) != ContextFlags::none; }
     int FunctionsInlined() const { return functionsInlined; }
@@ -114,6 +116,7 @@ private:
     int32_t fileId;
     cmajor::masm::assembly::Context assemblyContext;
     int inlineDepth;
+    int maxArithmeticOptimizationCount;
     std::unique_ptr<cmajor::masm::intermediate::MetadataRef> metadataRef;
     ContextFlags flags;
     int functionsInlined;
