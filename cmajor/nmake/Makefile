@@ -1,6 +1,10 @@
 #	Makefile for Cmajor compiler & tools, system library, tool programs and examples.
 #	Run with nmake from Visual Studio 2022 x64 Native Tools command prompt
 
+#	Note: before running this makefile you should build the compiler using Visual Studio 2022 IDE by opening the cmajor-mod.sln
+#	and building for Debug/x64 and Release/x64 configurations.
+#	I have used Visual Studio 2022 Community Edition Version 17.11.4.
+
 all: makedirs zlibasm runtime unicode sys tools examples install
 
 makedirs:
@@ -10,6 +14,7 @@ zlibasm:
 	cd ..\..\ext\zlib-1.2.11\contrib\masmx64 && bld_ml64.bat
 
 compiler: 
+#	this rule does not succeed, see note at the top of this file for resolution.
 	MSBuild -m -verbosity:minimal ..\..\cmajor-mod.sln -p:Configuration="Debug"
 	MSBuild -m -verbosity:minimal ..\..\cmajor-mod.sln -p:Configuration="Release"
 	cd ..\..\inst && inst.bat
