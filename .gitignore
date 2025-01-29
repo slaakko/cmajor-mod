@@ -33,6 +33,10 @@ trace
 repository
 Debug
 Release
+!cmajor/llvm/build/debug
+!cmajor/llvm/build/release
+!cmajor/cpp/build/debug
+!cmajor/cpp/build/release
 install
 cmcode.config.xml
 cmcode.log.flag
