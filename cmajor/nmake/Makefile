@@ -7,7 +7,7 @@ makedirs:
 	makedirs.bat
 
 zlibasm:
-	cd ..\system\ext\zlib-1.2.11\contrib\masmx64 && bld_ml64.bat
+	cd ..\..\ext\zlib-1.2.11\contrib\masmx64 && bld_ml64.bat
 
 compiler: 
 	MSBuild -m -verbosity:minimal ..\..\cmajor-mod.sln -p:Configuration="Debug"
