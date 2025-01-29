@@ -164,10 +164,6 @@ int main(int argc, const char** argv)
                                         std::string path = util::Path::Combine(dir, fileName);
                                         paths.push_back(path);
                                     }
-                                    else
-                                    {
-                                        paths.push_back(path);
-                                    }
                                 }
                                 ++it;
                             }
