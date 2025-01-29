@@ -397,7 +397,7 @@ std::unique_ptr<cmajor::fault::tolerant::ast::Project> ParseProjectAst(Container
 
 std::unique_ptr<cmajor::fault::tolerant::ast::Project> ParseProject(const std::string& projectFilePath, const std::string& config, cmajor::fault::tolerant::ast::Backend backend)
 {
-    std::string projectFile = util::ReadFile(projectFilePath);
+    std::string projectFile = util::ReadFile(projectFilePath, true);
     std::u16string content = util::ToUtf16(projectFile);
     ContainerFileLexer lexer = cmajor::container::file::lexer::MakeLexer(content.c_str(), content.c_str() + content.length(), projectFilePath);
     std::unique_ptr<cmajor::fault::tolerant::ast::Project> project = ParseProjectAst(lexer, config, backend);

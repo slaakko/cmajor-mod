@@ -22,7 +22,7 @@ void PrintSourceFile(const std::string& outFilePath, cmajor::ast::Node* compileU
 std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module)
 {
     std::string sourceFilePath = fileMap.GetFilePath(fileIndex);
-    std::string content = util::ReadFile(sourceFilePath);
+    std::string content = util::ReadFile(sourceFilePath, true);
     std::u32string ucontent;
     try
     {
@@ -69,7 +69,7 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
 
 std::unique_ptr<cmajor::ast::Project> ParseProjectFile(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend, int optLevel)
 {
-    std::string content = util::ReadFile(projectFilePath);
+    std::string content = util::ReadFile(projectFilePath, true);
     std::u32string ucontent = util::ToUtf32(content);
     auto lexer = cmajor::container::file::lexer::MakeLexer(ucontent.c_str(), ucontent.c_str() + ucontent.length(), projectFilePath);
     using LexerType = decltype(lexer);
@@ -80,7 +80,7 @@ std::unique_ptr<cmajor::ast::Project> ParseProjectFile(const std::string& projec
 
 std::unique_ptr<cmajor::ast::Solution> ParseSolutionFile(const std::string& solutionFilePath)
 {
-    std::string content = util::ReadFile(solutionFilePath);
+    std::string content = util::ReadFile(solutionFilePath, true);
     std::u32string ucontent = util::ToUtf32(content);
     auto lexer = cmajor::container::file::lexer::MakeLexer(ucontent.c_str(), ucontent.c_str() + ucontent.length(), solutionFilePath);
     using LexerType = decltype(lexer);

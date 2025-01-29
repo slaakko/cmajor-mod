@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "setup", "setup\setup.vcxproj", "{bb65cfd6-8328-c390-8078-09d37eb8c393}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "setup", "setup\setup.vcxproj", "{e39971ef-31e3-a201-a903-6493a8001bb8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "util", "C:\work\wingstall-mod\util\util.vcxproj", "{C059187A-5946-409B-835E-6CBDC4B40493}"
     ProjectSection(ProjectDependencies) = postProject
@@ -39,10 +39,10 @@ Global
         Release|x64 = Release|x64
     EndGlobalSection
     GlobalSection(ProjectConfigurationPlatforms) = postSolution
-        {bb65cfd6-8328-c390-8078-09d37eb8c393}.Debug|x64.ActiveCfg = Debug|x64
-        {bb65cfd6-8328-c390-8078-09d37eb8c393}.Debug|x64.Build.0 = Debug|x64
-        {bb65cfd6-8328-c390-8078-09d37eb8c393}.Release|x64.ActiveCfg = Release|x64
-        {bb65cfd6-8328-c390-8078-09d37eb8c393}.Release|x64.Build.0 = Release|x64
+        {e39971ef-31e3-a201-a903-6493a8001bb8}.Debug|x64.ActiveCfg = Debug|x64
+        {e39971ef-31e3-a201-a903-6493a8001bb8}.Debug|x64.Build.0 = Debug|x64
+        {e39971ef-31e3-a201-a903-6493a8001bb8}.Release|x64.ActiveCfg = Release|x64
+        {e39971ef-31e3-a201-a903-6493a8001bb8}.Release|x64.Build.0 = Release|x64
         {C059187A-5946-409B-835E-6CBDC4B40493}.Debug|x64.ActiveCfg = Debug|x64
         {C059187A-5946-409B-835E-6CBDC4B40493}.Debug|x64.Build.0 = Debug|x64
         {C059187A-5946-409B-835E-6CBDC4B40493}.Release|x64.ActiveCfg = Release|x64

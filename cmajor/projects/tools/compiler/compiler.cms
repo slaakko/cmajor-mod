@@ -11,6 +11,6 @@ project <intermediate/intermediate.cmp>;
 project <optimizer/optimizer.cmp>;
 project <symbols/symbols.cmp>;
 activeProject build;
-activeBackEnd=masm;
-activeConfig=release;
+activeBackEnd=llvm;
+activeConfig=debug;
 activeOptLevel=2;

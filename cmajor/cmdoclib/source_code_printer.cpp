@@ -1049,7 +1049,7 @@ void SourceCodePrinter::Visit(cmajor::ast::UuidLiteralNode& uuidLiteralNode)
 
 void SourceCodePrinter::Visit(cmajor::ast::CompileUnitNode& compileUnitNode)
 {
-    std::string content = util::ReadFile(compileUnitNode.FilePath());
+    std::string content = util::ReadFile(compileUnitNode.FilePath(), true);
     std::u32string ucontent = util::ToUtf32(content);
     compileUnitNode.ComputeLineStarts(ucontent);
     lineStarts = &compileUnitNode.LineStarts();

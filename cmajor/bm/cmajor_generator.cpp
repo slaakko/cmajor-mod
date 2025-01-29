@@ -443,7 +443,7 @@ void GenerateBinaryMessageFiles(const std::string& schemaFileName, bool verbose)
     {
         std::cout << "> " << schemaFileName << std::endl;
     }
-    std::string content = util::ReadFile(schemaFileName);
+    std::string content = util::ReadFile(schemaFileName, true);
     std::u32string ucontent;
     try
     {

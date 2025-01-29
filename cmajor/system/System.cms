@@ -15,6 +15,6 @@ project <System.XPath/System.XPath.cmp>;
 project <System.Xml/System.Xml.cmp>;
 project <System.Xml.Serialization/System.Xml.Serialization.cmp>;
 activeProject System;
-activeBackEnd=cm;
+activeBackEnd=llvm;
 activeConfig=debug;
 activeOptLevel=2;

@@ -86,7 +86,7 @@ std::vector<int> ComputeLineStartIndeces(const std::u32string& content)
 void FileMap::ReadFile(int32_t fileId)
 {
     std::string filePath = GetFilePath(fileId);
-    std::string fileContent = util::ReadFile(filePath);
+    std::string fileContent = util::ReadFile(filePath, true);
     std::u32string ucontent;
     try
     {

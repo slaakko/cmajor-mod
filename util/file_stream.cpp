@@ -273,6 +273,11 @@ int64_t FileStream::Size() const
 
 std::string ReadFile(const std::string& filePath)
 {
+    return ReadFile(filePath, false);
+}
+
+std::string ReadFile(const std::string& filePath, bool skipBOM)
+{
     std::string s;
     FileStream fs(filePath, OpenMode::read | OpenMode::binary);
     int64_t n = fs.Size();
@@ -287,6 +292,10 @@ std::string ReadFile(const std::string& filePath)
         {
             throw std::runtime_error("unexpected end of '" + filePath + "'");
         }
+    }
+    if (skipBOM && s.length() >= 3 && static_cast<uint8_t>(s[0]) == 0xEF && static_cast<uint8_t>(s[1]) == 0xBB && static_cast<uint8_t>(s[2]) == 0xBF)
+    {
+        return s.substr(3);
     }
     return s;
 }

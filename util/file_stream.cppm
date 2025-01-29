@@ -55,5 +55,6 @@ private:
 };
 
 std::string ReadFile(const std::string& filePath);
+std::string ReadFile(const std::string& filePath, bool skipBOM);
 
 } // util

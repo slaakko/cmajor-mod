@@ -112,7 +112,8 @@
             <li>Open the file location of the <strong>x64 Native Tools Command Prompt for VS 2022</strong> shortcut and select its properties.</li>
             <li>Insert the path of the <strong>vcvars64.bat</strong> after the %comspec% /k text to the <strong>cmajor/config/masm.config.xml</strong> file as the value of the <strong>path</strong> attribute of the <strong>vcvars64</strong> element.
                 The default path is <strong>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat</strong>
-				The MASM backend of the Cmajor compiler calls the vcvars64.bat and executes the <strong>msbuild.exe</strong> to compile generated asm files and link programs.
+				The MASM and CM/MASM backends of the Cmajor compiler call the vcvars64.bat and 
+                execute the <strong>msbuild.exe</strong> to compile generated asm files and link programs.
             </li>
         </ul>
     </p>

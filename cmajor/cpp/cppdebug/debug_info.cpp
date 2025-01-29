@@ -727,7 +727,7 @@ DIConstType* Project::GetConstType(DIType* baseType)
 
 SourceFile::SourceFile(DebugInfo* debugInfo_, const std::string& filePath_) : debugInfo(debugInfo_), filePath(filePath_)
 {
-    std::string content = util::ReadFile(filePath);
+    std::string content = util::ReadFile(filePath, true);
     int state = 0;
     std::string line;
     for (char c : content)

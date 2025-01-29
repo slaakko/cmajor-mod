@@ -171,7 +171,7 @@ std::unique_ptr<cmajor::fault::tolerant::ast::Solution> ParseSolutionAst(Contain
 
 std::unique_ptr<cmajor::fault::tolerant::ast::Solution> ParseSolution(const std::string& solutionFilePath)
 {
-    std::string solutionFile = util::ReadFile(solutionFilePath);
+    std::string solutionFile = util::ReadFile(solutionFilePath, true);
     std::u16string content = util::ToUtf16(solutionFile);
     ContainerFileLexer lexer = cmajor::container::file::lexer::MakeLexer(content.c_str(), content.c_str() + content.length(), solutionFilePath);
     std::unique_ptr<cmajor::fault::tolerant::ast::Solution> solution = ParseSolutionAst(lexer);

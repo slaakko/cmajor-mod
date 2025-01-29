@@ -31,32 +31,32 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   Generating Code...
   zlibstat.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\zlibstatd.lib
   Scanning sources for module dependencies...
-  ansi.cppm
-  file_util.cppm
-  rand.cppm
-  json.cppm
-  handle.cppm
-  fiber.cppm
-  binary_stream_reader.cppm
-  path.cppm
   compression.cppm
-  code_formatter.cppm
-  file_stream.cppm
-  binary_stream_writer.cppm
+  binary_stream_reader.cppm
   buffered_stream.cppm
-  deflate_stream.cppm
-  process.cppm
+  json.cppm
+  code_formatter.cppm
+  handle.cppm
+  prime.cppm
+  ansi.cppm
+  file_stream.cppm
+  fiber.cppm
+  binary_stream_writer.cppm
+  memory_stream.cppm
   log_file_writer.cppm
+  memory_reader.cppm
   init_done.cppm
   log.cppm
-  memory_stream.cppm
-  prime.cppm
-  multiprecision.cppm
-  memory_reader.cppm
-  sha1.cppm
+  file_util.cppm
+  deflate_stream.cppm
   memory_writer.cppm
-  socket.cppm
+  process.cppm
+  multiprecision.cppm
+  rand.cppm
+  sha1.cppm
+  path.cppm
   stream.cppm
+  socket.cppm
   system.cppm
   text_util.cppm
   time.cppm
@@ -64,36 +64,36 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   util.cppm
   uuid.cppm
   Compiling...
-  ansi.cppm
-  compression.cppm
-  fiber.cppm
-  socket.cppm
-  prime.cppm
-  sha1.cppm
-  handle.cppm
   code_formatter.cppm
-  multiprecision.cppm
-  file_util.cppm
   log.cppm
   path.cppm
   log_file_writer.cppm
-  init_done.cppm
-  process.cppm
-  rand.cppm
-  text_util.cppm
-  stream.cppm
-  uuid.cppm
   system.cppm
+  prime.cppm
+  fiber.cppm
+  ansi.cppm
+  handle.cppm
+  file_util.cppm
+  compression.cppm
+  multiprecision.cppm
+  init_done.cppm
+  socket.cppm
+  stream.cppm
+  rand.cppm
   time.cppm
-  binary_stream_reader.cppm
-  memory_stream.cppm
-  binary_stream_writer.cppm
-  buffered_stream.cppm
+  process.cppm
+  sha1.cppm
+  uuid.cppm
+  text_util.cppm
+  json.cppm
   memory_reader.cppm
   memory_writer.cppm
-  file_stream.cppm
-  json.cppm
   deflate_stream.cppm
+  buffered_stream.cppm
+  file_stream.cppm
+  memory_stream.cppm
+  binary_stream_reader.cppm
+  binary_stream_writer.cppm
   unicode.cppm
   util.cppm
   ansi.cpp
@@ -129,27 +129,27 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   zlib_interface.c
   util.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\utild.lib
   Scanning sources for module dependencies...
-  keyword.cppm
-  trivial_lexer.cppm
-  lexer.cppm
-  lib.cppm
-  std.ixx
+  lexeme.cppm
+  span.cppm
   std.compat.ixx
+  token.cppm
+  lib.cppm
+  parsing_exception.cppm
   source_pos.cppm
   parsing_log.cppm
-  span.cppm
-  lexeme.cppm
-  parsing_exception.cppm
+  keyword.cppm
+  lexer.cppm
+  trivial_lexer.cppm
   xml_parsing_log.cppm
-  token.cppm
+  std.ixx
   Compiling...
   parsing_log.cppm
-  lexeme.cppm
-  source_pos.cppm
-  std.ixx
   span.cppm
-  xml_parsing_log.cppm
+  source_pos.cppm
+  lexeme.cppm
+  std.ixx
   parsing_exception.cppm
+  xml_parsing_log.cppm
   token.cppm
   keyword.cppm
   lexer.cppm
@@ -167,30 +167,30 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   xml_parsing_log.cpp
   lexer.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\lexerd.lib
   Scanning sources for module dependencies...
-  std.compat.ixx
   match.cppm
-  range.cppm
+  value.cppm
   parser.cppm
+  std.compat.ixx
   std.ixx
-  value.cppm
+  range.cppm
   Compiling...
-  match.cppm
   range.cppm
   value.cppm
   std.ixx
+  match.cppm
   parser.cppm
   std.compat.ixx
   parser.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\parserd.lib
   Scanning sources for module dependencies...
-  rules.cppm
   xml.cppm
+  xml_content_handler.cppm
+  rules.cppm
   xml_parser.cppm
   xml_parser_interface.cppm
   xml_processor.cppm
-  xml_content_handler.cppm
   Compiling...
-  xml_content_handler.cppm
   rules.cppm
+  xml_content_handler.cppm
   xml_parser_interface.cppm
   xml_processor.cppm
   xml_parser.cppm
@@ -203,42 +203,42 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   xml.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\xmld.lib
   Scanning sources for module dependencies...
   axis.cppm
-  cdata_section.cppm
-  processing_instruction.cppm
-  dom.cppm
-  visitor.cppm
-  index.cppm
-  text.cppm
-  character_data.cppm
-  document_fragment.cppm
-  document.cppm
-  attribute_node.cppm
   element.cppm
-  error.cppm
-  entity_reference.cppm
   comment.cppm
+  parser.cppm
+  index.cppm
+  document.cppm
+  character_data.cppm
+  cdata_section.cppm
+  attribute_node.cppm
+  document_fragment.cppm
+  entity_reference.cppm
+  dom.cppm
+  text.cppm
+  processing_instruction.cppm
+  node.cppm
+  error.cppm
   node_operation.cppm
   parent_node.cppm
-  node.cppm
-  parser.cppm
+  visitor.cppm
   Compiling...
+  error.cppm
+  index.cppm
   axis.cppm
   visitor.cppm
-  error.cppm
-  index.cppm
   node.cppm
   node_operation.cppm
   parent_node.cppm
-  processing_instruction.cppm
   attribute_node.cppm
+  processing_instruction.cppm
   character_data.cppm
   element.cppm
   document_fragment.cppm
+  text.cppm
   comment.cppm
   entity_reference.cppm
-  text.cppm
-  document.cppm
   cdata_section.cppm
+  document.cppm
   parser.cppm
   dom.cppm
   attribute_node.cpp
@@ -261,28 +261,28 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   dom.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\domd.lib
   Scanning sources for module dependencies...
   xpath.cppm
-  xpath_keywords.cppm
+  xpath_token_value_parsers.cppm
   xpath_lexer.cppm
-  xpath_function.cppm
-  xpath_tokens.cppm
-  xpath_class_map.cppm
-  xpath_context.cppm
-  xpath_evaluate.cppm
-  xpath_expr.cppm
-  xpath_object.cppm
+  xpath_keywords.cppm
   xpath_parser.cppm
-  xpath_token_value_parsers.cppm
-  Compiling...
   xpath_class_map.cppm
-  xpath_token_value_parsers.cppm
-  xpath_lexer.cppm
-  xpath_keywords.cppm
-  xpath_context.cppm
-  xpath_object.cppm
-  xpath_tokens.cppm
-  xpath_expr.cppm
   xpath_function.cppm
+  xpath_context.cppm
   xpath_evaluate.cppm
+  xpath_expr.cppm
+  xpath_tokens.cppm
+  xpath_object.cppm
+  Compiling...
+  xpath_context.cppm
+  xpath_keywords.cppm
+  xpath_lexer.cppm
+  xpath_token_value_parsers.cppm
+  xpath_class_map.cppm
+  xpath_tokens.cppm
+  xpath_object.cppm
+  xpath_evaluate.cppm
+  xpath_function.cppm
+  xpath_expr.cppm
   xpath_parser.cppm
   xpath.cppm
   xpath_class_map.cpp
@@ -298,60 +298,60 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   xpath_token_value_parsers.cpp
   xpath.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\xpathd.lib
   Scanning sources for module dependencies...
-  application.cppm
-  clipboard.cppm
-  color.cppm
-  check_box.cppm
-  edit_command_list.cppm
-  file_util.cppm
-  base.cppm
   ansi.cppm
+  check_box.cppm
+  dialog.cppm
+  combo_box.cppm
+  color.cppm
+  event.cppm
+  application.cppm
+  bordered_control.cppm
+  clipboard.cppm
+  base.cppm
+  binary_resource_ptr.cppm
+  component.cppm
+  buffer.cppm
+  console.cppm
+  edit_command.cppm
+  environment.cppm
+  control.cppm
   button.cppm
   container.cppm
-  bordered_control.cppm
-  combo_box.cppm
-  binary_resource_ptr.cppm
-  buffer.cppm
-  component.cppm
-  edit_command.cppm
-  cursor.cppm
-  control.cppm
-  console.cppm
-  container_control.cppm
-  dialog.cppm
   graphics.cppm
-  event.cppm
-  environment.cppm
-  icon.cppm
+  file_util.cppm
+  container_control.cppm
+  cursor.cppm
+  edit_command_list.cppm
   group_box.cppm
-  icon_list_view.cppm
-  init_done.cppm
   image_list.cppm
+  init_done.cppm
+  icon_list_view.cppm
+  icon.cppm
   installation.cppm
-  log_view.cppm
-  menu.cppm
-  padded_control.cppm
-  metrics.cppm
-  manual_reset_event.cppm
   keys.cppm
-  label.cppm
-  list_box.cppm
-  message_box.cppm
-  list_view.cppm
-  path_view.cppm
-  panel.cppm
-  progress_bar.cppm
-  radio_button.cppm
-  shell.cppm
-  text_view.cppm
-  registry.cppm
-  resource_manager.cppm
+  padded_control.cppm
   scrollable_control.cppm
+  list_box.cppm
+  label.cppm
+  registry.cppm
+  list_view.cppm
+  radio_button.cppm
+  panel.cppm
+  metrics.cppm
+  message_box.cppm
+  shell.cppm
+  menu.cppm
+  path_view.cppm
+  manual_reset_event.cppm
+  log_view.cppm
+  resource_manager.cppm
+  progress_bar.cppm
+  source_code_view.cppm
   split_container.cppm
   status_bar.cppm
-  source_code_view.cppm
   tab_control.cppm
   text_box.cppm
+  text_view.cppm
   tool_bar.cppm
   tool_tip.cppm
   tree_view.cppm
@@ -360,63 +360,63 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   wing.cppm
   Compiling...
   binary_resource_ptr.cppm
-  keys.cppm
-  dialog.cppm
   shell.cppm
-  init_done.cppm
   manual_reset_event.cppm
-  message_box.cppm
-  component.cppm
+  init_done.cppm
   window_manager.cppm
-  resource_manager.cppm
-  file_util.cppm
   event.cppm
+  component.cppm
   container.cppm
+  file_util.cppm
+  dialog.cppm
   edit_command_list.cppm
+  message_box.cppm
+  keys.cppm
+  resource_manager.cppm
   base.cppm
-  cursor.cppm
   icon.cppm
-  clipboard.cppm
-  registry.cppm
-  graphics.cppm
+  cursor.cppm
   application.cppm
-  installation.cppm
+  clipboard.cppm
+  graphics.cppm
+  registry.cppm
   environment.cppm
   image_list.cppm
-  metrics.cppm
-  buffer.cppm
-  color.cppm
   control.cppm
+  color.cppm
+  buffer.cppm
+  metrics.cppm
+  installation.cppm
   ansi.cppm
-  status_bar.cppm
-  container_control.cppm
-  text_box.cppm
-  text_view.cppm
-  list_view.cppm
-  bordered_control.cppm
-  list_box.cppm
-  progress_bar.cppm
   icon_list_view.cppm
-  padded_control.cppm
-  label.cppm
-  path_view.cppm
-  tool_tip.cppm
-  scrollable_control.cppm
   menu.cppm
-  window.cppm
-  panel.cppm
-  split_container.cppm
-  tab_control.cppm
-  tool_bar.cppm
-  edit_command.cppm
+  status_bar.cppm
+  scrollable_control.cppm
+  text_view.cppm
+  bordered_control.cppm
+  label.cppm
+  list_view.cppm
+  container_control.cppm
+  progress_bar.cppm
+  list_box.cppm
+  path_view.cppm
+  text_box.cppm
+  tool_tip.cppm
+  padded_control.cppm
   combo_box.cppm
+  tree_view.cppm
+  panel.cppm
+  window.cppm
+  tool_bar.cppm
+  log_view.cppm
+  edit_command.cppm
+  split_container.cppm
   console.cppm
   source_code_view.cppm
-  tree_view.cppm
-  log_view.cppm
+  tab_control.cppm
   button.cppm
-  radio_button.cppm
   check_box.cppm
+  radio_button.cppm
   group_box.cppm
   wing.cppm
   ansi.cpp
@@ -480,27 +480,27 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   window_manager.cpp
   wing.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\wingd.lib
   Scanning sources for module dependencies...
-  context.cppm
   algorithm.cppm
+  context.cppm
   rex_parser.cppm
   rex_lexer.cppm
-  rex_class_map.cppm
   symbol.cppm
-  match.cppm
+  rex_class_map.cppm
   nfa.cppm
-  token_value_parsers.cppm
-  rex_tokens.cppm
+  match.cppm
   rex.cppm
+  rex_tokens.cppm
+  token_value_parsers.cppm
   Compiling...
-  algorithm.cppm
-  symbol.cppm
-  rex_lexer.cppm
+  match.cppm
+  rex_tokens.cppm
   rex_class_map.cppm
   token_value_parsers.cppm
-  rex_tokens.cppm
-  match.cppm
-  context.cppm
+  symbol.cppm
+  algorithm.cppm
+  rex_lexer.cppm
   nfa.cppm
+  context.cppm
   rex_parser.cppm
   rex.cppm
   algorithm.cpp
@@ -516,10 +516,10 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   rex.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\rexd.lib
   Scanning sources for module dependencies...
   config.cppm
-  wingstall_config.cppm
+  std.compat.ixx
   build_props.cppm
   std.ixx
-  std.compat.ixx
+  wingstall_config.cppm
   Compiling...
   config.cppm
   build_props.cppm
@@ -530,40 +530,40 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   config.cpp
   wingstall_config.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\wingstall_configd.lib
   Scanning sources for module dependencies...
-  component.cppm
-  links.cppm
-  preinstall_component.cppm
-  file.cppm
-  installation_component.cppm
-  info.cppm
-  environment.cppm
   directory.cppm
-  path_matcher.cppm
-  uninstall_bin_file.cppm
   make_setup.cppm
-  package.cppm
-  node.cppm
-  variable.cppm
   uninstall_component.cppm
-  uninstall_exe_file.cppm
   wing_package.cppm
-  Compiling...
-  make_setup.cppm
-  info.cppm
-  node.cppm
-  path_matcher.cppm
   file.cppm
-  variable.cppm
+  uninstall_bin_file.cppm
   environment.cppm
+  component.cppm
+  package.cppm
+  uninstall_exe_file.cppm
+  installation_component.cppm
   links.cppm
+  path_matcher.cppm
+  preinstall_component.cppm
+  info.cppm
+  variable.cppm
+  node.cppm
+  Compiling...
+  info.cppm
+  make_setup.cppm
+  path_matcher.cppm
+  node.cppm
   directory.cppm
+  environment.cppm
+  variable.cppm
+  links.cppm
+  file.cppm
+  component.cppm
   uninstall_bin_file.cppm
   uninstall_exe_file.cppm
-  component.cppm
   installation_component.cppm
-  uninstall_component.cppm
   preinstall_component.cppm
   package.cppm
+  uninstall_component.cppm
   wing_package.cppm
   component.cpp
   directory.cpp
@@ -583,23 +583,23 @@ MSBuild version 17.11.9+a69bbaaf5 for .NET Framework
   variable.cpp
   wing_package.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\wing_packaged.lib
   Scanning sources for module dependencies...
-  uninstall_window.cppm
   install_window.cppm
-  std.ixx
-  message_dialog.cppm
-  action_dialog.cppm
-  status_message.cppm
   wing_gui.cppm
+  action_dialog.cppm
+  std.ixx
+  status_message.cppm
+  uninstall_window.cppm
   std.compat.ixx
+  message_dialog.cppm
   Compiling...
   action_dialog.cppm
+  std.ixx
   message_dialog.cppm
   status_message.cppm
-  std.ixx
   install_window.cppm
+  std.compat.ixx
   uninstall_window.cppm
   wing_gui.cppm
-  std.compat.ixx
   action_dialog.cpp
   install_window.cpp
   message_dialog.cpp

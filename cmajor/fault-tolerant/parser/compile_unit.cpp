@@ -163,7 +163,7 @@ std::unique_ptr<cmajor::fault::tolerant::ast::CompileUnitNode> ParseCompileUnit(
 
 std::unique_ptr<cmajor::fault::tolerant::ast::CompileUnitNode> ParseCmajorCompileUnit(const std::string& cmFilePath)
 {
-    std::string sourceFile = util::ReadFile(cmFilePath);
+    std::string sourceFile = util::ReadFile(cmFilePath, true);
     std::u16string content = util::ToUtf16(sourceFile);
     Lexer lexer = cmajor::lexer::MakeLexer(content.c_str(), content.c_str() + content.length(), cmFilePath);
     Context context;

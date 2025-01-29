@@ -3705,7 +3705,7 @@ void MainWindow::Search(SearchExtent extent, const std::vector<std::string>& fil
         }
         else
         {
-            std::string content = util::ReadFile(fileName);
+            std::string content = util::ReadFile(fileName, true);
             readLines = wing::SplitTextIntoLines(util::ToUtf32(content));
         }
         int n = lns->size();

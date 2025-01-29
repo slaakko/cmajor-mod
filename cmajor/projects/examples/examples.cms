@@ -10,6 +10,6 @@ project <HexDump/hexdump.cmp>;
 project <JsonPhilosophers/JsonPhilosophers.cmp>;
 project <XPathTester/XPathTester.cmp>;
 activeProject Hello;
-activeBackEnd=cpp;
+activeBackEnd=llvm;
 activeConfig=debug;
 activeOptLevel=2;

@@ -203,6 +203,19 @@
    </include>
   </directory>
  </component>
+ <component name="rc">
+  <directory name="rc"/>
+ </component>
+ <component name="res">
+  <directory name="res">
+   <exclude cascade="true" dir="x64"/>
+   <exclude file="res.vcxproj"/>
+   <exclude file="res.vcxproj.filters"/>
+   <exclude file="res.vcxproj.user"/>
+   <exclude file="resource_processor.cpp"/>
+   <exclude file="resource_processor.cppm"/>
+  </directory>
+ </component>
  <environment>
   <variable name="CMAJOR_ROOT" value="$TARGET_ROOT_DIR$"/>
   <pathDirectory value="$TARGET_ROOT_DIR$/bin"/>
