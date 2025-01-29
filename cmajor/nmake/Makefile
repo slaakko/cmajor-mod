@@ -68,8 +68,8 @@ tools:
 	
 examples:
 	echo examples:
-	cmc -v ../projects/examples/examples.cms
-	cmc -v -c=release ../projects/examples/examples.cms
+	cmc -sv ../projects/examples/examples.cms
+	cmc -sv -c=release ../projects/examples/examples.cms
 
 install:
 	cd ..\..\inst && inst.bat
