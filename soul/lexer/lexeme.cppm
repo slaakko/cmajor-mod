@@ -21,7 +21,7 @@ struct Lexeme
 };
 
 template<typename Char>
-inline bool operator==(const Lexeme<Char>& left, const Lexeme<Char>& right)
+bool operator==(const Lexeme<Char>& left, const Lexeme<Char>& right)
 {
     if (left.end - left.begin != right.end - right.begin) return false;
     const Char* p = left.begin;
@@ -36,7 +36,7 @@ inline bool operator==(const Lexeme<Char>& left, const Lexeme<Char>& right)
 }
 
 template<typename Char>
-inline bool operator<(const Lexeme<Char>& left, const Lexeme<Char>& right)
+bool operator<(const Lexeme<Char>& left, const Lexeme<Char>& right)
 {
     const Char* p = left.begin;
     const Char* q = right.begin;
@@ -52,6 +52,22 @@ inline bool operator<(const Lexeme<Char>& left, const Lexeme<Char>& right)
 }
 
 template<typename Char>
+bool CaseInsensitiveCompare(const Lexeme<Char>& left, const Lexeme<Char>& right)
+{
+    const Char* p = left.begin;
+    const Char* q = right.begin;
+    while (p != left.end && q != right.end)
+    {
+        if (std::tolower(*p) < std::tolower(*q)) return true;
+        if (std::tolower(*p) > std::tolower(*q)) return false;
+        ++p;
+        ++q;
+    }
+    if (p == left.end) return q != right.end;
+    return false;
+}
+
+template<typename Char>
 struct LexemeCompare
 {
     bool operator()(const Lexeme<Char>& left, const Lexeme<Char>& right) const
@@ -59,6 +75,16 @@ struct LexemeCompare
         return left < right;
     }
 };
+
+template<typename Char>
+struct CaseInsensitiveLexemeCompare
+{
+    bool operator()(const Lexeme<Char>& left, const Lexeme<Char>& right) const
+    {
+        return CaseInsensitiveCompare(left, right);
+    }
+};
+
 
 } // namespace soul::lexer
 

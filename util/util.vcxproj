@@ -180,6 +180,8 @@
     <ClCompile Include="compression.cppm" />
     <ClCompile Include="container.cpp" />
     <ClCompile Include="container.cppm" />
+    <ClCompile Include="crc32.cpp" />
+    <ClCompile Include="crc32.cppm" />
     <ClCompile Include="deflate_stream.cpp" />
     <ClCompile Include="deflate_stream.cppm" />
     <ClCompile Include="error.cpp" />
@@ -197,6 +199,14 @@
     <ClCompile Include="intrusive_list.cppm" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="json.cppm" />
+    <ClCompile Include="little_endian_binary_stream_reader.cpp" />
+    <ClCompile Include="little_endian_binary_stream_reader.cppm" />
+    <ClCompile Include="little_endian_binary_stream_writer.cpp" />
+    <ClCompile Include="little_endian_binary_stream_writer.cppm" />
+    <ClCompile Include="little_endian_memory_reader.cpp" />
+    <ClCompile Include="little_endian_memory_reader.cppm" />
+    <ClCompile Include="little_endian_memory_writer.cpp" />
+    <ClCompile Include="little_endian_memory_writer.cppm" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="log.cppm" />
     <ClCompile Include="log_file_writer.cpp" />

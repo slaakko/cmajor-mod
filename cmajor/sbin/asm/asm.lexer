@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.sbin.assembly.lexer;
+
+import cmajor.sbin.assembly.token;
+import cmajor.sbin.assembly.keyword;
+import cmajor.sbin.assembly.expr;
+
+lexer AssemblyLexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{newline}" { return NEWLINE; }
+        "{symbol}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return SYMBOL; else return kw; }
+        "{hexnum}" { return HEXNUMBER; }
+        "{real}" { return REAL; }
+        "{integer}" { return INTEGER; }
+        "{string}" { return STRING; }
+        "," { return COMMA; }
+        ":" { return COLON; }
+        "=" { return ASSIGN; }
+        "\." { return DOT; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\+" { return PLUS; }
+        "\-" { return MINUS; }
+        "\*" { return TIMES; }
+    }
+}

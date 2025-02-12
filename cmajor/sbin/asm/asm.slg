@@ -1,0 +1,5 @@
+project cmajor.sbin.assembly.lexer;
+tokens <asm.token>;
+keywords <asm.keyword>;
+expressions <asm.expr>;
+lexer <asm.lexer>;

@@ -34,7 +34,11 @@ template<typename Char>
 class KeywordMap
 {
 public:
-    constexpr KeywordMap(const soul::lexer::Keyword<Char>* keywords_) : keywords(keywords_)
+    constexpr KeywordMap(const soul::lexer::Keyword<Char>* keywords_) : 
+        caseInsensitive(false),
+        keywords(keywords_), 
+        keywordMap(LexemeCompare<Char>()), 
+        caseInsensitiveKeywordMap(CaseInsensitiveLexemeCompare<Char>())
     {
         const soul::lexer::Keyword<Char>* kw = keywords;
         while (kw->str)
@@ -46,19 +50,48 @@ public:
     }
     int64_t GetKeywordToken(const Lexeme<Char>& lexeme) const
     {
-        auto it = keywordMap.find(lexeme);
-        if (it != keywordMap.cend())
+        if (caseInsensitive)
         {
-            return it->second;
+            auto it = caseInsensitiveKeywordMap.find(lexeme);
+            if (it != caseInsensitiveKeywordMap.cend())
+            {
+                return it->second;
+            }
+            else
+            {
+                return INVALID_TOKEN;
+            }
         }
         else
         {
-            return INVALID_TOKEN;
+            auto it = keywordMap.find(lexeme);
+            if (it != keywordMap.cend())
+            {
+                return it->second;
+            }
+            else
+            {
+                return INVALID_TOKEN;
+            }
+        }
+    }
+    void SetCaseInsensitive()
+    {
+        if (caseInsensitive) return;
+        caseInsensitive = true;
+        const soul::lexer::Keyword<Char>* kw = keywords;
+        while (kw->str)
+        {
+            Lexeme<Char> lexeme(kw->str, StrEnd(kw->str));
+            caseInsensitiveKeywordMap[lexeme] = kw->tokenID;
+            ++kw;
         }
     }
 private:
+    bool caseInsensitive;
     const soul::lexer::Keyword<Char>* keywords;
     std::map<Lexeme<Char>, int64_t, LexemeCompare<Char>> keywordMap;
+    std::map<Lexeme<Char>, int64_t, CaseInsensitiveLexemeCompare<Char>> caseInsensitiveKeywordMap;
 };
 
 } // namespace soul::lexer

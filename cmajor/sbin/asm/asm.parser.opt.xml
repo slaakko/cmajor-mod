@@ -1,0 +1,1320 @@
+<parserFile>
+ <grammar name="AsmParser">
+  <rule first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}" name="AsmFile">
+   <action first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}">
+    <group first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}">
+     <sequence first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}">
+      <sequence first="{#, DOT, EXTRN, NEWLINE, PUBLIC}">
+       <sequence first="{#, DOT, EXTRN, NEWLINE, PUBLIC}">
+        <sequence first="{#, EXTRN, NEWLINE, PUBLIC}">
+         <action first="{#}">
+          <empty first="{#}"/>
+         </action>
+         <optional first="{#, EXTRN, NEWLINE, PUBLIC}">
+          <nonterminal first="{#, EXTRN, NEWLINE, PUBLIC}" ruleName="DeclarationSection"/>
+         </optional>
+        </sequence>
+        <optional first="{#, DOT}">
+         <nonterminal first="{DOT}" ruleName="DataSection"/>
+        </optional>
+       </sequence>
+       <optional first="{#, DOT}">
+        <nonterminal first="{DOT}" ruleName="CodeSection"/>
+       </optional>
+      </sequence>
+      <nonterminal first="{#, END, NEWLINE}" ruleName="End"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{NEWLINE}" name="EmptyLine">
+   <token first="{NEWLINE}" name="NEWLINE"/>
+  </rule>
+  <rule first="{#, END, NEWLINE}" name="End">
+   <sequence first="{#, END, NEWLINE}">
+    <sequence first="{#, END, NEWLINE}">
+     <sequence first="{#, END, NEWLINE}">
+      <kleene first="{#, NEWLINE}">
+       <nonterminal first="{NEWLINE}" ruleName="EmptyLine"/>
+      </kleene>
+      <token first="{END}" name="END"/>
+     </sequence>
+     <token first="{NEWLINE}" name="NEWLINE"/>
+    </sequence>
+    <kleene first="{#, NEWLINE}">
+     <nonterminal first="{NEWLINE}" ruleName="EmptyLine"/>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{#, EXTRN, NEWLINE, PUBLIC}" name="DeclarationSection">
+   <kleene first="{#, EXTRN, NEWLINE, PUBLIC}">
+    <group first="{EXTRN, NEWLINE, PUBLIC}">
+     <switch first="{EXTRN, NEWLINE, PUBLIC}">
+      <case first="{EXTRN, PUBLIC}">
+       <sequence first="{EXTRN, PUBLIC}">
+        <action first="{EXTRN, PUBLIC}">
+         <nonterminal first="{EXTRN, PUBLIC}" ruleName="Declaration"/>
+        </action>
+        <token first="{NEWLINE}" name="NEWLINE"/>
+       </sequence>
+      </case>
+      <case first="{NEWLINE}">
+       <nonterminal first="{NEWLINE}" ruleName="EmptyLine"/>
+      </case>
+     </switch>
+    </group>
+   </kleene>
+  </rule>
+  <rule first="{EXTRN, PUBLIC}" name="Declaration">
+   <action first="{EXTRN, PUBLIC}">
+    <group first="{EXTRN, PUBLIC}">
+     <sequence first="{EXTRN, PUBLIC}">
+      <sequence first="{EXTRN, PUBLIC}">
+       <nonterminal first="{EXTRN, PUBLIC}" ruleName="SymbolKind"/>
+       <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
+      </sequence>
+      <group first="{#, COLON}">
+       <choice first="{#, COLON}">
+        <action first="{COLON}">
+         <nonterminal first="{COLON}" ruleName="TypeField"/>
+        </action>
+        <action first="{#}">
+         <empty first="{#}"/>
+        </action>
+       </choice>
+      </group>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{EXTRN, PUBLIC}" name="SymbolKind">
+   <switch first="{EXTRN, PUBLIC}">
+    <case first="{PUBLIC}">
+     <action first="{PUBLIC}">
+      <token first="{PUBLIC}" name="PUBLIC"/>
+     </action>
+    </case>
+    <case first="{EXTRN}">
+     <action first="{EXTRN}">
+      <token first="{EXTRN}" name="EXTRN"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{SYMBOL}" name="Symbol">
+   <action first="{SYMBOL}">
+    <token first="{SYMBOL}" name="SYMBOL"/>
+   </action>
+  </rule>
+  <rule first="{COLON}" name="TypeField">
+   <sequence first="{COLON}">
+    <token first="{COLON}" name="COLON"/>
+    <action first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+     <nonterminal first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" ruleName="Type"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" name="Type">
+   <switch first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+    <case first="{BYTE}">
+     <action first="{BYTE}">
+      <token first="{BYTE}" name="BYTE"/>
+     </action>
+    </case>
+    <case first="{WORD}">
+     <action first="{WORD}">
+      <token first="{WORD}" name="WORD"/>
+     </action>
+    </case>
+    <case first="{DWORD}">
+     <action first="{DWORD}">
+      <token first="{DWORD}" name="DWORD"/>
+     </action>
+    </case>
+    <case first="{QWORD}">
+     <action first="{QWORD}">
+      <token first="{QWORD}" name="QWORD"/>
+     </action>
+    </case>
+    <case first="{OWORD}">
+     <action first="{OWORD}">
+      <token first="{OWORD}" name="OWORD"/>
+     </action>
+    </case>
+    <case first="{PROC}">
+     <action first="{PROC}">
+      <token first="{PROC}" name="PROC"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{DOT}" name="DataSection">
+   <sequence first="{DOT}">
+    <nonterminal first="{DOT}" ruleName="DataSectionHeader"/>
+    <kleene first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <group first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+      <choice first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+       <choice first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+        <action first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+         <nonterminal first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="DataDefinitionLine"/>
+        </action>
+        <nonterminal first="{SYMBOL}" ruleName="MacroAssignmentLine"/>
+       </choice>
+       <nonterminal first="{NEWLINE}" ruleName="EmptyLine"/>
+      </choice>
+     </group>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{DOT}" name="DataSectionHeader">
+   <sequence first="{DOT}">
+    <sequence first="{DOT}">
+     <token first="{DOT}" name="DOT"/>
+     <token first="{DATA}" name="DATA"/>
+    </sequence>
+    <token first="{NEWLINE}" name="NEWLINE"/>
+   </sequence>
+  </rule>
+  <rule first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="DataDefinitionLine">
+   <action first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <group first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <sequence first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+      <nonterminal first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="DataDefinition"/>
+      <token first="{NEWLINE}" name="NEWLINE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SYMBOL}" name="MacroAssignmentLine">
+   <action first="{SYMBOL}">
+    <group first="{SYMBOL}">
+     <sequence first="{SYMBOL}">
+      <sequence first="{SYMBOL}">
+       <sequence first="{SYMBOL}">
+        <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Expr"/>
+      </sequence>
+      <token first="{NEWLINE}" name="NEWLINE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="DataDefinition">
+   <action first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <group first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <sequence first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+      <action first="{#, DB, DD, DQ, DW, REAL4, REAL8, SYMBOL}">
+       <group first="{#, DB, DD, DQ, DW, REAL4, REAL8, SYMBOL}">
+        <sequence first="{#, DB, DD, DQ, DW, REAL4, REAL8, SYMBOL}">
+         <optional first="{#, SYMBOL}">
+          <nonterminal first="{SYMBOL}" ruleName="Label"/>
+         </optional>
+         <nonterminal first="{DB, DD, DQ, DW, REAL4, REAL8}" ruleName="DataInst"/>
+        </sequence>
+       </group>
+      </action>
+      <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="OperandList"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SYMBOL}" name="Label">
+   <action first="{SYMBOL}">
+    <group first="{SYMBOL}">
+     <sequence first="{SYMBOL}">
+      <action first="{SYMBOL}">
+       <token first="{SYMBOL}" name="SYMBOL"/>
+      </action>
+      <optional first="{#, COLON}">
+       <group first="{COLON}">
+        <sequence first="{COLON}">
+         <token first="{COLON}" name="COLON"/>
+         <optional first="{#, NEWLINE}">
+          <token first="{NEWLINE}" name="NEWLINE"/>
+         </optional>
+        </sequence>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{DB, DD, DQ, DW, REAL4, REAL8}" name="DataInst">
+   <switch first="{DB, DD, DQ, DW, REAL4, REAL8}">
+    <case first="{DB}">
+     <action first="{DB}">
+      <token first="{DB}" name="DB"/>
+     </action>
+    </case>
+    <case first="{DW}">
+     <action first="{DW}">
+      <token first="{DW}" name="DW"/>
+     </action>
+    </case>
+    <case first="{DD}">
+     <action first="{DD}">
+      <token first="{DD}" name="DD"/>
+     </action>
+    </case>
+    <case first="{DQ}">
+     <action first="{DQ}">
+      <token first="{DQ}" name="DQ"/>
+     </action>
+    </case>
+    <case first="{REAL4}">
+     <action first="{REAL4}">
+      <token first="{REAL4}" name="REAL4"/>
+     </action>
+    </case>
+    <case first="{REAL8}">
+     <action first="{REAL8}">
+      <token first="{REAL8}" name="REAL8"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="OperandList">
+   <sequence first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Operand"/>
+    </action>
+    <kleene first="{#, COMMA}">
+     <group first="{COMMA}">
+      <sequence first="{COMMA}">
+       <token first="{COMMA}" name="COMMA"/>
+       <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+        <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Operand"/>
+       </action>
+      </sequence>
+     </group>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="Operand">
+   <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Expr"/>
+   </action>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="Expr">
+   <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="BinaryExpr"/>
+   </action>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="BinaryExpr">
+   <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <group first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <sequence first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+      <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+       <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="UnaryExpr"/>
+      </action>
+      <kleene first="{#, MINUS, PLUS, TIMES}">
+       <group first="{MINUS, PLUS, TIMES}">
+        <sequence first="{MINUS, PLUS, TIMES}">
+         <nonterminal first="{MINUS, PLUS, TIMES}" ruleName="BinaryOp"/>
+         <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+          <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="UnaryExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{MINUS, PLUS, TIMES}" name="BinaryOp">
+   <switch first="{MINUS, PLUS, TIMES}">
+    <case first="{PLUS}">
+     <action first="{PLUS}">
+      <token first="{PLUS}" name="PLUS"/>
+     </action>
+    </case>
+    <case first="{MINUS}">
+     <action first="{MINUS}">
+      <token first="{MINUS}" name="MINUS"/>
+     </action>
+    </case>
+    <case first="{TIMES}">
+     <action first="{TIMES}">
+      <token first="{TIMES}" name="TIMES"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="UnaryExpr">
+   <switch first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <case first="{MINUS, PLUS}">
+     <sequence first="{MINUS, PLUS}">
+      <nonterminal first="{MINUS, PLUS}" ruleName="UnaryOp"/>
+      <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+       <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="UnaryExpr"/>
+      </action>
+     </sequence>
+    </case>
+    <case first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, OWORD, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, OWORD, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+      <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, OWORD, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="PrimaryExpr"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{MINUS, PLUS}" name="UnaryOp">
+   <switch first="{MINUS, PLUS}">
+    <case first="{PLUS}">
+     <action first="{PLUS}">
+      <token first="{PLUS}" name="PLUS"/>
+     </action>
+    </case>
+    <case first="{MINUS}">
+     <action first="{MINUS}">
+      <token first="{MINUS}" name="MINUS"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, OWORD, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="PrimaryExpr">
+   <switch first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, OWORD, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <case first="{LBRACKET}">
+     <action first="{LBRACKET}">
+      <nonterminal first="{LBRACKET}" ruleName="ContentExpr"/>
+     </action>
+    </case>
+    <case first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+     <action first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+      <nonterminal first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" ruleName="SizeExpr"/>
+     </action>
+    </case>
+    <case first="{LPAREN}">
+     <action first="{LPAREN}">
+      <nonterminal first="{LPAREN}" ruleName="ParenthesizedExpr"/>
+     </action>
+    </case>
+    <case first="{AH, AL, AX, BH, BL, BP, BPL, BX, CH, CL, CX, DH, DI, DIL, DL, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, RSI, RSP, SI, SIL, SP, SPL, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+     <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, CH, CL, CX, DH, DI, DIL, DL, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, RSI, RSP, SI, SIL, SP, SPL, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+      <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, CH, CL, CX, DH, DI, DIL, DL, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, RSI, RSP, SI, SIL, SP, SPL, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Register"/>
+     </action>
+    </case>
+    <case first="{HEXNUMBER, INTEGER, REAL, STRING}">
+     <action first="{HEXNUMBER, INTEGER, REAL, STRING}">
+      <nonterminal first="{HEXNUMBER, INTEGER, REAL, STRING}" ruleName="Value"/>
+     </action>
+    </case>
+    <case first="{SYMBOL}">
+     <action first="{SYMBOL}">
+      <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{LBRACKET}" name="ContentExpr">
+   <action first="{LBRACKET}">
+    <group first="{LBRACKET}">
+     <sequence first="{LBRACKET}">
+      <sequence first="{LBRACKET}">
+       <token first="{LBRACKET}" name="LBRACKET"/>
+       <action first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+        <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Expr"/>
+       </action>
+      </sequence>
+      <token first="{RBRACKET}" name="RBRACKET"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" name="SizeExpr">
+   <action first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+    <group first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+     <sequence first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+      <nonterminal first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" ruleName="SizePrefix"/>
+      <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Expr"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" name="SizePrefix">
+   <action first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+    <group first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+     <sequence first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}">
+      <nonterminal first="{BYTE, DWORD, OWORD, PROC, QWORD, WORD}" ruleName="Type"/>
+      <token first="{PTR}" name="PTR"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN}" name="ParenthesizedExpr">
+   <action first="{LPAREN}">
+    <group first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <token first="{LPAREN}" name="LPAREN"/>
+       <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="Expr"/>
+      </sequence>
+      <token first="{RPAREN}" name="RPAREN"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AH, AL, AX, BH, BL, BP, BPL, BX, CH, CL, CX, DH, DI, DIL, DL, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, RSI, RSP, SI, SIL, SP, SPL, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" name="Register">
+   <switch first="{AH, AL, AX, BH, BL, BP, BPL, BX, CH, CL, CX, DH, DI, DIL, DL, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, RSI, RSP, SI, SIL, SP, SPL, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+    <case first="{AL}">
+     <action first="{AL}">
+      <token first="{AL}" name="AL"/>
+     </action>
+    </case>
+    <case first="{BL}">
+     <action first="{BL}">
+      <token first="{BL}" name="BL"/>
+     </action>
+    </case>
+    <case first="{CL}">
+     <action first="{CL}">
+      <token first="{CL}" name="CL"/>
+     </action>
+    </case>
+    <case first="{DL}">
+     <action first="{DL}">
+      <token first="{DL}" name="DL"/>
+     </action>
+    </case>
+    <case first="{SIL}">
+     <action first="{SIL}">
+      <token first="{SIL}" name="SIL"/>
+     </action>
+    </case>
+    <case first="{DIL}">
+     <action first="{DIL}">
+      <token first="{DIL}" name="DIL"/>
+     </action>
+    </case>
+    <case first="{BPL}">
+     <action first="{BPL}">
+      <token first="{BPL}" name="BPL"/>
+     </action>
+    </case>
+    <case first="{SPL}">
+     <action first="{SPL}">
+      <token first="{SPL}" name="SPL"/>
+     </action>
+    </case>
+    <case first="{R8B}">
+     <action first="{R8B}">
+      <token first="{R8B}" name="R8B"/>
+     </action>
+    </case>
+    <case first="{R9B}">
+     <action first="{R9B}">
+      <token first="{R9B}" name="R9B"/>
+     </action>
+    </case>
+    <case first="{R10B}">
+     <action first="{R10B}">
+      <token first="{R10B}" name="R10B"/>
+     </action>
+    </case>
+    <case first="{R11B}">
+     <action first="{R11B}">
+      <token first="{R11B}" name="R11B"/>
+     </action>
+    </case>
+    <case first="{R12B}">
+     <action first="{R12B}">
+      <token first="{R12B}" name="R12B"/>
+     </action>
+    </case>
+    <case first="{R13B}">
+     <action first="{R13B}">
+      <token first="{R13B}" name="R13B"/>
+     </action>
+    </case>
+    <case first="{R14B}">
+     <action first="{R14B}">
+      <token first="{R14B}" name="R14B"/>
+     </action>
+    </case>
+    <case first="{R15B}">
+     <action first="{R15B}">
+      <token first="{R15B}" name="R15B"/>
+     </action>
+    </case>
+    <case first="{AH}">
+     <action first="{AH}">
+      <token first="{AH}" name="AH"/>
+     </action>
+    </case>
+    <case first="{BH}">
+     <action first="{BH}">
+      <token first="{BH}" name="BH"/>
+     </action>
+    </case>
+    <case first="{CH}">
+     <action first="{CH}">
+      <token first="{CH}" name="CH"/>
+     </action>
+    </case>
+    <case first="{DH}">
+     <action first="{DH}">
+      <token first="{DH}" name="DH"/>
+     </action>
+    </case>
+    <case first="{AX}">
+     <action first="{AX}">
+      <token first="{AX}" name="AX"/>
+     </action>
+    </case>
+    <case first="{BX}">
+     <action first="{BX}">
+      <token first="{BX}" name="BX"/>
+     </action>
+    </case>
+    <case first="{CX}">
+     <action first="{CX}">
+      <token first="{CX}" name="CX"/>
+     </action>
+    </case>
+    <case first="{DX}">
+     <action first="{DX}">
+      <token first="{DX}" name="DX"/>
+     </action>
+    </case>
+    <case first="{SI}">
+     <action first="{SI}">
+      <token first="{SI}" name="SI"/>
+     </action>
+    </case>
+    <case first="{DI}">
+     <action first="{DI}">
+      <token first="{DI}" name="DI"/>
+     </action>
+    </case>
+    <case first="{BP}">
+     <action first="{BP}">
+      <token first="{BP}" name="BP"/>
+     </action>
+    </case>
+    <case first="{SP}">
+     <action first="{SP}">
+      <token first="{SP}" name="SP"/>
+     </action>
+    </case>
+    <case first="{R8W}">
+     <action first="{R8W}">
+      <token first="{R8W}" name="R8W"/>
+     </action>
+    </case>
+    <case first="{R9W}">
+     <action first="{R9W}">
+      <token first="{R9W}" name="R9W"/>
+     </action>
+    </case>
+    <case first="{R10W}">
+     <action first="{R10W}">
+      <token first="{R10W}" name="R10W"/>
+     </action>
+    </case>
+    <case first="{R11W}">
+     <action first="{R11W}">
+      <token first="{R11W}" name="R11W"/>
+     </action>
+    </case>
+    <case first="{R12W}">
+     <action first="{R12W}">
+      <token first="{R12W}" name="R12W"/>
+     </action>
+    </case>
+    <case first="{R13W}">
+     <action first="{R13W}">
+      <token first="{R13W}" name="R13W"/>
+     </action>
+    </case>
+    <case first="{R14W}">
+     <action first="{R14W}">
+      <token first="{R14W}" name="R14W"/>
+     </action>
+    </case>
+    <case first="{R15W}">
+     <action first="{R15W}">
+      <token first="{R15W}" name="R15W"/>
+     </action>
+    </case>
+    <case first="{EAX}">
+     <action first="{EAX}">
+      <token first="{EAX}" name="EAX"/>
+     </action>
+    </case>
+    <case first="{EBX}">
+     <action first="{EBX}">
+      <token first="{EBX}" name="EBX"/>
+     </action>
+    </case>
+    <case first="{ECX}">
+     <action first="{ECX}">
+      <token first="{ECX}" name="ECX"/>
+     </action>
+    </case>
+    <case first="{EDX}">
+     <action first="{EDX}">
+      <token first="{EDX}" name="EDX"/>
+     </action>
+    </case>
+    <case first="{ESI}">
+     <action first="{ESI}">
+      <token first="{ESI}" name="ESI"/>
+     </action>
+    </case>
+    <case first="{EDI}">
+     <action first="{EDI}">
+      <token first="{EDI}" name="EDI"/>
+     </action>
+    </case>
+    <case first="{EBP}">
+     <action first="{EBP}">
+      <token first="{EBP}" name="EBP"/>
+     </action>
+    </case>
+    <case first="{ESP}">
+     <action first="{ESP}">
+      <token first="{ESP}" name="ESP"/>
+     </action>
+    </case>
+    <case first="{R8D}">
+     <action first="{R8D}">
+      <token first="{R8D}" name="R8D"/>
+     </action>
+    </case>
+    <case first="{R9D}">
+     <action first="{R9D}">
+      <token first="{R9D}" name="R9D"/>
+     </action>
+    </case>
+    <case first="{R10D}">
+     <action first="{R10D}">
+      <token first="{R10D}" name="R10D"/>
+     </action>
+    </case>
+    <case first="{R11D}">
+     <action first="{R11D}">
+      <token first="{R11D}" name="R11D"/>
+     </action>
+    </case>
+    <case first="{R12D}">
+     <action first="{R12D}">
+      <token first="{R12D}" name="R12D"/>
+     </action>
+    </case>
+    <case first="{R13D}">
+     <action first="{R13D}">
+      <token first="{R13D}" name="R13D"/>
+     </action>
+    </case>
+    <case first="{R14D}">
+     <action first="{R14D}">
+      <token first="{R14D}" name="R14D"/>
+     </action>
+    </case>
+    <case first="{R15D}">
+     <action first="{R15D}">
+      <token first="{R15D}" name="R15D"/>
+     </action>
+    </case>
+    <case first="{RAX}">
+     <action first="{RAX}">
+      <token first="{RAX}" name="RAX"/>
+     </action>
+    </case>
+    <case first="{RBX}">
+     <action first="{RBX}">
+      <token first="{RBX}" name="RBX"/>
+     </action>
+    </case>
+    <case first="{RCX}">
+     <action first="{RCX}">
+      <token first="{RCX}" name="RCX"/>
+     </action>
+    </case>
+    <case first="{RDX}">
+     <action first="{RDX}">
+      <token first="{RDX}" name="RDX"/>
+     </action>
+    </case>
+    <case first="{RSI}">
+     <action first="{RSI}">
+      <token first="{RSI}" name="RSI"/>
+     </action>
+    </case>
+    <case first="{RDI}">
+     <action first="{RDI}">
+      <token first="{RDI}" name="RDI"/>
+     </action>
+    </case>
+    <case first="{RBP}">
+     <action first="{RBP}">
+      <token first="{RBP}" name="RBP"/>
+     </action>
+    </case>
+    <case first="{RSP}">
+     <action first="{RSP}">
+      <token first="{RSP}" name="RSP"/>
+     </action>
+    </case>
+    <case first="{R8}">
+     <action first="{R8}">
+      <token first="{R8}" name="R8"/>
+     </action>
+    </case>
+    <case first="{R9}">
+     <action first="{R9}">
+      <token first="{R9}" name="R9"/>
+     </action>
+    </case>
+    <case first="{R10}">
+     <action first="{R10}">
+      <token first="{R10}" name="R10"/>
+     </action>
+    </case>
+    <case first="{R11}">
+     <action first="{R11}">
+      <token first="{R11}" name="R11"/>
+     </action>
+    </case>
+    <case first="{R12}">
+     <action first="{R12}">
+      <token first="{R12}" name="R12"/>
+     </action>
+    </case>
+    <case first="{R13}">
+     <action first="{R13}">
+      <token first="{R13}" name="R13"/>
+     </action>
+    </case>
+    <case first="{R14}">
+     <action first="{R14}">
+      <token first="{R14}" name="R14"/>
+     </action>
+    </case>
+    <case first="{R15}">
+     <action first="{R15}">
+      <token first="{R15}" name="R15"/>
+     </action>
+    </case>
+    <case first="{XMM0}">
+     <action first="{XMM0}">
+      <token first="{XMM0}" name="XMM0"/>
+     </action>
+    </case>
+    <case first="{XMM1}">
+     <action first="{XMM1}">
+      <token first="{XMM1}" name="XMM1"/>
+     </action>
+    </case>
+    <case first="{XMM2}">
+     <action first="{XMM2}">
+      <token first="{XMM2}" name="XMM2"/>
+     </action>
+    </case>
+    <case first="{XMM3}">
+     <action first="{XMM3}">
+      <token first="{XMM3}" name="XMM3"/>
+     </action>
+    </case>
+    <case first="{XMM4}">
+     <action first="{XMM4}">
+      <token first="{XMM4}" name="XMM4"/>
+     </action>
+    </case>
+    <case first="{XMM5}">
+     <action first="{XMM5}">
+      <token first="{XMM5}" name="XMM5"/>
+     </action>
+    </case>
+    <case first="{XMM6}">
+     <action first="{XMM6}">
+      <token first="{XMM6}" name="XMM6"/>
+     </action>
+    </case>
+    <case first="{XMM7}">
+     <action first="{XMM7}">
+      <token first="{XMM7}" name="XMM7"/>
+     </action>
+    </case>
+    <case first="{XMM8}">
+     <action first="{XMM8}">
+      <token first="{XMM8}" name="XMM8"/>
+     </action>
+    </case>
+    <case first="{XMM9}">
+     <action first="{XMM9}">
+      <token first="{XMM9}" name="XMM9"/>
+     </action>
+    </case>
+    <case first="{XMM10}">
+     <action first="{XMM10}">
+      <token first="{XMM10}" name="XMM10"/>
+     </action>
+    </case>
+    <case first="{XMM11}">
+     <action first="{XMM11}">
+      <token first="{XMM11}" name="XMM11"/>
+     </action>
+    </case>
+    <case first="{XMM12}">
+     <action first="{XMM12}">
+      <token first="{XMM12}" name="XMM12"/>
+     </action>
+    </case>
+    <case first="{XMM13}">
+     <action first="{XMM13}">
+      <token first="{XMM13}" name="XMM13"/>
+     </action>
+    </case>
+    <case first="{XMM14}">
+     <action first="{XMM14}">
+      <token first="{XMM14}" name="XMM14"/>
+     </action>
+    </case>
+    <case first="{XMM15}">
+     <action first="{XMM15}">
+      <token first="{XMM15}" name="XMM15"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{HEXNUMBER, INTEGER, REAL, STRING}" name="Value">
+   <switch first="{HEXNUMBER, INTEGER, REAL, STRING}">
+    <case first="{HEXNUMBER}">
+     <action first="{HEXNUMBER}">
+      <token first="{HEXNUMBER}" name="HEXNUMBER"/>
+     </action>
+    </case>
+    <case first="{REAL}">
+     <action first="{REAL}">
+      <token first="{REAL}" name="REAL"/>
+     </action>
+    </case>
+    <case first="{INTEGER}">
+     <action first="{INTEGER}">
+      <token first="{INTEGER}" name="INTEGER"/>
+     </action>
+    </case>
+    <case first="{STRING}">
+     <action first="{STRING}">
+      <token first="{STRING}" name="STRING"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{DOT}" name="CodeSection">
+   <sequence first="{DOT}">
+    <nonterminal first="{DOT}" ruleName="CodeSectionHeader"/>
+    <kleene first="{#, NEWLINE, SYMBOL}">
+     <group first="{NEWLINE, SYMBOL}">
+      <switch first="{NEWLINE, SYMBOL}">
+       <case first="{SYMBOL}">
+        <choice first="{SYMBOL}">
+         <action first="{SYMBOL}">
+          <nonterminal first="{SYMBOL}" ruleName="FunctionDefinition"/>
+         </action>
+         <action first="{SYMBOL}">
+          <nonterminal first="{SYMBOL}" ruleName="MacroAssignmentLine"/>
+         </action>
+        </choice>
+       </case>
+       <case first="{NEWLINE}">
+        <nonterminal first="{NEWLINE}" ruleName="EmptyLine"/>
+       </case>
+      </switch>
+     </group>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{DOT}" name="CodeSectionHeader">
+   <sequence first="{DOT}">
+    <sequence first="{DOT}">
+     <token first="{DOT}" name="DOT"/>
+     <token first="{CODE}" name="CODE"/>
+    </sequence>
+    <token first="{NEWLINE}" name="NEWLINE"/>
+   </sequence>
+  </rule>
+  <rule first="{SYMBOL}" name="FunctionDefinition">
+   <action first="{SYMBOL}">
+    <group first="{SYMBOL}">
+     <sequence first="{SYMBOL}">
+      <sequence first="{SYMBOL}">
+       <action first="{SYMBOL}">
+        <nonterminal first="{SYMBOL}" ruleName="FunctionHeader"/>
+       </action>
+       <nonterminal first="{#, ADD, ADDSD, ADDSS, AH, AL, AND, AX, BH, BL, BP, BPL, BX, BYTE, CALL, CBW, CDQ, CH, CL, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, CX, DB, DD, DH, DI, DIL, DIV, DIVSD, DIVSS, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, IDIV, IMUL, INTEGER, JAE, JE, JMP, JNZ, JZ, LBRACKET, LEA, LPAREN, MINUS, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, OWORD, PLUS, POP, PROC, PUSH, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RET, RSI, RSP, SAR, SETC, SETE, SETL, SHL, SHR, SI, SIL, SP, SPL, STRING, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XOR}" ruleName="FunctionBody"/>
+      </sequence>
+      <action first="{SYMBOL}">
+       <nonterminal first="{SYMBOL}" ruleName="FunctionTrailer"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SYMBOL}" name="FunctionHeader">
+   <action first="{SYMBOL}">
+    <group first="{SYMBOL}">
+     <sequence first="{SYMBOL}">
+      <sequence first="{SYMBOL}">
+       <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
+       <token first="{PROC}" name="PROC"/>
+      </sequence>
+      <token first="{NEWLINE}" name="NEWLINE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SYMBOL}" name="FunctionTrailer">
+   <action first="{SYMBOL}">
+    <group first="{SYMBOL}">
+     <sequence first="{SYMBOL}">
+      <sequence first="{SYMBOL}">
+       <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
+       <token first="{ENDP}" name="ENDP"/>
+      </sequence>
+      <token first="{NEWLINE}" name="NEWLINE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ADD, ADDSD, ADDSS, AH, AL, AND, AX, BH, BL, BP, BPL, BX, BYTE, CALL, CBW, CDQ, CH, CL, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, CX, DB, DD, DH, DI, DIL, DIV, DIVSD, DIVSS, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, IDIV, IMUL, INTEGER, JAE, JE, JMP, JNZ, JZ, LBRACKET, LEA, LPAREN, MINUS, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, OWORD, PLUS, POP, PROC, PUSH, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RET, RSI, RSP, SAR, SETC, SETE, SETL, SHL, SHR, SI, SIL, SP, SPL, STRING, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XOR}" name="FunctionBody">
+   <kleene first="{#, ADD, ADDSD, ADDSS, AH, AL, AND, AX, BH, BL, BP, BPL, BX, BYTE, CALL, CBW, CDQ, CH, CL, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, CX, DB, DD, DH, DI, DIL, DIV, DIVSD, DIVSS, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, IDIV, IMUL, INTEGER, JAE, JE, JMP, JNZ, JZ, LBRACKET, LEA, LPAREN, MINUS, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, OWORD, PLUS, POP, PROC, PUSH, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RET, RSI, RSP, SAR, SETC, SETE, SETL, SHL, SHR, SI, SIL, SP, SPL, STRING, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XOR}">
+    <group first="{#, ADD, ADDSD, ADDSS, AH, AL, AND, AX, BH, BL, BP, BPL, BX, BYTE, CALL, CBW, CDQ, CH, CL, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, CX, DB, DD, DH, DI, DIL, DIV, DIVSD, DIVSS, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, IDIV, IMUL, INTEGER, JAE, JE, JMP, JNZ, JZ, LBRACKET, LEA, LPAREN, MINUS, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, OWORD, PLUS, POP, PROC, PUSH, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RET, RSI, RSP, SAR, SETC, SETE, SETL, SHL, SHR, SI, SIL, SP, SPL, STRING, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XOR}">
+     <choice first="{#, ADD, ADDSD, ADDSS, AH, AL, AND, AX, BH, BL, BP, BPL, BX, BYTE, CALL, CBW, CDQ, CH, CL, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, CX, DB, DD, DH, DI, DIL, DIV, DIVSD, DIVSS, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, IDIV, IMUL, INTEGER, JAE, JE, JMP, JNZ, JZ, LBRACKET, LEA, LPAREN, MINUS, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, OWORD, PLUS, POP, PROC, PUSH, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RET, RSI, RSP, SAR, SETC, SETE, SETL, SHL, SHR, SI, SIL, SP, SPL, STRING, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XOR}">
+      <choice first="{#, ADD, ADDSD, ADDSS, AH, AL, AND, AX, BH, BL, BP, BPL, BX, BYTE, CALL, CBW, CDQ, CH, CL, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, CX, DB, DD, DH, DI, DIL, DIV, DIVSD, DIVSS, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, IDIV, IMUL, INTEGER, JAE, JE, JMP, JNZ, JZ, LBRACKET, LEA, LPAREN, MINUS, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, OWORD, PLUS, POP, PROC, PUSH, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RET, RSI, RSP, SAR, SETC, SETE, SETL, SHL, SHR, SI, SIL, SP, SPL, STRING, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XOR}">
+       <action first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}">
+        <nonterminal first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}" ruleName="InstructionLine"/>
+       </action>
+       <action first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+        <nonterminal first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DB, DD, DH, DI, DIL, DL, DQ, DW, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, NEWLINE, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, REAL4, REAL8, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="DataDefinitionLine"/>
+       </action>
+      </choice>
+      <nonterminal first="{NEWLINE}" ruleName="EmptyLine"/>
+     </choice>
+    </group>
+   </kleene>
+  </rule>
+  <rule first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}" name="InstructionLine">
+   <action first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}">
+    <group first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}">
+     <sequence first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NEWLINE, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}">
+      <sequence first="{#, ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, SYMBOL, UCOMISD, UCOMISS, XOR}">
+       <optional first="{#, SYMBOL}">
+        <nonterminal first="{SYMBOL}" ruleName="Label"/>
+       </optional>
+       <action first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}">
+        <nonterminal first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}" ruleName="Instruction"/>
+       </action>
+      </sequence>
+      <token first="{NEWLINE}" name="NEWLINE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}" name="Instruction">
+   <action first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}">
+    <group first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}">
+     <sequence first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}">
+      <action first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}">
+       <nonterminal first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}" ruleName="OpCode"/>
+      </action>
+      <optional first="{#, AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}">
+       <nonterminal first="{AH, AL, AX, BH, BL, BP, BPL, BX, BYTE, CH, CL, CX, DH, DI, DIL, DL, DWORD, DX, EAX, EBP, EBX, ECX, EDI, EDX, ESI, ESP, HEXNUMBER, INTEGER, LBRACKET, LPAREN, MINUS, OWORD, PLUS, PROC, QWORD, R10, R10B, R10D, R10W, R11, R11B, R11D, R11W, R12, R12B, R12D, R12W, R13, R13B, R13D, R13W, R14, R14B, R14D, R14W, R15, R15B, R15D, R15W, R8, R8B, R8D, R8W, R9, R9B, R9D, R9W, RAX, RBP, RBX, RCX, RDI, RDX, REAL, RSI, RSP, SI, SIL, SP, SPL, STRING, SYMBOL, WORD, XMM0, XMM1, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9}" ruleName="OperandList"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}" name="OpCode">
+   <switch first="{ADD, ADDSD, ADDSS, AND, CALL, CBW, CDQ, CMP, COMISD, COMISS, CQO, CVTSD2SS, CVTSI2SD, CVTSI2SS, CVTSS2SD, CVTTSD2SI, CVTTSS2SI, CWD, DIV, DIVSD, DIVSS, IDIV, IMUL, JAE, JE, JMP, JNZ, JZ, LEA, MOV, MOVSD, MOVSS, MOVSX, MOVSXD, MOVZX, MUL, MULSD, MULSS, NEG, NOP, NOT, OR, POP, PUSH, RET, SAR, SETC, SETE, SETL, SHL, SHR, SUB, SUBSD, SUBSS, UCOMISD, UCOMISS, XOR}">
+    <case first="{ADD}">
+     <action first="{ADD}">
+      <token first="{ADD}" name="ADD"/>
+     </action>
+    </case>
+    <case first="{ADDSD}">
+     <action first="{ADDSD}">
+      <token first="{ADDSD}" name="ADDSD"/>
+     </action>
+    </case>
+    <case first="{ADDSS}">
+     <action first="{ADDSS}">
+      <token first="{ADDSS}" name="ADDSS"/>
+     </action>
+    </case>
+    <case first="{AND}">
+     <action first="{AND}">
+      <token first="{AND}" name="AND"/>
+     </action>
+    </case>
+    <case first="{CALL}">
+     <action first="{CALL}">
+      <token first="{CALL}" name="CALL"/>
+     </action>
+    </case>
+    <case first="{CBW}">
+     <action first="{CBW}">
+      <token first="{CBW}" name="CBW"/>
+     </action>
+    </case>
+    <case first="{CDQ}">
+     <action first="{CDQ}">
+      <token first="{CDQ}" name="CDQ"/>
+     </action>
+    </case>
+    <case first="{CMP}">
+     <action first="{CMP}">
+      <token first="{CMP}" name="CMP"/>
+     </action>
+    </case>
+    <case first="{COMISD}">
+     <action first="{COMISD}">
+      <token first="{COMISD}" name="COMISD"/>
+     </action>
+    </case>
+    <case first="{COMISS}">
+     <action first="{COMISS}">
+      <token first="{COMISS}" name="COMISS"/>
+     </action>
+    </case>
+    <case first="{CQO}">
+     <action first="{CQO}">
+      <token first="{CQO}" name="CQO"/>
+     </action>
+    </case>
+    <case first="{CVTSD2SS}">
+     <action first="{CVTSD2SS}">
+      <token first="{CVTSD2SS}" name="CVTSD2SS"/>
+     </action>
+    </case>
+    <case first="{CVTSI2SD}">
+     <action first="{CVTSI2SD}">
+      <token first="{CVTSI2SD}" name="CVTSI2SD"/>
+     </action>
+    </case>
+    <case first="{CVTSI2SS}">
+     <action first="{CVTSI2SS}">
+      <token first="{CVTSI2SS}" name="CVTSI2SS"/>
+     </action>
+    </case>
+    <case first="{CVTSS2SD}">
+     <action first="{CVTSS2SD}">
+      <token first="{CVTSS2SD}" name="CVTSS2SD"/>
+     </action>
+    </case>
+    <case first="{CVTTSD2SI}">
+     <action first="{CVTTSD2SI}">
+      <token first="{CVTTSD2SI}" name="CVTTSD2SI"/>
+     </action>
+    </case>
+    <case first="{CVTTSS2SI}">
+     <action first="{CVTTSS2SI}">
+      <token first="{CVTTSS2SI}" name="CVTTSS2SI"/>
+     </action>
+    </case>
+    <case first="{CWD}">
+     <action first="{CWD}">
+      <token first="{CWD}" name="CWD"/>
+     </action>
+    </case>
+    <case first="{DIV}">
+     <action first="{DIV}">
+      <token first="{DIV}" name="DIV"/>
+     </action>
+    </case>
+    <case first="{DIVSD}">
+     <action first="{DIVSD}">
+      <token first="{DIVSD}" name="DIVSD"/>
+     </action>
+    </case>
+    <case first="{DIVSS}">
+     <action first="{DIVSS}">
+      <token first="{DIVSS}" name="DIVSS"/>
+     </action>
+    </case>
+    <case first="{IDIV}">
+     <action first="{IDIV}">
+      <token first="{IDIV}" name="IDIV"/>
+     </action>
+    </case>
+    <case first="{IMUL}">
+     <action first="{IMUL}">
+      <token first="{IMUL}" name="IMUL"/>
+     </action>
+    </case>
+    <case first="{JAE}">
+     <action first="{JAE}">
+      <token first="{JAE}" name="JAE"/>
+     </action>
+    </case>
+    <case first="{JE}">
+     <action first="{JE}">
+      <token first="{JE}" name="JE"/>
+     </action>
+    </case>
+    <case first="{JMP}">
+     <action first="{JMP}">
+      <token first="{JMP}" name="JMP"/>
+     </action>
+    </case>
+    <case first="{JNZ}">
+     <action first="{JNZ}">
+      <token first="{JNZ}" name="JNZ"/>
+     </action>
+    </case>
+    <case first="{JZ}">
+     <action first="{JZ}">
+      <token first="{JZ}" name="JZ"/>
+     </action>
+    </case>
+    <case first="{LEA}">
+     <action first="{LEA}">
+      <token first="{LEA}" name="LEA"/>
+     </action>
+    </case>
+    <case first="{MOV}">
+     <action first="{MOV}">
+      <token first="{MOV}" name="MOV"/>
+     </action>
+    </case>
+    <case first="{MOVSD}">
+     <action first="{MOVSD}">
+      <token first="{MOVSD}" name="MOVSD"/>
+     </action>
+    </case>
+    <case first="{MOVSS}">
+     <action first="{MOVSS}">
+      <token first="{MOVSS}" name="MOVSS"/>
+     </action>
+    </case>
+    <case first="{MOVSX}">
+     <action first="{MOVSX}">
+      <token first="{MOVSX}" name="MOVSX"/>
+     </action>
+    </case>
+    <case first="{MOVSXD}">
+     <action first="{MOVSXD}">
+      <token first="{MOVSXD}" name="MOVSXD"/>
+     </action>
+    </case>
+    <case first="{MOVZX}">
+     <action first="{MOVZX}">
+      <token first="{MOVZX}" name="MOVZX"/>
+     </action>
+    </case>
+    <case first="{MUL}">
+     <action first="{MUL}">
+      <token first="{MUL}" name="MUL"/>
+     </action>
+    </case>
+    <case first="{MULSD}">
+     <action first="{MULSD}">
+      <token first="{MULSD}" name="MULSD"/>
+     </action>
+    </case>
+    <case first="{MULSS}">
+     <action first="{MULSS}">
+      <token first="{MULSS}" name="MULSS"/>
+     </action>
+    </case>
+    <case first="{NEG}">
+     <action first="{NEG}">
+      <token first="{NEG}" name="NEG"/>
+     </action>
+    </case>
+    <case first="{NOP}">
+     <action first="{NOP}">
+      <token first="{NOP}" name="NOP"/>
+     </action>
+    </case>
+    <case first="{NOT}">
+     <action first="{NOT}">
+      <token first="{NOT}" name="NOT"/>
+     </action>
+    </case>
+    <case first="{OR}">
+     <action first="{OR}">
+      <token first="{OR}" name="OR"/>
+     </action>
+    </case>
+    <case first="{POP}">
+     <action first="{POP}">
+      <token first="{POP}" name="POP"/>
+     </action>
+    </case>
+    <case first="{PUSH}">
+     <action first="{PUSH}">
+      <token first="{PUSH}" name="PUSH"/>
+     </action>
+    </case>
+    <case first="{RET}">
+     <action first="{RET}">
+      <token first="{RET}" name="RET"/>
+     </action>
+    </case>
+    <case first="{SAR}">
+     <action first="{SAR}">
+      <token first="{SAR}" name="SAR"/>
+     </action>
+    </case>
+    <case first="{SETC}">
+     <action first="{SETC}">
+      <token first="{SETC}" name="SETC"/>
+     </action>
+    </case>
+    <case first="{SETE}">
+     <action first="{SETE}">
+      <token first="{SETE}" name="SETE"/>
+     </action>
+    </case>
+    <case first="{SETL}">
+     <action first="{SETL}">
+      <token first="{SETL}" name="SETL"/>
+     </action>
+    </case>
+    <case first="{SHL}">
+     <action first="{SHL}">
+      <token first="{SHL}" name="SHL"/>
+     </action>
+    </case>
+    <case first="{SHR}">
+     <action first="{SHR}">
+      <token first="{SHR}" name="SHR"/>
+     </action>
+    </case>
+    <case first="{SUB}">
+     <action first="{SUB}">
+      <token first="{SUB}" name="SUB"/>
+     </action>
+    </case>
+    <case first="{SUBSD}">
+     <action first="{SUBSD}">
+      <token first="{SUBSD}" name="SUBSD"/>
+     </action>
+    </case>
+    <case first="{SUBSS}">
+     <action first="{SUBSS}">
+      <token first="{SUBSS}" name="SUBSS"/>
+     </action>
+    </case>
+    <case first="{UCOMISD}">
+     <action first="{UCOMISD}">
+      <token first="{UCOMISD}" name="UCOMISD"/>
+     </action>
+    </case>
+    <case first="{UCOMISS}">
+     <action first="{UCOMISS}">
+      <token first="{UCOMISS}" name="UCOMISS"/>
+     </action>
+    </case>
+    <case first="{XOR}">
+     <action first="{XOR}">
+      <token first="{XOR}" name="XOR"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

@@ -34,6 +34,9 @@ public:
     std::string ReadString();
     uuid ReadUuid();
     uint32_t ReadULEB128UInt();
+    const uint8_t* Ptr() const { return ptr; }
+    const uint8_t* Pos() const { return pos; }
+    int64_t Count() const { return count; }
 private:
     const uint8_t* ptr;
     const uint8_t* pos;

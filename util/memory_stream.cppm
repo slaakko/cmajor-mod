@@ -24,6 +24,7 @@ public:
     int64_t Size() const { return size; }
     int64_t ReadPos() const { return readPos; }
     const std::vector<uint8_t>& Content() const { return content; }
+    std::vector<uint8_t> ReleaseContent() { return std::move(content); }
     void SetFromContent();
 private:
     uint8_t* data;

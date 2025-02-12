@@ -156,10 +156,6 @@
     <ClCompile Include="archive.cppm" />
     <ClCompile Include="archive_windows.cpp" />
     <ClCompile Include="archive_windows.cppm" />
-    <ClCompile Include="link.cpp" />
-    <ClCompile Include="link.cppm" />
-    <ClCompile Include="link_windows.cpp" />
-    <ClCompile Include="link_windows.cppm" />
     <ClCompile Include="llvm_codegen.cpp" />
     <ClCompile Include="llvm_codegen.cppm" />
     <ClCompile Include="interface.cpp" />

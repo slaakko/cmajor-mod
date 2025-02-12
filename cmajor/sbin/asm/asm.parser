@@ -1,0 +1,462 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.sbin.assembly.parser;
+
+[interface]import cmajor.sbin.machine_x64;
+[interface]import cmajor.sbin.assembly.asm_file;
+[implementation]import cmajor.sbin.assembly.asm_util;
+[implementation]import cmajor.sbin.assembly.lexer;
+[implementation]import cmajor.sbin.assembly.token;
+
+parser AsmParser
+{
+    lexer cmajor::sbin::assembly::lexer::AssemblyLexer<char32_t>;
+    main;
+
+    AsmFile(var cmajor::sbin::assembly::AsmFileNode* asmFileNode) : cmajor::sbin::assembly::AsmFileNode*
+        ::= 
+        (
+            empty{ asmFileNode = new cmajor::sbin::assembly::AsmFileNode(lexer.GetSpan(pos)); }
+            DeclarationSection(asmFileNode):declarationSection?
+            DataSection(asmFileNode):dataSection?
+            CodeSection(asmFileNode):codeSection?
+            End:end 
+        )
+        {
+            return asmFileNode;
+        }
+        ;
+
+    EmptyLine
+        ::= NEWLINE
+        ;
+
+    End
+        ::= EmptyLine:emptyLine*
+            END NEWLINE
+            EmptyLine:emptyLine*
+        ;
+
+    DeclarationSection(cmajor::sbin::assembly::AsmFileNode* asmFileNode)
+        ::= 
+        (   Declaration:declaration{ asmFileNode->AddDeclaration(declaration); } NEWLINE 
+        |   EmptyLine:emptyLine
+        )*
+        ;
+
+    Declaration(var cmajor::sbin::assembly::Type type) : cmajor::sbin::assembly::DeclarationNode*
+        ::= 
+        (
+            SymbolKind:kind Symbol:symbol (TypeField:typeField{ type = typeField; } | empty{ type = cmajor::sbin::assembly::Type::none; })
+        )
+        {
+            return new cmajor::sbin::assembly::DeclarationNode(lexer.GetSpan(pos), kind, symbol, type);
+        }
+        ;
+
+    SymbolKind : cmajor::sbin::assembly::SymbolKind
+        ::= PUBLIC{ return cmajor::sbin::assembly::SymbolKind::public_; }
+        |   EXTRN{ return cmajor::sbin::assembly::SymbolKind::external; }
+        ;
+
+    Symbol : cmajor::sbin::assembly::SymbolNode*
+        ::= SYMBOL{ return new cmajor::sbin::assembly::SymbolNode(lexer.GetSpan(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    TypeField : cmajor::sbin::assembly::Type
+        ::= COLON Type:type{ return type; }
+        ;
+
+    Type : cmajor::sbin::assembly::Type
+        ::= BYTE{ return cmajor::sbin::assembly::Type::byte_; }
+        |   WORD{ return cmajor::sbin::assembly::Type::word; }
+        |   DWORD{ return cmajor::sbin::assembly::Type::dword; }
+        |   QWORD{ return cmajor::sbin::assembly::Type::qword; }
+        |   OWORD{ return cmajor::sbin::assembly::Type::oword; }
+        |   PROC{ return cmajor::sbin::assembly::Type::proc; }
+        ;
+
+    DataSection(cmajor::sbin::assembly::AsmFileNode* asmFileNode)
+        ::= DataSectionHeader:header
+            (   DataDefinitionLine:dataDefinitionLine{ asmFileNode->AddDataDefinition(dataDefinitionLine); } 
+            |   MacroAssignmentLine:macroAssignmentLine 
+            |   EmptyLine:emptyLine
+            )*
+        ;
+
+    DataSectionHeader
+        ::= DOT DATA NEWLINE
+        ;
+
+    DataDefinitionLine : cmajor::sbin::assembly::DataDefinitionNode*
+        ::= 
+        (
+            DataDefinition:definition NEWLINE
+        )
+        {
+            return definition;
+        }
+        ;
+
+    MacroAssignmentLine : cmajor::sbin::assembly::MacroDefinitionNode*
+        ::= 
+        (
+            Symbol:symbol ASSIGN Expr:expr NEWLINE
+        )
+        {
+            return new cmajor::sbin::assembly::MacroDefinitionNode(lexer.GetSpan(pos), symbol, expr);
+        }
+        ;
+
+    DataDefinition(var cmajor::sbin::assembly::DataDefinitionNode* dataDefinitionNode) : cmajor::sbin::assembly::DataDefinitionNode*
+        ::= 
+        (
+            (Label:label? DataInst:inst){ dataDefinitionNode = new cmajor::sbin::assembly::DataDefinitionNode(lexer.GetSpan(pos), label, inst); } 
+            OperandList(dataDefinitionNode):operands
+        )
+        {
+            return dataDefinitionNode;
+        }
+        ;
+
+    Label(var cmajor::sbin::assembly::LabelNode* labelNode) : cmajor::sbin::assembly::LabelNode*
+        ::= 
+        (
+            SYMBOL{ labelNode = new cmajor::sbin::assembly::LabelNode(lexer.GetSpan(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); } (COLON NEWLINE?)?
+        )
+        {
+            return labelNode;
+        }
+        ;
+
+    DataInst : cmajor::sbin::assembly::DataInstKind
+        ::= DB{ return cmajor::sbin::assembly::DataInstKind::db; }
+        |   DW{ return cmajor::sbin::assembly::DataInstKind::dw; }
+        |   DD{ return cmajor::sbin::assembly::DataInstKind::dd; }
+        |   DQ{ return cmajor::sbin::assembly::DataInstKind::dq; }
+        |   REAL4{ return cmajor::sbin::assembly::DataInstKind::real4; }
+        |   REAL8{ return cmajor::sbin::assembly::DataInstKind::real8; }
+        ;
+
+    OperandList(cmajor::sbin::assembly::InstructionBaseNode* instNode)
+        ::= Operand:first{ instNode->AddOperand(first); } (COMMA Operand:next{ instNode->AddOperand(next); })*
+        ;
+
+    Operand : cmajor::sbin::assembly::Node* 
+        ::= Expr:expr{ return expr;}
+        ;
+
+    Expr : cmajor::sbin::assembly::Node* 
+        ::= BinaryExpr:binaryExpr{ return binaryExpr; }
+        ;
+
+    BinaryExpr(var cmajor::sbin::assembly::Node* expr) : cmajor::sbin::assembly::Node*
+        ::= 
+        (
+            UnaryExpr:left{ expr = left; } 
+            (
+                BinaryOp:op 
+                UnaryExpr:right{ expr = new cmajor::sbin::assembly::BinaryExprNode(lexer.GetSpan(pos), expr, op, right); }
+            )*
+        )
+        {
+            return expr;
+        }
+        ;
+
+    BinaryOp : cmajor::sbin::assembly::Operator
+        ::= PLUS{ return cmajor::sbin::assembly::Operator::plus; }
+        |   MINUS{ return cmajor::sbin::assembly::Operator::minus; }
+        |   TIMES{ return cmajor::sbin::assembly::Operator::times; }
+        ;
+
+    UnaryExpr : cmajor::sbin::assembly::Node*
+        ::= UnaryOp:op UnaryExpr:unaryExpr{ return new cmajor::sbin::assembly::UnaryExprNode(lexer.GetSpan(pos), op, unaryExpr); }
+        |   PrimaryExpr:primaryExpr{ return primaryExpr; }
+        ;
+
+    UnaryOp : cmajor::sbin::assembly::Operator
+        ::= PLUS{ return cmajor::sbin::assembly::Operator::plus; }
+        |   MINUS{ return cmajor::sbin::assembly::Operator::minus; }
+        ;
+
+    PrimaryExpr : cmajor::sbin::assembly::Node*
+        ::= ContentExpr:contentExpr{ return contentExpr; }
+        |   SizeExpr:sizeExpr{ return sizeExpr; }
+        |   ParenthesizedExpr:parenthesizedExpr{ return parenthesizedExpr; }
+        |   Register:reg{ return new cmajor::sbin::assembly::RegisterNode(lexer.GetSpan(pos), reg); }
+        |   Value:value{ return value; }
+        |   Symbol:symbol{ return symbol; }
+        ;
+
+    ContentExpr(var cmajor::sbin::assembly::ContentExprNode* contentExprNode) : cmajor::sbin::assembly::Node*
+        ::= 
+        (
+            LBRACKET Expr:expr{ contentExprNode = new cmajor::sbin::assembly::ContentExprNode(lexer.GetSpan(pos), expr); } RBRACKET
+        )
+        {
+            return contentExprNode;
+        }
+        ;
+
+    SizeExpr(var cmajor::sbin::assembly::SizeExprNode* sizeExprNode) : cmajor::sbin::assembly::Node*
+        ::= 
+        (
+            SizePrefix:sizePrefix
+            Expr:expr
+        )
+        {
+            return new cmajor::sbin::assembly::SizeExprNode(lexer.GetSpan(pos), sizePrefix, expr); 
+        }
+        ;
+
+    SizePrefix : cmajor::sbin::assembly::Type
+        ::= 
+        (
+            Type:type PTR
+        )
+        {
+            return type;
+        }
+        ;
+
+    ParenthesizedExpr : cmajor::sbin::assembly::Node*
+        ::= 
+        (
+            LPAREN Expr:expr RPAREN
+        )
+        {
+            return new cmajor::sbin::assembly::ParenthesizedExprNode(lexer.GetSpan(pos), expr); 
+        }
+        ;
+
+    Register : cmajor::sbin::machine_x64::Register
+        ::= AL{ return cmajor::sbin::machine_x64::Register::al; }
+        |   BL{ return cmajor::sbin::machine_x64::Register::bl; }
+        |   CL{ return cmajor::sbin::machine_x64::Register::cl; }
+        |   DL{ return cmajor::sbin::machine_x64::Register::dl; }
+        |   SIL{ return cmajor::sbin::machine_x64::Register::sil; }
+        |   DIL{ return cmajor::sbin::machine_x64::Register::dil; }
+        |   BPL{ return cmajor::sbin::machine_x64::Register::bpl; }
+        |   SPL{ return cmajor::sbin::machine_x64::Register::spl; }
+        |   R8B{ return cmajor::sbin::machine_x64::Register::r8b; }
+        |   R9B{ return cmajor::sbin::machine_x64::Register::r9b; }
+        |   R10B{ return cmajor::sbin::machine_x64::Register::r10b; }
+        |   R11B{ return cmajor::sbin::machine_x64::Register::r11b; }
+        |   R12B{ return cmajor::sbin::machine_x64::Register::r12b; }
+        |   R13B{ return cmajor::sbin::machine_x64::Register::r13b; }
+        |   R14B{ return cmajor::sbin::machine_x64::Register::r14b; }
+        |   R15B{ return cmajor::sbin::machine_x64::Register::r15b; }
+        |   AH{ return cmajor::sbin::machine_x64::Register::ah; }
+        |   BH{ return cmajor::sbin::machine_x64::Register::bh; }
+        |   CH{ return cmajor::sbin::machine_x64::Register::ch; }
+        |   DH{ return cmajor::sbin::machine_x64::Register::dh; }
+        |   AX{ return cmajor::sbin::machine_x64::Register::ax; }
+        |   BX{ return cmajor::sbin::machine_x64::Register::bx; }
+        |   CX{ return cmajor::sbin::machine_x64::Register::cx; }
+        |   DX{ return cmajor::sbin::machine_x64::Register::dx; }
+        |   SI{ return cmajor::sbin::machine_x64::Register::si; }
+        |   DI{ return cmajor::sbin::machine_x64::Register::di; }
+        |   BP{ return cmajor::sbin::machine_x64::Register::bp; }
+        |   SP{ return cmajor::sbin::machine_x64::Register::sp; }
+        |   R8W{ return cmajor::sbin::machine_x64::Register::r8w; }
+        |   R9W{ return cmajor::sbin::machine_x64::Register::r9w; }
+        |   R10W{ return cmajor::sbin::machine_x64::Register::r10w; }
+        |   R11W{ return cmajor::sbin::machine_x64::Register::r11w; }
+        |   R12W{ return cmajor::sbin::machine_x64::Register::r12w; }
+        |   R13W{ return cmajor::sbin::machine_x64::Register::r13w; }
+        |   R14W{ return cmajor::sbin::machine_x64::Register::r14w; }
+        |   R15W{ return cmajor::sbin::machine_x64::Register::r15w; }
+        |   EAX{ return cmajor::sbin::machine_x64::Register::eax; }
+        |   EBX{ return cmajor::sbin::machine_x64::Register::ebx; }
+        |   ECX{ return cmajor::sbin::machine_x64::Register::ecx; }
+        |   EDX{ return cmajor::sbin::machine_x64::Register::edx; }
+        |   ESI{ return cmajor::sbin::machine_x64::Register::esi; }
+        |   EDI{ return cmajor::sbin::machine_x64::Register::edi; }
+        |   EBP{ return cmajor::sbin::machine_x64::Register::ebp; }
+        |   ESP{ return cmajor::sbin::machine_x64::Register::esp; }
+        |   R8D{ return cmajor::sbin::machine_x64::Register::r8d; }
+        |   R9D{ return cmajor::sbin::machine_x64::Register::r9d; }
+        |   R10D{ return cmajor::sbin::machine_x64::Register::r10d; }
+        |   R11D{ return cmajor::sbin::machine_x64::Register::r11d; }
+        |   R12D{ return cmajor::sbin::machine_x64::Register::r12d; }
+        |   R13D{ return cmajor::sbin::machine_x64::Register::r13d; }
+        |   R14D{ return cmajor::sbin::machine_x64::Register::r14d; }
+        |   R15D{ return cmajor::sbin::machine_x64::Register::r15d; }
+        |   RAX{ return cmajor::sbin::machine_x64::Register::rax; }
+        |   RBX{ return cmajor::sbin::machine_x64::Register::rbx; }
+        |   RCX{ return cmajor::sbin::machine_x64::Register::rcx; }
+        |   RDX{ return cmajor::sbin::machine_x64::Register::rdx; }
+        |   RSI{ return cmajor::sbin::machine_x64::Register::rsi; }
+        |   RDI{ return cmajor::sbin::machine_x64::Register::rdi; }
+        |   RBP{ return cmajor::sbin::machine_x64::Register::rbp; }
+        |   RSP{ return cmajor::sbin::machine_x64::Register::rsp; }
+        |   R8{ return cmajor::sbin::machine_x64::Register::r8; }
+        |   R9{ return cmajor::sbin::machine_x64::Register::r9; }
+        |   R10{ return cmajor::sbin::machine_x64::Register::r10; }
+        |   R11{ return cmajor::sbin::machine_x64::Register::r11; }
+        |   R12{ return cmajor::sbin::machine_x64::Register::r12; }
+        |   R13{ return cmajor::sbin::machine_x64::Register::r13; }
+        |   R14{ return cmajor::sbin::machine_x64::Register::r14; }
+        |   R15{ return cmajor::sbin::machine_x64::Register::r15; }
+        |   XMM0{ return cmajor::sbin::machine_x64::Register::xmm0; }
+        |   XMM1{ return cmajor::sbin::machine_x64::Register::xmm1; }
+        |   XMM2{ return cmajor::sbin::machine_x64::Register::xmm2; }
+        |   XMM3{ return cmajor::sbin::machine_x64::Register::xmm3; }
+        |   XMM4{ return cmajor::sbin::machine_x64::Register::xmm4; }
+        |   XMM5{ return cmajor::sbin::machine_x64::Register::xmm5; }
+        |   XMM6{ return cmajor::sbin::machine_x64::Register::xmm6; }
+        |   XMM7{ return cmajor::sbin::machine_x64::Register::xmm7; }
+        |   XMM8{ return cmajor::sbin::machine_x64::Register::xmm8; }
+        |   XMM9{ return cmajor::sbin::machine_x64::Register::xmm9; }
+        |   XMM10{ return cmajor::sbin::machine_x64::Register::xmm10; }
+        |   XMM11{ return cmajor::sbin::machine_x64::Register::xmm11; }
+        |   XMM12{ return cmajor::sbin::machine_x64::Register::xmm12; }
+        |   XMM13{ return cmajor::sbin::machine_x64::Register::xmm13; }
+        |   XMM14{ return cmajor::sbin::machine_x64::Register::xmm14; }
+        |   XMM15{ return cmajor::sbin::machine_x64::Register::xmm15; }
+        ;
+
+    Value : cmajor::sbin::assembly::Node*
+        ::= HEXNUMBER{ return new cmajor::sbin::assembly::HexNumberNode(lexer.GetSpan(pos), cmajor::sbin::assembly::ParseHexNumber(util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+        |   REAL{ return new cmajor::sbin::assembly::RealNode(lexer.GetSpan(pos), cmajor::sbin::assembly::ParseReal(util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+        |   INTEGER{ return new cmajor::sbin::assembly::IntegerNode(lexer.GetSpan(pos), cmajor::sbin::assembly::ParseInteger(util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+        |   STRING{ return new cmajor::sbin::assembly::StringNode(lexer.GetSpan(pos), cmajor::sbin::assembly::ParseString(util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+        ;
+
+    CodeSection(cmajor::sbin::assembly::AsmFileNode* asmFileNode)
+        ::= CodeSectionHeader:header
+            (   FunctionDefinition:functionDefinition{ asmFileNode->AddDefinition(functionDefinition); } 
+            |   MacroAssignmentLine:macroAssignmentLine{ asmFileNode->AddDefinition(macroAssignmentLine); }
+            |   EmptyLine:emptyLine
+            )*
+        ;
+
+    CodeSectionHeader
+        ::= DOT CODE NEWLINE
+        ;
+
+    FunctionDefinition(var cmajor::sbin::assembly::FunctionDefinitionNode* functionDefinitionNode) : cmajor::sbin::assembly::FunctionDefinitionNode*
+        ::= 
+        (
+            FunctionHeader:header{ functionDefinitionNode = new cmajor::sbin::assembly::FunctionDefinitionNode(lexer.GetSpan(pos), header); }
+            FunctionBody(functionDefinitionNode):body
+            FunctionTrailer:trailer{ functionDefinitionNode->SetEndpSymbol(trailer); }
+        )
+        {
+            return functionDefinitionNode;
+        }
+        ;
+
+    FunctionHeader : cmajor::sbin::assembly::SymbolNode*
+        ::= 
+        (
+            Symbol:symbol PROC NEWLINE
+        )
+        {
+            return symbol;
+        }
+        ;
+
+    FunctionTrailer : cmajor::sbin::assembly::SymbolNode*
+        ::= 
+        (
+            Symbol:symbol ENDP NEWLINE
+        )
+        {
+            return symbol;
+        }
+        ;
+
+    FunctionBody(cmajor::sbin::assembly::FunctionDefinitionNode* functionDefinitionNode)
+        ::= 
+        (   InstructionLine:instructionLine{ functionDefinitionNode->AddInstruction(instructionLine); }
+        |   DataDefinitionLine:dataDefinitionLine{ functionDefinitionNode->AddInstruction(dataDefinitionLine); }
+        |   EmptyLine:emptyLine
+        )*
+        ;
+
+    InstructionLine(var cmajor::sbin::assembly::InstructionNode* inst) : cmajor::sbin::assembly::InstructionNode*
+        ::= 
+        (
+            Label:label? Instruction:instruction{ inst = instruction; inst->SetLabel(label); } NEWLINE
+        )
+        {
+            return inst;
+        }
+        ;
+
+    Instruction(var cmajor::sbin::assembly::InstructionNode* inst) : cmajor::sbin::assembly::InstructionNode*
+        ::= 
+        (
+            OpCode:opCode{ inst = new InstructionNode(lexer.GetSpan(pos), opCode); }
+            OperandList(inst):operandList?
+        )
+        {
+            return inst;
+        }
+        ;
+
+    OpCode : cmajor::sbin::machine_x64::OpCode
+        ::= ADD{ return cmajor::sbin::machine_x64::OpCode::ADD; }
+        |   ADDSD{ return cmajor::sbin::machine_x64::OpCode::ADDSD; }
+        |   ADDSS{ return cmajor::sbin::machine_x64::OpCode::ADDSS; }
+        |   AND{ return cmajor::sbin::machine_x64::OpCode::AND; }
+        |   CALL{ return cmajor::sbin::machine_x64::OpCode::CALL; }
+        |   CBW{ return cmajor::sbin::machine_x64::OpCode::CBW; }
+        |   CDQ{ return cmajor::sbin::machine_x64::OpCode::CDQ; }
+        |   CMP{ return cmajor::sbin::machine_x64::OpCode::CMP; }
+        |   COMISD{ return cmajor::sbin::machine_x64::OpCode::COMISD; }
+        |   COMISS{ return cmajor::sbin::machine_x64::OpCode::COMISS; }
+        |   CQO{ return cmajor::sbin::machine_x64::OpCode::CQO; }
+        |   CVTSD2SS{ return cmajor::sbin::machine_x64::OpCode::CVTSD2SS; }
+        |   CVTSI2SD{ return cmajor::sbin::machine_x64::OpCode::CVTSI2SD; }
+        |   CVTSI2SS{ return cmajor::sbin::machine_x64::OpCode::CVTSI2SS; }
+        |   CVTSS2SD{ return cmajor::sbin::machine_x64::OpCode::CVTSS2SD; }
+        |   CVTTSD2SI{ return cmajor::sbin::machine_x64::OpCode::CVTTSD2SI; }
+        |   CVTTSS2SI{ return cmajor::sbin::machine_x64::OpCode::CVTTSS2SI; }
+        |   CWD{ return cmajor::sbin::machine_x64::OpCode::CWD; }
+        |   DIV{ return cmajor::sbin::machine_x64::OpCode::DIV; }
+        |   DIVSD{ return cmajor::sbin::machine_x64::OpCode::DIVSD; }
+        |   DIVSS{ return cmajor::sbin::machine_x64::OpCode::DIVSS; }
+        |   IDIV{ return cmajor::sbin::machine_x64::OpCode::IDIV; }
+        |   IMUL{ return cmajor::sbin::machine_x64::OpCode::IMUL; }
+        |   JAE{ return cmajor::sbin::machine_x64::OpCode::JAE; }
+        |   JE{ return cmajor::sbin::machine_x64::OpCode::JE; }
+        |   JMP{ return cmajor::sbin::machine_x64::OpCode::JMP; }
+        |   JNZ{ return cmajor::sbin::machine_x64::OpCode::JNZ; }
+        |   JZ{ return cmajor::sbin::machine_x64::OpCode::JZ; }
+        |   LEA{ return cmajor::sbin::machine_x64::OpCode::LEA; }
+        |   MOV{ return cmajor::sbin::machine_x64::OpCode::MOV; }
+        |   MOVSD{ return cmajor::sbin::machine_x64::OpCode::MOVSD; }
+        |   MOVSS{ return cmajor::sbin::machine_x64::OpCode::MOVSS; }
+        |   MOVSX{ return cmajor::sbin::machine_x64::OpCode::MOVSX; }
+        |   MOVSXD{ return cmajor::sbin::machine_x64::OpCode::MOVSXD; }
+        |   MOVZX{ return cmajor::sbin::machine_x64::OpCode::MOVZX; }
+        |   MUL{ return cmajor::sbin::machine_x64::OpCode::MUL; }
+        |   MULSD{ return cmajor::sbin::machine_x64::OpCode::MULSD; }
+        |   MULSS{ return cmajor::sbin::machine_x64::OpCode::MULSS; }
+        |   NEG{ return cmajor::sbin::machine_x64::OpCode::NEG; }
+        |   NOP{ return cmajor::sbin::machine_x64::OpCode::NOP; }
+        |   NOT{ return cmajor::sbin::machine_x64::OpCode::NOT; }
+        |   OR{ return cmajor::sbin::machine_x64::OpCode::OR; }
+        |   POP{ return cmajor::sbin::machine_x64::OpCode::POP; }
+        |   PUSH{ return cmajor::sbin::machine_x64::OpCode::PUSH; }
+        |   RET{ return cmajor::sbin::machine_x64::OpCode::RET; }
+        |   SAR{ return cmajor::sbin::machine_x64::OpCode::SAR; }
+        |   SETC{ return cmajor::sbin::machine_x64::OpCode::SETC; }
+        |   SETE{ return cmajor::sbin::machine_x64::OpCode::SETE; }
+        |   SETL{ return cmajor::sbin::machine_x64::OpCode::SETL; }
+        |   SHL{ return cmajor::sbin::machine_x64::OpCode::SHL; }
+        |   SHR{ return cmajor::sbin::machine_x64::OpCode::SHR; }
+        |   SUB{ return cmajor::sbin::machine_x64::OpCode::SUB; }
+        |   SUBSD{ return cmajor::sbin::machine_x64::OpCode::SUBSD; }
+        |   SUBSS{ return cmajor::sbin::machine_x64::OpCode::SUBSS; }
+        |   UCOMISD{ return cmajor::sbin::machine_x64::OpCode::UCOMISD; }
+        |   UCOMISS{ return cmajor::sbin::machine_x64::OpCode::UCOMISS; }
+        |   XOR{ return cmajor::sbin::machine_x64::OpCode::XOR; }
+        ;
+}

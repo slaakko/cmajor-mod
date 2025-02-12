@@ -1,0 +1,8 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    List<int> list;
+    list.Add(1);
+}

@@ -300,4 +300,24 @@ std::string ReadFile(const std::string& filePath, bool skipBOM)
     return s;
 }
 
+std::vector<uint8_t> ReadBinaryFile(const std::string& filePath)
+{
+    std::vector<uint8_t> content;
+    FileStream fs(filePath, OpenMode::read | OpenMode::binary);
+    int64_t n = fs.Size();
+    for (int64_t i = 0; i < n; ++i)
+    {
+        int c = fs.ReadByte();
+        if (c != -1)
+        {
+            content.push_back(static_cast<uint8_t>(c));
+        }
+        else
+        {
+            throw std::runtime_error("unexpected end of '" + filePath + "'");
+        }
+    }
+    return content;
+}
+
 } // util

@@ -124,8 +124,7 @@ void BinaryStreamWriter::Write(const std::string& s, bool writeNull)
 {
     for (char c : s)
     {
-        uint8_t x = static_cast<uint8_t>(c);
-        Write(x);
+        Write(static_cast<uint8_t>(c));
     }
     if (writeNull)
     {

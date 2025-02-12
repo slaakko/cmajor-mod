@@ -56,5 +56,6 @@ private:
 
 std::string ReadFile(const std::string& filePath);
 std::string ReadFile(const std::string& filePath, bool skipBOM);
+std::vector<uint8_t> ReadBinaryFile(const std::string& filePath);
 
 } // util
