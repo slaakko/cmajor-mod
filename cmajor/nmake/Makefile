@@ -7,7 +7,8 @@
 #	(3) Run 'nmake zlibasm' from Visual Studio 2022 x64 Native Tools command prompt.
 #	(4) Build the compiler using Visual Studio 2022 IDE by opening the cmajor-mod.sln
 #		and building for Debug/x64 and Release/x64 configurations.
-#		I have used Visual Studio 2022 Community Edition Version 17.11.4.
+#		I have used Visual Studio 2022 Community Edition Version 17.13.1
+#	(5) run 'nmake' from Visual Studio 2022 x64 Native Tools command prompt.
 
 all: makedirs zlibasm runtime unicode sys tools examples install
 

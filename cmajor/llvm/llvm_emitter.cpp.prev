@@ -877,7 +877,7 @@ void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void
     llvm::DINode::DIFlags flags = llvm::DINode::DIFlags::FlagZero;
     return diBuilder->createClassType(static_cast<llvm::DIScope*>(CurrentScope()), name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)),
         lineColLen.line, sizeInBits, alignInBits, offsetInBits,
-        flags, static_cast<llvm::DIType*>(baseClassDIType), diBuilder->getOrCreateArray(elements), 0, static_cast<llvm::DIType*>(vtableHolderClass), templateParams, mangledName);
+        flags, static_cast<llvm::DIType*>(baseClassDIType), diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(vtableHolderClass), templateParams, mangledName);
     return nullptr;
 }
 
@@ -919,7 +919,7 @@ void* LLVMEmitter::CreateDITypeForEnumType(const std::string& name, const std::s
         elements.push_back(static_cast<llvm::Metadata*>(element));
     }
     return diBuilder->createEnumerationType(nullptr, name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)), lineColLen.line, sizeInBits, alignInBits,
-        diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(underlyingDIType), 0, mangledName, true);
+        diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(underlyingDIType), mangledName);
 }
 
 void LLVMEmitter::MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId)
@@ -1012,7 +1012,7 @@ uint64_t LLVMEmitter::GetSizeInBits(void* irType)
 
 uint64_t LLVMEmitter::GetAlignmentInBits(void* irType)
 {
-    return 8 * dataLayout->getABITypeAlign(static_cast<llvm::Type*>(irType)).value();
+    return 8 * dataLayout->getABITypeAlignment(static_cast<llvm::Type*>(irType));
 }
 
 #if (LLVM_VERSION_MAJOR < 12)
@@ -1913,7 +1913,7 @@ void LLVMEmitter::Compile(const std::string& objectFilePath)
     std::error_code errorCode;
     llvm::raw_fd_ostream objectFile(objectFilePath, errorCode);
     llvm::legacy::PassManager codeGenPassManager;
-    bool failed = targetMachine->addPassesToEmitFile(codeGenPassManager, objectFile, nullptr, llvm::CodeGenFileType::ObjectFile);
+    bool failed = targetMachine->addPassesToEmitFile(codeGenPassManager, objectFile, nullptr, llvm::CGFT_ObjectFile);
     if (failed)
     {
         throw std::runtime_error("LLVM emitter: cannot emit object code file '" + objectFilePath + "': addPassesToEmitFile failed: " +

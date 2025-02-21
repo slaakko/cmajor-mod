@@ -97,7 +97,7 @@ void ArchiveWindows(const std::string& libraryFilePath, const std::vector<std::s
         }
     }
     if (::llvm::Error e = ::llvm::writeArchive(outputPath, members,
-        /*WriteSymtab=*/true, ::llvm::object::Archive::K_GNU,
+        ::llvm::SymtabWritingMode::NormalSymtab, ::llvm::object::Archive::K_COFF,
         /*Deterministic*/ true, false)) {
         handleAllErrors(std::move(e), [&](const ::llvm::ErrorInfoBase& ei) {
             throw std::runtime_error(outputPath + ": " + ei.message());

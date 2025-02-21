@@ -9,7 +9,7 @@ project <HelloGUI/HelloGUI.cmp>;
 project <HexDump/hexdump.cmp>;
 project <JsonPhilosophers/JsonPhilosophers.cmp>;
 project <XPathTester/XPathTester.cmp>;
-activeProject Hello;
+activeProject HelloGUI;
 activeBackEnd=llvm;
 activeConfig=debug;
 activeOptLevel=2;
