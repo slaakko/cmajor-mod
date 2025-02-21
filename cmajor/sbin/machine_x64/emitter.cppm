@@ -1,0 +1,144 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.sbin.machine_x64.emitter;
+
+import cmajor.sbin.machine_x64.reg;
+import soul.ast.span;
+import util;
+import std.core;
+
+export namespace cmajor::sbin::machine_x64 {
+
+class Emitter
+{
+public:
+    virtual ~Emitter();
+    virtual void EmitByte(uint8_t x) = 0;
+    virtual void EmitWord(uint16_t x) = 0;
+    virtual void EmitDword(uint32_t x) = 0;
+    virtual void EmitQword(uint64_t x) = 0;
+    virtual void ThrowError(const std::string& message, const soul::ast::Span& span) = 0;
+};
+
+void EmitPush(Emitter& emitter, Register reg, const soul::ast::Span& span); 
+void EmitPop(Emitter& emitter, Register reg, const soul::ast::Span& span);
+void EmitRet(Emitter& emitter, const soul::ast::Span& span);
+void EmitRet(Emitter& emitter, uint64_t immediate0, const soul::ast::Span& span);
+void EmitAddReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitAddReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitAddReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitAddReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitSubReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitSubReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitSubReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitSubReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitSubReg64Immediate(Emitter& emitter, Register reg0, uint64_t immediate1, const soul::ast::Span& span);
+void EmitMulReg64(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitMulReg32(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitMulReg16(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitMulReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIMulReg64(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIMulReg32(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIMulReg16(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIMulReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitDivReg64(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitDivReg32(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitDivReg16(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitDivReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIDivReg64(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIDivReg32(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIDivReg16(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitIDivReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitLeaReg64ContentDisp(Emitter& emitter, Register reg0, Register reg1, uint32_t disp, const soul::ast::Span& span);
+void EmitLeaReg64ContentRegs(Emitter& emitter, Register reg0, Register contentReg1, Register contentReg2, const soul::ast::Span& span);
+void EmitLeaReg64ContentReg(Emitter& emitter, Register reg0, Register contentReg1, const soul::ast::Span& span);
+void EmitMovReg8Imm8(Emitter& emitter, Register reg0, uint8_t immediate1, const soul::ast::Span& span);
+void EmitMovReg16Imm16(Emitter& emitter, Register reg0, uint16_t immediate1, const soul::ast::Span& span);
+void EmitMovReg32Imm32(Emitter& emitter, Register reg0, uint32_t immediate1, const soul::ast::Span& span);
+void EmitMovReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovReg64Imm32(Emitter& emitter, Register reg0, uint32_t immediate1, const soul::ast::Span& span);
+void EmitMovReg64Imm64(Emitter& emitter, Register reg0, uint64_t immediate1, const soul::ast::Span& span);
+void EmitMovReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovReg8ContentDisp(Emitter& emitter, Register reg0, Register contentReg1, uint32_t displacement, const soul::ast::Span& span);
+void EmitMovContentReg8(Emitter& emitter, Register contentReg0, Register reg1, const soul::ast::Span& span);
+void EmitMovContentDispReg16(Emitter& emitter, Register contentReg1, uint32_t displacement, Register reg1, const soul::ast::Span& span);
+void EmitMovContentReg16(Emitter& emitter, Register contentReg0, Register reg1, const soul::ast::Span& span);
+void EmitMovReg8Content(Emitter& emitter, Register reg0, Register contentReg1, const soul::ast::Span& span);
+void EmitMovReg16ContentDisp(Emitter& emitter, Register reg0, Register contentReg1, uint32_t displacement, const soul::ast::Span& span);
+void EmitMovReg32ContentDisp(Emitter& emitter, Register reg0, Register contentReg1, uint32_t displacement, const soul::ast::Span& span);
+void EmitMovReg32Content(Emitter& emitter, Register reg0, Register contentReg1, const soul::ast::Span& span);
+void EmitMovReg16Content(Emitter& emitter, Register reg0, Register contentReg1, const soul::ast::Span& span);
+void EmitMovReg64ContentDisp(Emitter& emitter, Register reg0, Register contentReg2, uint32_t displacement, const soul::ast::Span& span);
+void EmitMovReg64Content(Emitter& emitter, Register reg0, Register contentReg1, const soul::ast::Span& span);
+void EmitMovRegImmediate(Emitter& emitter, Register reg0, uint64_t immediate1, const soul::ast::Span& span);
+void EmitMovContentReg32(Emitter& emitter, Register contentReg0, Register reg1, const soul::ast::Span& span);
+void EmitMovContentDispReg32(Emitter& emitter, Register contentReg0, uint32_t displacement, Register reg1, const soul::ast::Span& span);
+void EmitMovContentReg64(Emitter& emitter, Register contentReg0, Register reg1, const soul::ast::Span& span);
+void EmitMovContentDispReg64(Emitter& emitter, Register contentReg1, uint32_t displacement, Register reg1, const soul::ast::Span& span);
+void EmitMovContentDispReg8(Emitter& emitter, Register contentReg1, uint32_t displacement, Register reg1, const soul::ast::Span& span);
+void EmitMovReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovSxReg64Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovSxReg32Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovSxReg64Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovSxReg64Reg(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovSxReg16Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovZxReg16Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovZxReg32Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitMovZxReg64Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitCallNear(Emitter& emitter);
+void EmitLeaNear(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitJmpNear(Emitter& emitter);
+void EmitJneNear(Emitter& emitter);
+void EmitCmpReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitCmpReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitCmpReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitCmpReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitSetEReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitSetCReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitSetLReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShlReg64Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShlReg32Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShlReg16Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShlReg8Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShrReg64Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShrReg32Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShrReg16Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShrReg8Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitSarReg64Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitSarReg32Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitSarReg16Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitSarReg8Cl(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitShrReg16Imm8(Emitter& emitter, Register reg0, uint8_t immediate, const soul::ast::Span& span);
+void EmitAndReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitAndReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitAndReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitAndReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitOrReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitOrReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitOrReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitOrReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitXorReg8Imm8(Emitter& emitter, Register reg0, uint8_t immediate, const soul::ast::Span& span);
+void EmitXorReg64Reg64(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitXorReg32Reg32(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitXorReg16Reg16(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitXorReg8Reg8(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitXorHighByteRegHighByteReg(Emitter& emitter, Register reg0, Register reg1, const soul::ast::Span& span);
+void EmitNegReg64(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNegReg32(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNegReg16(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNegReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNotReg64(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNotReg32(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNotReg16(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitNotReg8(Emitter& emitter, Register reg0, const soul::ast::Span& span);
+void EmitCbw(Emitter& emitter, const soul::ast::Span& span);
+void EmitCwd(Emitter& emitter, const soul::ast::Span& span);
+void EmitCdq(Emitter& emitter, const soul::ast::Span& span);
+void EmitCqo(Emitter& emitter, const soul::ast::Span& span);
+void EmitNop(Emitter& emitter, const soul::ast::Span& span);
+
+} // namespace cmajor::sbin::machine_x64

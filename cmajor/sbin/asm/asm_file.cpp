@@ -9,6 +9,39 @@ import cmajor.sbin.assembly.visitor;
 
 namespace cmajor::sbin::assembly {
 
+Symbol::Symbol(SymbolKind kind_, Type type_, const std::string& name_) : kind(kind_), type(type_), name(name_), entry(nullptr), node(nullptr), hasValue(false), value(0)
+{
+}
+
+Symbol* Symbol::GetSubSymbol(const std::string& name) const
+{
+    auto it = subSymbolMap.find(name);
+    if (it != subSymbolMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void Symbol::AddSubSymbol(Symbol* subSymbol)
+{
+    subSymbolMap[subSymbol->Name()] = subSymbol;
+    subSymbols.push_back(std::unique_ptr<Symbol>(subSymbol));
+}
+
+void Symbol::SetValue(uint64_t value_)
+{ 
+    hasValue = true; 
+    value = value_; 
+    if (entry)
+    {
+        entry->SetValue(static_cast<uint32_t>(value));
+    }
+}
+
 Node::Node(NodeKind kind_, const soul::ast::Span& span_) : kind(kind_), span(span_)
 {
 }
@@ -167,11 +200,11 @@ void InstructionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-DefinitionNode::DefinitionNode(NodeKind kind_, const soul::ast::Span& span_) : Node(kind_, span_)
+DefinitionNode::DefinitionNode(NodeKind kind_, const soul::ast::Span& span_, SymbolNode* symbol_) : Node(kind_, span_), symbol(symbol_)
 {
 }
 
-FunctionDefinitionNode::FunctionDefinitionNode(const soul::ast::Span& span_, SymbolNode* symbol_) : DefinitionNode(NodeKind::functionDefinitionNode, span_), symbol(symbol_)
+FunctionDefinitionNode::FunctionDefinitionNode(const soul::ast::Span& span_, SymbolNode* symbol_) : DefinitionNode(NodeKind::functionDefinitionNode, span_, symbol_)
 {
 }
 
@@ -191,7 +224,7 @@ void FunctionDefinitionNode::Accept(Visitor& visitor)
 }
 
 MacroDefinitionNode::MacroDefinitionNode(const soul::ast::Span& span_, SymbolNode* symbol_, Node* expr_) :
-    DefinitionNode(NodeKind::macroDefinitionNode, span_), symbol(symbol_), expr(expr_)
+    DefinitionNode(NodeKind::macroDefinitionNode, span_, symbol_), expr(expr_)
 {
 }
 

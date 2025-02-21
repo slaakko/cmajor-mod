@@ -5,6 +5,7 @@
 
 export module cmajor.sbin.assembly.asm_file;
 
+import cmajor.sbin.coff;
 import cmajor.sbin.machine_x64;
 import soul.ast.span;
 import std.core;
@@ -14,11 +15,27 @@ export namespace cmajor::sbin::assembly {
 namespace asm_file {}
 
 class Visitor;
+class Node;
 
 enum class SymbolKind : uint8_t
 {
-    public_, external
+    none = 0u, public_ = 1u << 0u, external = 1u << 1u, code = 1u << 2u, data = 1u << 3u, macro = 1u << 4u, label = 1u << 5u
 };
+
+constexpr SymbolKind operator|(SymbolKind left, SymbolKind right)
+{
+    return SymbolKind(uint8_t(left) | uint8_t(right));
+}
+
+constexpr SymbolKind operator&(SymbolKind left, SymbolKind right)
+{
+    return SymbolKind(uint8_t(left) & uint8_t(right));
+}
+
+constexpr SymbolKind operator~(SymbolKind kind)
+{
+    return SymbolKind(~uint8_t(kind));
+}
 
 enum class Type : uint8_t
 {
@@ -35,10 +52,50 @@ enum class Operator : uint8_t
     plus, minus, times
 };
 
+class Symbol
+{
+public:
+    Symbol(SymbolKind kind_, Type type_, const std::string& name_);
+    SymbolKind Kind() const { return kind; }
+    Type GetType() const { return type; }
+    void SetType(Type type_) { type = type_; }
+    const std::string& Name() const { return name; }
+    bool IsKind(SymbolKind kindFlag) const { return (kind & kindFlag) != SymbolKind::none; }
+    void SetKindFlag(SymbolKind kindFlag) { kind = kind | kindFlag; }
+    void ResetKindFlag(SymbolKind kindFlag) { kind = kind & ~kindFlag; }
+    cmajor::sbin::coff::SymbolTableEntry* Entry() const { return entry; }
+    void SetEntry(cmajor::sbin::coff::SymbolTableEntry* entry_) { entry = entry_; }
+    Node* GetNode() const { return node; }
+    void SetNode(Node* node_) { node = node_; }
+    bool HasValue() const { return hasValue; }
+    uint64_t Value() const { return value; }
+    void SetValue(uint64_t value_);
+    Symbol* GetSubSymbol(const std::string& name) const;
+    void AddSubSymbol(Symbol* subSymbol);
+private:
+    SymbolKind kind;
+    Type type;
+    std::string name;
+    cmajor::sbin::coff::SymbolTableEntry* entry;
+    Node* node;
+    bool hasValue;
+    uint64_t value;
+    std::map<std::string, Symbol*> subSymbolMap;
+    std::vector<std::unique_ptr<Symbol>> subSymbols;
+};
+
+struct JmpPos
+{
+    JmpPos(int64_t pos_, Symbol* symbol_, const soul::ast::Span& span_) : pos(pos_), symbol(symbol_), span(span_) {}
+    int64_t pos;
+    Symbol* symbol;
+    soul::ast::Span span;
+};
+
 enum class NodeKind : int
 {
-    symbolNode, labelNode, declarationNode, dataDefinitionNode, binaryExprNode, unaryExprNode, registerNode, contentExprNode, sizeExprNode, parenthesizedExprNode,
-    hexNumberNode, realNode, integerNode, stringNode, instructionNode, functionDefinitionNode, macroDefinitionNode, asmFileNode
+    none, symbolNode, labelNode, declarationNode, dataDefinitionNode, binaryExprNode, unaryExprNode, registerNode, contentExprNode, sizeExprNode, parenthesizedExprNode,
+    hexNumberNode, realNode, integerNode, stringNode, instructionNode, functionDefinitionNode, macroDefinitionNode, asmFileNode, immediateNode, displacementNode
 };
 
 class Node
@@ -47,6 +104,8 @@ public:
     Node(NodeKind kind_, const soul::ast::Span& span_);
     virtual ~Node();
     NodeKind Kind() const { return kind; }
+    bool IsFunctionDefinitionNode() const { return kind == NodeKind::functionDefinitionNode; }
+    bool IsMacroDefinitionNode() const { return kind == NodeKind::macroDefinitionNode; }
     const soul::ast::Span& Span() const { return span; }
     virtual void Accept(Visitor& visitor) = 0;
 private:
@@ -232,21 +291,23 @@ private:
 class DefinitionNode : public Node
 {
 public:
-    DefinitionNode(NodeKind kind_, const soul::ast::Span& span_);
+    DefinitionNode(NodeKind kind_, const soul::ast::Span& span_, SymbolNode* symbol_);
+    SymbolNode* Symbol() const { return symbol.get(); }
+private:
+    std::unique_ptr<SymbolNode> symbol;
 };
 
 class FunctionDefinitionNode : public DefinitionNode
 {
 public:    
     FunctionDefinitionNode(const soul::ast::Span& span_, SymbolNode* symbol_);
-    SymbolNode* Symbol() const { return symbol.get(); }
     SymbolNode* EndpSymbol() const { return endpSymbol.get(); }
     void SetEndpSymbol(SymbolNode* endpSymbol_);
     void AddInstruction(InstructionBaseNode* inst);
     const std::vector<std::unique_ptr<InstructionBaseNode>>& Instructions() const { return instructions; }
     void Accept(Visitor& visitor) override;
 private:
-    std::unique_ptr<SymbolNode> symbol;
+    
     std::unique_ptr<SymbolNode> endpSymbol;
     std::vector<std::unique_ptr<InstructionBaseNode>> instructions;
 };
@@ -255,11 +316,9 @@ class MacroDefinitionNode : public DefinitionNode
 {
 public: 
     MacroDefinitionNode(const soul::ast::Span& span_, SymbolNode* symbol_, Node* expr_);
-    SymbolNode* Symbol() const { return symbol.get(); }
     Node* Expr() const { return expr.get(); }
     void Accept(Visitor& visitor) override;
 private:
-    std::unique_ptr<SymbolNode> symbol;
     std::unique_ptr<Node> expr;
 };
 

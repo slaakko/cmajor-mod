@@ -3,12 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.sbin.assembly.visitor;
+module cmajor.sbin.machine_x64.opcode;
 
-namespace cmajor::sbin::assembly {
+namespace cmajor::sbin::machine_x64 {
 
-Visitor::~Visitor()
-{
-}
-
-} // namespace cmajor::sbin::assembly
+} // namespace cmajor::sbin::machine_x64

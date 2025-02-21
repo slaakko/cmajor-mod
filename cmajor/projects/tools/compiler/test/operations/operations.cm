@@ -1,0 +1,183 @@
+using System;
+
+void BoolOp()
+{
+    bool x = true;
+    bool y = !x;
+}
+
+void SByteOp()
+{
+    sbyte x = 0;
+    sbyte y = 1;
+    sbyte z = 2;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void ByteOp()
+{
+    byte x = 0u;
+    byte y = 1u;
+    byte z = 2u;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void ShortOp()
+{
+    short x = 0;
+    short y = 1;
+    short z = 2;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void UShortOp()
+{
+    ushort x = 0u;
+    ushort y = 1u;
+    ushort z = 2u;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void IntOp()
+{
+    int x = 0;
+    int y = 1;
+    int z = 2;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void UIntOp()
+{
+    uint x = 0u;
+    uint y = 1u;
+    uint z = 2u;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void LongOp()
+{
+    long x = 0;
+    long y = 1;
+    long z = 2;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void ULongOp()
+{
+    ulong x = 0u;
+    ulong y = 1u;
+    ulong z = 2u;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = y % z;
+    x = y << z;
+    x = y >> z;
+    x = y & z;
+    x = y | z;
+    x = y ^ z;
+    x = -y;
+    x = ~y;
+}
+
+void FloatOp()
+{
+    float x = 0.0f;
+    float y = 1.0f;
+    float z = 2.0f;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = -y;
+}
+
+void DoubleOp()
+{
+    double x = 0.0;
+    double y = 1.0;
+    double z = 2.0;
+    x = y + z;
+    x = y - z;
+    x = y * z;
+    x = y / z;
+    x = -y;
+}

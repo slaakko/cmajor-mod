@@ -11,10 +11,10 @@ import util.uuid;
 
 export namespace util {
 
-class LitteEndianBinaryStreamWriter
+class LittleEndianBinaryStreamWriter
 {
 public:
-    LitteEndianBinaryStreamWriter(Stream& stream_);
+    LittleEndianBinaryStreamWriter(Stream& stream_);
     Stream& GetStream() { return stream; }
     void Write(uint8_t x);
     void Write(int8_t x);

@@ -89,10 +89,18 @@ int64_t MemoryStream::Tell()
 
 void MemoryStream::SetFromContent()
 {
+    SetFromContent(true);
+}
+
+void MemoryStream::SetFromContent(bool setPosition)
+{
     data = content.data();
     size = content.size();
     readPos = 0;
-    SetPosition(readPos);
+    if (setPosition)
+    {
+        SetPosition(readPos);
+    }
 }
 
 } // namespace util

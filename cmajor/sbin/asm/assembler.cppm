@@ -8,21 +8,28 @@ export module cmajor.sbin.assembly.assembler;
 import cmajor.sbin.assembly.visitor;
 import cmajor.sbin.assembly.asm_file;
 import cmajor.sbin.coff;
+import cmajor.sbin.machine_x64;
 import soul.ast.span;
 import soul.lexer;
+import util;
 import std.core;
 
 export namespace cmajor::sbin::assembly {
 
-class Assembler : public Visitor
+enum class EmitOperation
+{
+    emitCode, emitData
+};
+
+class Assembler : public Visitor, public cmajor::sbin::machine_x64::Emitter
 {
 public:
     Assembler(const std::string& asmFilePath_, bool verbose_);
     void Assemble();
-    void ThrowError(const std::string& errorMessage, const soul::ast::Span& span);
+    void MakeSymbols();
+    void EmitData();
+    void EmitCode();
     void Visit(SymbolNode& symbolNode) override;
-    void Visit(LabelNode& labelNode) override;
-    void Visit(DeclarationNode& declarationNode) override;
     void Visit(DataDefinitionNode& dataDefinitionNode) override;
     void Visit(BinaryExprNode& binaryExprNode) override;
     void Visit(UnaryExprNode& unaryExprNode) override;
@@ -31,13 +38,27 @@ public:
     void Visit(SizeExprNode& sizeExprNode) override;
     void Visit(ParenthesizedExprNode& parenthesizedExprNode) override;
     void Visit(HexNumberNode& hexNumberNode) override;
-    void Visit(RealNode& realNode) override;
     void Visit(IntegerNode& integerNode) override;
+    void ProcessIntegerValue(uint64_t value, const soul::ast::Span& span);
+    void Visit(RealNode& realNode) override;
     void Visit(StringNode& stringNode) override;
     void Visit(InstructionNode& instructionNode) override;
     void Visit(FunctionDefinitionNode& functionDefinitionNode) override;
     void Visit(MacroDefinitionNode& macroDefinitionNode) override;
-    void Visit(AsmFileNode& asmFileNode) override;
+    Symbol* GetSymbol(const std::string& symbolName) const;
+    void AddSymbol(Symbol* symbol);
+    void EmitByte(uint8_t x) override;
+    void EmitWord(uint16_t x) override;
+    void EmitDword(uint32_t x) override;
+    void EmitQword(uint64_t x) override;
+    void ThrowError(const std::string& errorMessage, const soul::ast::Span& span) override;
+    void EmitCallFunctionSymbol(Symbol* symbol);
+    void EmitLeaSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span);
+    void EmitJmp(Symbol* symbol, const soul::ast::Span& span);
+    void EmitJne(Symbol* symbol0, const soul::ast::Span& span);
+    void AddJmpPos(int64_t pos, Symbol* symbol, const soul::ast::Span& span);
+    void ResolveJumps();
+    void WriteObjectFile();
 private:
     bool verbose;
     soul::lexer::FileMap fileMap;
@@ -45,6 +66,26 @@ private:
     std::string objFilePath;
     std::unique_ptr<AsmFileNode> asmFile;
     std::unique_ptr<cmajor::sbin::coff::CoffObjectFile> objectFile;
+    util::MemoryStream codeStream;
+    cmajor::sbin::coff::Section* codeSection;
+    util::MemoryStream dataStream;
+    cmajor::sbin::coff::Section* dataSection;
+    std::map<std::string, Symbol*> symbolMap;
+    std::vector<std::unique_ptr<Symbol>> symbols;
+    std::unique_ptr<util::LittleEndianBinaryStreamWriter> currentWriter;
+    EmitOperation emitOperation;
+    DataInstKind dataInstKind;
+    NodeKind operandKind;
+    cmajor::sbin::machine_x64::Register reg;
+    cmajor::sbin::machine_x64::Register contentReg0;
+    cmajor::sbin::machine_x64::Register contentReg1;
+    cmajor::sbin::machine_x64::Register contentReg2;
+    uint64_t immediate;
+    bool content;
+    uint32_t displacement;
+    Symbol* symbolOperand;
+    std::vector<JmpPos> jmpPositions;
+    Symbol* functionSymbol;
 };
 
 } // namespace cmajor::sbin::assembly

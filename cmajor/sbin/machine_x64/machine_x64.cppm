@@ -7,3 +7,4 @@ export module cmajor.sbin.machine_x64;
 
 export import cmajor.sbin.machine_x64.reg;
 export import cmajor.sbin.machine_x64.opcode;
+export import cmajor.sbin.machine_x64.emitter;

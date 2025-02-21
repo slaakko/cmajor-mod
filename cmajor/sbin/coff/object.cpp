@@ -507,6 +507,9 @@ void CoffHeader::Dump(util::CodeFormatter& formatter)
     std::string symbolTableOffsetTitle = util::Format("symbol table offset", titleWidth, util::FormatJustify::right);
     std::string symbolTableOffsetStr = util::ToHexString(symbolTableOffset);
     formatter << symbolTableOffsetTitle << " : " << symbolTableOffsetStr << "\n";
+    std::string numberOfSymbolsTitle = util::Format("number of symbols", titleWidth, util::FormatJustify::right);
+    std::string numberOfSymbolsStr = util::ToHexString(numberOfSymbols);
+    formatter << numberOfSymbolsTitle << " : " << numberOfSymbolsStr << "\n";
     std::string optionalHeaderSizeTitle = util::Format("optional header size", titleWidth, util::FormatJustify::right);
     std::string optionalHeaderSizeStr = util::ToHexString(sizeOfOptionalHeader);
     formatter << optionalHeaderSizeTitle << " : " << optionalHeaderSizeStr << "\n";
@@ -516,7 +519,7 @@ void CoffHeader::Dump(util::CodeFormatter& formatter)
     formatter << "\n";
 }
 
-void CoffHeader::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void CoffHeader::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     writer.Write(static_cast<uint16_t>(machine));
     writer.Write(static_cast<uint16_t>(file->Sections().size()));
@@ -635,7 +638,7 @@ void SectionHeader::Dump(util::CodeFormatter& formatter, CoffObjectFile* file)
     formatter << "\n";
 }
 
-void SectionHeader::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void SectionHeader::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     for (int i = 0; i < 8; ++i)
     {
@@ -711,7 +714,7 @@ void Relocation::Dump(util::CodeFormatter& formatter, CoffObjectFile* file)
     formatter << typeTitle << " : " << typeStr << "\n";
 }
 
-void Relocation::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void Relocation::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     writer.Write(static_cast<uint32_t>(virtualAddress));
     writer.Write(static_cast<uint32_t>(symbolTableIndex));
@@ -744,12 +747,17 @@ void RelocationTable::Dump(util::CodeFormatter& formatter, CoffObjectFile* file)
     }
 }
 
-void RelocationTable::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void RelocationTable::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     for (auto& relocation : relocations)
     {
         relocation.Write(writer, file, positions);
     }
+}
+
+void RelocationTable::AddRelocation(const Relocation& relocation)
+{
+    relocations.push_back(relocation);
 }
 
 Section::Section() : sectionHeader(new SectionHeader()), relocationTable(new RelocationTable()), data(), checkSum(0u)
@@ -812,7 +820,11 @@ void Section::Dump(util::CodeFormatter& formatter, CoffObjectFile* file, DumpFla
         }
         if (!lineChars.empty())
         {
-            int n = 15 - (data.size() & 0x0Fu) + 1;
+            int n = 16 - (data.size() % 16);
+            if (n == 16)
+            {
+                n = 0;
+            }
             for (int i = 0; i < n; ++i)
             {
                 formatter << "   ";
@@ -845,12 +857,12 @@ void Section::ComputeCheckSum()
     checkSum = util::Crc32(data);
 }
 
-void Section::WriteHeader(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void Section::WriteHeader(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     sectionHeader->Write(writer, file, positions);
 }
 
-void Section::WriteData(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void Section::WriteData(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     if (data.empty()) return;
     int64_t position = writer.Position();
@@ -863,7 +875,7 @@ void Section::WriteData(util::LitteEndianBinaryStreamWriter& writer, CoffObjectF
     }
 }
 
-void Section::WriteRelocationTable(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void Section::WriteRelocationTable(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     if (relocationTable->Relocations().empty()) return;
     int64_t position = writer.Position();
@@ -871,6 +883,30 @@ void Section::WriteRelocationTable(util::LitteEndianBinaryStreamWriter& writer, 
     uint32_t relocationsOffset = static_cast<uint32_t>(position);
     relocationsOffsetWriter.Write(static_cast<uint32_t>(relocationsOffset));
     relocationTable->Write(writer, file, positions);
+}
+
+Section* MakeCodeSection(CoffObjectFile* file)
+{
+    Section* section = new Section();
+    SectionHeader* header = section->GetSectionHeader();
+    header->SetName(".text", file);
+    header->SetCharacteristicsFlag(IMAGE_SCN_CNT_CODE);
+    header->SetAlignment(IMAGE_SCN_ALIGN_16BYTES);
+    header->SetCharacteristicsFlag(IMAGE_SCN_MEM_EXECUTE);
+    header->SetCharacteristicsFlag(IMAGE_SCN_MEM_READ);
+    return section;
+}
+
+Section* MakeDataSection(CoffObjectFile* file)
+{
+    Section* section = new Section();
+    SectionHeader* header = section->GetSectionHeader();
+    header->SetName(".data", file);
+    header->SetCharacteristicsFlag(IMAGE_SCN_CNT_INITIALIZED_DATA);
+    header->SetAlignment(IMAGE_SCN_ALIGN_16BYTES);
+    header->SetCharacteristicsFlag(IMAGE_SCN_MEM_READ);
+    header->SetCharacteristicsFlag(IMAGE_SCN_MEM_WRITE);
+    return section;
 }
 
 SymbolNameLocation::SymbolNameLocation() : zeros(0), offset()
@@ -881,7 +917,7 @@ SymbolNameLocation::SymbolNameLocation(uint32_t offset_) : zeros(0), offset(offs
 {
 }
 
-SymbolTableEntry::SymbolTableEntry() : index(1), shortName(), value(), sectionNumber(), type(), storageClass(), numberOfAuxSymbols()
+SymbolTableEntry::SymbolTableEntry() : index(0), shortName(), value(), sectionNumber(), type(), storageClass(), numberOfAuxSymbols()
 {
     for (int i = 0; i < 8; ++i)
     {
@@ -889,7 +925,7 @@ SymbolTableEntry::SymbolTableEntry() : index(1), shortName(), value(), sectionNu
     }
 }
 
-SymbolTableEntry::SymbolTableEntry(util::LittleEndianMemoryReader& reader) : index(1), shortName(), value(), sectionNumber(), type(), storageClass(), numberOfAuxSymbols()
+SymbolTableEntry::SymbolTableEntry(util::LittleEndianMemoryReader& reader) : index(0), shortName(), value(), sectionNumber(), type(), storageClass(), numberOfAuxSymbols()
 {
     for (int i = 0; i < 8; ++i)
     {
@@ -902,7 +938,7 @@ SymbolTableEntry::SymbolTableEntry(util::LittleEndianMemoryReader& reader) : ind
     numberOfAuxSymbols = reader.ReadByte();
 }
 
-bool SymbolTableEntry::IsSectionDefinition() const
+bool SymbolTableEntry::IsSectionDefinitionEntry() const
 {
     if (storageClass == IMAGE_SYM_CLASS_STATIC && value == 0u)
     {
@@ -989,7 +1025,7 @@ void SymbolTableEntry::SetAuxSectionDefinitionEntry(AuxSectionDefinitionSymbolTa
     auxSectionDefinitionEntry.reset(auxSectionDefinitionEntry_);
 }
 
-void SymbolTableEntry::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void SymbolTableEntry::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     for (int i = 0; i < 8; ++i)
     {
@@ -1004,6 +1040,46 @@ void SymbolTableEntry::Write(util::LitteEndianBinaryStreamWriter& writer, CoffOb
     {
         auxSectionDefinitionEntry->Write(writer, file, positions);
     }
+}
+
+SymbolTableEntry* MakeInternalFunctionSymbolTableEntry(int16_t codeSectionNumber, const std::string& functionName, CoffObjectFile* file)
+{
+    SymbolTableEntry* entry = new SymbolTableEntry();
+    entry->SetName(functionName, file);
+    entry->SetSectioNumber(codeSectionNumber);
+    entry->SetType(MakeSymbolTypeFunction());
+    entry->SetStorageClass(IMAGE_SYM_CLASS_EXTERNAL);
+    return entry;
+}
+
+SymbolTableEntry* MakeExternalFunctionSymbolTableEntry(const std::string& functionName, CoffObjectFile* file)
+{
+    SymbolTableEntry* entry = new SymbolTableEntry();
+    entry->SetName(functionName, file);
+    entry->SetSectioNumber(IMAGE_SYM_UNDEFINED);
+    entry->SetType(MakeSymbolTypeNull());
+    entry->SetStorageClass(IMAGE_SYM_CLASS_EXTERNAL);
+    return entry;
+}
+
+SymbolTableEntry* MakeInternalDataSymbolTableEntry(int16_t dataSectionNumber, const std::string& dataLabelName, CoffObjectFile* file)
+{
+    SymbolTableEntry* entry = new SymbolTableEntry();
+    entry->SetName(dataLabelName, file);
+    entry->SetSectioNumber(dataSectionNumber);
+    entry->SetType(MakeSymbolTypeNull());
+    entry->SetStorageClass(IMAGE_SYM_CLASS_EXTERNAL);
+    return entry;
+}
+
+SymbolTableEntry* MakeExternalDataSymbolTableEntry(const std::string& dataLabelName, CoffObjectFile* file)
+{
+    SymbolTableEntry* entry = new SymbolTableEntry();
+    entry->SetName(dataLabelName, file);
+    entry->SetSectioNumber(IMAGE_SYM_UNDEFINED);
+    entry->SetType(MakeSymbolTypeNull());
+    entry->SetStorageClass(IMAGE_SYM_CLASS_EXTERNAL);
+    return entry;
 }
 
 AuxSectionDefinitionSymbolTableEntry::AuxSectionDefinitionSymbolTableEntry() : 
@@ -1050,7 +1126,7 @@ void AuxSectionDefinitionSymbolTableEntry::Dump(util::CodeFormatter& formatter, 
     formatter << selectionTitle << " : " << selectionStr << "\n";
 }
 
-void AuxSectionDefinitionSymbolTableEntry::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void AuxSectionDefinitionSymbolTableEntry::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     writer.Write(static_cast<uint32_t>(length));
     writer.Write(static_cast<uint16_t>(numberOfRelocations));
@@ -1064,27 +1140,27 @@ void AuxSectionDefinitionSymbolTableEntry::Write(util::LitteEndianBinaryStreamWr
     }
 }
 
-SymbolTable::SymbolTable() : entries(), nextEntryNumber(1), numberOfEntries(0)
+SymbolTable::SymbolTable() : entries(), nextEntryNumber(0), numberOfEntries(0)
 {
 }
 
-SymbolTable::SymbolTable(util::LittleEndianMemoryReader& reader, uint32_t numberOfSymbols) : entries(), nextEntryNumber(1), numberOfEntries(0)
+SymbolTable::SymbolTable(util::LittleEndianMemoryReader& reader, uint32_t numberOfSymbols) : entries(), nextEntryNumber(0), numberOfEntries(0)
 {
     int64_t count = numberOfSymbols * SymbolTableEntry::Size();
     util::LittleEndianMemoryReader symbolTableReader(reader.Pos(), count);
     for (uint32_t i = 0u; i < numberOfSymbols; ++i)
     {
         std::unique_ptr<SymbolTableEntry> entry(new SymbolTableEntry(symbolTableReader));
-        entry->SetIndex(i + 1);
+        entry->SetIndex(i);
         uint8_t numAuxSymbols = entry->NumberOfAuxSymbols();
-        if (entry->IsSectionDefinition())
+        if (entry->IsSectionDefinitionEntry())
         {
             if (numAuxSymbols == 1)
             {
                 util::LittleEndianMemoryReader auxSectionDefinitionEntryReader(symbolTableReader.Pos(), AuxSectionDefinitionSymbolTableEntry::Size());
                 std::unique_ptr<AuxSectionDefinitionSymbolTableEntry> auxSectionDefinitionEntry(new AuxSectionDefinitionSymbolTableEntry(auxSectionDefinitionEntryReader));
                 entry->SetAuxSectionDefinitionEntry(auxSectionDefinitionEntry.release());
-                entry->GetAuxSectionDefinitionEntry()->SetIndex(i + 2);
+                entry->GetAuxSectionDefinitionEntry()->SetIndex(i + 1);
             }
             else
             {
@@ -1107,13 +1183,24 @@ SymbolTable::SymbolTable(util::LittleEndianMemoryReader& reader, uint32_t number
 
 SymbolTableEntry* SymbolTable::GetEntry(uint32_t symbolIndex) const
 {
-    if (symbolIndex >= 1u && symbolIndex <= entries.size())
+    if (symbolIndex >= 0u && symbolIndex < entries.size())
     {
-        return entries[symbolIndex - 1].get();
+        return entries[symbolIndex].get();
     }
     else
     {
         return nullptr;
+    }
+}
+
+void SymbolTable::AddEntry(SymbolTableEntry* entry)
+{
+    entry->SetIndex(GetNextEntryNumber());
+    entries.push_back(std::unique_ptr<SymbolTableEntry>(entry));
+    ++numberOfEntries;
+    for (uint8_t i = 0u; i < entry->NumberOfAuxSymbols(); ++i)
+    {
+        ++numberOfEntries;
     }
 }
 
@@ -1122,7 +1209,6 @@ void SymbolTable::Dump(util::CodeFormatter& formatter, CoffObjectFile* file)
     formatter << "Symbol table " << "\n";
     formatter << "------------" << "\n";
     formatter << "\n";
-    int titleWidth = 22;
     for (int i = 0; i < entries.size(); ++i)
     {
         SymbolTableEntry* entry = entries[i].get();
@@ -1133,7 +1219,7 @@ void SymbolTable::Dump(util::CodeFormatter& formatter, CoffObjectFile* file)
     }
 }
 
-void SymbolTable::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void SymbolTable::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
     int64_t position = writer.Position();
     util::LittleEndianMemoryWriter symbolTableOffsetWriter(positions.Data() + positions.SymbolTablePosition(), 4u);
@@ -1191,8 +1277,9 @@ uint32_t StringTable::AddString(const std::string& s)
     return offset;
 }
 
-void StringTable::Write(util::LitteEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
+void StringTable::Write(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions)
 {
+    writer.Write(size);
     for (const auto& s : strings)
     {
         writer.Write(s, true);
@@ -1243,7 +1330,7 @@ void CoffObjectFile::Dump(util::CodeFormatter& formatter, DumpFlags flags)
 void CoffObjectFile::Write(const std::string& objectFilePath)
 {
     util::MemoryStream memoryStream;
-    util::LitteEndianBinaryStreamWriter writer(memoryStream);
+    util::LittleEndianBinaryStreamWriter writer(memoryStream);
     Positions positions(memoryStream);
     coffHeader->Write(writer, this, positions);
     for (const auto& section : sections)
@@ -1252,18 +1339,24 @@ void CoffObjectFile::Write(const std::string& objectFilePath)
     }
     for (const auto& section : sections)
     {
+        memoryStream.SetFromContent(false);
         section->WriteData(writer, this, positions);
+        memoryStream.SetFromContent(false);
         section->WriteRelocationTable(writer, this, positions);
     }
+    memoryStream.SetFromContent(false);
     symbolTable->Write(writer, this, positions);
+    memoryStream.SetFromContent(false);
     stringTable->Write(writer, this, positions);
     util::FileStream fileStream(objectFilePath, util::OpenMode::binary | util::OpenMode::write);
+    memoryStream.SetFromContent();
     memoryStream.CopyTo(fileStream);
 }
 
 void CoffObjectFile::AddSection(Section* section)
 {
     sections.push_back(std::unique_ptr<Section>(section));
+    section->GetSectionHeader()->SetNumber(static_cast<uint16_t>(sections.size()));
 }
 
 Section* CoffObjectFile::GetSection(uint16_t sectionNumber) const

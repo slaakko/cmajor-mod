@@ -1,3 +1,8 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 import std.core;
 import util;
 import cmajor.sbin.coff;
@@ -145,4 +150,3 @@ int main(int argc, const char** argv)
     }
     return 0;
 }
-
