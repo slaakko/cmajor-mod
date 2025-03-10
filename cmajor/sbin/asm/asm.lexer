@@ -17,6 +17,7 @@ lexer AssemblyLexer
         "{newline}" { return NEWLINE; }
         "{symbol}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return SYMBOL; else return kw; }
         "{hexnum}" { return HEXNUMBER; }
+        "{hexnum_noh}" $(0) { return HEXNUMBER; }
         "{real}" { return REAL; }
         "{integer}" { return INTEGER; }
         "{string}" { return STRING; }
@@ -29,5 +30,15 @@ lexer AssemblyLexer
         "\+" { return PLUS; }
         "\-" { return MINUS; }
         "\*" { return TIMES; }
+    }
+
+    variables
+    {
+        bool parsingDump;
+    }
+
+    actions
+    {
+        $(0)={ if (!vars->parsingDump) return soul::lexer::INVALID_TOKEN; }
     }
 }

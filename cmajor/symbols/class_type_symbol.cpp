@@ -101,9 +101,9 @@ int32_t GetClassIdVmtIndexOffset()
     {
         return 0;
     }
-    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
-        Assert(false, "MASM, LLVM and C++ backends do not support class ids");
+        Assert(false, "MASM, SBIN, LLVM and C++ backends do not support class ids");
         return -1;
     }
     else
@@ -119,7 +119,7 @@ int32_t GetTypeIdVmtIndexOffset()
     {
         return 2;
     }
-    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         return 0;
     }
@@ -140,7 +140,7 @@ int32_t GetClassNameVmtIndexOffset()
     {
         return 2;
     }
-    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         Assert(false, "in-class typename not supported by MASM, C++ and LLVM backends");
         return -1;
@@ -162,7 +162,7 @@ int32_t GetImtsVmtIndexOffset()
     {
         return 3;
     }
-    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         return 2;
     }
@@ -183,7 +183,7 @@ int32_t GetFunctionVmtIndexOffset()
     {
         return 4;
     }
-    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         return 3;
     }
@@ -1677,7 +1677,7 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
     std::string imtObjectName = ImtObjectName(index, emitter);
     void* imtType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), imt.size());
     void* imtObject = emitter.GetOrInsertGlobal(imtObjectName, imtType);
-    if (GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::masm)
+    if (GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::sbin)
     {
         void* comdat = emitter.GetOrInsertAnyComdat(imtObjectName, imtObject);
     }
@@ -1687,7 +1687,7 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
     {
         FunctionSymbol* memFun = imt[i];
         void* interfaceFun = emitter.GetOrInsertFunction(util::ToUtf8(memFun->MangledName()), memFun->IrType(emitter), memFun->DontThrow());
-        if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm)
+        if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin)
         {
             irImt.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), interfaceFun));
         }
@@ -1705,7 +1705,7 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
     std::string imtArrayObjectName = ImtArrayObjectName(emitter);
     void* imtsArrayType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), implementedInterfaces.size());
     void* imtsArrayObject = emitter.GetOrInsertGlobal(imtArrayObjectName, imtsArrayType);
-    if (GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::masm)
+    if (GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::sbin)
     {
         void* comdat = emitter.GetOrInsertAnyComdat(imtArrayObjectName, imtsArrayObject);
     }
@@ -1714,7 +1714,7 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
     for (int i = 0; i < n; ++i)
     {
         void* irImt = CreateImt(emitter, i);
-        if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm)
+        if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin)
         {
             imtsArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), irImt));
         }
@@ -1737,7 +1737,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
         emitter.SetVmtObjectType(this, localVmtObjectType);
     }
     void* className = nullptr;
-    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm)
+    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::sbin && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm)
     {
         if (!emitter.IsVmtObjectCreated(this) && create)
         {
@@ -1854,7 +1854,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
             }
         }
-        else if (GetBackEnd() == BackEnd::masm)
+        else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin)
         {
             uint64_t typeId1 = 0;
             uint64_t typeId2 = 0;

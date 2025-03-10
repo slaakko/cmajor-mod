@@ -1,0 +1,201 @@
+
+Dump of file foo.obj
+
+File Type: COFF OBJECT
+
+FILE HEADER VALUES
+            8664 machine (x64)
+               3 number of sections
+        67C46FD3 time date stamp Sun Mar  2 16:48:51 2025
+             228 file pointer to symbol table
+               E number of symbols
+               0 size of optional header
+               0 characteristics
+
+SECTION HEADER #1
+.text$mn name
+       0 physical address
+       0 virtual address
+     10B size of raw data
+      8C file pointer to raw data (0000008C to 00000196)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+60500020 flags
+         Code
+         16 byte align
+         Execute Read
+
+Foo:
+  0000000000000000: 4C 8B 00           mov         r8,qword ptr [rax]
+  0000000000000003: 4C 8B 03           mov         r8,qword ptr [rbx]
+  0000000000000006: 4C 8B 01           mov         r8,qword ptr [rcx]
+  0000000000000009: 4C 8B 02           mov         r8,qword ptr [rdx]
+  000000000000000C: 4C 8B 06           mov         r8,qword ptr [rsi]
+  000000000000000F: 4C 8B 07           mov         r8,qword ptr [rdi]
+  0000000000000012: 4C 8B 04 24        mov         r8,qword ptr [rsp]
+  0000000000000016: 4C 8B 45 00        mov         r8,qword ptr [rbp]
+  000000000000001A: 4D 8B 00           mov         r8,qword ptr [r8]
+  000000000000001D: 4D 8B 01           mov         r8,qword ptr [r9]
+  0000000000000020: 4D 8B 02           mov         r8,qword ptr [r10]
+  0000000000000023: 4D 8B 03           mov         r8,qword ptr [r11]
+  0000000000000026: 4D 8B 04 24        mov         r8,qword ptr [r12]
+  000000000000002A: 4D 8B 45 00        mov         r8,qword ptr [r13]
+  000000000000002E: 4D 8B 06           mov         r8,qword ptr [r14]
+  0000000000000031: 4D 8B 07           mov         r8,qword ptr [r15]
+Bar:
+  0000000000000034: 49 8B 45 00        mov         rax,qword ptr [r13]
+  0000000000000038: 49 8B 5D 00        mov         rbx,qword ptr [r13]
+  000000000000003C: 49 8B 4D 00        mov         rcx,qword ptr [r13]
+  0000000000000040: 49 8B 55 00        mov         rdx,qword ptr [r13]
+  0000000000000044: 49 8B 75 00        mov         rsi,qword ptr [r13]
+  0000000000000048: 49 8B 7D 00        mov         rdi,qword ptr [r13]
+  000000000000004C: 49 8B 65 00        mov         rsp,qword ptr [r13]
+  0000000000000050: 49 8B 6D 00        mov         rbp,qword ptr [r13]
+  0000000000000054: 4D 8B 45 00        mov         r8,qword ptr [r13]
+  0000000000000058: 4D 8B 4D 00        mov         r9,qword ptr [r13]
+  000000000000005C: 4D 8B 55 00        mov         r10,qword ptr [r13]
+  0000000000000060: 4D 8B 5D 00        mov         r11,qword ptr [r13]
+  0000000000000064: 4D 8B 65 00        mov         r12,qword ptr [r13]
+  0000000000000068: 4D 8B 6D 00        mov         r13,qword ptr [r13]
+  000000000000006C: 4D 8B 75 00        mov         r14,qword ptr [r13]
+  0000000000000070: 4D 8B 7D 00        mov         r15,qword ptr [r13]
+Baz:
+  0000000000000074: 88 00              mov         byte ptr [rax],al
+  0000000000000076: 88 03              mov         byte ptr [rbx],al
+  0000000000000078: 88 01              mov         byte ptr [rcx],al
+  000000000000007A: 88 02              mov         byte ptr [rdx],al
+  000000000000007C: 88 06              mov         byte ptr [rsi],al
+  000000000000007E: 88 07              mov         byte ptr [rdi],al
+  0000000000000080: 88 04 24           mov         byte ptr [rsp],al
+  0000000000000083: 88 45 00           mov         byte ptr [rbp],al
+  0000000000000086: 41 88 00           mov         byte ptr [r8],al
+  0000000000000089: 41 88 01           mov         byte ptr [r9],al
+  000000000000008C: 41 88 02           mov         byte ptr [r10],al
+  000000000000008F: 41 88 03           mov         byte ptr [r11],al
+  0000000000000092: 41 88 04 24        mov         byte ptr [r12],al
+  0000000000000096: 41 88 45 00        mov         byte ptr [r13],al
+  000000000000009A: 41 88 06           mov         byte ptr [r14],al
+  000000000000009D: 41 88 07           mov         byte ptr [r15],al
+Xyzzy:
+  00000000000000A0: 44 8A 00           mov         r8b,byte ptr [rax]
+  00000000000000A3: 44 8A 03           mov         r8b,byte ptr [rbx]
+  00000000000000A6: 44 8A 01           mov         r8b,byte ptr [rcx]
+  00000000000000A9: 44 8A 02           mov         r8b,byte ptr [rdx]
+  00000000000000AC: 44 8A 06           mov         r8b,byte ptr [rsi]
+  00000000000000AF: 44 8A 07           mov         r8b,byte ptr [rdi]
+  00000000000000B2: 44 8A 45 00        mov         r8b,byte ptr [rbp]
+  00000000000000B6: 44 8A 04 24        mov         r8b,byte ptr [rsp]
+  00000000000000BA: 45 8A 00           mov         r8b,byte ptr [r8]
+  00000000000000BD: 45 8A 01           mov         r8b,byte ptr [r9]
+  00000000000000C0: 45 8A 02           mov         r8b,byte ptr [r10]
+  00000000000000C3: 45 8A 03           mov         r8b,byte ptr [r11]
+  00000000000000C6: 45 8A 04 24        mov         r8b,byte ptr [r12]
+  00000000000000CA: 45 8A 45 00        mov         r8b,byte ptr [r13]
+  00000000000000CE: 45 8A 06           mov         r8b,byte ptr [r14]
+  00000000000000D1: 45 8A 07           mov         r8b,byte ptr [r15]
+Qwerty:
+  00000000000000D4: 4C 89 00           mov         qword ptr [rax],r8
+  00000000000000D7: 4C 89 03           mov         qword ptr [rbx],r8
+  00000000000000DA: 4C 89 01           mov         qword ptr [rcx],r8
+  00000000000000DD: 4C 89 02           mov         qword ptr [rdx],r8
+  00000000000000E0: 4C 89 06           mov         qword ptr [rsi],r8
+  00000000000000E3: 4C 89 07           mov         qword ptr [rdi],r8
+  00000000000000E6: 4C 89 04 24        mov         qword ptr [rsp],r8
+  00000000000000EA: 4C 89 45 00        mov         qword ptr [rbp],r8
+  00000000000000EE: 4D 89 00           mov         qword ptr [r8],r8
+  00000000000000F1: 4D 89 01           mov         qword ptr [r9],r8
+  00000000000000F4: 4D 89 02           mov         qword ptr [r10],r8
+  00000000000000F7: 4D 89 03           mov         qword ptr [r11],r8
+  00000000000000FA: 4D 89 04 24        mov         qword ptr [r12],r8
+  00000000000000FE: 4D 89 45 00        mov         qword ptr [r13],r8
+  0000000000000102: 4D 89 06           mov         qword ptr [r14],r8
+  0000000000000105: 4D 89 07           mov         qword ptr [r15],r8
+Compare:
+  0000000000000108: 41 3A F5           cmp         sil,r13b
+
+RAW DATA #1
+  00000000: 4C 8B 00 4C 8B 03 4C 8B 01 4C 8B 02 4C 8B 06 4C  L..L..L..L..L..L
+  00000010: 8B 07 4C 8B 04 24 4C 8B 45 00 4D 8B 00 4D 8B 01  ..L..$L.E.M..M..
+  00000020: 4D 8B 02 4D 8B 03 4D 8B 04 24 4D 8B 45 00 4D 8B  M..M..M..$M.E.M.
+  00000030: 06 4D 8B 07 49 8B 45 00 49 8B 5D 00 49 8B 4D 00  .M..I.E.I.].I.M.
+  00000040: 49 8B 55 00 49 8B 75 00 49 8B 7D 00 49 8B 65 00  I.U.I.u.I.}.I.e.
+  00000050: 49 8B 6D 00 4D 8B 45 00 4D 8B 4D 00 4D 8B 55 00  I.m.M.E.M.M.M.U.
+  00000060: 4D 8B 5D 00 4D 8B 65 00 4D 8B 6D 00 4D 8B 75 00  M.].M.e.M.m.M.u.
+  00000070: 4D 8B 7D 00 88 00 88 03 88 01 88 02 88 06 88 07  M.}.............
+  00000080: 88 04 24 88 45 00 41 88 00 41 88 01 41 88 02 41  ..$.E.A..A..A..A
+  00000090: 88 03 41 88 04 24 41 88 45 00 41 88 06 41 88 07  ..A..$A.E.A..A..
+  000000A0: 44 8A 00 44 8A 03 44 8A 01 44 8A 02 44 8A 06 44  D..D..D..D..D..D
+  000000B0: 8A 07 44 8A 45 00 44 8A 04 24 45 8A 00 45 8A 01  ..D.E.D..$E..E..
+  000000C0: 45 8A 02 45 8A 03 45 8A 04 24 45 8A 45 00 45 8A  E..E..E..$E.E.E.
+  000000D0: 06 45 8A 07 4C 89 00 4C 89 03 4C 89 01 4C 89 02  .E..L..L..L..L..
+  000000E0: 4C 89 06 4C 89 07 4C 89 04 24 4C 89 45 00 4D 89  L..L..L..$L.E.M.
+  000000F0: 00 4D 89 01 4D 89 02 4D 89 03 4D 89 04 24 4D 89  .M..M..M..M..$M.
+  00000100: 45 00 4D 89 06 4D 89 07 41 3A F5                 E.M..M..A:õ
+
+SECTION HEADER #2
+   .data name
+       0 physical address
+       0 virtual address
+       0 size of raw data
+       0 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0500040 flags
+         Initialized Data
+         16 byte align
+         Read Write
+
+SECTION HEADER #3
+.debug$S name
+       0 physical address
+       0 virtual address
+      90 size of raw data
+     197 file pointer to raw data (00000197 to 00000226)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42100040 flags
+         Initialized Data
+         Discardable
+         1 byte align
+         Read Only
+
+RAW DATA #3
+  00000000: 04 00 00 00 F1 00 00 00 84 00 00 00 49 00 01 11  ....ñ.......I...
+  00000010: 00 00 00 00 44 3A 5C 77 6F 72 6B 5C 63 6D 61 6A  ....D:\work\cmaj
+  00000020: 6F 72 2D 6D 6F 64 5C 63 6D 61 6A 6F 72 5C 70 72  or-mod\cmajor\pr
+  00000030: 6F 6A 65 63 74 73 5C 74 6F 6F 6C 73 5C 63 6F 6D  ojects\tools\com
+  00000040: 70 69 6C 65 72 5C 74 65 73 74 5C 61 73 6D 5C 66  piler\test\asm\f
+  00000050: 6F 6F 2E 6F 62 6A 00 37 00 3C 11 03 02 00 00 D0  oo.obj.7.<.....Ð
+  00000060: 00 00 00 00 00 00 00 00 00 0E 00 2B 00 F8 87 00  ...........+.ø..
+  00000070: 00 4D 69 63 72 6F 73 6F 66 74 20 28 52 29 20 4D  .Microsoft (R) M
+  00000080: 61 63 72 6F 20 41 73 73 65 6D 62 6C 65 72 00 00  acro Assembler..
+
+COFF SYMBOL TABLE
+000 010387F8 ABS    notype       Static       | @comp.id
+001 00000010 ABS    notype       Static       | @feat.00
+002 00000000 SECT1  notype       Static       | .text$mn
+    Section length  10B, #relocs    0, #linenums    0, checksum        0
+004 00000000 SECT2  notype       Static       | .data
+    Section length    0, #relocs    0, #linenums    0, checksum        0
+006 00000000 SECT3  notype       Static       | .debug$S
+    Section length   90, #relocs    0, #linenums    0, checksum        0
+008 00000000 SECT1  notype ()    External     | Foo
+009 00000034 SECT1  notype ()    External     | Bar
+00A 00000074 SECT1  notype ()    External     | Baz
+00B 000000A0 SECT1  notype ()    External     | Xyzzy
+00C 000000D4 SECT1  notype ()    External     | Qwerty
+00D 00000108 SECT1  notype ()    External     | Compare
+
+String Table Size = 0x0 bytes
+
+  Summary
+
+           0 .data
+          90 .debug$S
+         10B .text$mn

@@ -1,0 +1,45 @@
+using System;
+
+void foo()
+{
+    long x = 1;
+    switch (x)
+    {
+        case 0:
+        {
+            x = 99;
+            break;
+        }
+        case 1:
+        {
+            x = 98;
+            break;
+        }
+        case 2:
+        {
+            x = 97;
+            break;
+        }
+        case 3:
+        {
+            x = 96;
+            break;
+        }
+        case 4:
+        {
+            x = 95;
+            break;
+        }
+        default:
+        {
+            x = 94;
+            break;
+        }
+    }
+    Console.Out() << x << "\n";
+}
+
+void main()
+{
+    foo();
+}

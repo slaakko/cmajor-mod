@@ -12,6 +12,8 @@ import cmajor.ir;
 
 export namespace cmajor::build {
 
+std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFilePath);
+
 void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::symbols::Module>& rootModule, std::set<std::string>& builtProjects);
 
 void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols::Module>& rootModule, bool& stop, bool resetRootModule, std::set<std::string>& builtProjects);
@@ -24,5 +26,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
 void StopBuild();
 
 void ResetStopBuild();
+
+void Install(const std::string& projectFilePath);
 
 } // namespace cmajor::build

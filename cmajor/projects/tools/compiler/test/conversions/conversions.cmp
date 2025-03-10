@@ -1,0 +1,3 @@
+project conversions;
+target=library;
+source <conversions.cm>;

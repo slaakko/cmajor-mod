@@ -29,6 +29,10 @@ void InstallSystemLibraries(cmajor::symbols::Module* systemInstallModule)
     {
         backend = cmajor::ast::BackEnd::masm;
     }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+    {
+        backend = cmajor::ast::BackEnd::sbin;
+    }
     std::filesystem::path systemLibDir = cmajor::ast::CmajorSystemLibDir(cmajor::symbols::GetConfig(), backend, cmajor::symbols::GetOptimizationLevel());
     std::filesystem::create_directories(systemLibDir);
     for (cmajor::symbols::Module* systemModule : systemInstallModule->AllReferencedModules())
@@ -83,6 +87,10 @@ void InstallSystemWindowsLibraries(cmajor::symbols::Module* systemInstallWindows
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
         backend = cmajor::ast::BackEnd::masm;
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+    {
+        backend = cmajor::ast::BackEnd::sbin;
     }
     std::filesystem::path systemLibDir = cmajor::ast::CmajorSystemLibDir(cmajor::symbols::GetConfig(), backend, cmajor::symbols::GetOptimizationLevel());
     std::filesystem::create_directories(systemLibDir);

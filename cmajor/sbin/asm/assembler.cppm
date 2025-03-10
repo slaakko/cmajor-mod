@@ -24,7 +24,7 @@ enum class EmitOperation
 class Assembler : public Visitor, public cmajor::sbin::machine_x64::Emitter
 {
 public:
-    Assembler(const std::string& asmFilePath_, bool verbose_);
+    Assembler(const std::string& asmFilePath_, int logStreamId_, bool verbose_, bool printLines_);
     void Assemble();
     void MakeSymbols();
     void EmitData();
@@ -51,16 +51,26 @@ public:
     void EmitWord(uint16_t x) override;
     void EmitDword(uint32_t x) override;
     void EmitQword(uint64_t x) override;
+    void EmitFloat(float x) override;
+    void EmitDouble(double x) override;
     void ThrowError(const std::string& errorMessage, const soul::ast::Span& span) override;
     void EmitCallFunctionSymbol(Symbol* symbol);
     void EmitLeaSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span);
+    void EmitMovReg64Symbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span);
+    void EmitMovSdSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span);
+    void EmitMovSsSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span);
     void EmitJmp(Symbol* symbol, const soul::ast::Span& span);
-    void EmitJne(Symbol* symbol0, const soul::ast::Span& span);
+    void EmitJe(Symbol* symbol, const soul::ast::Span& span);
+    void EmitJne(Symbol* symbol, const soul::ast::Span& span);
+    void EmitJae(Symbol* symbol, const soul::ast::Span& span);
     void AddJmpPos(int64_t pos, Symbol* symbol, const soul::ast::Span& span);
     void ResolveJumps();
+    void ResolveSymbolDifferences();
     void WriteObjectFile();
 private:
     bool verbose;
+    bool printLines;
+    int logStreamId;
     soul::lexer::FileMap fileMap;
     std::string asmFilePath;
     std::string objFilePath;
@@ -80,11 +90,18 @@ private:
     cmajor::sbin::machine_x64::Register contentReg0;
     cmajor::sbin::machine_x64::Register contentReg1;
     cmajor::sbin::machine_x64::Register contentReg2;
-    uint64_t immediate;
+    cmajor::sbin::machine_x64::Register indexReg;
+    cmajor::sbin::machine_x64::Register baseReg;
+    bool negate;
+    int64_t immediate;
+    uint8_t scale;
     bool content;
-    uint32_t displacement;
+    int32_t displacement;
     Symbol* symbolOperand;
+    Symbol* symbol0;
+    Symbol* symbol1;
     std::vector<JmpPos> jmpPositions;
+    std::vector<SymbolDifference> symbolDifferences;
     Symbol* functionSymbol;
 };
 

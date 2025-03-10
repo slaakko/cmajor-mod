@@ -1,0 +1,3 @@
+project floats;
+target=program;
+source <floats.cm>;

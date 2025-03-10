@@ -1,4 +1,4 @@
-// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/cm.lexer/cm.lexer' using SoulCm lexer generator scmlg version 5.0.0
+// this file has been generated from 'D:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/cm.lexer/cm.lexer' using SoulCm lexer generator scmlg version 5.0.0
 
 using System;
 using System.Collections;
@@ -12,14 +12,14 @@ namespace cm.lexer
         public CmajorLexer(const uchar* start_, const uchar* end_, const string& fileName_) : 
             base(start_, end_, fileName_, "cm.lexer.CmajorLexer.classmap")
         {
-            auto classMapResult = System.Lex.GetClassMap(ClassMapName());
+            Result<int*> classMapResult = System.Lex.GetClassMap(ClassMapName());
             if (classMapResult.Error())
             {
                 SetErrorId(classMapResult.GetErrorId());
                 return;
             }
             SetClassMap(classMapResult.Value());
-            SetKeywordMap(GetKeywordMap());
+            SetKeywordMap(GetKeywords());
         }
         public override int NextState(int state, uchar c)
         {

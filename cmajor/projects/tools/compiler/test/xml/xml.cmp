@@ -1,0 +1,3 @@
+project xml;
+target=program;
+source <xml.cm>;

@@ -20,7 +20,7 @@ void MakeResourceFile(const std::string& resourceFilePath, const std::string& cl
 
 std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::string> asmFilePaths, 
     const std::vector<std::string> cppFilePaths, const std::vector<std::string>& resourceScriptFiles,
-    const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
+    const std::string& classIndexFilePath, const std::string& traceDataFilePath, const std::string& libraryFilePath, bool verbose)
 {
     std::string vsProjectFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".vcxproj");
 
@@ -39,6 +39,11 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
 
     std::string references;
     bool first = true;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+    {
+        references.append(util::GetFullPath(libraryFilePath));
+        first = false;
+    }
     for (const auto& ref : module->AllReferencedModules())
     {
         if (first)

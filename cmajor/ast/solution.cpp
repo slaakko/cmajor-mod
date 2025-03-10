@@ -114,6 +114,10 @@ void Solution::ResolveDeclarations()
             {
                 activeBackEnd = BackEnd::masm;
             }
+            else if (activeBackEndDeclaration->ActiveBackEnd() == U"sbin")
+            {
+                activeBackEnd = BackEnd::sbin;
+            }
             else if (activeBackEndDeclaration->ActiveBackEnd() == U"cm")
             {
                 activeBackEnd = BackEnd::cm;

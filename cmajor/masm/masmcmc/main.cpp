@@ -66,22 +66,6 @@ void PrintHelp()
 
 int main(int argc, const char** argv)
 {
-/*
-    std::string line;
-    std::vector<std::string> lines;
-    while (std::getline(std::cin, line))
-    {
-        lines.push_back(line);
-    }
-    std::sort(lines.begin(), lines.end());
-    auto it = std::unique(lines.begin(), lines.end());
-    lines.erase(it, lines.end());
-    for (const auto& line : lines)
-    {
-        std::cout << line << "\n";
-    }
-    return 0;
-*/
     cmajor::symbols::SetBackEnd(cmajor::symbols::BackEnd::masm);
     cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::masmBackEnd);
     std::set<std::string> builtProjects;

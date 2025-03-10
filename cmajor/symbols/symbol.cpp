@@ -1153,7 +1153,7 @@ std::unique_ptr<Symbol> Symbol::RemoveFromParent()
 bool Symbol::IsNothrow() const
 {
     BackEnd backend = GetBackEnd();
-    if (backend == BackEnd::llvm || backend == BackEnd::cpp || backend == BackEnd::masm)
+    if (backend == BackEnd::llvm || backend == BackEnd::sbin || backend == BackEnd::cpp || backend == BackEnd::masm)
     {
         return true;
     }

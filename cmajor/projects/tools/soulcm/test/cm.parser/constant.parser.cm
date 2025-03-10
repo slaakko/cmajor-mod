@@ -1,4 +1,4 @@
-// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/cm.parser/constant.parser' using SoulCm parser generator scmpg version 5.0.0
+// this file has been generated from 'D:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/cm.parser/constant.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;
@@ -195,7 +195,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Constant");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Constant");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstantNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release(), expr.Release())));
                 }

@@ -2592,7 +2592,8 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
     cmajor::symbols::TypeSymbol* targetType = ResolveType(castNode.TargetTypeExpr(), boundCompileUnit, containerScope);
     castNode.SourceExpr()->Accept(*this);
     cmajor::symbols::TypeSymbol* sourceType = expression->GetType();
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
     {
         switch (sourceType->GetValueType())
         {
@@ -2825,7 +2826,9 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
             new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"System"), 
             new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"MemAlloc")));
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"RtmMemAlloc"));

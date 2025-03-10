@@ -1,0 +1,25 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.sbin.assembly.instruction.line.parser;
+
+[interface]import cmajor.sbin.machine_x64;
+[interface]import cmajor.sbin.assembly.asm_file;
+[implementation]import cmajor.sbin.assembly.parser;
+[implementation]import cmajor.sbin.assembly.lexer;
+[implementation]import cmajor.sbin.assembly.token;
+
+parser AsmInstructionLineParser
+{
+    lexer cmajor::sbin::assembly::lexer::AssemblyLexer<char32_t>;
+
+    using AsmParser.Instruction;
+
+    main;
+
+    InstructionLine : cmajor::sbin::assembly::InstructionNode*
+        ::= empty{ vars->parsingDump = true; } Instruction:inst NEWLINE{ return inst; } 
+        ;
+}

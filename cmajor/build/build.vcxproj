@@ -242,6 +242,9 @@
     <ProjectReference Include="..\res\res.vcxproj">
       <Project>{06e30472-85fd-4d71-893f-c22b63caddd3}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sbin\sbinbuild\sbinbuild.vcxproj">
+      <Project>{fa37a228-1f9e-4e45-80b7-87a3b1a4bb4c}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\symbols\symbols.vcxproj">
       <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
     </ProjectReference>

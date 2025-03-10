@@ -1188,7 +1188,9 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(destructorSymbol->Parent());
                 if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
                 {
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                         boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));

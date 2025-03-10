@@ -1,0 +1,13 @@
+using System;
+
+void main()
+{
+    float x0 = 10.56f;
+    Console.Out() << x0 << endl();
+    double x1 = 10.56;
+    Console.Out() << x1 << endl();
+    float x2 = -10.56f;
+    Console.Out() << x2 << endl();
+    double x3 = -10.56;
+    Console.Out() << x3 << endl();
+}

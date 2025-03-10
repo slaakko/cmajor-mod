@@ -13,7 +13,10 @@ namespace cmajor::masm::assembly {
 
 void DeclarationSection::AddFunctionDeclaration(FunctionDeclaration* declaration)
 {
-    declarations.push_back(std::unique_ptr<Declaration>(declaration));
+    std::unique_ptr<Declaration> declarationPtr(declaration);
+    if (externalFunctionDeclarations.find(declaration->Name()) != externalFunctionDeclarations.end()) return;
+    externalFunctionDeclarations.insert(declaration->Name());
+    declarations.push_back(std::unique_ptr<Declaration>(declarationPtr.release()));
 }
 
 void DeclarationSection::AddPublicDataDeclaration(PublicDataDeclaration* declaration)
@@ -23,7 +26,10 @@ void DeclarationSection::AddPublicDataDeclaration(PublicDataDeclaration* declara
 
 void DeclarationSection::AddExternalDataDeclaration(ExternalDataDeclaration* declaration)
 {
-    declarations.push_back(std::unique_ptr<Declaration>(declaration));
+    std::unique_ptr<Declaration> declarationPtr(declaration);
+    if (externalDataDeclarations.find(declaration->Name()) != externalDataDeclarations.end()) return;
+    externalDataDeclarations.insert(declaration->Name());
+    declarations.push_back(std::unique_ptr<Declaration>(declarationPtr.release()));
 }
 
 void DeclarationSection::Write(util::CodeFormatter& formatter)
@@ -70,7 +76,12 @@ void CodeSection::Write(util::CodeFormatter& formatter)
     }
 }
 
-File::File(const std::string& filePath_) : filePath(filePath_), file(filePath), formatter(file)
+std::string MakeFileId(const std::string& filePath)
+{
+    return util::GetSha1MessageDigest(filePath);
+}
+
+File::File(const std::string& filePath_) : filePath(filePath_), file(filePath), formatter(file), id(MakeFileId(filePath))
 {
     formatter.SetIndentSize(8);
 }

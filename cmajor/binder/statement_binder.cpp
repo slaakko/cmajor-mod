@@ -308,7 +308,9 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
         if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
         {
             boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
-            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
             {
                 cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                 boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -344,7 +346,9 @@ void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                     boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -456,7 +460,9 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunction)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         if (cmajor::symbols::GetConfig() == "release") return;
@@ -1426,7 +1432,9 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                     boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -1521,7 +1529,9 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     {
         memFreeFunctionName = U"MemFree";
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         memFreeFunctionName = U"RtmMemFree";
@@ -1934,6 +1944,7 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
 void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
@@ -2010,6 +2021,7 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
@@ -2034,6 +2046,7 @@ void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
@@ -2142,7 +2155,9 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
         int32_t assertionIndex = cmajor::symbols::GetNextUnitTestAssertionNumber();
         cmajor::symbols::AddAssertionLineNumber(assertionLineNumber);
         std::u32string setAssertionResultFunctionName = U"RtSetUnitTestAssertionResult";
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
             cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
         {
             setAssertionResultFunctionName = U"RtmSetUnitTestAssertionResult";
@@ -2199,7 +2214,9 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             {
                 failAssertionFunctionName = U"System.FailAssertion";
             }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
                 cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
             {
                 failAssertionFunctionName = U"RtmFailAssertion";

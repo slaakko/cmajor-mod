@@ -9,6 +9,7 @@ import cmajor.backend.llvm;
 import cmajor.backend.systemx;
 import cmajor.backend.cpp;
 import cmajor.backend.masm;
+import cmajor.backend.sbin;
 
 namespace cmajor::backend {
 
@@ -16,6 +17,7 @@ LLvmBackEnd llvmBackEnd;
 SystemXBackEnd systemxBackEnd;
 CppBackEnd cppBackEnd;
 MasmBackEnd masmBackEnd;
+SBinBackEnd sbinBackEnd;
 BackEnd* backend = &llvmBackEnd;
 
 BackEnd::~BackEnd()
@@ -30,6 +32,7 @@ void SetCurrentBackEnd(BackEndKind backEndKind)
         case BackEndKind::systemxBackEnd: backend = &systemxBackEnd; break;
         case BackEndKind::cppBackEnd: backend = &cppBackEnd; break;
         case BackEndKind::masmBackEnd: backend = &masmBackEnd; break;
+        case BackEndKind::sbinBackEnd: backend = &sbinBackEnd; break;
     }
 }
 

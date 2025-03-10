@@ -52,6 +52,7 @@ std::string BackEndStr(BackEnd backend)
         case BackEnd::cpp: return "cpp";
         case BackEnd::masm: return "masm";
         case BackEnd::cm: return "cm";
+        case BackEnd::sbin: return "sbin";
     }
     return std::string();
 }
@@ -142,6 +143,19 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, int o
         sld /= "system";
         sld /= "lib";
         sld /= "masm";
+        sld /= config;
+        if (config == "release")
+        {
+            sld /= std::to_string(optLevel);
+        }
+        return util::GetFullPath(sld.generic_string());
+    }
+    else if (backend == BackEnd::sbin)
+    {
+        std::filesystem::path sld(CmajorRootDir());
+        sld /= "system";
+        sld /= "lib";
+        sld /= "sbin";
         sld /= config;
         if (config == "release")
         {
@@ -390,6 +404,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         mfp /= "masm";
     }
+    else if (backend == BackEnd::sbin)
+    {
+        mfp /= "sbin";
+    }
     else if (backend == BackEnd::cm)
     {
         mfp /= "cm";
@@ -417,6 +435,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         lfp.replace_extension(".a");
     }
     else if (backend == BackEnd::masm)
+    {
+        lfp.replace_extension(".lib");
+    }
+    else if (backend == BackEnd::sbin)
     {
         lfp.replace_extension(".lib");
     }
@@ -449,6 +471,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         efp /= "masm";
     }
+    else if (backend == BackEnd::sbin)
+    {
+        efp /= "sbin";
+    }
     else if (backend == BackEnd::cm)
     {
         efp /= "cm";
@@ -474,6 +500,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         efp.replace_extension(".exe");
     }
     else if (backend == BackEnd::masm)
+    {
+        efp.replace_extension(".exe");
+    }
+    else if (backend == BackEnd::sbin)
     {
         efp.replace_extension(".exe");
     }
@@ -555,6 +585,10 @@ void Project::ResolveDeclarations()
                 else if (backend == BackEnd::masm)
                 {
                     rp /= "masm";
+                }
+                else if (backend == BackEnd::sbin)
+                {
+                    rp /= "sbin";
                 }
                 else if (backend == BackEnd::cm)
                 {

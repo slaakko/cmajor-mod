@@ -18,5 +18,6 @@ expressions cmajor.sbin.assembly.expr
     real = "{fraction}{exponent}?|{digit}+{exponent}";
     hexdigit = "[0-9a-fA-F]";
     hexnum = "{digit}{hexdigit}*(H|h)";
+    hexnum_noh = "{digit}{hexdigit}*";
     string = "'([^'\r\n]|'')*'";
 }

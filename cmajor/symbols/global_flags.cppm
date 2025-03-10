@@ -53,7 +53,7 @@ enum class GlobalFlags : uint64_t
 
 enum class BackEnd : int
 {
-    llvm = 0, systemx = 1, cpp = 2, masm = 3, cm = 4
+    llvm = 0, systemx = 1, cpp = 2, masm = 3, cm = 4, sbin = 5
 };
 
 void SetBackEnd(BackEnd backend_);

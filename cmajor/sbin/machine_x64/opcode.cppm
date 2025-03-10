@@ -30,10 +30,12 @@ const uint8_t OPCODE_ADD_REG16_REG16 = 0x03u; // 0x66 /r
 const uint8_t OPCODE_ADD_REG8_REG8 = 0x02u; // REX.R, REX.B /r
 
 const uint8_t SUB_5 = 5u;
-const uint8_t OPCODE_SUB_REG64_IMM8 = 0x83; // REX.W, REX.B /5 ib 
-const uint8_t OPCODE_SUB_REG64_IMM32 = 0x81; // REX.W, REX.B /5 id
+const uint8_t OPCODE_SUB_REG8_IMM8 = 0x80u;
+const uint8_t OPCODE_SUB_REG64_IMM32 = 0x81u; // REX.W, REX.B /5 id
 const uint8_t OPCODE_SUB_REG64_REG64 = 0x2Bu; // REX.W, REX.B /r
+const uint8_t OPCODE_SUB_REG32_IMM32 = 0x81u; // REX.W, REX.B /5 id
 const uint8_t OPCODE_SUB_REG32_REG32 = 0x2Bu; // /r
+const uint8_t OPCODE_SUB_REG16_IMM16 = 0x81u; // REX.W, REX.B /5 id
 const uint8_t OPCODE_SUB_REG16_REG16 = 0x2Bu; // 0x66 /r
 const uint8_t OPCODE_SUB_REG8_REG8 = 0x2Au; // REX.R, REX.B /r
 
@@ -84,31 +86,108 @@ const uint8_t OPCODE_MOV_REG8_REGMEM8 = 0x8Au; // /r
 const uint8_t OPCODE_MOV_REGMEM8_REG8 = 0x88u; // r
 const uint8_t OPCODE_MOV_REG16_REGMEM16 = 0x8Bu; //  0x66u (REX.B?) /r
 
-const uint8_t OPCODE_MOVSX_REG64_REG_MEM_0 = 0x0Fu; // REX.W, REX.B /r
-const uint8_t OPCODE_MOVSX_REG64_REG_MEM8_1 = 0xBEu; // REX.W, REX.B /r
-const uint8_t OPCODE_MOVSX_REG64_REG_MEM16_1 = 0xBFu; // REX.W, REX.B /r
+const uint8_t OPCODE_MOVSX_REG64_REG8_0 = 0x0Fu; // REX.W, REX.B /r
+const uint8_t OPCODE_MOVSX_REG64_REG8_1 = 0xBEu; // REX.W, REX.B /r
+const uint8_t OPCODE_MOVSX_REG64_REG16_0 = 0x0Fu; // REX.W, REX.B /r
+const uint8_t OPCODE_MOVSX_REG64_REG16_1 = 0xBFu; // REX.W, REX.B /r
+const uint8_t OPCODE_MOVSXD_REG64_REG32 = 0x63u; // REX.W, REX.B /r
+const uint8_t OPCODE_MOVSXD_REG64_SIB = 0x63u; // REX.W, REX.B /r
 const uint8_t OPCODE_MOVSX_REG32_REG8_0 = 0x0Fu; // /r
 const uint8_t OPCODE_MOVSX_REG32_REG8_1 = 0xBEu; // /r
+const uint8_t OPCODE_MOVSX_REG32_REG16_0 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSX_REG32_REG16_1 = 0xBFu; // /r
 const uint8_t OPCODE_MOVSX_REG16_REG8_0 = 0x0Fu;
 const uint8_t OPCODE_MOVSX_REG16_REG8_1 = 0xBEu;
 
-const uint8_t OPCODE_MOVZX_REG16_REG_MEM8_0 = 0x0Fu; // 0x66 /r
-const uint8_t OPCODE_MOVZX_REG16_REG_MEM8_1 = 0xB6u; // 0x66 /r
-const uint8_t OPCODE_MOVZX_REG32_REG_MEM8_0 = 0x0Fu; // /r
-const uint8_t OPCODE_MOVZX_REG32_REG_MEM8_1 = 0xB6u; // /r
-const uint8_t OPCODE_MOVZX_REG64_REG_MEM8_0 = 0x0Fu; // REX.W /r
-const uint8_t OPCODE_MOVZX_REG64_REG_MEM8_1 = 0xB6u; // REX.W /r
+const uint8_t OPCODE_MOVZX_REG64_REG8_0 = 0x0Fu; // REX.W /r
+const uint8_t OPCODE_MOVZX_REG64_REG8_1 = 0xB6u; // REX.W /r
+const uint8_t OPCODE_MOVZX_REG64_REG16_0 = 0x0Fu; // REX.W /r
+const uint8_t OPCODE_MOVZX_REG64_REG16_1 = 0xB7u; // REX.W /r
+const uint8_t OPCODE_MOVZX_REG32_REG8_0 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVZX_REG32_REG8_1 = 0xB6u; // /r
+const uint8_t OPCODE_MOVZX_REG32_REG16_0 = 0x0Fu; // /r 
+const uint8_t OPCODE_MOVZX_REG32_REG16_1 = 0xB7u; // /r 
+const uint8_t OPCODE_MOVZX_REG16_REG8_0 = 0x0Fu; // 0x66 /r
+const uint8_t OPCODE_MOVZX_REG16_REG8_1 = 0xB6u; // 0x66 /r
+
+const uint8_t OPCODE_MOVSD_XMM_MEM64_0 = 0xF2u; // /r
+const uint8_t OPCODE_MOVSD_XMM_MEM64_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSD_XMM_MEM64_2 = 0x10u; // /r
+const uint8_t OPCODE_MOVSD_MEM64_XMM_0 = 0xF2u; // /r
+const uint8_t OPCODE_MOVSD_MEM64_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSD_MEM64_XMM_2 = 0x11u; // /r
+
+const uint8_t OPCODE_MOVSS_XMM_MEM64_0 = 0xF3u; // /r
+const uint8_t OPCODE_MOVSS_XMM_MEM64_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSS_XMM_MEM64_2 = 0x10u; // /r
+const uint8_t OPCODE_MOVSS_XMM_XMM_0 = 0xF3u; // /r
+const uint8_t OPCODE_MOVSS_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSS_XMM_XMM_2 = 0x10u; // /r
+const uint8_t OPCODE_MOVSS_MEM64_XMM_0 = 0xF3u; // /r
+const uint8_t OPCODE_MOVSS_MEM64_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSS_MEM64_XMM_2 = 0x11u; // /r
+const uint8_t OPCODE_ADDSS_XMM_XMM_0 = 0xF3u; // /r
+const uint8_t OPCODE_ADDSS_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_ADDSS_XMM_XMM_2 = 0x58u; // /r
+const uint8_t OPCODE_SUBSS_XMM_XMM_0 = 0xF3u; // /r
+const uint8_t OPCODE_SUBSS_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_SUBSS_XMM_XMM_2 = 0x5Cu; // /r
+const uint8_t OPCODE_MULSS_XMM_XMM_0 = 0xF3u; // /r
+const uint8_t OPCODE_MULSS_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MULSS_XMM_XMM_2 = 0x59u; // /r
+const uint8_t OPCODE_DIVSS_XMM_XMM_0 = 0xF3u; // /r
+const uint8_t OPCODE_DIVSS_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_DIVSS_XMM_XMM_2 = 0x5Eu; // /r
+
+const uint8_t OPCODE_MOVSD_XMM_XMM_0 = 0xF2u; // /r
+const uint8_t OPCODE_MOVSD_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MOVSD_XMM_XMM_2 = 0x10u; // /r
+const uint8_t OPCODE_ADDSD_XMM_XMM_0 = 0xF2u; // /r
+const uint8_t OPCODE_ADDSD_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_ADDSD_XMM_XMM_2 = 0x58u; // /r
+const uint8_t OPCODE_SUBSD_XMM_XMM_0 = 0xF2u; // /r
+const uint8_t OPCODE_SUBSD_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_SUBSD_XMM_XMM_2 = 0x5Cu; // /r
+const uint8_t OPCODE_MULSD_XMM_XMM_0 = 0xF2u; // /r
+const uint8_t OPCODE_MULSD_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_MULSD_XMM_XMM_2 = 0x59u; // /r
+const uint8_t OPCODE_DIVSD_XMM_XMM_0 = 0xF2u; // /r
+const uint8_t OPCODE_DIVSD_XMM_XMM_1 = 0x0Fu; // /r
+const uint8_t OPCODE_DIVSD_XMM_XMM_2 = 0x5Eu; // /r
 
 const uint8_t OPCODE_CMP_REG64_REG64 = 0x3Bu; // REX.W, REX:B /r
 const uint8_t OPCODE_CMP_REG32_REG32 = 0x3Bu; // /r
 const uint8_t OPCODE_CMP_REG16_REG16 = 0x3Bu; // 0x66u, /r
 const uint8_t OPCODE_CMP_REG8_REGMEM8 = 0x3Au; // REX.W, REX.B /r
+const uint8_t CMP_7 = 7;
+const uint8_t OPCODE_CMP_IMMEDIATE32 = 0x81u;
+const uint8_t OPCODE_CMP_IMMEDIATE16 = 0x81u;
+const uint8_t OPCODE_CMP_IMMEDIATE8 = 0x80u;
+const uint8_t OPCODE_COMISD_XMM_XMM_0 = 0x66u;
+const uint8_t OPCODE_COMISD_XMM_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_COMISD_XMM_XMM_2 = 0x2Fu;
+const uint8_t OPCODE_COMISS_XMM_XMM_0 = 0x0Fu;
+const uint8_t OPCODE_COMISS_XMM_XMM_1 = 0x2Fu;
 
+const uint8_t OPCODE_UCOMISD_XMM_XMM_0 = 0x66u;
+const uint8_t OPCODE_UCOMISD_XMM_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_UCOMISD_XMM_XMM_2 = 0x2Eu;
+const uint8_t OPCODE_UCOMISS_XMM_XMM_0 = 0x0Fu;
+const uint8_t OPCODE_UCOMISS_XMM_XMM_1 = 0x2Eu;
+
+const uint8_t CALL_2 = 2;
 const uint8_t OPCODE_CALL_NEAR = 0xE8u;
+const uint8_t OPCODE_CALL_REG64 = 0xFFu;
 
+const uint8_t JMP_4 = 4;
 const uint8_t OPCODE_JMP_OFFSET32 = 0xE9u;
+const uint8_t OPCODE_JMP_REG64 = 0xFFu;
+const uint8_t OPCODE_JE_OFFSET32_0 = 0x0Fu;
+const uint8_t OPCODE_JE_OFFSET32_1 = 0x84u;
 const uint8_t OPCODE_JNE_OFFSET32_0 = 0x0Fu;
 const uint8_t OPCODE_JNE_OFFSET32_1 = 0x85u;
+const uint8_t OPCODE_JAE_OFFSET32_0 = 0x0Fu;
+const uint8_t OPCODE_JAE_OFFSET32_1 = 0x83u;
 
 const uint8_t OPCODE_SETE_REG8_0 = 0x0Fu;
 const uint8_t OPCODE_SETE_REG8_1 = 0x94;
@@ -176,5 +255,38 @@ const uint8_t OPCODE_CDQ = 0x99u;
 const uint8_t OPCODE_CQO = 0x99u;
 
 const uint8_t OPCODE_NOP = 0x90u;
+
+const uint8_t OPCODE_CVTSI2SD_REG64_XMM_0 = 0xF2u;
+const uint8_t OPCODE_CVTSI2SD_REG64_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTSI2SD_REG64_XMM_2 = 0x2Au;
+const uint8_t OPCODE_CVTSI2SD_REG32_XMM_0 = 0xF2u;
+const uint8_t OPCODE_CVTSI2SD_REG32_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTSI2SD_REG32_XMM_2 = 0x2Au;
+const uint8_t OPCODE_CVTTSD2SI_REG64_XMM_0 = 0xF2u;
+const uint8_t OPCODE_CVTTSD2SI_REG64_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTTSD2SI_REG64_XMM_2 = 0x2Cu;
+const uint8_t OPCODE_CVTTSD2SI_REG32_XMM_0 = 0xF2u;
+const uint8_t OPCODE_CVTTSD2SI_REG32_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTTSD2SI_REG32_XMM_2 = 0x2Cu;
+
+const uint8_t OPCODE_CVTSI2SS_REG64_XMM_0 = 0xF3u;
+const uint8_t OPCODE_CVTSI2SS_REG64_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTSI2SS_REG64_XMM_2 = 0x2Au;
+const uint8_t OPCODE_CVTSI2SS_REG32_XMM_0 = 0xF3u;
+const uint8_t OPCODE_CVTSI2SS_REG32_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTSI2SS_REG32_XMM_2 = 0x2Au;
+const uint8_t OPCODE_CVTTSS2SI_REG64_XMM_0 = 0xF3u;
+const uint8_t OPCODE_CVTTSS2SI_REG64_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTTSS2SI_REG64_XMM_2 = 0x2Cu;
+const uint8_t OPCODE_CVTTSS2SI_REG32_XMM_0 = 0xF3u;
+const uint8_t OPCODE_CVTTSS2SI_REG32_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTTSS2SI_REG32_XMM_2 = 0x2Cu;
+
+const uint8_t OPCODE_CVTSS2SD_XMM_XMM_0 = 0xF3u;
+const uint8_t OPCODE_CVTSS2SD_XMM_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTSS2SD_XMM_XMM_2 = 0x5Au;
+const uint8_t OPCODE_CVTSD2SS_XMM_XMM_0 = 0xF2u;
+const uint8_t OPCODE_CVTSD2SS_XMM_XMM_1 = 0x0Fu;
+const uint8_t OPCODE_CVTSD2SS_XMM_XMM_2 = 0x5Au;
 
 } // namespace cmajor::sbin::machine_x64

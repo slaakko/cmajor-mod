@@ -1,0 +1,89 @@
+
+Dump of file BackInsertIterator.masm.obj
+
+File Type: COFF OBJECT
+
+FILE HEADER VALUES
+            8664 machine (x64)
+               3 number of sections
+        67C5E72C time date stamp Mon Mar  3 19:30:20 2025
+             12C file pointer to symbol table
+               8 number of symbols
+               0 size of optional header
+               0 characteristics
+
+SECTION HEADER #1
+.text$mn name
+       0 physical address
+       0 virtual address
+       0 size of raw data
+       0 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+60500020 flags
+         Code
+         16 byte align
+         Execute Read
+
+SECTION HEADER #2
+   .data name
+       0 physical address
+       0 virtual address
+       0 size of raw data
+       0 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0500040 flags
+         Initialized Data
+         16 byte align
+         Read Write
+
+SECTION HEADER #3
+.debug$S name
+       0 physical address
+       0 virtual address
+      A0 size of raw data
+      8C file pointer to raw data (0000008C to 0000012B)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42100040 flags
+         Initialized Data
+         Discardable
+         1 byte align
+         Read Only
+
+RAW DATA #3
+  00000000: 04 00 00 00 F1 00 00 00 91 00 00 00 56 00 01 11  ....ñ.......V...
+  00000010: 00 00 00 00 44 3A 5C 77 6F 72 6B 5C 63 6D 61 6A  ....D:\work\cmaj
+  00000020: 6F 72 2D 6D 6F 64 5C 63 6D 61 6A 6F 72 5C 73 62  or-mod\cmajor\sb
+  00000030: 69 6E 5C 6D 61 6B 65 5F 63 6F 6D 70 61 72 65 5F  in\make_compare_
+  00000040: 70 72 6F 6A 65 63 74 5C 42 61 63 6B 49 6E 73 65  project\BackInse
+  00000050: 72 74 49 74 65 72 61 74 6F 72 2E 6D 61 73 6D 2E  rtIterator.masm.
+  00000060: 6F 62 6A 00 37 00 3C 11 03 02 00 00 D0 00 00 00  obj.7.<.....Ð...
+  00000070: 00 00 00 00 00 00 0E 00 2B 00 F8 87 00 00 4D 69  ........+.ø...Mi
+  00000080: 63 72 6F 73 6F 66 74 20 28 52 29 20 4D 61 63 72  crosoft (R) Macr
+  00000090: 6F 20 41 73 73 65 6D 62 6C 65 72 00 00 00 00 00  o Assembler.....
+
+COFF SYMBOL TABLE
+000 010387F8 ABS    notype       Static       | @comp.id
+001 00000010 ABS    notype       Static       | @feat.00
+002 00000000 SECT1  notype       Static       | .text$mn
+    Section length    0, #relocs    0, #linenums    0, checksum        0
+004 00000000 SECT2  notype       Static       | .data
+    Section length    0, #relocs    0, #linenums    0, checksum        0
+006 00000000 SECT3  notype       Static       | .debug$S
+    Section length   A0, #relocs    0, #linenums    0, checksum        0
+
+String Table Size = 0x0 bytes
+
+  Summary
+
+           0 .data
+          A0 .debug$S
+           0 .text$mn

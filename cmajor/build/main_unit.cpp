@@ -1033,6 +1033,11 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
                     GenerateMainUnitMasmConsole(rootModule, cppFilePaths);
                     break;
                 }
+                case cmajor::symbols::BackEnd::sbin:
+                {
+                    GenerateMainUnitMasmConsole(rootModule, cppFilePaths);
+                    break;
+                }
             }
             break;
         }
@@ -1051,6 +1056,11 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
                     break;
                 }
                 case cmajor::symbols::BackEnd::masm:
+                {
+                    GenerateMainUnitMasmWindowsGUI(rootModule, cppFilePaths);
+                    break;
+                }
+                case cmajor::symbols::BackEnd::sbin:
                 {
                     GenerateMainUnitMasmWindowsGUI(rootModule, cppFilePaths);
                     break;

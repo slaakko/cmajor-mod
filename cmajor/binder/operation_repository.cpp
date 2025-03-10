@@ -1920,7 +1920,9 @@ ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbo
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
     thisParam->SetType(classType->AddPointer());
     AddMember(thisParam);
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
         {
@@ -2135,7 +2137,9 @@ ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* cla
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
     thatParam->SetType(classType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
         {
@@ -2397,7 +2401,9 @@ ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* cla
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
     thatParam->SetType(classType->AddRvalueReference());
     AddMember(thatParam);
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
         {
@@ -2660,7 +2666,9 @@ ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* class
     thatParam->SetType(classType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType_);
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
         {
@@ -2884,7 +2892,9 @@ ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* class
     thatParam->SetType(classType->AddRvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType_);
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
         {
@@ -3214,7 +3224,8 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
         boundCompoundStatement->AddStatement(std::move(ifStatement));
         if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || 
             cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
-            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
         {
             cmajor::ast::IdentifierNode staticInitCriticalSection(node->GetSpan(), U"System.Runtime.StaticInitCriticalSection");
             cmajor::symbols::TypeSymbol* staticInitCriticalSectionClassType = ResolveType(&staticInitCriticalSection, boundCompileUnit, containerScope);
@@ -3349,7 +3360,9 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                             boundFunction, node);
                         boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(atExitCall))));
                     }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
                         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
@@ -3424,7 +3437,9 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                             boundFunction, node);
                         boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(atExitCall))));
                     }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
                         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;

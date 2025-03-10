@@ -1,0 +1,134 @@
+using System;
+
+void LongConversions()
+{
+    long x;
+    sbyte y0;
+    x = y0;
+    short y1;
+    x = y1;
+    int y2;
+    x = y2;
+}
+
+void ULongConversions()
+{
+    ulong x;
+    byte y0;
+    x = y0;
+    ushort y1;
+    x = y1;
+    uint y2;
+    x = y2;
+}
+
+void IntConversions()
+{
+    int x;
+    sbyte y0;
+    x = y0;
+    short y1;
+    x = y1;
+}
+
+void UIntConversions()
+{
+    uint x;
+    byte y0;
+    x = y0;
+    ushort y1;
+    x = y1;
+}
+
+void ShortConversions()
+{
+    short x;
+    sbyte y0;
+    x = y0;
+}
+
+void UShortConversions()
+{
+    ushort x;
+    byte y0;
+    x = y0;
+}
+
+void IntegerToDouble()
+{
+    long y0;
+    double x = y0;
+    int y1;
+    x = y1;
+    short y2;
+    x = y2;
+    sbyte y3;
+    x = y3;
+    uint y4;
+    x = y4;
+    ushort y5;
+    x = y5;
+    byte y6;
+    x = y6;
+}
+
+void DoubleToInteger()
+{
+    double z0;
+    long a0 = cast<long>(z0);
+    int a1 = cast<int>(z0);
+    short a2 = cast<short>(z0);
+    sbyte a3 = cast<sbyte>(z0);
+    ulong a4 = cast<ulong>(z0);
+    uint a5 = cast<uint>(z0);
+    ushort a6 = cast<ushort>(z0);
+    byte a7 = cast<byte>(z0);
+}
+
+void IntegerToFloat()
+{
+    long y0;
+    float x = y0;
+    int y1;
+    x = y1;
+    short y2;
+    x = y2;
+    sbyte y3;
+    x = y3;
+    uint y4;
+    x = y4;
+    ushort y5;
+    x = y5;
+    byte y6;
+    x = y6;
+}
+
+void FloatToInteger()
+{
+    float z0;
+    long a0 = cast<long>(z0);
+    int a1 = cast<int>(z0);
+    short a2 = cast<short>(z0);
+    sbyte a3 = cast<sbyte>(z0);
+    ulong a4 = cast<ulong>(z0);
+    uint a5 = cast<uint>(z0);
+    ushort a6 = cast<ushort>(z0);
+    byte a7 = cast<byte>(z0);
+}
+
+void FloatDouble()
+{
+    float x;
+    double y = x;
+    x = cast<float>(y);
+}
+
+void Compare()
+{
+    double x;
+    double y;
+    bool z = x < y;
+    float a;
+    float b;
+    bool c = a < b;
+}

@@ -475,6 +475,10 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 {
                     backend = cmajor::ast::BackEnd::masm;
                 }
+                else if (GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+                {
+                    backend = cmajor::ast::BackEnd::sbin;
+                }
                 else if (GetBackEnd() == cmajor::symbols::BackEnd::cm)
                 {
                     backend = cmajor::ast::BackEnd::cm;
@@ -551,6 +555,10 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 else if (GetBackEnd() == cmajor::symbols::BackEnd::masm)
                 {
                     backend = cmajor::ast::BackEnd::masm;
+                }
+                else if (GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+                {
+                    backend = cmajor::ast::BackEnd::sbin;
                 }
                 else if (GetBackEnd() == cmajor::symbols::BackEnd::cm)
                 {
@@ -637,6 +645,10 @@ void ImportModulesWithReferences(cmajor::ast::Target target,
         else if (GetBackEnd() == cmajor::symbols::BackEnd::masm)
         {
             backend = cmajor::ast::BackEnd::masm;
+        }
+        else if (GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+        {
+            backend = cmajor::ast::BackEnd::sbin;
         }
         else if (GetBackEnd() == cmajor::symbols::BackEnd::cm)
         {
@@ -759,6 +771,10 @@ Module::Module(const std::string& filePath, bool readRoot) :
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
         }
+        else if (GetBackEnd() == BackEnd::sbin)
+        {
+            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
+        }
         else if (GetBackEnd() == BackEnd::cm)
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
@@ -856,6 +872,11 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
         backend = cmajor::ast::BackEnd::masm;
         break;
     }
+    case BackEnd::sbin:
+    {
+        backend = cmajor::ast::BackEnd::sbin;
+        break;
+    }
     case BackEnd::cm:
     {
         backend = cmajor::ast::BackEnd::cm;
@@ -922,6 +943,10 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
         }
         else if (GetBackEnd() == BackEnd::masm)
+        {
+            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
+        }
+        else if (GetBackEnd() == BackEnd::sbin)
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
         }
@@ -1122,7 +1147,7 @@ void Module::Write(SymbolWriter& writer)
 
 void Module::WriteFunctionTraceData(util::BinaryStreamWriter& writer)
 {
-    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm) return;
+    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::sbin && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm) return;
     if (name == U"System.Core" || name == U"System.Runtime") return;
     if (GetConfig() == "release") return;
     int32_t ns = sourceFileInfoVec.size();
@@ -1156,7 +1181,7 @@ void Module::WriteClassTypeFlagMap(SymbolWriter& writer)
 
 void Module::ReadFunctionTraceData(util::BinaryStreamReader& reader)
 {
-    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm) return;
+    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::sbin && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm) return;
     if (name == U"System.Core" || name == U"System.Runtime") return;
     if (GetConfig() == "release") return;
     int32_t ns = reader.ReadInt();
@@ -1185,7 +1210,7 @@ void Module::ReadFunctionTraceData(util::BinaryStreamReader& reader)
 
 void Module::ImportTraceData(Module* module)
 {
-    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm) return;
+    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::sbin && GetBackEnd() != BackEnd::cpp && GetBackEnd() != BackEnd::llvm) return;
     if (name == U"System.Core" || name == U"System.Runtime") return;
     if (GetConfig() == "release") return;
     if (traceDataImported.find(module->Name()) != traceDataImported.end()) return;
@@ -1365,6 +1390,10 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
             libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_string());
         }
         else if (GetBackEnd() == BackEnd::masm)
+        {
+            libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".lib").generic_string());
+        }
+        else if (GetBackEnd() == BackEnd::sbin)
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".lib").generic_string());
         }
@@ -1644,6 +1673,10 @@ void Module::CheckUpToDate()
                 objectFilePath = libDirPath / sfp.filename().replace_extension(".o");
             }
             else if (GetBackEnd() == BackEnd::masm)
+            {
+                objectFilePath = libDirPath / sfp.filename().replace_extension(".obj");
+            }
+            else if (GetBackEnd() == BackEnd::sbin)
             {
                 objectFilePath = libDirPath / sfp.filename().replace_extension(".obj");
             }

@@ -1,0 +1,3 @@
+project switch_;
+target=program;
+source <switch.cm>;

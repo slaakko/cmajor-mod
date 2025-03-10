@@ -118,7 +118,9 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     functionSymbol->SetTemplateSpecialization();
     functionSymbol->SetFunctionTemplate(functionTemplate);
     functionSymbol->SetTemplateArgumentTypes(templateArgumentTypes);
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
         if (compileUnitNode)

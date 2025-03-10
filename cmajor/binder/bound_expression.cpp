@@ -1640,7 +1640,9 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         emitter.Stack().Push(remainderIsZero);
         DestroyTemporaries(emitter);
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1801,7 +1803,9 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         variable->Load(emitter, cmajor::ir::OperationFlags::none);
         DestroyTemporaries(emitter);
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1895,7 +1899,9 @@ void BoundTypeNameExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
         thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer()->IrType(emitter));
     }
     void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         void* retType = emitter.GetIrTypeForPtrType(emitter.GetIrTypeForChar());
@@ -1952,10 +1958,12 @@ BoundExpression* BoundTypeIdExpression::Clone()
 
 void BoundTypeIdExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        Assert(false, "MASM, C++ and LLVM backends do not support typeid expression");
+        Assert(false, "MASM, SBIN, C++ and LLVM backends do not support typeid expression");
         return;
     }
     classPtr->Load(emitter, cmajor::ir::OperationFlags::none);

@@ -1,0 +1,1330 @@
+
+Dump of file Ascii.masm.obj
+
+File Type: COFF OBJECT
+
+FILE HEADER VALUES
+            8664 machine (x64)
+               3 number of sections
+        67C5E722 time date stamp Mon Mar  3 19:30:10 2025
+             FC4 file pointer to symbol table
+              1D number of symbols
+               0 size of optional header
+               0 characteristics
+
+SECTION HEADER #1
+.text$mn name
+       0 physical address
+       0 virtual address
+     C43 size of raw data
+      8C file pointer to raw data (0000008C to 00000CCE)
+     CD0 file pointer to relocation table
+       0 file pointer to line numbers
+      2E number of relocations
+       0 number of line numbers
+60500020 flags
+         Code
+         16 byte align
+         Execute Read
+
+constructor_UniquePtr_2576DFB246EA7CCD66295040781CF94E3851725C:
+  0000000000000000: 55                 push        rbp
+  0000000000000001: 56                 push        rsi
+  0000000000000002: 57                 push        rdi
+  0000000000000003: 41 54              push        r12
+  0000000000000005: 53                 push        rbx
+  0000000000000006: 48 83 EC 60        sub         rsp,60h
+  000000000000000A: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  000000000000000F: 48 8B F1           mov         rsi,rcx
+  0000000000000012: 48 8B FA           mov         rdi,rdx
+  0000000000000015: 48 89 75 08        mov         qword ptr [rbp+8],rsi
+  0000000000000019: 48 89 7D 10        mov         qword ptr [rbp+10h],rdi
+  000000000000001D: 48 B8 F6 00 00 00  mov         rax,5B0619DB000000F6h
+                    DB 19 06 5B
+  0000000000000027: 48 8B D0           mov         rdx,rax
+  000000000000002A: 48 8D 7D 18        lea         rdi,[rbp+18h]
+  000000000000002E: 48 8B CF           mov         rcx,rdi
+  0000000000000031: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  0000000000000036: 48 8D 75 18        lea         rsi,[rbp+18h]
+  000000000000003A: 48 8B D6           mov         rdx,rsi
+  000000000000003D: 48 8D 7D 30        lea         rdi,[rbp+30h]
+  0000000000000041: 48 8B CF           mov         rcx,rdi
+  0000000000000044: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  0000000000000049: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000050: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000054: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000058: B8 12 00 00 00     mov         eax,12h
+  000000000000005D: 89 06              mov         dword ptr [rsi],eax
+  000000000000005F: 48 8B 75 10        mov         rsi,qword ptr [rbp+10h]
+  0000000000000063: 48 8B 7D 08        mov         rdi,qword ptr [rbp+8]
+  0000000000000067: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  000000000000006E: 48 8D 0F           lea         rcx,[rdi]
+  0000000000000071: 4C 8D 24 0B        lea         r12,[rbx+rcx]
+  0000000000000075: 49 89 34 24        mov         qword ptr [r12],rsi
+  0000000000000079: 48 8D 75 30        lea         rsi,[rbp+30h]
+  000000000000007D: 48 8B CE           mov         rcx,rsi
+  0000000000000080: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000085: EB 00              jmp         0000000000000087
+  0000000000000087: 48 8D 65 40        lea         rsp,[rbp+40h]
+  000000000000008B: 5B                 pop         rbx
+  000000000000008C: 41 5C              pop         r12
+  000000000000008E: 5F                 pop         rdi
+  000000000000008F: 5E                 pop         rsi
+  0000000000000090: 5D                 pop         rbp
+  0000000000000091: C3                 ret
+destructor_UniquePtr_0E4A0F38FCFDE97C02DB0D9439B0C5CD4404F7DA:
+  0000000000000092: 55                 push        rbp
+  0000000000000093: 56                 push        rsi
+  0000000000000094: 57                 push        rdi
+  0000000000000095: 41 54              push        r12
+  0000000000000097: 53                 push        rbx
+  0000000000000098: 48 83 EC 50        sub         rsp,50h
+  000000000000009C: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  00000000000000A1: 48 8B F1           mov         rsi,rcx
+  00000000000000A4: 48 89 75 08        mov         qword ptr [rbp+8],rsi
+  00000000000000A8: 48 B8 F7 00 00 00  mov         rax,5B0619DB000000F7h
+                    DB 19 06 5B
+  00000000000000B2: 48 8B D0           mov         rdx,rax
+  00000000000000B5: 48 8D 7D 10        lea         rdi,[rbp+10h]
+  00000000000000B9: 48 8B CF           mov         rcx,rdi
+  00000000000000BC: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  00000000000000C1: 48 8D 75 10        lea         rsi,[rbp+10h]
+  00000000000000C5: 48 8B D6           mov         rdx,rsi
+  00000000000000C8: 48 8D 7D 28        lea         rdi,[rbp+28h]
+  00000000000000CC: 48 8B CF           mov         rcx,rdi
+  00000000000000CF: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  00000000000000D4: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000000DB: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  00000000000000DF: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000000E3: B8 2A 00 00 00     mov         eax,2Ah
+  00000000000000E8: 89 06              mov         dword ptr [rsi],eax
+  00000000000000EA: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000000F1: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  00000000000000F5: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000000F9: B8 2B 00 00 00     mov         eax,2Bh
+  00000000000000FE: 89 06              mov         dword ptr [rsi],eax
+  0000000000000100: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000104: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  000000000000010B: 48 8D 0E           lea         rcx,[rsi]
+  000000000000010E: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  0000000000000112: 48 8B 37           mov         rsi,qword ptr [rdi]
+  0000000000000115: 48 C7 C0 00 00 00  mov         rax,0
+                    00
+  000000000000011C: 48 8B F8           mov         rdi,rax
+  000000000000011F: 48 3B F7           cmp         rsi,rdi
+  0000000000000122: 41 0F 94 C4        sete        r12b
+  0000000000000126: 41 8A F4           mov         sil,r12b
+  0000000000000129: 40 80 F6 01        xor         sil,1
+  000000000000012D: 40 0A F6           or          sil,sil
+  0000000000000130: 75 02              jne         0000000000000134
+  0000000000000132: EB 4E              jmp         0000000000000182
+  0000000000000134: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  000000000000013B: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  000000000000013F: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000143: B8 2C 00 00 00     mov         eax,2Ch
+  0000000000000148: 89 06              mov         dword ptr [rsi],eax
+  000000000000014A: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000151: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  0000000000000155: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000159: B8 2D 00 00 00     mov         eax,2Dh
+  000000000000015E: 89 06              mov         dword ptr [rsi],eax
+  0000000000000160: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000164: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  000000000000016B: 48 8D 0E           lea         rcx,[rsi]
+  000000000000016E: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  0000000000000172: 48 8B 37           mov         rsi,qword ptr [rdi]
+  0000000000000175: 48 8B FE           mov         rdi,rsi
+  0000000000000178: 48 8B CF           mov         rcx,rdi
+  000000000000017B: E8 00 00 00 00     call        RtmMemFree
+  0000000000000180: EB 00              jmp         0000000000000182
+  0000000000000182: 48 8D 75 28        lea         rsi,[rbp+28h]
+  0000000000000186: 48 8B CE           mov         rcx,rsi
+  0000000000000189: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  000000000000018E: EB 00              jmp         0000000000000190
+  0000000000000190: 48 8D 65 30        lea         rsp,[rbp+30h]
+  0000000000000194: 5B                 pop         rbx
+  0000000000000195: 41 5C              pop         r12
+  0000000000000197: 5F                 pop         rdi
+  0000000000000198: 5E                 pop         rsi
+  0000000000000199: 5D                 pop         rbp
+  000000000000019A: C3                 ret
+member_function_op_star_UniquePtr_606D465B0997A213F4CB3A16360E47F788883D23:
+  000000000000019B: 55                 push        rbp
+  000000000000019C: 56                 push        rsi
+  000000000000019D: 57                 push        rdi
+  000000000000019E: 41 54              push        r12
+  00000000000001A0: 41 55              push        r13
+  00000000000001A2: 41 56              push        r14
+  00000000000001A4: 53                 push        rbx
+  00000000000001A5: 48 83 EC 50        sub         rsp,50h
+  00000000000001A9: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  00000000000001AE: 48 8B F1           mov         rsi,rcx
+  00000000000001B1: 48 89 75 08        mov         qword ptr [rbp+8],rsi
+  00000000000001B5: 48 B8 F9 00 00 00  mov         rax,5B0619DB000000F9h
+                    DB 19 06 5B
+  00000000000001BF: 48 8B D0           mov         rdx,rax
+  00000000000001C2: 48 8D 7D 10        lea         rdi,[rbp+10h]
+  00000000000001C6: 48 8B CF           mov         rcx,rdi
+  00000000000001C9: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  00000000000001CE: 48 8D 75 10        lea         rsi,[rbp+10h]
+  00000000000001D2: 48 8B D6           mov         rdx,rsi
+  00000000000001D5: 48 8D 7D 28        lea         rdi,[rbp+28h]
+  00000000000001D9: 48 8B CF           mov         rcx,rdi
+  00000000000001DC: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  00000000000001E1: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000001E8: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  00000000000001EC: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000001F0: B8 5D 00 00 00     mov         eax,5Dh
+  00000000000001F5: 89 06              mov         dword ptr [rsi],eax
+  00000000000001F7: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000001FE: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  0000000000000202: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000206: B8 5E 00 00 00     mov         eax,5Eh
+  000000000000020B: 89 06              mov         dword ptr [rsi],eax
+  000000000000020D: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000211: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000218: 48 8D 0E           lea         rcx,[rsi]
+  000000000000021B: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  000000000000021F: 48 8B 37           mov         rsi,qword ptr [rdi]
+  0000000000000222: 48 C7 C0 00 00 00  mov         rax,0
+                    00
+  0000000000000229: 48 8B F8           mov         rdi,rax
+  000000000000022C: 48 3B F7           cmp         rsi,rdi
+  000000000000022F: 41 0F 94 C4        sete        r12b
+  0000000000000233: 41 8A F4           mov         sil,r12b
+  0000000000000236: 40 80 F6 01        xor         sil,1
+  000000000000023A: 40 0A F6           or          sil,sil
+  000000000000023D: 75 02              jne         0000000000000241
+  000000000000023F: EB 30              jmp         0000000000000271
+  0000000000000241: 90                 nop
+  0000000000000242: EB 00              jmp         0000000000000244
+  0000000000000244: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  000000000000024B: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  000000000000024F: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000253: B8 5F 00 00 00     mov         eax,5Fh
+  0000000000000258: 89 06              mov         dword ptr [rsi],eax
+  000000000000025A: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  000000000000025E: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000265: 48 8D 0E           lea         rcx,[rsi]
+  0000000000000268: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  000000000000026C: 48 8B 37           mov         rsi,qword ptr [rdi]
+  000000000000026F: EB 2D              jmp         000000000000029E
+  0000000000000271: B8 5E 00 00 00     mov         eax,5Eh
+  0000000000000276: 44 8B C8           mov         r9d,eax
+  0000000000000279: 48 8D 05 00 00 00  lea         rax,[string2_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2]
+                    00
+  0000000000000280: 4C 8B C0           mov         r8,rax
+  0000000000000283: 48 8D 05 00 00 00  lea         rax,[string1_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2]
+                    00
+  000000000000028A: 48 8B D0           mov         rdx,rax
+  000000000000028D: 48 8D 05 00 00 00  lea         rax,[string0_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2]
+                    00
+  0000000000000294: 48 8B C8           mov         rcx,rax
+  0000000000000297: E8 00 00 00 00     call        RtmFailAssertion
+  000000000000029C: EB A6              jmp         0000000000000244
+  000000000000029E: 48 8D 7D 28        lea         rdi,[rbp+28h]
+  00000000000002A2: 48 8B CF           mov         rcx,rdi
+  00000000000002A5: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  00000000000002AA: 48 8B C6           mov         rax,rsi
+  00000000000002AD: EB 18              jmp         00000000000002C7
+  00000000000002AF: 48 8D 75 28        lea         rsi,[rbp+28h]
+  00000000000002B3: 48 8B CE           mov         rcx,rsi
+  00000000000002B6: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  00000000000002BB: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  00000000000002C2: 48 8B C3           mov         rax,rbx
+  00000000000002C5: EB 00              jmp         00000000000002C7
+  00000000000002C7: 48 8D 65 30        lea         rsp,[rbp+30h]
+  00000000000002CB: 5B                 pop         rbx
+  00000000000002CC: 41 5E              pop         r14
+  00000000000002CE: 41 5D              pop         r13
+  00000000000002D0: 41 5C              pop         r12
+  00000000000002D2: 5F                 pop         rdi
+  00000000000002D3: 5E                 pop         rsi
+  00000000000002D4: 5D                 pop         rbp
+  00000000000002D5: C3                 ret
+static_constructor_CharClassTable_01A0E997FF7EC1B0EE5E9345E22C1FEF1C335114:
+  00000000000002D6: 55                 push        rbp
+  00000000000002D7: 56                 push        rsi
+  00000000000002D8: 57                 push        rdi
+  00000000000002D9: 41 54              push        r12
+  00000000000002DB: 41 55              push        r13
+  00000000000002DD: 53                 push        rbx
+  00000000000002DE: 53                 push        rbx
+  00000000000002DF: 48 83 EC 50        sub         rsp,50h
+  00000000000002E3: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  00000000000002E8: 48 B8 F5 00 00 00  mov         rax,5B0619DB000000F5h
+                    DB 19 06 5B
+  00000000000002F2: 48 8B D0           mov         rdx,rax
+  00000000000002F5: 48 8D 7D 10        lea         rdi,[rbp+10h]
+  00000000000002F9: 48 8B CF           mov         rcx,rdi
+  00000000000002FC: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  0000000000000301: 48 8D 75 10        lea         rsi,[rbp+10h]
+  0000000000000305: 48 8B D6           mov         rdx,rsi
+  0000000000000308: 48 8D 7D 28        lea         rdi,[rbp+28h]
+  000000000000030C: 48 8B CF           mov         rcx,rdi
+  000000000000030F: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  0000000000000314: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  000000000000031B: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  000000000000031F: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000323: B8 1E 00 00 00     mov         eax,1Eh
+  0000000000000328: 89 06              mov         dword ptr [rsi],eax
+  000000000000032A: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000331: 48 8D 15 00 00 00  lea         rdx,[statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A]
+                    00
+  0000000000000338: 48 8D 0A           lea         rcx,[rdx]
+  000000000000033B: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000033F: 40 8A 3E           mov         dil,byte ptr [rsi]
+  0000000000000342: 40 0A FF           or          dil,dil
+  0000000000000345: 75 02              jne         0000000000000349
+  0000000000000347: EB 11              jmp         000000000000035A
+  0000000000000349: 48 8D 75 28        lea         rsi,[rbp+28h]
+  000000000000034D: 48 8B CE           mov         rcx,rsi
+  0000000000000350: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000355: E9 33 01 00 00     jmp         000000000000048D
+  000000000000035A: 48 8D 75 08        lea         rsi,[rbp+8]
+  000000000000035E: 48 8B CE           mov         rcx,rsi
+  0000000000000361: E8 00 00 00 00     call        default_constructor_StaticInitCriticalSection_6B82A9DDE2F97C9641E47E575B6AA661C0FC8F7B
+  0000000000000366: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  000000000000036D: 48 8D 15 00 00 00  lea         rdx,[statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A]
+                    00
+  0000000000000374: 48 8D 0A           lea         rcx,[rdx]
+  0000000000000377: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000037B: 40 8A 3E           mov         dil,byte ptr [rsi]
+  000000000000037E: 40 0A FF           or          dil,dil
+  0000000000000381: 75 04              jne         0000000000000387
+  0000000000000383: EB 1F              jmp         00000000000003A4
+  0000000000000385: EB D3              jmp         000000000000035A
+  0000000000000387: 48 8D 75 08        lea         rsi,[rbp+8]
+  000000000000038B: 48 8B CE           mov         rcx,rsi
+  000000000000038E: E8 00 00 00 00     call        destructor_StaticInitCriticalSection_EE15F7F7FEBDC62E218E16E8AF4BBBDC80CD0233
+  0000000000000393: 48 8D 75 28        lea         rsi,[rbp+28h]
+  0000000000000397: 48 8B CE           mov         rcx,rsi
+  000000000000039A: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  000000000000039F: E9 E9 00 00 00     jmp         000000000000048D
+  00000000000003A4: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  00000000000003AB: 48 8D 15 00 00 00  lea         rdx,[statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A]
+                    00
+  00000000000003B2: 48 8D 0A           lea         rcx,[rdx]
+  00000000000003B5: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000003B9: B0 01              mov         al,1
+  00000000000003BB: 88 06              mov         byte ptr [rsi],al
+  00000000000003BD: 48 C7 C3 01 00 00  mov         rbx,1
+                    00
+  00000000000003C4: 48 8D 15 00 00 00  lea         rdx,[statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A]
+                    00
+  00000000000003CB: 48 8D 0A           lea         rcx,[rdx]
+  00000000000003CE: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000003D2: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000003D9: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  00000000000003DD: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  00000000000003E1: B8 1D 00 00 00     mov         eax,1Dh
+  00000000000003E6: 89 07              mov         dword ptr [rdi],eax
+  00000000000003E8: 48 C7 C3 01 00 00  mov         rbx,1
+                    00
+  00000000000003EF: 48 C7 C0 00 02 00  mov         rax,200h
+                    00
+  00000000000003F6: 48 F7 E3           mul         rax,rbx
+  00000000000003F9: 48 C7 C1 00 00 00  mov         rcx,0
+                    00
+  0000000000000400: 48 8D 3C 08        lea         rdi,[rax+rcx]
+  0000000000000404: 4C 8B E7           mov         r12,rdi
+  0000000000000407: 49 8B CC           mov         rcx,r12
+  000000000000040A: E8 00 00 00 00     call        RtmMemAlloc
+  000000000000040F: 48 8B F8           mov         rdi,rax
+  0000000000000412: 4C 8B E7           mov         r12,rdi
+  0000000000000415: 49 8B CC           mov         rcx,r12
+  0000000000000418: E8 7E 00 00 00     call        default_constructor_CharClassTable_D65457DDFB4E51D2D893B46A0294BEA041915E30
+  000000000000041D: 49 8B D4           mov         rdx,r12
+  0000000000000420: 48 8B CE           mov         rcx,rsi
+  0000000000000423: E8 D8 FB FF FF     call        constructor_UniquePtr_2576DFB246EA7CCD66295040781CF94E3851725C
+  0000000000000428: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  000000000000042F: 48 8D 4D 10        lea         rcx,[rbp+10h]
+  0000000000000433: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000437: B8 1E 00 00 00     mov         eax,1Eh
+  000000000000043C: 89 06              mov         dword ptr [rsi],eax
+  000000000000043E: 48 B8 00 00 00 00  mov         rax,offset destructor_UniquePtr_0E4A0F38FCFDE97C02DB0D9439B0C5CD4404F7DA
+                    00 00 00 00
+  0000000000000448: 48 8B F0           mov         rsi,rax
+  000000000000044B: 48 C7 C3 01 00 00  mov         rbx,1
+                    00
+  0000000000000452: 48 8D 15 00 00 00  lea         rdx,[statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A]
+                    00
+  0000000000000459: 48 8D 0A           lea         rcx,[rdx]
+  000000000000045C: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  0000000000000460: 4C 8B E7           mov         r12,rdi
+  0000000000000463: 49 8B D4           mov         rdx,r12
+  0000000000000466: 48 8B CE           mov         rcx,rsi
+  0000000000000469: E8 00 00 00 00     call        RtmEnqueueDestruction
+  000000000000046E: 48 8D 75 08        lea         rsi,[rbp+8]
+  0000000000000472: 48 8B CE           mov         rcx,rsi
+  0000000000000475: E8 00 00 00 00     call        destructor_StaticInitCriticalSection_EE15F7F7FEBDC62E218E16E8AF4BBBDC80CD0233
+  000000000000047A: 48 8D 75 28        lea         rsi,[rbp+28h]
+  000000000000047E: 48 8B CE           mov         rcx,rsi
+  0000000000000481: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000486: EB 05              jmp         000000000000048D
+  0000000000000488: E9 17 FF FF FF     jmp         00000000000003A4
+  000000000000048D: 48 8D 65 30        lea         rsp,[rbp+30h]
+  0000000000000491: 5B                 pop         rbx
+  0000000000000492: 5B                 pop         rbx
+  0000000000000493: 41 5D              pop         r13
+  0000000000000495: 41 5C              pop         r12
+  0000000000000497: 5F                 pop         rdi
+  0000000000000498: 5E                 pop         rsi
+  0000000000000499: 5D                 pop         rbp
+  000000000000049A: C3                 ret
+default_constructor_CharClassTable_D65457DDFB4E51D2D893B46A0294BEA041915E30:
+  000000000000049B: 55                 push        rbp
+  000000000000049C: 56                 push        rsi
+  000000000000049D: 57                 push        rdi
+  000000000000049E: 41 54              push        r12
+  00000000000004A0: 41 55              push        r13
+  00000000000004A2: 41 56              push        r14
+  00000000000004A4: 41 57              push        r15
+  00000000000004A6: 53                 push        rbx
+  00000000000004A7: 53                 push        rbx
+  00000000000004A8: 48 81 EC 90 00 00  sub         rsp,90h
+                    00
+  00000000000004AF: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  00000000000004B4: 48 8B F1           mov         rsi,rcx
+  00000000000004B7: 48 89 75 08        mov         qword ptr [rbp+8],rsi
+  00000000000004BB: 48 B8 FB 00 00 00  mov         rax,5B0619DB000000FBh
+                    DB 19 06 5B
+  00000000000004C5: 48 8B D0           mov         rdx,rax
+  00000000000004C8: 48 8D 7D 18        lea         rdi,[rbp+18h]
+  00000000000004CC: 48 8B CF           mov         rcx,rdi
+  00000000000004CF: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  00000000000004D4: 48 8D 75 18        lea         rsi,[rbp+18h]
+  00000000000004D8: 48 8B D6           mov         rdx,rsi
+  00000000000004DB: 48 8D 7D 30        lea         rdi,[rbp+30h]
+  00000000000004DF: 48 8B CF           mov         rcx,rdi
+  00000000000004E2: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  00000000000004E7: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000004EE: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  00000000000004F2: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000004F6: B8 29 00 00 00     mov         eax,29h
+  00000000000004FB: 89 06              mov         dword ptr [rsi],eax
+  00000000000004FD: E8 D4 FD FF FF     call        static_constructor_CharClassTable_01A0E997FF7EC1B0EE5E9345E22C1FEF1C335114
+  0000000000000502: 48 C7 C0 00 00 00  mov         rax,0
+                    00
+  0000000000000509: 48 89 45 10        mov         qword ptr [rbp+10h],rax
+  000000000000050D: EB 00              jmp         000000000000050F
+  000000000000050F: 48 8B 75 10        mov         rsi,qword ptr [rbp+10h]
+  0000000000000513: 48 C7 C2 00 01 00  mov         rdx,100h
+                    00
+  000000000000051A: 48 3B F2           cmp         rsi,rdx
+  000000000000051D: 40 0F 9C C7        setl        dil
+  0000000000000521: 40 0A FF           or          dil,dil
+  0000000000000524: 75 02              jne         0000000000000528
+  0000000000000526: EB 43              jmp         000000000000056B
+  0000000000000528: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  000000000000052C: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000533: 48 8D 0E           lea         rcx,[rsi]
+  0000000000000536: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  000000000000053A: 48 8B 75 10        mov         rsi,qword ptr [rbp+10h]
+  000000000000053E: 48 C7 C0 02 00 00  mov         rax,2
+                    00
+  0000000000000545: 48 F7 E6           mul         rax,rsi
+  0000000000000548: 48 8D 0F           lea         rcx,[rdi]
+  000000000000054B: 4C 8D 24 08        lea         r12,[rax+rcx]
+  000000000000054F: 66 B8 00 00        mov         ax,0
+  0000000000000553: 66 41 89 04 24     mov         word ptr [r12],ax
+  0000000000000558: 48 C7 C3 01 00 00  mov         rbx,1
+                    00
+  000000000000055F: 48 03 F3           add         rsi,rbx
+  0000000000000562: 48 8B FE           mov         rdi,rsi
+  0000000000000565: 48 89 7D 10        mov         qword ptr [rbp+10h],rdi
+  0000000000000569: EB A4              jmp         000000000000050F
+  000000000000056B: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000572: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000576: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000057A: B8 2A 00 00 00     mov         eax,2Ah
+  000000000000057F: 89 06              mov         dword ptr [rsi],eax
+  0000000000000581: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000585: B0 61              mov         al,61h
+  0000000000000587: 40 8A F8           mov         dil,al
+  000000000000058A: B0 7A              mov         al,7Ah
+  000000000000058C: 44 8A E0           mov         r12b,al
+  000000000000058F: 4C 89 65 38        mov         qword ptr [rbp+38h],r12
+  0000000000000593: 66 B8 01 00        mov         ax,1
+  0000000000000597: 66 44 8B C8        mov         r9w,ax
+  000000000000059B: 45 8A C4           mov         r8b,r12b
+  000000000000059E: 40 8A D7           mov         dl,dil
+  00000000000005A1: 4C 89 65 38        mov         qword ptr [rbp+38h],r12
+  00000000000005A5: 48 8B CE           mov         rcx,rsi
+  00000000000005A8: E8 03 05 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000005AD: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000005B4: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  00000000000005B8: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000005BC: B8 2B 00 00 00     mov         eax,2Bh
+  00000000000005C1: 89 06              mov         dword ptr [rsi],eax
+  00000000000005C3: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  00000000000005C7: B0 41              mov         al,41h
+  00000000000005C9: 40 8A F8           mov         dil,al
+  00000000000005CC: B0 5A              mov         al,5Ah
+  00000000000005CE: 44 8A E0           mov         r12b,al
+  00000000000005D1: 4C 89 65 40        mov         qword ptr [rbp+40h],r12
+  00000000000005D5: 66 B8 02 00        mov         ax,2
+  00000000000005D9: 66 44 8B C8        mov         r9w,ax
+  00000000000005DD: 45 8A C4           mov         r8b,r12b
+  00000000000005E0: 40 8A D7           mov         dl,dil
+  00000000000005E3: 4C 89 65 40        mov         qword ptr [rbp+40h],r12
+  00000000000005E7: 48 8B CE           mov         rcx,rsi
+  00000000000005EA: E8 C1 04 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000005EF: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000005F6: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  00000000000005FA: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000005FE: B8 2C 00 00 00     mov         eax,2Ch
+  0000000000000603: 89 06              mov         dword ptr [rsi],eax
+  0000000000000605: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000609: B0 30              mov         al,30h
+  000000000000060B: 40 8A F8           mov         dil,al
+  000000000000060E: B0 39              mov         al,39h
+  0000000000000610: 44 8A E0           mov         r12b,al
+  0000000000000613: 4C 89 65 48        mov         qword ptr [rbp+48h],r12
+  0000000000000617: 66 B8 04 00        mov         ax,4
+  000000000000061B: 66 44 8B C8        mov         r9w,ax
+  000000000000061F: 45 8A C4           mov         r8b,r12b
+  0000000000000622: 40 8A D7           mov         dl,dil
+  0000000000000625: 4C 89 65 48        mov         qword ptr [rbp+48h],r12
+  0000000000000629: 48 8B CE           mov         rcx,rsi
+  000000000000062C: E8 7F 04 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  0000000000000631: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000638: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  000000000000063C: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000640: B8 2D 00 00 00     mov         eax,2Dh
+  0000000000000645: 89 06              mov         dword ptr [rsi],eax
+  0000000000000647: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  000000000000064B: B0 30              mov         al,30h
+  000000000000064D: 40 8A F8           mov         dil,al
+  0000000000000650: B0 39              mov         al,39h
+  0000000000000652: 44 8A E0           mov         r12b,al
+  0000000000000655: 4C 89 65 50        mov         qword ptr [rbp+50h],r12
+  0000000000000659: 66 B8 08 00        mov         ax,8
+  000000000000065D: 66 44 8B C8        mov         r9w,ax
+  0000000000000661: 45 8A C4           mov         r8b,r12b
+  0000000000000664: 40 8A D7           mov         dl,dil
+  0000000000000667: 4C 89 65 50        mov         qword ptr [rbp+50h],r12
+  000000000000066B: 48 8B CE           mov         rcx,rsi
+  000000000000066E: E8 3D 04 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  0000000000000673: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  000000000000067A: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  000000000000067E: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000682: B8 2E 00 00 00     mov         eax,2Eh
+  0000000000000687: 89 06              mov         dword ptr [rsi],eax
+  0000000000000689: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  000000000000068D: B0 61              mov         al,61h
+  000000000000068F: 40 8A F8           mov         dil,al
+  0000000000000692: B0 66              mov         al,66h
+  0000000000000694: 44 8A E0           mov         r12b,al
+  0000000000000697: 4C 89 65 58        mov         qword ptr [rbp+58h],r12
+  000000000000069B: 66 B8 08 00        mov         ax,8
+  000000000000069F: 66 44 8B C8        mov         r9w,ax
+  00000000000006A3: 45 8A C4           mov         r8b,r12b
+  00000000000006A6: 40 8A D7           mov         dl,dil
+  00000000000006A9: 4C 89 65 58        mov         qword ptr [rbp+58h],r12
+  00000000000006AD: 48 8B CE           mov         rcx,rsi
+  00000000000006B0: E8 FB 03 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000006B5: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000006BC: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  00000000000006C0: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000006C4: B8 2F 00 00 00     mov         eax,2Fh
+  00000000000006C9: 89 06              mov         dword ptr [rsi],eax
+  00000000000006CB: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  00000000000006CF: B0 41              mov         al,41h
+  00000000000006D1: 40 8A F8           mov         dil,al
+  00000000000006D4: B0 46              mov         al,46h
+  00000000000006D6: 44 8A E0           mov         r12b,al
+  00000000000006D9: 4C 89 65 60        mov         qword ptr [rbp+60h],r12
+  00000000000006DD: 66 B8 08 00        mov         ax,8
+  00000000000006E1: 66 44 8B C8        mov         r9w,ax
+  00000000000006E5: 45 8A C4           mov         r8b,r12b
+  00000000000006E8: 40 8A D7           mov         dl,dil
+  00000000000006EB: 4C 89 65 60        mov         qword ptr [rbp+60h],r12
+  00000000000006EF: 48 8B CE           mov         rcx,rsi
+  00000000000006F2: E8 B9 03 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000006F7: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000006FE: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000702: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000706: B8 30 00 00 00     mov         eax,30h
+  000000000000070B: 89 06              mov         dword ptr [rsi],eax
+  000000000000070D: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000711: 66 B8 10 00        mov         ax,10h
+  0000000000000715: 66 44 8B C8        mov         r9w,ax
+  0000000000000719: B0 1F              mov         al,1Fh
+  000000000000071B: 44 8A C0           mov         r8b,al
+  000000000000071E: B0 00              mov         al,0
+  0000000000000720: 8A D0              mov         dl,al
+  0000000000000722: 48 8B CE           mov         rcx,rsi
+  0000000000000725: E8 86 03 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  000000000000072A: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000731: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000735: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000739: B8 31 00 00 00     mov         eax,31h
+  000000000000073E: 89 06              mov         dword ptr [rsi],eax
+  0000000000000740: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000744: 66 B8 10 00        mov         ax,10h
+  0000000000000748: 66 44 8B C8        mov         r9w,ax
+  000000000000074C: B0 7F              mov         al,7Fh
+  000000000000074E: 44 8A C0           mov         r8b,al
+  0000000000000751: B0 7F              mov         al,7Fh
+  0000000000000753: 8A D0              mov         dl,al
+  0000000000000755: 48 8B CE           mov         rcx,rsi
+  0000000000000758: E8 53 03 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  000000000000075D: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000764: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000768: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000076C: B8 32 00 00 00     mov         eax,32h
+  0000000000000771: 89 06              mov         dword ptr [rsi],eax
+  0000000000000773: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000777: 66 B8 20 00        mov         ax,20h
+  000000000000077B: 66 44 8B C8        mov         r9w,ax
+  000000000000077F: B0 7E              mov         al,7Eh
+  0000000000000781: 44 8A C0           mov         r8b,al
+  0000000000000784: B0 21              mov         al,21h
+  0000000000000786: 8A D0              mov         dl,al
+  0000000000000788: 48 8B CE           mov         rcx,rsi
+  000000000000078B: E8 20 03 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  0000000000000790: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000797: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  000000000000079B: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000079F: B8 33 00 00 00     mov         eax,33h
+  00000000000007A4: 89 06              mov         dword ptr [rsi],eax
+  00000000000007A6: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  00000000000007AA: 66 B8 40 00        mov         ax,40h
+  00000000000007AE: 66 44 8B C8        mov         r9w,ax
+  00000000000007B2: B0 7E              mov         al,7Eh
+  00000000000007B4: 44 8A C0           mov         r8b,al
+  00000000000007B7: B0 20              mov         al,20h
+  00000000000007B9: 8A D0              mov         dl,al
+  00000000000007BB: 48 8B CE           mov         rcx,rsi
+  00000000000007BE: E8 ED 02 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000007C3: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000007CA: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  00000000000007CE: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000007D2: B8 34 00 00 00     mov         eax,34h
+  00000000000007D7: 89 06              mov         dword ptr [rsi],eax
+  00000000000007D9: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  00000000000007DD: 66 B8 80 00        mov         ax,80h
+  00000000000007E1: 66 44 8B C8        mov         r9w,ax
+  00000000000007E5: B0 2F              mov         al,2Fh
+  00000000000007E7: 44 8A C0           mov         r8b,al
+  00000000000007EA: B0 21              mov         al,21h
+  00000000000007EC: 8A D0              mov         dl,al
+  00000000000007EE: 48 8B CE           mov         rcx,rsi
+  00000000000007F1: E8 BA 02 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000007F6: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000007FD: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000801: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000805: B8 35 00 00 00     mov         eax,35h
+  000000000000080A: 89 06              mov         dword ptr [rsi],eax
+  000000000000080C: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000810: 66 B8 80 00        mov         ax,80h
+  0000000000000814: 66 44 8B C8        mov         r9w,ax
+  0000000000000818: B0 40              mov         al,40h
+  000000000000081A: 44 8A C0           mov         r8b,al
+  000000000000081D: B0 3A              mov         al,3Ah
+  000000000000081F: 8A D0              mov         dl,al
+  0000000000000821: 48 8B CE           mov         rcx,rsi
+  0000000000000824: E8 87 02 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  0000000000000829: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000830: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000834: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000838: B8 36 00 00 00     mov         eax,36h
+  000000000000083D: 89 06              mov         dword ptr [rsi],eax
+  000000000000083F: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000843: 66 B8 80 00        mov         ax,80h
+  0000000000000847: 66 44 8B C8        mov         r9w,ax
+  000000000000084B: B0 60              mov         al,60h
+  000000000000084D: 44 8A C0           mov         r8b,al
+  0000000000000850: B0 5B              mov         al,5Bh
+  0000000000000852: 8A D0              mov         dl,al
+  0000000000000854: 48 8B CE           mov         rcx,rsi
+  0000000000000857: E8 54 02 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  000000000000085C: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000863: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000867: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000086B: B8 37 00 00 00     mov         eax,37h
+  0000000000000870: 89 06              mov         dword ptr [rsi],eax
+  0000000000000872: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000876: 66 B8 80 00        mov         ax,80h
+  000000000000087A: 66 44 8B C8        mov         r9w,ax
+  000000000000087E: B0 7E              mov         al,7Eh
+  0000000000000880: 44 8A C0           mov         r8b,al
+  0000000000000883: B0 7B              mov         al,7Bh
+  0000000000000885: 8A D0              mov         dl,al
+  0000000000000887: 48 8B CE           mov         rcx,rsi
+  000000000000088A: E8 21 02 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  000000000000088F: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000896: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  000000000000089A: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000089E: B8 38 00 00 00     mov         eax,38h
+  00000000000008A3: 89 06              mov         dword ptr [rsi],eax
+  00000000000008A5: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  00000000000008A9: 66 B8 00 01        mov         ax,100h
+  00000000000008AD: 66 44 8B C8        mov         r9w,ax
+  00000000000008B1: B0 0D              mov         al,0Dh
+  00000000000008B3: 44 8A C0           mov         r8b,al
+  00000000000008B6: B0 09              mov         al,9
+  00000000000008B8: 8A D0              mov         dl,al
+  00000000000008BA: 48 8B CE           mov         rcx,rsi
+  00000000000008BD: E8 EE 01 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000008C2: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  00000000000008C9: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  00000000000008CD: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  00000000000008D1: B8 39 00 00 00     mov         eax,39h
+  00000000000008D6: 89 06              mov         dword ptr [rsi],eax
+  00000000000008D8: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  00000000000008DC: 66 B8 00 01        mov         ax,100h
+  00000000000008E0: 66 44 8B C8        mov         r9w,ax
+  00000000000008E4: B0 20              mov         al,20h
+  00000000000008E6: 44 8A C0           mov         r8b,al
+  00000000000008E9: B0 20              mov         al,20h
+  00000000000008EB: 8A D0              mov         dl,al
+  00000000000008ED: 48 8B CE           mov         rcx,rsi
+  00000000000008F0: E8 BB 01 00 00     call        member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+  00000000000008F5: 48 8D 75 30        lea         rsi,[rbp+30h]
+  00000000000008F9: 48 8B CE           mov         rcx,rsi
+  00000000000008FC: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000901: EB 00              jmp         0000000000000903
+  0000000000000903: 48 8D 65 70        lea         rsp,[rbp+70h]
+  0000000000000907: 5B                 pop         rbx
+  0000000000000908: 5B                 pop         rbx
+  0000000000000909: 41 5F              pop         r15
+  000000000000090B: 41 5E              pop         r14
+  000000000000090D: 41 5D              pop         r13
+  000000000000090F: 41 5C              pop         r12
+  0000000000000911: 5F                 pop         rdi
+  0000000000000912: 5E                 pop         rsi
+  0000000000000913: 5D                 pop         rbp
+  0000000000000914: C3                 ret
+member_function_Instance_CharClassTable_6970C3056FDEEFAD632316A08C443335D3B0B423:
+  0000000000000915: 55                 push        rbp
+  0000000000000916: 56                 push        rsi
+  0000000000000917: 57                 push        rdi
+  0000000000000918: 53                 push        rbx
+  0000000000000919: 53                 push        rbx
+  000000000000091A: 48 83 EC 50        sub         rsp,50h
+  000000000000091E: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  0000000000000923: 48 B8 F8 00 00 00  mov         rax,5B0619DB000000F8h
+                    DB 19 06 5B
+  000000000000092D: 48 8B D0           mov         rdx,rax
+  0000000000000930: 48 8D 7D 08        lea         rdi,[rbp+8]
+  0000000000000934: 48 8B CF           mov         rcx,rdi
+  0000000000000937: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  000000000000093C: 48 8D 75 08        lea         rsi,[rbp+8]
+  0000000000000940: 48 8B D6           mov         rdx,rsi
+  0000000000000943: 48 8D 7D 20        lea         rdi,[rbp+20h]
+  0000000000000947: 48 8B CF           mov         rcx,rdi
+  000000000000094A: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  000000000000094F: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000956: 48 8D 4D 08        lea         rcx,[rbp+8]
+  000000000000095A: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  000000000000095E: B8 21 00 00 00     mov         eax,21h
+  0000000000000963: 89 06              mov         dword ptr [rsi],eax
+  0000000000000965: E8 6C F9 FF FF     call        static_constructor_CharClassTable_01A0E997FF7EC1B0EE5E9345E22C1FEF1C335114
+  000000000000096A: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000971: 48 8D 4D 08        lea         rcx,[rbp+8]
+  0000000000000975: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000979: B8 22 00 00 00     mov         eax,22h
+  000000000000097E: 89 06              mov         dword ptr [rsi],eax
+  0000000000000980: 48 C7 C3 01 00 00  mov         rbx,1
+                    00
+  0000000000000987: 48 8D 15 00 00 00  lea         rdx,[statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A]
+                    00
+  000000000000098E: 48 8D 0A           lea         rcx,[rdx]
+  0000000000000991: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000995: 48 8B CE           mov         rcx,rsi
+  0000000000000998: E8 FE F7 FF FF     call        member_function_op_star_UniquePtr_606D465B0997A213F4CB3A16360E47F788883D23
+  000000000000099D: 48 8B F8           mov         rdi,rax
+  00000000000009A0: EB 00              jmp         00000000000009A2
+  00000000000009A2: 48 8D 75 20        lea         rsi,[rbp+20h]
+  00000000000009A6: 48 8B CE           mov         rcx,rsi
+  00000000000009A9: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  00000000000009AE: 48 8B C7           mov         rax,rdi
+  00000000000009B1: EB 18              jmp         00000000000009CB
+  00000000000009B3: 48 8D 75 20        lea         rsi,[rbp+20h]
+  00000000000009B7: 48 8B CE           mov         rcx,rsi
+  00000000000009BA: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  00000000000009BF: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  00000000000009C6: 48 8B C3           mov         rax,rbx
+  00000000000009C9: EB 00              jmp         00000000000009CB
+  00000000000009CB: 48 8D 65 30        lea         rsp,[rbp+30h]
+  00000000000009CF: 5B                 pop         rbx
+  00000000000009D0: 5B                 pop         rbx
+  00000000000009D1: 5F                 pop         rdi
+  00000000000009D2: 5E                 pop         rsi
+  00000000000009D3: 5D                 pop         rbp
+  00000000000009D4: C3                 ret
+member_function_GetCharacterClass_CharClassTable_54E7EF121ECEA2E82345B3CA1A4A75207B96D79A:
+  00000000000009D5: 55                 push        rbp
+  00000000000009D6: 56                 push        rsi
+  00000000000009D7: 57                 push        rdi
+  00000000000009D8: 41 54              push        r12
+  00000000000009DA: 53                 push        rbx
+  00000000000009DB: 48 83 EC 60        sub         rsp,60h
+  00000000000009DF: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  00000000000009E4: 48 8B F1           mov         rsi,rcx
+  00000000000009E7: 40 8A FA           mov         dil,dl
+  00000000000009EA: 48 89 75 08        mov         qword ptr [rbp+8],rsi
+  00000000000009EE: 40 88 7D 10        mov         byte ptr [rbp+10h],dil
+  00000000000009F2: 48 B8 FA 00 00 00  mov         rax,5B0619DB000000FAh
+                    DB 19 06 5B
+  00000000000009FC: 48 8B D0           mov         rdx,rax
+  00000000000009FF: 48 8D 7D 18        lea         rdi,[rbp+18h]
+  0000000000000A03: 48 8B CF           mov         rcx,rdi
+  0000000000000A06: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  0000000000000A0B: 48 8D 75 18        lea         rsi,[rbp+18h]
+  0000000000000A0F: 48 8B D6           mov         rdx,rsi
+  0000000000000A12: 48 8D 7D 30        lea         rdi,[rbp+30h]
+  0000000000000A16: 48 8B CF           mov         rcx,rdi
+  0000000000000A19: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  0000000000000A1E: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000A25: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000A29: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000A2D: B8 25 00 00 00     mov         eax,25h
+  0000000000000A32: 89 06              mov         dword ptr [rsi],eax
+  0000000000000A34: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000A3B: 48 8D 4D 18        lea         rcx,[rbp+18h]
+  0000000000000A3F: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000A43: B8 26 00 00 00     mov         eax,26h
+  0000000000000A48: 89 06              mov         dword ptr [rsi],eax
+  0000000000000A4A: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000A4E: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000A55: 48 8D 0E           lea         rcx,[rsi]
+  0000000000000A58: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  0000000000000A5C: 40 8A 75 10        mov         sil,byte ptr [rbp+10h]
+  0000000000000A60: 44 8A E6           mov         r12b,sil
+  0000000000000A63: 49 0F B6 F4        movzx       rsi,r12b
+  0000000000000A67: 48 C7 C0 02 00 00  mov         rax,2
+                    00
+  0000000000000A6E: 48 F7 E6           mul         rax,rsi
+  0000000000000A71: 48 8D 0F           lea         rcx,[rdi]
+  0000000000000A74: 4C 8D 24 08        lea         r12,[rax+rcx]
+  0000000000000A78: 66 41 8B 34 24     mov         si,word ptr [r12]
+  0000000000000A7D: EB 00              jmp         0000000000000A7F
+  0000000000000A7F: 48 8D 7D 30        lea         rdi,[rbp+30h]
+  0000000000000A83: 48 8B CF           mov         rcx,rdi
+  0000000000000A86: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000A8B: 66 8B C6           mov         ax,si
+  0000000000000A8E: EB 15              jmp         0000000000000AA5
+  0000000000000A90: 48 8D 75 30        lea         rsi,[rbp+30h]
+  0000000000000A94: 48 8B CE           mov         rcx,rsi
+  0000000000000A97: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000A9C: 66 BB 00 00        mov         bx,0
+  0000000000000AA0: 66 8B C3           mov         ax,bx
+  0000000000000AA3: EB 00              jmp         0000000000000AA5
+  0000000000000AA5: 48 8D 65 40        lea         rsp,[rbp+40h]
+  0000000000000AA9: 5B                 pop         rbx
+  0000000000000AAA: 41 5C              pop         r12
+  0000000000000AAC: 5F                 pop         rdi
+  0000000000000AAD: 5E                 pop         rsi
+  0000000000000AAE: 5D                 pop         rbp
+  0000000000000AAF: C3                 ret
+member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36:
+  0000000000000AB0: 55                 push        rbp
+  0000000000000AB1: 56                 push        rsi
+  0000000000000AB2: 57                 push        rdi
+  0000000000000AB3: 41 54              push        r12
+  0000000000000AB5: 41 55              push        r13
+  0000000000000AB7: 53                 push        rbx
+  0000000000000AB8: 53                 push        rbx
+  0000000000000AB9: 48 83 EC 70        sub         rsp,70h
+  0000000000000ABD: 48 8D 6C 24 20     lea         rbp,[rsp+20h]
+  0000000000000AC2: 48 8B F1           mov         rsi,rcx
+  0000000000000AC5: 40 8A FA           mov         dil,dl
+  0000000000000AC8: 45 8A E0           mov         r12b,r8b
+  0000000000000ACB: 66 45 8B E9        mov         r13w,r9w
+  0000000000000ACF: 48 89 75 08        mov         qword ptr [rbp+8],rsi
+  0000000000000AD3: 40 88 7D 10        mov         byte ptr [rbp+10h],dil
+  0000000000000AD7: 44 88 65 18        mov         byte ptr [rbp+18h],r12b
+  0000000000000ADB: 66 44 89 6D 20     mov         word ptr [rbp+20h],r13w
+  0000000000000AE0: 48 B8 FC 00 00 00  mov         rax,5B0619DB000000FCh
+                    DB 19 06 5B
+  0000000000000AEA: 48 8B D0           mov         rdx,rax
+  0000000000000AED: 48 8D 7D 30        lea         rdi,[rbp+30h]
+  0000000000000AF1: 48 8B CF           mov         rcx,rdi
+  0000000000000AF4: E8 00 00 00 00     call        constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+  0000000000000AF9: 48 8D 75 30        lea         rsi,[rbp+30h]
+  0000000000000AFD: 48 8B D6           mov         rdx,rsi
+  0000000000000B00: 48 8D 7D 48        lea         rdi,[rbp+48h]
+  0000000000000B04: 48 8B CF           mov         rcx,rdi
+  0000000000000B07: E8 00 00 00 00     call        constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+  0000000000000B0C: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000B13: 48 8D 4D 30        lea         rcx,[rbp+30h]
+  0000000000000B17: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000B1B: B8 3C 00 00 00     mov         eax,3Ch
+  0000000000000B20: 89 06              mov         dword ptr [rsi],eax
+  0000000000000B22: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000B29: 48 8D 4D 30        lea         rcx,[rbp+30h]
+  0000000000000B2D: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000B31: B8 3D 00 00 00     mov         eax,3Dh
+  0000000000000B36: 89 06              mov         dword ptr [rsi],eax
+  0000000000000B38: 40 8A 75 10        mov         sil,byte ptr [rbp+10h]
+  0000000000000B3C: 40 88 75 28        mov         byte ptr [rbp+28h],sil
+  0000000000000B40: EB 00              jmp         0000000000000B42
+  0000000000000B42: 40 8A 75 18        mov         sil,byte ptr [rbp+18h]
+  0000000000000B46: 40 8A 7D 28        mov         dil,byte ptr [rbp+28h]
+  0000000000000B4A: 40 3A F7           cmp         sil,dil
+  0000000000000B4D: 41 0F 92 C4        setb        r12b
+  0000000000000B51: 41 8A F4           mov         sil,r12b
+  0000000000000B54: 40 80 F6 01        xor         sil,1
+  0000000000000B58: 40 0A F6           or          sil,sil
+  0000000000000B5B: 75 05              jne         0000000000000B62
+  0000000000000B5D: E9 C5 00 00 00     jmp         0000000000000C27
+  0000000000000B62: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000B69: 48 8D 4D 30        lea         rcx,[rbp+30h]
+  0000000000000B6D: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000B71: B8 3E 00 00 00     mov         eax,3Eh
+  0000000000000B76: 89 06              mov         dword ptr [rsi],eax
+  0000000000000B78: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000B7F: 48 8D 4D 30        lea         rcx,[rbp+30h]
+  0000000000000B83: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000B87: B8 3F 00 00 00     mov         eax,3Fh
+  0000000000000B8C: 89 06              mov         dword ptr [rsi],eax
+  0000000000000B8E: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000B92: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000B99: 48 8D 0E           lea         rcx,[rsi]
+  0000000000000B9C: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  0000000000000BA0: 40 8A 75 28        mov         sil,byte ptr [rbp+28h]
+  0000000000000BA4: 4C 0F B6 E6        movzx       r12,sil
+  0000000000000BA8: 48 C7 C0 02 00 00  mov         rax,2
+                    00
+  0000000000000BAF: 49 F7 E4           mul         rax,r12
+  0000000000000BB2: 48 8D 0F           lea         rcx,[rdi]
+  0000000000000BB5: 48 8D 34 08        lea         rsi,[rax+rcx]
+  0000000000000BB9: 66 8B 3E           mov         di,word ptr [rsi]
+  0000000000000BBC: 66 8B 75 20        mov         si,word ptr [rbp+20h]
+  0000000000000BC0: 66 0B FE           or          di,si
+  0000000000000BC3: 66 44 8B E7        mov         r12w,di
+  0000000000000BC7: 48 8B 75 08        mov         rsi,qword ptr [rbp+8]
+  0000000000000BCB: 48 C7 C3 00 00 00  mov         rbx,0
+                    00
+  0000000000000BD2: 48 8D 0E           lea         rcx,[rsi]
+  0000000000000BD5: 48 8D 3C 0B        lea         rdi,[rbx+rcx]
+  0000000000000BD9: 40 8A 75 28        mov         sil,byte ptr [rbp+28h]
+  0000000000000BDD: 4C 0F B6 EE        movzx       r13,sil
+  0000000000000BE1: 48 C7 C0 02 00 00  mov         rax,2
+                    00
+  0000000000000BE8: 49 F7 E5           mul         rax,r13
+  0000000000000BEB: 48 8D 0F           lea         rcx,[rdi]
+  0000000000000BEE: 48 8D 34 08        lea         rsi,[rax+rcx]
+  0000000000000BF2: 66 44 89 26        mov         word ptr [rsi],r12w
+  0000000000000BF6: EB 00              jmp         0000000000000BF8
+  0000000000000BF8: 48 C7 C3 10 00 00  mov         rbx,10h
+                    00
+  0000000000000BFF: 48 8D 4D 30        lea         rcx,[rbp+30h]
+  0000000000000C03: 48 8D 34 0B        lea         rsi,[rbx+rcx]
+  0000000000000C07: B8 3D 00 00 00     mov         eax,3Dh
+  0000000000000C0C: 89 06              mov         dword ptr [rsi],eax
+  0000000000000C0E: 40 8A 75 28        mov         sil,byte ptr [rbp+28h]
+  0000000000000C12: B3 01              mov         bl,1
+  0000000000000C14: 40 02 F3           add         sil,bl
+  0000000000000C17: 40 8A FE           mov         dil,sil
+  0000000000000C1A: 40 88 7D 28        mov         byte ptr [rbp+28h],dil
+  0000000000000C1E: 40 8A 75 28        mov         sil,byte ptr [rbp+28h]
+  0000000000000C22: E9 1B FF FF FF     jmp         0000000000000B42
+  0000000000000C27: 48 8D 75 48        lea         rsi,[rbp+48h]
+  0000000000000C2B: 48 8B CE           mov         rcx,rsi
+  0000000000000C2E: E8 00 00 00 00     call        destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+  0000000000000C33: EB 00              jmp         0000000000000C35
+  0000000000000C35: 48 8D 65 50        lea         rsp,[rbp+50h]
+  0000000000000C39: 5B                 pop         rbx
+  0000000000000C3A: 5B                 pop         rbx
+  0000000000000C3B: 41 5D              pop         r13
+  0000000000000C3D: 41 5C              pop         r12
+  0000000000000C3F: 5F                 pop         rdi
+  0000000000000C40: 5E                 pop         rsi
+  0000000000000C41: 5D                 pop         rbp
+  0000000000000C42: C3                 ret
+
+RAW DATA #1
+  00000000: 55 56 57 41 54 53 48 83 EC 60 48 8D 6C 24 20 48  UVWATSH.ì`H.l$ H
+  00000010: 8B F1 48 8B FA 48 89 75 08 48 89 7D 10 48 B8 F6  .ñH.úH.u.H.}.H¸ö
+  00000020: 00 00 00 DB 19 06 5B 48 8B D0 48 8D 7D 18 48 8B  ...Û..[H.ÐH.}.H.
+  00000030: CF E8 00 00 00 00 48 8D 75 18 48 8B D6 48 8D 7D  Ïè....H.u.H.ÖH.}
+  00000040: 30 48 8B CF E8 00 00 00 00 48 C7 C3 10 00 00 00  0H.Ïè....HÇÃ....
+  00000050: 48 8D 4D 18 48 8D 34 0B B8 12 00 00 00 89 06 48  H.M.H.4.¸......H
+  00000060: 8B 75 10 48 8B 7D 08 48 C7 C3 00 00 00 00 48 8D  .u.H.}.HÇÃ....H.
+  00000070: 0F 4C 8D 24 0B 49 89 34 24 48 8D 75 30 48 8B CE  .L.$.I.4$H.u0H.Î
+  00000080: E8 00 00 00 00 EB 00 48 8D 65 40 5B 41 5C 5F 5E  è....ë.H.e@[A\_^
+  00000090: 5D C3 55 56 57 41 54 53 48 83 EC 50 48 8D 6C 24  ]ÃUVWATSH.ìPH.l$
+  000000A0: 20 48 8B F1 48 89 75 08 48 B8 F7 00 00 00 DB 19   H.ñH.u.H¸÷...Û.
+  000000B0: 06 5B 48 8B D0 48 8D 7D 10 48 8B CF E8 00 00 00  .[H.ÐH.}.H.Ïè...
+  000000C0: 00 48 8D 75 10 48 8B D6 48 8D 7D 28 48 8B CF E8  .H.u.H.ÖH.}(H.Ïè
+  000000D0: 00 00 00 00 48 C7 C3 10 00 00 00 48 8D 4D 10 48  ....HÇÃ....H.M.H
+  000000E0: 8D 34 0B B8 2A 00 00 00 89 06 48 C7 C3 10 00 00  .4.¸*.....HÇÃ...
+  000000F0: 00 48 8D 4D 10 48 8D 34 0B B8 2B 00 00 00 89 06  .H.M.H.4.¸+.....
+  00000100: 48 8B 75 08 48 C7 C3 00 00 00 00 48 8D 0E 48 8D  H.u.HÇÃ....H..H.
+  00000110: 3C 0B 48 8B 37 48 C7 C0 00 00 00 00 48 8B F8 48  <.H.7HÇÀ....H.øH
+  00000120: 3B F7 41 0F 94 C4 41 8A F4 40 80 F6 01 40 0A F6  ;÷A..ÄA.ô@.ö.@.ö
+  00000130: 75 02 EB 4E 48 C7 C3 10 00 00 00 48 8D 4D 10 48  u.ëNHÇÃ....H.M.H
+  00000140: 8D 34 0B B8 2C 00 00 00 89 06 48 C7 C3 10 00 00  .4.¸,.....HÇÃ...
+  00000150: 00 48 8D 4D 10 48 8D 34 0B B8 2D 00 00 00 89 06  .H.M.H.4.¸-.....
+  00000160: 48 8B 75 08 48 C7 C3 00 00 00 00 48 8D 0E 48 8D  H.u.HÇÃ....H..H.
+  00000170: 3C 0B 48 8B 37 48 8B FE 48 8B CF E8 00 00 00 00  <.H.7H.þH.Ïè....
+  00000180: EB 00 48 8D 75 28 48 8B CE E8 00 00 00 00 EB 00  ë.H.u(H.Îè....ë.
+  00000190: 48 8D 65 30 5B 41 5C 5F 5E 5D C3 55 56 57 41 54  H.e0[A\_^]ÃUVWAT
+  000001A0: 41 55 41 56 53 48 83 EC 50 48 8D 6C 24 20 48 8B  AUAVSH.ìPH.l$ H.
+  000001B0: F1 48 89 75 08 48 B8 F9 00 00 00 DB 19 06 5B 48  ñH.u.H¸ù...Û..[H
+  000001C0: 8B D0 48 8D 7D 10 48 8B CF E8 00 00 00 00 48 8D  .ÐH.}.H.Ïè....H.
+  000001D0: 75 10 48 8B D6 48 8D 7D 28 48 8B CF E8 00 00 00  u.H.ÖH.}(H.Ïè...
+  000001E0: 00 48 C7 C3 10 00 00 00 48 8D 4D 10 48 8D 34 0B  .HÇÃ....H.M.H.4.
+  000001F0: B8 5D 00 00 00 89 06 48 C7 C3 10 00 00 00 48 8D  ¸].....HÇÃ....H.
+  00000200: 4D 10 48 8D 34 0B B8 5E 00 00 00 89 06 48 8B 75  M.H.4.¸^.....H.u
+  00000210: 08 48 C7 C3 00 00 00 00 48 8D 0E 48 8D 3C 0B 48  .HÇÃ....H..H.<.H
+  00000220: 8B 37 48 C7 C0 00 00 00 00 48 8B F8 48 3B F7 41  .7HÇÀ....H.øH;÷A
+  00000230: 0F 94 C4 41 8A F4 40 80 F6 01 40 0A F6 75 02 EB  ..ÄA.ô@.ö.@.öu.ë
+  00000240: 30 90 EB 00 48 C7 C3 10 00 00 00 48 8D 4D 10 48  0.ë.HÇÃ....H.M.H
+  00000250: 8D 34 0B B8 5F 00 00 00 89 06 48 8B 75 08 48 C7  .4.¸_.....H.u.HÇ
+  00000260: C3 00 00 00 00 48 8D 0E 48 8D 3C 0B 48 8B 37 EB  Ã....H..H.<.H.7ë
+  00000270: 2D B8 5E 00 00 00 44 8B C8 48 8D 05 00 00 00 00  -¸^...D.ÈH......
+  00000280: 4C 8B C0 48 8D 05 00 00 00 00 48 8B D0 48 8D 05  L.ÀH......H.ÐH..
+  00000290: 00 00 00 00 48 8B C8 E8 00 00 00 00 EB A6 48 8D  ....H.Èè....ë¦H.
+  000002A0: 7D 28 48 8B CF E8 00 00 00 00 48 8B C6 EB 18 48  }(H.Ïè....H.Æë.H
+  000002B0: 8D 75 28 48 8B CE E8 00 00 00 00 48 C7 C3 00 00  .u(H.Îè....HÇÃ..
+  000002C0: 00 00 48 8B C3 EB 00 48 8D 65 30 5B 41 5E 41 5D  ..H.Ãë.H.e0[A^A]
+  000002D0: 41 5C 5F 5E 5D C3 55 56 57 41 54 41 55 53 53 48  A\_^]ÃUVWATAUSSH
+  000002E0: 83 EC 50 48 8D 6C 24 20 48 B8 F5 00 00 00 DB 19  .ìPH.l$ H¸õ...Û.
+  000002F0: 06 5B 48 8B D0 48 8D 7D 10 48 8B CF E8 00 00 00  .[H.ÐH.}.H.Ïè...
+  00000300: 00 48 8D 75 10 48 8B D6 48 8D 7D 28 48 8B CF E8  .H.u.H.ÖH.}(H.Ïè
+  00000310: 00 00 00 00 48 C7 C3 10 00 00 00 48 8D 4D 10 48  ....HÇÃ....H.M.H
+  00000320: 8D 34 0B B8 1E 00 00 00 89 06 48 C7 C3 00 00 00  .4.¸......HÇÃ...
+  00000330: 00 48 8D 15 00 00 00 00 48 8D 0A 48 8D 34 0B 40  .H......H..H.4.@
+  00000340: 8A 3E 40 0A FF 75 02 EB 11 48 8D 75 28 48 8B CE  .>@.ÿu.ë.H.u(H.Î
+  00000350: E8 00 00 00 00 E9 33 01 00 00 48 8D 75 08 48 8B  è....é3...H.u.H.
+  00000360: CE E8 00 00 00 00 48 C7 C3 00 00 00 00 48 8D 15  Îè....HÇÃ....H..
+  00000370: 00 00 00 00 48 8D 0A 48 8D 34 0B 40 8A 3E 40 0A  ....H..H.4.@.>@.
+  00000380: FF 75 04 EB 1F EB D3 48 8D 75 08 48 8B CE E8 00  ÿu.ë.ëÓH.u.H.Îè.
+  00000390: 00 00 00 48 8D 75 28 48 8B CE E8 00 00 00 00 E9  ...H.u(H.Îè....é
+  000003A0: E9 00 00 00 48 C7 C3 00 00 00 00 48 8D 15 00 00  é...HÇÃ....H....
+  000003B0: 00 00 48 8D 0A 48 8D 34 0B B0 01 88 06 48 C7 C3  ..H..H.4.°...HÇÃ
+  000003C0: 01 00 00 00 48 8D 15 00 00 00 00 48 8D 0A 48 8D  ....H......H..H.
+  000003D0: 34 0B 48 C7 C3 10 00 00 00 48 8D 4D 10 48 8D 3C  4.HÇÃ....H.M.H.<
+  000003E0: 0B B8 1D 00 00 00 89 07 48 C7 C3 01 00 00 00 48  .¸......HÇÃ....H
+  000003F0: C7 C0 00 02 00 00 48 F7 E3 48 C7 C1 00 00 00 00  ÇÀ....H÷ãHÇÁ....
+  00000400: 48 8D 3C 08 4C 8B E7 49 8B CC E8 00 00 00 00 48  H.<.L.çI.Ìè....H
+  00000410: 8B F8 4C 8B E7 49 8B CC E8 7E 00 00 00 49 8B D4  .øL.çI.Ìè~...I.Ô
+  00000420: 48 8B CE E8 D8 FB FF FF 48 C7 C3 10 00 00 00 48  H.ÎèØûÿÿHÇÃ....H
+  00000430: 8D 4D 10 48 8D 34 0B B8 1E 00 00 00 89 06 48 B8  .M.H.4.¸......H¸
+  00000440: 00 00 00 00 00 00 00 00 48 8B F0 48 C7 C3 01 00  ........H.ðHÇÃ..
+  00000450: 00 00 48 8D 15 00 00 00 00 48 8D 0A 48 8D 3C 0B  ..H......H..H.<.
+  00000460: 4C 8B E7 49 8B D4 48 8B CE E8 00 00 00 00 48 8D  L.çI.ÔH.Îè....H.
+  00000470: 75 08 48 8B CE E8 00 00 00 00 48 8D 75 28 48 8B  u.H.Îè....H.u(H.
+  00000480: CE E8 00 00 00 00 EB 05 E9 17 FF FF FF 48 8D 65  Îè....ë.é.ÿÿÿH.e
+  00000490: 30 5B 5B 41 5D 41 5C 5F 5E 5D C3 55 56 57 41 54  0[[A]A\_^]ÃUVWAT
+  000004A0: 41 55 41 56 41 57 53 53 48 81 EC 90 00 00 00 48  AUAVAWSSH.ì....H
+  000004B0: 8D 6C 24 20 48 8B F1 48 89 75 08 48 B8 FB 00 00  .l$ H.ñH.u.H¸û..
+  000004C0: 00 DB 19 06 5B 48 8B D0 48 8D 7D 18 48 8B CF E8  .Û..[H.ÐH.}.H.Ïè
+  000004D0: 00 00 00 00 48 8D 75 18 48 8B D6 48 8D 7D 30 48  ....H.u.H.ÖH.}0H
+  000004E0: 8B CF E8 00 00 00 00 48 C7 C3 10 00 00 00 48 8D  .Ïè....HÇÃ....H.
+  000004F0: 4D 18 48 8D 34 0B B8 29 00 00 00 89 06 E8 D4 FD  M.H.4.¸).....èÔý
+  00000500: FF FF 48 C7 C0 00 00 00 00 48 89 45 10 EB 00 48  ÿÿHÇÀ....H.E.ë.H
+  00000510: 8B 75 10 48 C7 C2 00 01 00 00 48 3B F2 40 0F 9C  .u.HÇÂ....H;ò@..
+  00000520: C7 40 0A FF 75 02 EB 43 48 8B 75 08 48 C7 C3 00  Ç@.ÿu.ëCH.u.HÇÃ.
+  00000530: 00 00 00 48 8D 0E 48 8D 3C 0B 48 8B 75 10 48 C7  ...H..H.<.H.u.HÇ
+  00000540: C0 02 00 00 00 48 F7 E6 48 8D 0F 4C 8D 24 08 66  À....H÷æH..L.$.f
+  00000550: B8 00 00 66 41 89 04 24 48 C7 C3 01 00 00 00 48  ¸..fA..$HÇÃ....H
+  00000560: 03 F3 48 8B FE 48 89 7D 10 EB A4 48 C7 C3 10 00  .óH.þH.}.ë¤HÇÃ..
+  00000570: 00 00 48 8D 4D 18 48 8D 34 0B B8 2A 00 00 00 89  ..H.M.H.4.¸*....
+  00000580: 06 48 8B 75 08 B0 61 40 8A F8 B0 7A 44 8A E0 4C  .H.u.°a@.ø°zD.àL
+  00000590: 89 65 38 66 B8 01 00 66 44 8B C8 45 8A C4 40 8A  .e8f¸..fD.ÈE.Ä@.
+  000005A0: D7 4C 89 65 38 48 8B CE E8 03 05 00 00 48 C7 C3  ×L.e8H.Îè....HÇÃ
+  000005B0: 10 00 00 00 48 8D 4D 18 48 8D 34 0B B8 2B 00 00  ....H.M.H.4.¸+..
+  000005C0: 00 89 06 48 8B 75 08 B0 41 40 8A F8 B0 5A 44 8A  ...H.u.°A@.ø°ZD.
+  000005D0: E0 4C 89 65 40 66 B8 02 00 66 44 8B C8 45 8A C4  àL.e@f¸..fD.ÈE.Ä
+  000005E0: 40 8A D7 4C 89 65 40 48 8B CE E8 C1 04 00 00 48  @.×L.e@H.ÎèÁ...H
+  000005F0: C7 C3 10 00 00 00 48 8D 4D 18 48 8D 34 0B B8 2C  ÇÃ....H.M.H.4.¸,
+  00000600: 00 00 00 89 06 48 8B 75 08 B0 30 40 8A F8 B0 39  .....H.u.°0@.ø°9
+  00000610: 44 8A E0 4C 89 65 48 66 B8 04 00 66 44 8B C8 45  D.àL.eHf¸..fD.ÈE
+  00000620: 8A C4 40 8A D7 4C 89 65 48 48 8B CE E8 7F 04 00  .Ä@.×L.eHH.Îè...
+  00000630: 00 48 C7 C3 10 00 00 00 48 8D 4D 18 48 8D 34 0B  .HÇÃ....H.M.H.4.
+  00000640: B8 2D 00 00 00 89 06 48 8B 75 08 B0 30 40 8A F8  ¸-.....H.u.°0@.ø
+  00000650: B0 39 44 8A E0 4C 89 65 50 66 B8 08 00 66 44 8B  °9D.àL.ePf¸..fD.
+  00000660: C8 45 8A C4 40 8A D7 4C 89 65 50 48 8B CE E8 3D  ÈE.Ä@.×L.ePH.Îè=
+  00000670: 04 00 00 48 C7 C3 10 00 00 00 48 8D 4D 18 48 8D  ...HÇÃ....H.M.H.
+  00000680: 34 0B B8 2E 00 00 00 89 06 48 8B 75 08 B0 61 40  4.¸......H.u.°a@
+  00000690: 8A F8 B0 66 44 8A E0 4C 89 65 58 66 B8 08 00 66  .ø°fD.àL.eXf¸..f
+  000006A0: 44 8B C8 45 8A C4 40 8A D7 4C 89 65 58 48 8B CE  D.ÈE.Ä@.×L.eXH.Î
+  000006B0: E8 FB 03 00 00 48 C7 C3 10 00 00 00 48 8D 4D 18  èû...HÇÃ....H.M.
+  000006C0: 48 8D 34 0B B8 2F 00 00 00 89 06 48 8B 75 08 B0  H.4.¸/.....H.u.°
+  000006D0: 41 40 8A F8 B0 46 44 8A E0 4C 89 65 60 66 B8 08  A@.ø°FD.àL.e`f¸.
+  000006E0: 00 66 44 8B C8 45 8A C4 40 8A D7 4C 89 65 60 48  .fD.ÈE.Ä@.×L.e`H
+  000006F0: 8B CE E8 B9 03 00 00 48 C7 C3 10 00 00 00 48 8D  .Îè¹...HÇÃ....H.
+  00000700: 4D 18 48 8D 34 0B B8 30 00 00 00 89 06 48 8B 75  M.H.4.¸0.....H.u
+  00000710: 08 66 B8 10 00 66 44 8B C8 B0 1F 44 8A C0 B0 00  .f¸..fD.È°.D.À°.
+  00000720: 8A D0 48 8B CE E8 86 03 00 00 48 C7 C3 10 00 00  .ÐH.Îè....HÇÃ...
+  00000730: 00 48 8D 4D 18 48 8D 34 0B B8 31 00 00 00 89 06  .H.M.H.4.¸1.....
+  00000740: 48 8B 75 08 66 B8 10 00 66 44 8B C8 B0 7F 44 8A  H.u.f¸..fD.È°.D.
+  00000750: C0 B0 7F 8A D0 48 8B CE E8 53 03 00 00 48 C7 C3  À°..ÐH.ÎèS...HÇÃ
+  00000760: 10 00 00 00 48 8D 4D 18 48 8D 34 0B B8 32 00 00  ....H.M.H.4.¸2..
+  00000770: 00 89 06 48 8B 75 08 66 B8 20 00 66 44 8B C8 B0  ...H.u.f¸ .fD.È°
+  00000780: 7E 44 8A C0 B0 21 8A D0 48 8B CE E8 20 03 00 00  ~D.À°!.ÐH.Îè ...
+  00000790: 48 C7 C3 10 00 00 00 48 8D 4D 18 48 8D 34 0B B8  HÇÃ....H.M.H.4.¸
+  000007A0: 33 00 00 00 89 06 48 8B 75 08 66 B8 40 00 66 44  3.....H.u.f¸@.fD
+  000007B0: 8B C8 B0 7E 44 8A C0 B0 20 8A D0 48 8B CE E8 ED  .È°~D.À° .ÐH.Îèí
+  000007C0: 02 00 00 48 C7 C3 10 00 00 00 48 8D 4D 18 48 8D  ...HÇÃ....H.M.H.
+  000007D0: 34 0B B8 34 00 00 00 89 06 48 8B 75 08 66 B8 80  4.¸4.....H.u.f¸.
+  000007E0: 00 66 44 8B C8 B0 2F 44 8A C0 B0 21 8A D0 48 8B  .fD.È°/D.À°!.ÐH.
+  000007F0: CE E8 BA 02 00 00 48 C7 C3 10 00 00 00 48 8D 4D  Îèº...HÇÃ....H.M
+  00000800: 18 48 8D 34 0B B8 35 00 00 00 89 06 48 8B 75 08  .H.4.¸5.....H.u.
+  00000810: 66 B8 80 00 66 44 8B C8 B0 40 44 8A C0 B0 3A 8A  f¸..fD.È°@D.À°:.
+  00000820: D0 48 8B CE E8 87 02 00 00 48 C7 C3 10 00 00 00  ÐH.Îè....HÇÃ....
+  00000830: 48 8D 4D 18 48 8D 34 0B B8 36 00 00 00 89 06 48  H.M.H.4.¸6.....H
+  00000840: 8B 75 08 66 B8 80 00 66 44 8B C8 B0 60 44 8A C0  .u.f¸..fD.È°`D.À
+  00000850: B0 5B 8A D0 48 8B CE E8 54 02 00 00 48 C7 C3 10  °[.ÐH.ÎèT...HÇÃ.
+  00000860: 00 00 00 48 8D 4D 18 48 8D 34 0B B8 37 00 00 00  ...H.M.H.4.¸7...
+  00000870: 89 06 48 8B 75 08 66 B8 80 00 66 44 8B C8 B0 7E  ..H.u.f¸..fD.È°~
+  00000880: 44 8A C0 B0 7B 8A D0 48 8B CE E8 21 02 00 00 48  D.À°{.ÐH.Îè!...H
+  00000890: C7 C3 10 00 00 00 48 8D 4D 18 48 8D 34 0B B8 38  ÇÃ....H.M.H.4.¸8
+  000008A0: 00 00 00 89 06 48 8B 75 08 66 B8 00 01 66 44 8B  .....H.u.f¸..fD.
+  000008B0: C8 B0 0D 44 8A C0 B0 09 8A D0 48 8B CE E8 EE 01  È°.D.À°..ÐH.Îèî.
+  000008C0: 00 00 48 C7 C3 10 00 00 00 48 8D 4D 18 48 8D 34  ..HÇÃ....H.M.H.4
+  000008D0: 0B B8 39 00 00 00 89 06 48 8B 75 08 66 B8 00 01  .¸9.....H.u.f¸..
+  000008E0: 66 44 8B C8 B0 20 44 8A C0 B0 20 8A D0 48 8B CE  fD.È° D.À° .ÐH.Î
+  000008F0: E8 BB 01 00 00 48 8D 75 30 48 8B CE E8 00 00 00  è»...H.u0H.Îè...
+  00000900: 00 EB 00 48 8D 65 70 5B 5B 41 5F 41 5E 41 5D 41  .ë.H.ep[[A_A^A]A
+  00000910: 5C 5F 5E 5D C3 55 56 57 53 53 48 83 EC 50 48 8D  \_^]ÃUVWSSH.ìPH.
+  00000920: 6C 24 20 48 B8 F8 00 00 00 DB 19 06 5B 48 8B D0  l$ H¸ø...Û..[H.Ð
+  00000930: 48 8D 7D 08 48 8B CF E8 00 00 00 00 48 8D 75 08  H.}.H.Ïè....H.u.
+  00000940: 48 8B D6 48 8D 7D 20 48 8B CF E8 00 00 00 00 48  H.ÖH.} H.Ïè....H
+  00000950: C7 C3 10 00 00 00 48 8D 4D 08 48 8D 34 0B B8 21  ÇÃ....H.M.H.4.¸!
+  00000960: 00 00 00 89 06 E8 6C F9 FF FF 48 C7 C3 10 00 00  .....èlùÿÿHÇÃ...
+  00000970: 00 48 8D 4D 08 48 8D 34 0B B8 22 00 00 00 89 06  .H.M.H.4.¸".....
+  00000980: 48 C7 C3 01 00 00 00 48 8D 15 00 00 00 00 48 8D  HÇÃ....H......H.
+  00000990: 0A 48 8D 34 0B 48 8B CE E8 FE F7 FF FF 48 8B F8  .H.4.H.Îèþ÷ÿÿH.ø
+  000009A0: EB 00 48 8D 75 20 48 8B CE E8 00 00 00 00 48 8B  ë.H.u H.Îè....H.
+  000009B0: C7 EB 18 48 8D 75 20 48 8B CE E8 00 00 00 00 48  Çë.H.u H.Îè....H
+  000009C0: C7 C3 00 00 00 00 48 8B C3 EB 00 48 8D 65 30 5B  ÇÃ....H.Ãë.H.e0[
+  000009D0: 5B 5F 5E 5D C3 55 56 57 41 54 53 48 83 EC 60 48  [_^]ÃUVWATSH.ì`H
+  000009E0: 8D 6C 24 20 48 8B F1 40 8A FA 48 89 75 08 40 88  .l$ H.ñ@.úH.u.@.
+  000009F0: 7D 10 48 B8 FA 00 00 00 DB 19 06 5B 48 8B D0 48  }.H¸ú...Û..[H.ÐH
+  00000A00: 8D 7D 18 48 8B CF E8 00 00 00 00 48 8D 75 18 48  .}.H.Ïè....H.u.H
+  00000A10: 8B D6 48 8D 7D 30 48 8B CF E8 00 00 00 00 48 C7  .ÖH.}0H.Ïè....HÇ
+  00000A20: C3 10 00 00 00 48 8D 4D 18 48 8D 34 0B B8 25 00  Ã....H.M.H.4.¸%.
+  00000A30: 00 00 89 06 48 C7 C3 10 00 00 00 48 8D 4D 18 48  ....HÇÃ....H.M.H
+  00000A40: 8D 34 0B B8 26 00 00 00 89 06 48 8B 75 08 48 C7  .4.¸&.....H.u.HÇ
+  00000A50: C3 00 00 00 00 48 8D 0E 48 8D 3C 0B 40 8A 75 10  Ã....H..H.<.@.u.
+  00000A60: 44 8A E6 49 0F B6 F4 48 C7 C0 02 00 00 00 48 F7  D.æI.¶ôHÇÀ....H÷
+  00000A70: E6 48 8D 0F 4C 8D 24 08 66 41 8B 34 24 EB 00 48  æH..L.$.fA.4$ë.H
+  00000A80: 8D 7D 30 48 8B CF E8 00 00 00 00 66 8B C6 EB 15  .}0H.Ïè....f.Æë.
+  00000A90: 48 8D 75 30 48 8B CE E8 00 00 00 00 66 BB 00 00  H.u0H.Îè....f»..
+  00000AA0: 66 8B C3 EB 00 48 8D 65 40 5B 41 5C 5F 5E 5D C3  f.Ãë.H.e@[A\_^]Ã
+  00000AB0: 55 56 57 41 54 41 55 53 53 48 83 EC 70 48 8D 6C  UVWATAUSSH.ìpH.l
+  00000AC0: 24 20 48 8B F1 40 8A FA 45 8A E0 66 45 8B E9 48  $ H.ñ@.úE.àfE.éH
+  00000AD0: 89 75 08 40 88 7D 10 44 88 65 18 66 44 89 6D 20  .u.@.}.D.e.fD.m 
+  00000AE0: 48 B8 FC 00 00 00 DB 19 06 5B 48 8B D0 48 8D 7D  H¸ü...Û..[H.ÐH.}
+  00000AF0: 30 48 8B CF E8 00 00 00 00 48 8D 75 30 48 8B D6  0H.Ïè....H.u0H.Ö
+  00000B00: 48 8D 7D 48 48 8B CF E8 00 00 00 00 48 C7 C3 10  H.}HH.Ïè....HÇÃ.
+  00000B10: 00 00 00 48 8D 4D 30 48 8D 34 0B B8 3C 00 00 00  ...H.M0H.4.¸<...
+  00000B20: 89 06 48 C7 C3 10 00 00 00 48 8D 4D 30 48 8D 34  ..HÇÃ....H.M0H.4
+  00000B30: 0B B8 3D 00 00 00 89 06 40 8A 75 10 40 88 75 28  .¸=.....@.u.@.u(
+  00000B40: EB 00 40 8A 75 18 40 8A 7D 28 40 3A F7 41 0F 92  ë.@.u.@.}(@:÷A..
+  00000B50: C4 41 8A F4 40 80 F6 01 40 0A F6 75 05 E9 C5 00  ÄA.ô@.ö.@.öu.éÅ.
+  00000B60: 00 00 48 C7 C3 10 00 00 00 48 8D 4D 30 48 8D 34  ..HÇÃ....H.M0H.4
+  00000B70: 0B B8 3E 00 00 00 89 06 48 C7 C3 10 00 00 00 48  .¸>.....HÇÃ....H
+  00000B80: 8D 4D 30 48 8D 34 0B B8 3F 00 00 00 89 06 48 8B  .M0H.4.¸?.....H.
+  00000B90: 75 08 48 C7 C3 00 00 00 00 48 8D 0E 48 8D 3C 0B  u.HÇÃ....H..H.<.
+  00000BA0: 40 8A 75 28 4C 0F B6 E6 48 C7 C0 02 00 00 00 49  @.u(L.¶æHÇÀ....I
+  00000BB0: F7 E4 48 8D 0F 48 8D 34 08 66 8B 3E 66 8B 75 20  ÷äH..H.4.f.>f.u 
+  00000BC0: 66 0B FE 66 44 8B E7 48 8B 75 08 48 C7 C3 00 00  f.þfD.çH.u.HÇÃ..
+  00000BD0: 00 00 48 8D 0E 48 8D 3C 0B 40 8A 75 28 4C 0F B6  ..H..H.<.@.u(L.¶
+  00000BE0: EE 48 C7 C0 02 00 00 00 49 F7 E5 48 8D 0F 48 8D  îHÇÀ....I÷åH..H.
+  00000BF0: 34 08 66 44 89 26 EB 00 48 C7 C3 10 00 00 00 48  4.fD.&ë.HÇÃ....H
+  00000C00: 8D 4D 30 48 8D 34 0B B8 3D 00 00 00 89 06 40 8A  .M0H.4.¸=.....@.
+  00000C10: 75 28 B3 01 40 02 F3 40 8A FE 40 88 7D 28 40 8A  u(³.@.ó@.þ@.}(@.
+  00000C20: 75 28 E9 1B FF FF FF 48 8D 75 48 48 8B CE E8 00  u(é.ÿÿÿH.uHH.Îè.
+  00000C30: 00 00 00 EB 00 48 8D 65 50 5B 5B 41 5D 41 5C 5F  ...ë.H.eP[[A]A\_
+  00000C40: 5E 5D C3                                         ^]Ã
+
+RELOCATIONS #1
+                                                Symbol    Symbol
+ Offset    Type              Applied To         Index     Name
+ --------  ----------------  -----------------  --------  ------
+ 00000032  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 00000045  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 00000081  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000000BD  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 000000D0  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 0000017C  REL32                      00000000         B  RtmMemFree
+ 0000018A  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000001CA  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 000001DD  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 0000027C  REL32                      00000000        12  string2_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2
+ 00000286  REL32                      00000000        13  string1_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2
+ 00000290  REL32                      00000000        14  string0_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2
+ 00000298  REL32                      00000000         C  RtmFailAssertion
+ 000002A6  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000002B7  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000002FD  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 00000310  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 00000334  REL32                      00000000        11  statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+ 00000351  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 00000362  REL32                      00000000         D  default_constructor_StaticInitCriticalSection_6B82A9DDE2F97C9641E47E575B6AA661C0FC8F7B
+ 00000370  REL32                      00000000        11  statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+ 0000038F  REL32                      00000000         E  destructor_StaticInitCriticalSection_EE15F7F7FEBDC62E218E16E8AF4BBBDC80CD0233
+ 0000039B  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000003AE  REL32                      00000000        11  statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+ 000003C7  REL32                      00000000        11  statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+ 0000040B  REL32                      00000000         F  RtmMemAlloc
+ 00000440  ADDR64            00000000 00000000        16  destructor_UniquePtr_0E4A0F38FCFDE97C02DB0D9439B0C5CD4404F7DA
+ 00000455  REL32                      00000000        11  statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+ 0000046A  REL32                      00000000        10  RtmEnqueueDestruction
+ 00000476  REL32                      00000000         E  destructor_StaticInitCriticalSection_EE15F7F7FEBDC62E218E16E8AF4BBBDC80CD0233
+ 00000482  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000004D0  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 000004E3  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 000008FD  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 00000938  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 0000094B  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 0000098A  REL32                      00000000        11  statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+ 000009AA  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 000009BB  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 00000A07  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 00000A1A  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 00000A87  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 00000A98  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+ 00000AF5  REL32                      00000000         8  constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+ 00000B08  REL32                      00000000         9  constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+ 00000C2F  REL32                      00000000         A  destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+
+SECTION HEADER #2
+   .data name
+       0 physical address
+       0 virtual address
+      98 size of raw data
+     E9C file pointer to raw data (00000E9C to 00000F33)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0500040 flags
+         Initialized Data
+         16 byte align
+         Read Write
+
+RAW DATA #2
+  00000000: 28 70 74 72 20 21 3D 20 6E 75 6C 6C 29 00 00 00  (ptr != null)...
+  00000010: 55 6E 69 71 75 65 50 74 72 3C 53 79 73 74 65 6D  UniquePtr<System
+  00000020: 2E 41 73 63 69 69 2E 43 68 61 72 43 6C 61 73 73  .Ascii.CharClass
+  00000030: 54 61 62 6C 65 3E 2E 6F 70 65 72 61 74 6F 72 2A  Table>.operator*
+  00000040: 28 29 00 00 00 00 00 00 44 3A 2F 77 6F 72 6B 2F  ()......D:/work/
+  00000050: 63 6D 61 6A 6F 72 2D 6D 6F 64 2F 63 6D 61 6A 6F  cmajor-mod/cmajo
+  00000060: 72 2F 73 79 73 74 65 6D 2F 53 79 73 74 65 6D 2E  r/system/System.
+  00000070: 42 61 73 65 2F 55 6E 69 71 75 65 50 74 72 2E 63  Base/UniquePtr.c
+  00000080: 6D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  m...............
+  00000090: 00 00 00 00 00 00 00 00                          ........
+
+SECTION HEADER #3
+.debug$S name
+       0 physical address
+       0 virtual address
+      90 size of raw data
+     F34 file pointer to raw data (00000F34 to 00000FC3)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42100040 flags
+         Initialized Data
+         Discardable
+         1 byte align
+         Read Only
+
+RAW DATA #3
+  00000000: 04 00 00 00 F1 00 00 00 84 00 00 00 49 00 01 11  ....ñ.......I...
+  00000010: 00 00 00 00 44 3A 5C 77 6F 72 6B 5C 63 6D 61 6A  ....D:\work\cmaj
+  00000020: 6F 72 2D 6D 6F 64 5C 63 6D 61 6A 6F 72 5C 73 62  or-mod\cmajor\sb
+  00000030: 69 6E 5C 6D 61 6B 65 5F 63 6F 6D 70 61 72 65 5F  in\make_compare_
+  00000040: 70 72 6F 6A 65 63 74 5C 41 73 63 69 69 2E 6D 61  project\Ascii.ma
+  00000050: 73 6D 2E 6F 62 6A 00 37 00 3C 11 03 02 00 00 D0  sm.obj.7.<.....Ð
+  00000060: 00 00 00 00 00 00 00 00 00 0E 00 2B 00 F8 87 00  ...........+.ø..
+  00000070: 00 4D 69 63 72 6F 73 6F 66 74 20 28 52 29 20 4D  .Microsoft (R) M
+  00000080: 61 63 72 6F 20 41 73 73 65 6D 62 6C 65 72 00 00  acro Assembler..
+
+COFF SYMBOL TABLE
+000 010387F8 ABS    notype       Static       | @comp.id
+001 00000010 ABS    notype       Static       | @feat.00
+002 00000000 SECT1  notype       Static       | .text$mn
+    Section length  C43, #relocs   2E, #linenums    0, checksum        0
+004 00000000 SECT2  notype       Static       | .data
+    Section length   98, #relocs    0, #linenums    0, checksum        0
+006 00000000 SECT3  notype       Static       | .debug$S
+    Section length   90, #relocs    0, #linenums    0, checksum        0
+008 00000000 UNDEF  notype       External     | constructor_TraceEntry_26E1695E71A0E35C2150DA4E6BD1B4A55011008F
+009 00000000 UNDEF  notype       External     | constructor_TraceGuard_BA2365F880229A4A3C2607337F6B3917C2419B9F
+00A 00000000 UNDEF  notype       External     | destructor_TraceGuard_82262E3D79E486D306C249AA83E2FB687C3A84E2
+00B 00000000 UNDEF  notype       External     | RtmMemFree
+00C 00000000 UNDEF  notype       External     | RtmFailAssertion
+00D 00000000 UNDEF  notype       External     | default_constructor_StaticInitCriticalSection_6B82A9DDE2F97C9641E47E575B6AA661C0FC8F7B
+00E 00000000 UNDEF  notype       External     | destructor_StaticInitCriticalSection_EE15F7F7FEBDC62E218E16E8AF4BBBDC80CD0233
+00F 00000000 UNDEF  notype       External     | RtmMemAlloc
+010 00000000 UNDEF  notype       External     | RtmEnqueueDestruction
+011 00000088 SECT2  notype       External     | statics_CharClassTable_B24A43EB28B26916FCA6AA24AA09EDB0A1923A1A
+012 00000048 SECT2  notype       External     | string2_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2
+013 00000010 SECT2  notype       External     | string1_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2
+014 00000000 SECT2  notype       External     | string0_Ascii_4787670F2877F623BDC163C360B0CE43239B34F2
+015 00000000 SECT1  notype ()    External     | constructor_UniquePtr_2576DFB246EA7CCD66295040781CF94E3851725C
+016 00000092 SECT1  notype ()    External     | destructor_UniquePtr_0E4A0F38FCFDE97C02DB0D9439B0C5CD4404F7DA
+017 0000019B SECT1  notype ()    External     | member_function_op_star_UniquePtr_606D465B0997A213F4CB3A16360E47F788883D23
+018 000002D6 SECT1  notype ()    External     | static_constructor_CharClassTable_01A0E997FF7EC1B0EE5E9345E22C1FEF1C335114
+019 0000049B SECT1  notype ()    External     | default_constructor_CharClassTable_D65457DDFB4E51D2D893B46A0294BEA041915E30
+01A 00000915 SECT1  notype ()    External     | member_function_Instance_CharClassTable_6970C3056FDEEFAD632316A08C443335D3B0B423
+01B 000009D5 SECT1  notype ()    External     | member_function_GetCharacterClass_CharClassTable_54E7EF121ECEA2E82345B3CA1A4A75207B96D79A
+01C 00000AB0 SECT1  notype ()    External     | member_function_SetCharacterClass_CharClassTable_AEBF46CA66F72569C37A422E4D5194F58B987A36
+
+String Table Size = 0x4EF bytes
+
+  Summary
+
+          98 .data
+          90 .debug$S
+         C43 .text$mn

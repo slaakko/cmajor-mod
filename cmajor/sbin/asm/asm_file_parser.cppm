@@ -11,7 +11,7 @@ import std.core;
 
 export namespace cmajor::sbin::assembly {
 
-std::unique_ptr<AsmFileNode> ParseAsmFile(const std::string& asmFilePath, bool verbose, soul::lexer::FileMap& fileMap);
+std::unique_ptr<AsmFileNode> ParseAsmFile(int logStreamId, const std::string& asmFilePath, bool verbose, soul::lexer::FileMap& fileMap);
 
 } // namespace cmajor::sbin::assembly
 

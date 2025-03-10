@@ -72,6 +72,7 @@ public:
     void SetValue(uint64_t value_);
     Symbol* GetSubSymbol(const std::string& name) const;
     void AddSubSymbol(Symbol* subSymbol);
+    const std::vector<std::unique_ptr<Symbol>>& SubSymbols() const { return subSymbols; }
 private:
     SymbolKind kind;
     Type type;
@@ -92,10 +93,20 @@ struct JmpPos
     soul::ast::Span span;
 };
 
+struct SymbolDifference
+{
+    SymbolDifference(int64_t pos_, Symbol* symbol0_, Symbol* symbol1_, const soul::ast::Span& span_) : pos(pos_), symbol0(symbol0_), symbol1(symbol1_), span(span_) {}
+    int64_t pos;
+    Symbol* symbol0;
+    Symbol* symbol1;
+    soul::ast::Span span;
+};
+
 enum class NodeKind : int
 {
     none, symbolNode, labelNode, declarationNode, dataDefinitionNode, binaryExprNode, unaryExprNode, registerNode, contentExprNode, sizeExprNode, parenthesizedExprNode,
-    hexNumberNode, realNode, integerNode, stringNode, instructionNode, functionDefinitionNode, macroDefinitionNode, asmFileNode, immediateNode, displacementNode
+    hexNumberNode, realNode, integerNode, stringNode, instructionNode, functionDefinitionNode, macroDefinitionNode, asmFileNode, immediateNode, displacementNode, sibNode,
+    symbolDifferenceNode
 };
 
 class Node

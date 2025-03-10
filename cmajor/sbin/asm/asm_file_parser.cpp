@@ -12,14 +12,14 @@ import util;
 
 namespace cmajor::sbin::assembly {
 
-std::unique_ptr<AsmFileNode> ParseAsmFile(const std::string& asmFilePath, bool verbose, soul::lexer::FileMap& fileMap)
+std::unique_ptr<AsmFileNode> ParseAsmFile(int logStreamId, const std::string& asmFilePath, bool verbose, soul::lexer::FileMap& fileMap)
 {
     int32_t fileIndex = fileMap.MapFile(asmFilePath);
     std::string asmFileContent = util::ReadFile(asmFilePath);
     std::u32string content = util::ToUtf32(asmFileContent);
     if (verbose)
     {
-        util::LogMessage(-1, "> " + asmFilePath);
+        util::LogMessage(logStreamId, "> " + asmFilePath);
     }
     auto lexer = cmajor::sbin::assembly::lexer::MakeLexer(content.c_str(), content.c_str() + content.length(), asmFilePath);
     lexer.SetFile(fileIndex);

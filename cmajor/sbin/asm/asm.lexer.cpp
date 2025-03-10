@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/sbin/asm/asm.lexer' using soul lexer generator slg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/sbin/asm/asm.lexer' using soul lexer generator slg version 5.0.0
 
 module cmajor.sbin.assembly.lexer;
 
@@ -193,7 +193,8 @@ soul::ast::slg::TokenCollection* GetTokens()
     return &tokens;
 }
 
-AssemblyLexer_Variables::AssemblyLexer_Variables()
+AssemblyLexer_Variables::AssemblyLexer_Variables() :
+    parsingDump()
 {
 }
 

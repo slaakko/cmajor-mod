@@ -296,6 +296,11 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
             objfp = (objectFileDirectory / fileName).replace_extension(".obj");
             asmfp = (objectFileDirectory / fileName).replace_extension(".asm");
         }
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+        {
+            objfp = (objectFileDirectory / fileName).replace_extension(".obj");
+            asmfp = (objectFileDirectory / fileName).replace_extension(".asm");
+        }
 #else
         objfp = (objectFileDirectory / fileName).replace_extension(".o");
 #endif
@@ -941,6 +946,7 @@ void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Spa
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm) return;
     std::string compileUnitId = compileUnitNode->Id();
@@ -962,6 +968,7 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
     if (module.IsCore()) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm) return;
     std::string compileUnitId = compileUnitNode->Id();
@@ -1024,6 +1031,7 @@ void BoundCompileUnit::GenerateGlobalInitializationFunction(const soul::ast::Spa
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm) return;
     std::u32string groupName = U"GlobalInitCompileUnits";

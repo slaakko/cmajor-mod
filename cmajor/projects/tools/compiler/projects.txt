@@ -1,8 +1,8 @@
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\assembly\assembly.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\intermediate\intermediate.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\optimizer\optimizer.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\symbols\symbols.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\binder\binder.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\codegen\codegen.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\build\build.cmp
-C:\work\cmajor-mod\cmajor\projects\tools\compiler\cmcmc\cmcmc.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\assembly\assembly.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\intermediate\intermediate.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\optimizer\optimizer.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\symbols\symbols.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\binder\binder.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\codegen\codegen.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\build\build.cmp
+D:\work\cmajor-mod\cmajor\projects\tools\compiler\cmcmc\cmcmc.cmp

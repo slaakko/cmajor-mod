@@ -9,19 +9,26 @@ import cmajor.sbin.assembly.asm_file_parser;
 
 namespace cmajor::sbin::assembly {
 
-Assembler::Assembler(const std::string& asmFilePath_, bool verbose_) : 
-    verbose(verbose), fileMap(), asmFilePath(asmFilePath_), objFilePath(util::Path::ChangeExtension(asmFilePath, ".obj")), 
+Assembler::Assembler(const std::string& asmFilePath_, int logStreamId_, bool verbose_, bool printLines_) :
+    verbose(verbose_), printLines(printLines_), logStreamId(logStreamId_), fileMap(), 
+    asmFilePath(asmFilePath_), objFilePath(util::Path::ChangeExtension(asmFilePath, ".obj")),
     objectFile(new cmajor::sbin::coff::CoffObjectFile()), codeSection(nullptr), dataSection(nullptr), 
     emitOperation(EmitOperation::emitCode), dataInstKind(DataInstKind::db), operandKind(NodeKind::none), 
     reg(cmajor::sbin::machine_x64::Register::none), contentReg0(cmajor::sbin::machine_x64::Register::none), 
     contentReg1(cmajor::sbin::machine_x64::Register::none), contentReg2(cmajor::sbin::machine_x64::Register::none),
-    immediate(0), displacement(0), content(false), symbolOperand(nullptr), functionSymbol(nullptr)
+    indexReg(cmajor::sbin::machine_x64::Register::none), baseReg(cmajor::sbin::machine_x64::Register::none), 
+    negate(false), immediate(0), displacement(0), scale(0u), content(false), symbolOperand(nullptr), functionSymbol(nullptr),
+    symbol0(nullptr), symbol1(nullptr)
 {
 }
 
 void Assembler::Assemble()
 {
-    asmFile = ParseAsmFile(asmFilePath, verbose, fileMap);
+    if (util::Path::GetFileName(asmFilePath) == "Element.asm")
+    {
+        int x = 0;
+    }
+    asmFile = ParseAsmFile(logStreamId, asmFilePath, verbose, fileMap);
     codeSection = cmajor::sbin::coff::MakeCodeSection(objectFile.get());
     objectFile->AddSection(codeSection);
     dataSection = cmajor::sbin::coff::MakeDataSection(objectFile.get());
@@ -30,9 +37,14 @@ void Assembler::Assemble()
     EmitData();
     EmitCode();
     ResolveJumps();
+    ResolveSymbolDifferences();
     dataSection->SetData(dataStream.ReleaseContent());
     codeSection->SetData(codeStream.ReleaseContent());
     WriteObjectFile();
+    if (verbose)
+    {
+        util::LogMessage(logStreamId, "==> " + objFilePath);
+    }
 }
 
 void Assembler::WriteObjectFile()
@@ -98,6 +110,16 @@ void Assembler::EmitQword(uint64_t x)
     currentWriter->Write(static_cast<uint64_t>(x));
 }
 
+void Assembler::EmitFloat(float x)
+{
+    currentWriter->Write(x);
+}
+
+void Assembler::EmitDouble(double x)
+{
+    currentWriter->Write(x);
+}
+
 void Assembler::EmitCallFunctionSymbol(Symbol* symbol)
 {
     cmajor::sbin::machine_x64::EmitCallNear(*this);
@@ -107,13 +129,57 @@ void Assembler::EmitCallFunctionSymbol(Symbol* symbol)
     EmitDword(static_cast<uint32_t>(0u));
 }
 
-void Assembler::EmitLeaSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span)
+void Assembler::EmitMovSdSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span)
 {
-    cmajor::sbin::machine_x64::EmitLeaNear(*this, reg, span);
+    cmajor::sbin::machine_x64::EmitMovSdXmmRegNear(*this, reg, span);
     int64_t pos = currentWriter->Position();
     codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
         cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
-    EmitDword(static_cast<uint32_t>(0u));
+    EmitDword(static_cast<uint64_t>(0u));
+}
+
+void Assembler::EmitMovSsSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span)
+{
+    cmajor::sbin::machine_x64::EmitMovSsXmmRegNear(*this, reg, span);
+    int64_t pos = currentWriter->Position();
+    codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
+        cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
+    EmitDword(static_cast<uint64_t>(0u));
+}
+
+void Assembler::EmitLeaSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span)
+{
+    if (symbol->Entry())
+    {
+        cmajor::sbin::machine_x64::EmitLeaNear(*this, reg, span);
+        int64_t pos = currentWriter->Position();
+        codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(), 
+            cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
+        EmitDword(static_cast<uint32_t>(0u));
+    }
+    else
+    {
+        cmajor::sbin::machine_x64::EmitLeaNear(*this, reg, span);
+        int64_t pos = currentWriter->Position();
+        AddJmpPos(pos, symbol, span);
+        EmitDword(static_cast<uint32_t>(0u));
+    }
+}
+
+void Assembler::EmitMovReg64Symbol(cmajor::sbin::machine_x64::Register reg, Symbol* symbol, const soul::ast::Span& span)
+{
+    cmajor::sbin::machine_x64::EmitMovReg64Offset(*this, reg, span);
+    int64_t pos = currentWriter->Position();
+    if (symbol->Entry())
+    {
+        codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
+            cmajor::sbin::coff::IMAGE_REL_AMD64_ADDR64));
+    }
+    else
+    {
+        throw std::runtime_error("entry required");
+    }
+    EmitQword(static_cast<uint64_t>(0u));
 }
 
 void Assembler::EmitJmp(Symbol* symbol, const soul::ast::Span& span)
@@ -124,9 +190,25 @@ void Assembler::EmitJmp(Symbol* symbol, const soul::ast::Span& span)
     EmitDword(static_cast<uint32_t>(0u));
 }
 
+void Assembler::EmitJe(Symbol* symbol, const soul::ast::Span& span)
+{
+    cmajor::sbin::machine_x64::EmitJeNear(*this);
+    int64_t pos = currentWriter->Position();
+    AddJmpPos(pos, symbol, span);
+    EmitDword(static_cast<uint32_t>(0u));
+}
+
 void Assembler::EmitJne(Symbol* symbol, const soul::ast::Span& span)
 {
     cmajor::sbin::machine_x64::EmitJneNear(*this);
+    int64_t pos = currentWriter->Position();
+    AddJmpPos(pos, symbol, span);
+    EmitDword(static_cast<uint32_t>(0u));
+}
+
+void Assembler::EmitJae(Symbol* symbol, const soul::ast::Span& span)
+{
+    cmajor::sbin::machine_x64::EmitJaeNear(*this);
     int64_t pos = currentWriter->Position();
     AddJmpPos(pos, symbol, span);
     EmitDword(static_cast<uint32_t>(0u));
@@ -159,6 +241,37 @@ void Assembler::ResolveJumps()
         {
             ThrowError("value of symbol '" + symbol->Name() + "' not defined", jmpPos.span);
         }
+    }
+}
+
+void Assembler::ResolveSymbolDifferences()
+{
+    for (const auto& symbolDifference : symbolDifferences)
+    {
+        int64_t pos = symbolDifference.pos;
+        int64_t s0pos = 0;
+        int64_t s1pos = 0;
+        Symbol* symbol0 = symbolDifference.symbol0;
+        if (symbol0->HasValue())
+        {
+            s0pos = static_cast<int64_t>(symbol0->Value());
+        }
+        else
+        {
+            ThrowError("symbol 0 has no value", symbolDifference.span);
+        }
+        Symbol* symbol1 = symbolDifference.symbol1;
+        if (symbol1->HasValue())
+        {
+            s1pos = static_cast<int64_t>(symbol1->Value());
+        }
+        else
+        {
+            ThrowError("symbol 1 has no value", symbolDifference.span);
+        }
+        uint32_t difference = static_cast<uint32_t>(s0pos - s1pos);
+        util::LittleEndianMemoryWriter differenceWriter(codeStream.Data() + pos, 4);
+        differenceWriter.Write(static_cast<uint32_t>(difference));
     }
 }
 
@@ -292,18 +405,18 @@ void Assembler::MakeSymbols()
             objectFile->GetSymbolTable()->AddEntry(entry);
             symbol->SetEntry(entry);
         }
-        else if (symbol->IsKind(SymbolKind::public_) && symbol->IsKind(SymbolKind::data))
+        else if (symbol->IsKind(SymbolKind::external) && symbol->IsKind(SymbolKind::data))
+        {
+            cmajor::sbin::coff::SymbolTableEntry* entry = cmajor::sbin::coff::MakeExternalDataSymbolTableEntry(symbol->Name(), objectFile.get());
+            objectFile->GetSymbolTable()->AddEntry(entry);
+            symbol->SetEntry(entry);
+        }
+        else if (symbol->IsKind(SymbolKind::data))
         {
             cmajor::sbin::coff::SymbolTableEntry* entry = cmajor::sbin::coff::MakeInternalDataSymbolTableEntry(
                 dataSection->GetSectionHeader()->Number(),
                 symbol->Name(),
                 objectFile.get());
-            objectFile->GetSymbolTable()->AddEntry(entry);
-            symbol->SetEntry(entry);
-        }
-        else if (symbol->IsKind(SymbolKind::external) && symbol->IsKind(SymbolKind::data))
-        {
-            cmajor::sbin::coff::SymbolTableEntry* entry = cmajor::sbin::coff::MakeExternalDataSymbolTableEntry(symbol->Name(), objectFile.get());
             objectFile->GetSymbolTable()->AddEntry(entry);
             symbol->SetEntry(entry);
         }
@@ -372,51 +485,222 @@ void Assembler::Visit(DataDefinitionNode& dataDefinitionNode)
         {
             symbol->SetValue(currentWriter->Position());
         }
+        else if (functionSymbol)
+        {
+            Symbol* symbol = functionSymbol->GetSubSymbol(label->Label());
+            if (symbol)
+            {
+                symbol->SetValue(currentWriter->Position());
+            }
+            else
+            {
+                ThrowError("Label symbol '" + label->Label() + "' not defined", dataDefinitionNode.Span());
+            }
+
+        }
     }
     EmitOperation prevOperation = emitOperation;
     emitOperation = EmitOperation::emitData;
     dataInstKind = dataDefinitionNode.GetDataInstKind();
     for (const auto& operand : dataDefinitionNode.Operands())
     {
+        operandKind = NodeKind::none;
         operand->Accept(*this);
+        if (operandKind == NodeKind::symbolDifferenceNode)
+        {
+            symbolDifferences.push_back(SymbolDifference(currentWriter->Position(), symbol0, symbol1, dataDefinitionNode.Span()));
+            switch (dataInstKind)
+            {
+                case DataInstKind::dq:
+                {
+                    EmitQword(0);
+                    break;
+                }
+                case DataInstKind::dd:
+                {
+                    EmitDword(0);
+                    break;
+                }
+                case DataInstKind::dw:
+                {
+                    EmitWord(0);
+                    break;
+                }
+                case DataInstKind::db:
+                {
+                    EmitByte(0);
+                    break;
+                }
+            }
+        }
+        else if (operandKind == NodeKind::symbolNode)
+        {
+            if (dataInstKind == DataInstKind::dq)
+            {
+                Symbol* symbol = symbolOperand;
+                cmajor::sbin::coff::SymbolTableEntry* entry = symbol->Entry();
+                uint32_t symbolTableIndex = entry->Index();
+                uint32_t address = static_cast<uint32_t>(currentWriter->Position());
+                cmajor::sbin::coff::Relocation relocation(address, symbolTableIndex, cmajor::sbin::coff::IMAGE_REL_AMD64_ADDR64);
+                dataSection->GetRelocationTable()->AddRelocation(relocation);
+            }
+            else
+            {
+                ThrowError("DQ expected", dataDefinitionNode.Span());
+            }
+            switch (dataInstKind)
+            {
+                case DataInstKind::dq:
+                {
+                    EmitQword(0);
+                    break;
+                }
+                case DataInstKind::dd:
+                {
+                    EmitDword(0);
+                    break;
+                }
+                case DataInstKind::dw:
+                {
+                    EmitWord(0);
+                    break;
+                }
+                case DataInstKind::db:
+                {
+                    EmitByte(0);
+                    break;
+                }
+            }
+        }
     }
     emitOperation = prevOperation;
 }
 
 void Assembler::Visit(BinaryExprNode& binaryExprNode)
 {
-    if (!content)
+    if (emitOperation == EmitOperation::emitCode)
     {
-        ThrowError("content expression expected", binaryExprNode.Span());
+        if (!content)
+        {
+            ThrowError("content expression expected", binaryExprNode.Span());
+        }
+        switch (binaryExprNode.Op())
+        {
+            case Operator::plus:
+            {
+                reg = sbin::machine_x64::Register::none;
+                binaryExprNode.Left()->Accept(*this);
+                if (operandKind == NodeKind::registerNode)
+                {
+                    contentReg1 = reg;
+                }
+                else if (operandKind == NodeKind::sibNode)
+                {
+                    baseReg = reg;
+                    reg = sbin::machine_x64::Register::none;
+                    operandKind = NodeKind::sibNode;
+                    return;
+                }
+                else
+                {
+                    ThrowError("register operand expected", binaryExprNode.Left()->Span());
+                }
+                reg = sbin::machine_x64::Register::none;
+                binaryExprNode.Right()->Accept(*this);
+                if (operandKind == NodeKind::registerNode)
+                {
+                    contentReg2 = reg;
+                }
+                else if (operandKind == NodeKind::sibNode)
+                {
+                    baseReg = contentReg1;
+                    reg = sbin::machine_x64::Register::none;
+                    operandKind = NodeKind::sibNode;
+                    return;
+                }
+                else if (operandKind == NodeKind::immediateNode)
+                {
+                    displacement = static_cast<int32_t>(immediate);
+                    immediate = 0;
+                }
+                reg = sbin::machine_x64::Register::none;
+                operandKind = NodeKind::binaryExprNode;
+                break;
+            }
+            case Operator::minus:
+            {
+                break;
+            }
+            case Operator::times:
+            {
+                scale = 0u;
+                indexReg = cmajor::sbin::machine_x64::Register::none;
+                binaryExprNode.Left()->Accept(*this);
+                if (operandKind == NodeKind::immediateNode)
+                {
+                    scale = static_cast<uint8_t>(immediate);
+                }
+                else if (operandKind == NodeKind::registerNode)
+                {
+                    indexReg = reg;
+                }
+                binaryExprNode.Right()->Accept(*this);
+                if (operandKind == NodeKind::immediateNode)
+                {
+                    scale = static_cast<uint8_t>(immediate);
+                }
+                else if (operandKind == NodeKind::registerNode)
+                {
+                    indexReg = reg;
+                }
+                operandKind = NodeKind::sibNode;
+                break;
+            }
+        }
     }
-    reg = sbin::machine_x64::Register::none;
-    binaryExprNode.Left()->Accept(*this);
-    if (operandKind == NodeKind::registerNode)
+    else if (emitOperation == EmitOperation::emitData)
     {
-        contentReg1 = reg;
+        switch (binaryExprNode.Op())
+        {
+            case Operator::minus:
+            {
+                binaryExprNode.Left()->Accept(*this);
+                if (operandKind == NodeKind::symbolNode)
+                {
+                    symbol0 = symbolOperand;
+                }
+                else
+                {
+                    ThrowError("symbol opereand expected", binaryExprNode.Left()->Span());
+                }
+                binaryExprNode.Right()->Accept(*this);
+                if (operandKind == NodeKind::symbolNode)
+                {
+                    symbol1 = symbolOperand;
+                }
+                else
+                {
+                    ThrowError("symbol opereand expected", binaryExprNode.Left()->Span());
+                }
+                operandKind = NodeKind::symbolDifferenceNode;
+                break;
+            }
+            default:
+            {
+                ThrowError("difference expression expected", binaryExprNode.Left()->Span());
+            }
+        }
     }
-    else
-    {
-        ThrowError("register operand expected", binaryExprNode.Left()->Span());
-    }
-    reg = sbin::machine_x64::Register::none;
-    binaryExprNode.Right()->Accept(*this);
-    if (operandKind == NodeKind::registerNode)
-    {
-        contentReg2 = reg;
-    }
-    else if (operandKind == NodeKind::immediateNode)
-    {
-        displacement = static_cast<uint32_t>(immediate);
-        immediate = 0;
-    }
-    reg = sbin::machine_x64::Register::none;
-    operandKind = NodeKind::binaryExprNode;
 }
 
 void Assembler::Visit(UnaryExprNode& unaryExprNode)
 {
-    // todo
+    if (unaryExprNode.Op() == Operator::minus)
+    {
+        negate = true;
+    }
+    unaryExprNode.Operand()->Accept(*this);
+    negate = false;
 }
 
 void Assembler::Visit(RegisterNode& registerNode)
@@ -449,22 +733,50 @@ void Assembler::ProcessIntegerValue(uint64_t value, const soul::ast::Span& span)
         {
             case DataInstKind::db:
             {
-                EmitByte(static_cast<uint8_t>(value));
+                if (negate)
+                {
+                    EmitByte(static_cast<uint8_t>(-static_cast<int64_t>(value)));
+                }
+                else
+                {
+                    EmitByte(static_cast<uint8_t>(value));
+                }
                 break;
             }
             case DataInstKind::dw:
             {
-                EmitWord(static_cast<uint16_t>(value));
+                if (negate)
+                {
+                    EmitWord(static_cast<uint16_t>(-static_cast<int64_t>(value)));
+                }
+                else
+                {
+                    EmitWord(static_cast<uint16_t>(value));
+                }
                 break;
             }
             case DataInstKind::dd:
             {
-                EmitDword(static_cast<uint32_t>(value));
+                if (negate)
+                {
+                    EmitDword(static_cast<uint32_t>(-static_cast<int64_t>(value)));
+                }
+                else
+                {
+                    EmitDword(static_cast<uint32_t>(value));
+                }
                 break;
             }
             case DataInstKind::dq:
             {
-                EmitQword(static_cast<uint64_t>(value));
+                if (negate)
+                {
+                    EmitQword(static_cast<uint64_t>(-static_cast<int64_t>(value)));
+                }
+                else
+                {
+                    EmitQword(static_cast<uint64_t>(value));
+                }
                 break;
             }
             default:
@@ -477,7 +789,14 @@ void Assembler::ProcessIntegerValue(uint64_t value, const soul::ast::Span& span)
     else if (emitOperation == EmitOperation::emitCode)
     {
         operandKind = NodeKind::immediateNode;
-        immediate = value;
+        if (negate)
+        {
+            immediate = -static_cast<int64_t>(value);
+        }
+        else
+        {
+            immediate = static_cast<int64_t>(value);
+        }
     }
 }
 
@@ -493,7 +812,25 @@ void Assembler::Visit(IntegerNode& integerNode)
 
 void Assembler::Visit(RealNode& realNode)
 {
-    // todo
+    double value = realNode.Value();
+    if (negate)
+    {
+        value = -value;
+    }
+    switch (dataInstKind)
+    {
+        case DataInstKind::real8:
+        {
+            EmitDouble(value);
+            break;
+        }
+        case DataInstKind::real4:
+        {
+            float floatValue = static_cast<float>(value);
+            EmitFloat(floatValue);
+            break;
+        }
+    }
 }
 
 void Assembler::Visit(StringNode& stringNode)
@@ -513,7 +850,7 @@ void Assembler::Visit(StringNode& stringNode)
 
 void Assembler::ThrowError(const std::string& errorMessage, const soul::ast::Span& span)
 {
-    std::cout << "SPAN pos=" + std::to_string(span.pos) << "\n";
+    //std::cout << "SPAN pos=" + std::to_string(span.pos) << "\n";
     std::string msg;
     msg.append(errorMessage);
     msg.append(": file=" + asmFilePath);
@@ -535,11 +872,14 @@ void Assembler::ThrowError(const std::string& errorMessage, const soul::ast::Spa
 void Assembler::Visit(InstructionNode& instructionNode)
 {
     soul::ast::Span span = instructionNode.Span();
-    const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(asmFile->FileIndex());
-    if (lineStartIndeces)
+    if (printLines)
     {
-        soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(span, *lineStartIndeces);
-        std::cout << "line " << lineColLen.line << "\n";
+        const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(asmFile->FileIndex());
+        if (lineStartIndeces)
+        {
+            soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(span, *lineStartIndeces);
+            std::cout << "line " << lineColLen.line << "\n";
+        }
     }
     LabelNode* label = instructionNode.Label();
     if (label)
@@ -562,10 +902,10 @@ void Assembler::Visit(InstructionNode& instructionNode)
     NodeKind operand1Kind = NodeKind::none;
     cmajor::sbin::machine_x64::Register reg0 = cmajor::sbin::machine_x64::Register::none;
     cmajor::sbin::machine_x64::Register reg1 = cmajor::sbin::machine_x64::Register::none;
-    uint64_t immediate0 = 0u;
-    uint64_t immediate1 = 0u;
-    uint32_t displacement0 = 0u;
-    uint32_t displacement1 = 0u;
+    int64_t immediate0 = 0;
+    int64_t immediate1 = 0;
+    int32_t displacement0 = 0;
+    int32_t displacement1 = 0;
     contentReg0 = cmajor::sbin::machine_x64::Register::none;
     contentReg1 = cmajor::sbin::machine_x64::Register::none;
     contentReg2 = cmajor::sbin::machine_x64::Register::none;
@@ -578,7 +918,7 @@ void Assembler::Visit(InstructionNode& instructionNode)
         Node* operandNode = instructionNode.Operands()[i].get();
         operandKind = NodeKind::none;
         content = false;
-        displacement = 0u;
+        displacement = 0;
         operandNode->Accept(*this);
         switch (operandKind)
         {
@@ -620,6 +960,28 @@ void Assembler::Visit(InstructionNode& instructionNode)
                     {
                         operand1Kind = operandKind;
                         displacement1 = displacement;
+                        break;
+                    }
+                    default:
+                    {
+                        ThrowError("invalid number of operands", instructionNode.Span());
+                        break;
+                    }
+                }
+                break;
+            }
+            case NodeKind::sibNode:
+            {
+                switch (i)
+                {
+                    case 0:
+                    {
+                        operand0Kind = operandKind;
+                        break;
+                    }
+                    case 1:
+                    {
+                        operand1Kind = operandKind;
                         break;
                     }
                     default:
@@ -708,6 +1070,10 @@ void Assembler::Visit(InstructionNode& instructionNode)
             {
                 EmitCallFunctionSymbol(symbol0);
             }
+            else if (operand0Kind == NodeKind::registerNode && cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                EmitCallReg64(*this, reg0, instructionNode.Span());
+            }
             else
             {
                 ThrowError("CALL not implemented with these operands", instructionNode.Span());
@@ -724,9 +1090,30 @@ void Assembler::Visit(InstructionNode& instructionNode)
             {
                 EmitJmp(symbol0, instructionNode.Span());
             }
+            else if (operand0Kind == NodeKind::registerNode && cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                EmitJmpReg64(*this, reg0, instructionNode.Span());
+            }
             else
             {
                 ThrowError("JMP not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::JZ:
+        case cmajor::sbin::machine_x64::OpCode::JE:
+        {
+            if (n != 1)
+            {
+                ThrowError("one operand expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::symbolNode)
+            {
+                EmitJe(symbol0, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("JE not implemented with these operands", instructionNode.Span());
             }
             break;
         }
@@ -744,6 +1131,22 @@ void Assembler::Visit(InstructionNode& instructionNode)
             else
             {
                 ThrowError("JNE not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::JAE:
+        {
+            if (n != 1)
+            {
+                ThrowError("one operand expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::symbolNode)
+            {
+                EmitJae(symbol0, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("JAE not implemented with these operands", instructionNode.Span());
             }
             break;
         }
@@ -872,6 +1275,11 @@ void Assembler::Visit(InstructionNode& instructionNode)
             {
                 cmajor::sbin::machine_x64::EmitMovReg16Content(*this, reg0, contentReg1, instructionNode.Span());
             }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::symbolNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                EmitMovReg64Symbol(reg0, symbol1, instructionNode.Span());
+            }
             else
             {
                 ThrowError("MOV not implemented with these operands", instructionNode.Span());
@@ -885,9 +1293,16 @@ void Assembler::Visit(InstructionNode& instructionNode)
                 ThrowError("two operands expected", instructionNode.Span());
             }
             if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode && 
-                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::byte_reg)
             {
                 cmajor::sbin::machine_x64::EmitMovSxReg64Reg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSxReg64Reg16(*this, reg0, reg1, instructionNode.Span());
             }
             else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
                 cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::word_reg &&
@@ -901,11 +1316,39 @@ void Assembler::Visit(InstructionNode& instructionNode)
             {
                 cmajor::sbin::machine_x64::EmitMovSxReg32Reg8(*this, reg0, reg1, instructionNode.Span());
             }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSxReg32Reg16(*this, reg0, reg1, instructionNode.Span());
+            }
             else
             {
                 ThrowError("MOVSX not implemented with these operands", instructionNode.Span());
             }
             break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::MOVSXD:
+        {
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSxdReg64Reg32(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::sibNode && 
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg && 
+                cmajor::sbin::machine_x64::RegKind(indexReg) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(baseReg) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSxdReg64Sib(*this, reg0, scale, indexReg, baseReg, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("MOVSXD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+
         }
         case cmajor::sbin::machine_x64::OpCode::MOVZX:
         {
@@ -926,14 +1369,109 @@ void Assembler::Visit(InstructionNode& instructionNode)
                 cmajor::sbin::machine_x64::EmitMovZxReg32Reg8(*this, reg0, reg1, instructionNode.Span());
             }
             else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovZxReg32Reg16(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
                 cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
                 cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::byte_reg)
             {
                 cmajor::sbin::machine_x64::EmitMovZxReg64Reg8(*this, reg0, reg1, instructionNode.Span());
             }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovZxReg64Reg16(*this, reg0, reg1, instructionNode.Span());
+            }
             else
             {
                 ThrowError("MOVZX not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::MOVSD:
+        {
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::symbolNode)
+            {
+                EmitMovSdSymbol(reg0, symbol1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::binaryExprNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSdContentDispXmmReg(*this, contentReg1, displacement0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::contentExprNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSdContentXmmReg(*this, contentReg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::binaryExprNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSdXmmRegContentDisp(*this, reg0, contentReg1, displacement1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::contentExprNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(contentReg1) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSdXmmRegContent(*this, reg0, contentReg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::contentExprNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSdContentXmmReg(*this, contentReg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("MOVSD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::MOVSS:
+        {
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::symbolNode)
+            {
+                EmitMovSsSymbol(reg0, symbol1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode && 
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::binaryExprNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSsContentDispXmmReg(*this, contentReg1, displacement0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::binaryExprNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSsXmmRegContentDisp(*this, reg0, contentReg1, displacement1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::contentExprNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(contentReg1) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSsXmmRegContent(*this, reg0, contentReg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::contentExprNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMovSsContentXmmReg(*this, contentReg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("MOVSS not implemented with these operands", instructionNode.Span());
             }
             break;
         }
@@ -946,7 +1484,7 @@ void Assembler::Visit(InstructionNode& instructionNode)
             if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::binaryExprNode &&
                 cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
                 contentReg1 != cmajor::sbin::machine_x64::Register::none &&
-                contentReg2 == cmajor::sbin::machine_x64::Register::none && displacement1 != 0u)
+                contentReg2 == cmajor::sbin::machine_x64::Register::none)
             {
                 cmajor::sbin::machine_x64::EmitLeaReg64ContentDisp(*this, reg0, contentReg1, displacement1, instructionNode.Span());
             }
@@ -1008,6 +1546,42 @@ void Assembler::Visit(InstructionNode& instructionNode)
             }
             break;
         }
+        case cmajor::sbin::machine_x64::OpCode::ADDSS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitAddSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("ADDSS not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::ADDSD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitAddSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("ADDSD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
         case cmajor::sbin::machine_x64::OpCode::SUB:
         {
             if (n != 2)
@@ -1052,6 +1626,18 @@ void Assembler::Visit(InstructionNode& instructionNode)
                         {
                             cmajor::sbin::machine_x64::EmitSubReg64Immediate(*this, reg0, immediate1, instructionNode.Span());
                         }
+                        else if (cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg)
+                        {
+                            cmajor::sbin::machine_x64::EmitSubReg32Immediate(*this, reg0, static_cast<int32_t>(immediate1), instructionNode.Span());
+                        }
+                        else if (cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
+                        {
+                            cmajor::sbin::machine_x64::EmitSubReg16Immediate(*this, reg0, static_cast<int16_t>(immediate1), instructionNode.Span());
+                        }
+                        else if (cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::byte_reg)
+                        {
+                            cmajor::sbin::machine_x64::EmitSubReg8Immediate(*this, reg0, static_cast<int8_t>(immediate1), instructionNode.Span());
+                        }
                         else
                         {
                             ThrowError("SUB not implemented with these operands", instructionNode.Span());
@@ -1069,6 +1655,42 @@ void Assembler::Visit(InstructionNode& instructionNode)
             else
             {
                 ThrowError("SUB not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::SUBSS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitSubSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("SUBSS not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::SUBSD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitSubSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("ADDSD not implemented with these operands", instructionNode.Span());
             }
             break;
         }
@@ -1128,6 +1750,42 @@ void Assembler::Visit(InstructionNode& instructionNode)
             }
             break;
         }
+        case cmajor::sbin::machine_x64::OpCode::MULSS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMulSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("MULSS not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::MULSD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitMulSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("MULSD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
         case cmajor::sbin::machine_x64::OpCode::DIV:
         {
             if (n != 1)
@@ -1184,7 +1842,42 @@ void Assembler::Visit(InstructionNode& instructionNode)
             }
             break;
         }
-
+        case cmajor::sbin::machine_x64::OpCode::DIVSS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitDivSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("DIVSS not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::DIVSD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitDivSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("DIVSD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
         case cmajor::sbin::machine_x64::OpCode::PUSH:
         case cmajor::sbin::machine_x64::OpCode::POP:
         {
@@ -1276,9 +1969,101 @@ void Assembler::Visit(InstructionNode& instructionNode)
             {
                 cmajor::sbin::machine_x64::EmitCmpReg8Reg8(*this, reg0, reg1, instructionNode.Span());
             }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::immediateNode && 
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCmpReg64Imm32(*this, reg0, static_cast<int32_t>(immediate1), instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::immediateNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCmpReg32Imm32(*this, reg0, static_cast<int32_t>(immediate1), instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::immediateNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCmpReg16Imm16(*this, reg0, static_cast<int16_t>(immediate1), instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::immediateNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::byte_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCmpReg8Imm8(*this, reg0, static_cast<int8_t>(immediate1), instructionNode.Span());
+            }
             else
             {
                 ThrowError("CMP not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::COMISD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitComiSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("COMISD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::UCOMISD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitUComiSdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("UCOMISD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::COMISS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitComiSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("COMISS not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::UCOMISS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitUComiSsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("UCOMISS not implemented with these operands", instructionNode.Span());
             }
             break;
         }
@@ -1378,7 +2163,7 @@ void Assembler::Visit(InstructionNode& instructionNode)
             else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::immediateNode &&
                 cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::word_reg)
             {
-                cmajor::sbin::machine_x64::EmitShrReg16Imm8(*this, reg0, static_cast<uint8_t>(immediate1), instructionNode.Span());
+                cmajor::sbin::machine_x64::EmitShrReg16Imm8(*this, reg0, static_cast<int8_t>(immediate1), instructionNode.Span());
             }
             else
             {
@@ -1529,7 +2314,7 @@ void Assembler::Visit(InstructionNode& instructionNode)
             else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::immediateNode &&
                 cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::byte_reg)
             {
-                cmajor::sbin::machine_x64::EmitXorReg8Imm8(*this, reg0, static_cast<uint8_t>(immediate1), instructionNode.Span());
+                cmajor::sbin::machine_x64::EmitXorReg8Imm8(*this, reg0, static_cast<int8_t>(immediate1), instructionNode.Span());
             }
             else
             {
@@ -1627,6 +2412,138 @@ void Assembler::Visit(InstructionNode& instructionNode)
                 ThrowError("no operands expected", instructionNode.Span());
             }
             cmajor::sbin::machine_x64::EmitCqo(*this, instructionNode.Span());
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::CVTSI2SD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtSi2SdReg64XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtSi2SdReg32XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("CVTSI2SD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::CVTSI2SS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtSi2SsReg64XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtSi2SsReg32XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("CVTSI2SS not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::CVTTSD2SI:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtTSd2SiReg64XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtTSd2SiReg32XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("CVTTSD2SI not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::CVTTSS2SI:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::quadword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtTSs2SiReg64XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::doubleword_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtTSs2SiReg32XmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("CVTTSS2SI not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::CVTSS2SD:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtSs2SdXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("CVTSS2SD not implemented with these operands", instructionNode.Span());
+            }
+            break;
+        }
+        case cmajor::sbin::machine_x64::OpCode::CVTSD2SS:
+        {
+            if (n != 2)
+            {
+                ThrowError("two operands expected", instructionNode.Span());
+            }
+            if (operand0Kind == NodeKind::registerNode && operand1Kind == NodeKind::registerNode &&
+                cmajor::sbin::machine_x64::RegKind(reg0) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg &&
+                cmajor::sbin::machine_x64::RegKind(reg1) == cmajor::sbin::machine_x64::RegisterKind::xmm_reg)
+            {
+                cmajor::sbin::machine_x64::EmitCvtSd2SsXmmRegXmmReg(*this, reg0, reg1, instructionNode.Span());
+            }
+            else
+            {
+                ThrowError("CVTSD2SS not implemented with these operands", instructionNode.Span());
+            }
             break;
         }
         default:

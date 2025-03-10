@@ -1,4 +1,16 @@
+using System;
+
 public class Foo
 {
     public default virtual ~Foo();
+    public virtual void Bar()
+    {
+        Console.Out() << "bar" << endl();
+    }
+}
+
+void main()
+{
+    Foo* foo = new Foo();
+    foo->Bar();
 }

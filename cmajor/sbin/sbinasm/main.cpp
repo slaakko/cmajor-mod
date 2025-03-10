@@ -69,7 +69,7 @@ int main(int argc, const char** argv)
         }
         for (const auto& file : files)
         {
-            cmajor::sbin::assembly::Assembler assembler(file, verbose);
+            cmajor::sbin::assembly::Assembler assembler(file, -1, verbose, false);
             assembler.Assemble();
         }
     }

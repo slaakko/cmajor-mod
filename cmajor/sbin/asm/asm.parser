@@ -150,15 +150,29 @@ parser AsmParser
         ;
 
     Expr : cmajor::sbin::assembly::Node* 
-        ::= BinaryExpr:binaryExpr{ return binaryExpr; }
+        ::= AddExpr:addExpr{ return addExpr; }
         ;
 
-    BinaryExpr(var cmajor::sbin::assembly::Node* expr) : cmajor::sbin::assembly::Node*
+    AddExpr(var cmajor::sbin::assembly::Node* expr) : cmajor::sbin::assembly::Node*
+        ::= 
+        (
+            MulExpr:left{ expr = left; } 
+            (
+                AddOp:op
+                MulExpr:right{ expr = new cmajor::sbin::assembly::BinaryExprNode(lexer.GetSpan(pos), expr, op, right); }
+            )*
+        )
+        {
+            return expr;
+        }
+        ;
+
+    MulExpr(var cmajor::sbin::assembly::Node* expr) : cmajor::sbin::assembly::Node*
         ::= 
         (
             UnaryExpr:left{ expr = left; } 
             (
-                BinaryOp:op 
+                MulOp:op 
                 UnaryExpr:right{ expr = new cmajor::sbin::assembly::BinaryExprNode(lexer.GetSpan(pos), expr, op, right); }
             )*
         )
@@ -167,10 +181,13 @@ parser AsmParser
         }
         ;
 
-    BinaryOp : cmajor::sbin::assembly::Operator
+    AddOp : cmajor::sbin::assembly::Operator
         ::= PLUS{ return cmajor::sbin::assembly::Operator::plus; }
         |   MINUS{ return cmajor::sbin::assembly::Operator::minus; }
-        |   TIMES{ return cmajor::sbin::assembly::Operator::times; }
+        ;
+
+    MulOp: cmajor::sbin::assembly::Operator
+        ::= TIMES{ return cmajor::sbin::assembly::Operator::times; }
         ;
 
     UnaryExpr : cmajor::sbin::assembly::Node*

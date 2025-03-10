@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/sbin/asm/asm.parser' using soul parser generator spg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/sbin/asm/asm.parser' using soul parser generator spg version 5.0.0
 
 module cmajor.sbin.assembly.parser;
 
@@ -1995,20 +1995,20 @@ soul::parser::Match AsmParser<LexerT>::Expr(LexerT& lexer)
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364115);
-    std::unique_ptr<cmajor::sbin::assembly::Node> binaryExpr;
+    std::unique_ptr<cmajor::sbin::assembly::Node> addExpr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
         int64_t pos = lexer.GetPos();
-        soul::parser::Match match = AsmParser<LexerT>::BinaryExpr(lexer);
-        binaryExpr.reset(static_cast<cmajor::sbin::assembly::Node*>(match.value));
+        soul::parser::Match match = AsmParser<LexerT>::AddExpr(lexer);
+        addExpr.reset(static_cast<cmajor::sbin::assembly::Node*>(match.value));
         if (match.hit)
         {
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Expr");
                 #endif
-                return soul::parser::Match(true, binaryExpr.release());
+                return soul::parser::Match(true, addExpr.release());
             }
         }
         *parentMatch0 = match;
@@ -2028,7 +2028,7 @@ soul::parser::Match AsmParser<LexerT>::Expr(LexerT& lexer)
 }
 
 template<typename LexerT>
-soul::parser::Match AsmParser<LexerT>::BinaryExpr(LexerT& lexer)
+soul::parser::Match AsmParser<LexerT>::AddExpr(LexerT& lexer)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     int64_t parser_debug_match_pos = 0;
@@ -2036,10 +2036,139 @@ soul::parser::Match AsmParser<LexerT>::BinaryExpr(LexerT& lexer)
     if (parser_debug_write_to_log)
     {
         parser_debug_match_pos = lexer.GetPos();
-        soul::lexer::WriteBeginRuleToLog(lexer, "BinaryExpr");
+        soul::lexer::WriteBeginRuleToLog(lexer, "AddExpr");
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364116);
+    cmajor::sbin::assembly::Node* expr = nullptr;
+    std::unique_ptr<cmajor::sbin::assembly::Node> left;
+    std::unique_ptr<soul::parser::Value<cmajor::sbin::assembly::Operator>> op;
+    std::unique_ptr<cmajor::sbin::assembly::Node> right;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    int64_t pos = lexer.GetPos();
+                    soul::parser::Match match = AsmParser<LexerT>::MulExpr(lexer);
+                    left.reset(static_cast<cmajor::sbin::assembly::Node*>(match.value));
+                    if (match.hit)
+                    {
+                        expr = left.release();
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch4 = &match;
+                {
+                    soul::parser::Match match(true);
+                    soul::parser::Match* parentMatch5 = &match;
+                    {
+                        while (true)
+                        {
+                            int64_t save = lexer.GetPos();
+                            {
+                                soul::parser::Match match(false);
+                                soul::parser::Match* parentMatch6 = &match;
+                                {
+                                    soul::parser::Match match(false);
+                                    soul::parser::Match* parentMatch7 = &match;
+                                    {
+                                        soul::parser::Match match = AsmParser<LexerT>::AddOp(lexer);
+                                        op.reset(static_cast<soul::parser::Value<cmajor::sbin::assembly::Operator>*>(match.value));
+                                        *parentMatch7 = match;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        soul::parser::Match match(false);
+                                        soul::parser::Match* parentMatch8 = &match;
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch9 = &match;
+                                            {
+                                                int64_t pos = lexer.GetPos();
+                                                soul::parser::Match match = AsmParser<LexerT>::MulExpr(lexer);
+                                                right.reset(static_cast<cmajor::sbin::assembly::Node*>(match.value));
+                                                if (match.hit)
+                                                {
+                                                    expr = new cmajor::sbin::assembly::BinaryExprNode(lexer.GetSpan(pos), expr, op->value, right.release());
+                                                }
+                                                *parentMatch9 = match;
+                                            }
+                                            *parentMatch8 = match;
+                                        }
+                                        *parentMatch7 = match;
+                                    }
+                                    *parentMatch6 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    *parentMatch5 = match;
+                                }
+                                else
+                                {
+                                    lexer.SetPos(save);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    *parentMatch4 = match;
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            {
+                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddExpr");
+                #endif
+                return soul::parser::Match(true, expr);
+            }
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddExpr");
+        else soul::lexer::WriteFailureToLog(lexer, "AddExpr");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match AsmParser<LexerT>::MulExpr(LexerT& lexer)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MulExpr");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364117);
     cmajor::sbin::assembly::Node* expr = nullptr;
     std::unique_ptr<cmajor::sbin::assembly::Node> left;
     std::unique_ptr<soul::parser::Value<cmajor::sbin::assembly::Operator>> op;
@@ -2086,7 +2215,7 @@ soul::parser::Match AsmParser<LexerT>::BinaryExpr(LexerT& lexer)
                                     soul::parser::Match match(false);
                                     soul::parser::Match* parentMatch7 = &match;
                                     {
-                                        soul::parser::Match match = AsmParser<LexerT>::BinaryOp(lexer);
+                                        soul::parser::Match match = AsmParser<LexerT>::MulOp(lexer);
                                         op.reset(static_cast<soul::parser::Value<cmajor::sbin::assembly::Operator>*>(match.value));
                                         *parentMatch7 = match;
                                     }
@@ -2135,7 +2264,7 @@ soul::parser::Match AsmParser<LexerT>::BinaryExpr(LexerT& lexer)
         {
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
-                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BinaryExpr");
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MulExpr");
                 #endif
                 return soul::parser::Match(true, expr);
             }
@@ -2145,8 +2274,8 @@ soul::parser::Match AsmParser<LexerT>::BinaryExpr(LexerT& lexer)
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     if (parser_debug_write_to_log)
     {
-        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BinaryExpr");
-        else soul::lexer::WriteFailureToLog(lexer, "BinaryExpr");
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MulExpr");
+        else soul::lexer::WriteFailureToLog(lexer, "MulExpr");
     }
     #endif
     if (!match.hit)
@@ -2157,7 +2286,7 @@ soul::parser::Match AsmParser<LexerT>::BinaryExpr(LexerT& lexer)
 }
 
 template<typename LexerT>
-soul::parser::Match AsmParser<LexerT>::BinaryOp(LexerT& lexer)
+soul::parser::Match AsmParser<LexerT>::AddOp(LexerT& lexer)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     int64_t parser_debug_match_pos = 0;
@@ -2165,10 +2294,10 @@ soul::parser::Match AsmParser<LexerT>::BinaryOp(LexerT& lexer)
     if (parser_debug_write_to_log)
     {
         parser_debug_match_pos = lexer.GetPos();
-        soul::lexer::WriteBeginRuleToLog(lexer, "BinaryOp");
+        soul::lexer::WriteBeginRuleToLog(lexer, "AddOp");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364117);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364118);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)
@@ -2189,7 +2318,7 @@ soul::parser::Match AsmParser<LexerT>::BinaryOp(LexerT& lexer)
                 {
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
-                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BinaryOp");
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddOp");
                         #endif
                         return soul::parser::Match(true, new soul::parser::Value<cmajor::sbin::assembly::Operator>(cmajor::sbin::assembly::Operator::plus));
                     }
@@ -2218,7 +2347,7 @@ soul::parser::Match AsmParser<LexerT>::BinaryOp(LexerT& lexer)
                 {
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
-                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BinaryOp");
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddOp");
                         #endif
                         return soul::parser::Match(true, new soul::parser::Value<cmajor::sbin::assembly::Operator>(cmajor::sbin::assembly::Operator::minus));
                     }
@@ -2231,41 +2360,60 @@ soul::parser::Match AsmParser<LexerT>::BinaryOp(LexerT& lexer)
             }
             break;
         }
-        case TIMES:
-        {
-            soul::parser::Match match(false);
-            soul::parser::Match* parentMatch3 = &match;
-            {
-                int64_t pos = lexer.GetPos();
-                soul::parser::Match match(false);
-                if (*lexer == TIMES)
-                {
-                    ++lexer;
-                    match.hit = true;
-                }
-                if (match.hit)
-                {
-                    {
-                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
-                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BinaryOp");
-                        #endif
-                        return soul::parser::Match(true, new soul::parser::Value<cmajor::sbin::assembly::Operator>(cmajor::sbin::assembly::Operator::times));
-                    }
-                }
-                *parentMatch3 = match;
-            }
-            if (match.hit)
-            {
-                *parentMatch0 = match;
-            }
-            break;
-        }
     }
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     if (parser_debug_write_to_log)
     {
-        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BinaryOp");
-        else soul::lexer::WriteFailureToLog(lexer, "BinaryOp");
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddOp");
+        else soul::lexer::WriteFailureToLog(lexer, "AddOp");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match AsmParser<LexerT>::MulOp(LexerT& lexer)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MulOp");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364119);
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        if (*lexer == TIMES)
+        {
+            ++lexer;
+            match.hit = true;
+        }
+        if (match.hit)
+        {
+            {
+                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MulOp");
+                #endif
+                return soul::parser::Match(true, new soul::parser::Value<cmajor::sbin::assembly::Operator>(cmajor::sbin::assembly::Operator::times));
+            }
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MulOp");
+        else soul::lexer::WriteFailureToLog(lexer, "MulOp");
     }
     #endif
     if (!match.hit)
@@ -2287,7 +2435,7 @@ soul::parser::Match AsmParser<LexerT>::UnaryExpr(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "UnaryExpr");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364118);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364120);
     std::unique_ptr<soul::parser::Value<cmajor::sbin::assembly::Operator>> op;
     std::unique_ptr<cmajor::sbin::assembly::Node> unaryExpr;
     std::unique_ptr<cmajor::sbin::assembly::Node> primaryExpr;
@@ -2485,7 +2633,7 @@ soul::parser::Match AsmParser<LexerT>::UnaryOp(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "UnaryOp");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364119);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364121);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)
@@ -2575,7 +2723,7 @@ soul::parser::Match AsmParser<LexerT>::PrimaryExpr(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "PrimaryExpr");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364120);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364122);
     std::unique_ptr<cmajor::sbin::assembly::Node> contentExpr;
     std::unique_ptr<cmajor::sbin::assembly::Node> sizeExpr;
     std::unique_ptr<cmajor::sbin::assembly::Node> parenthesizedExpr;
@@ -2854,7 +3002,7 @@ soul::parser::Match AsmParser<LexerT>::ContentExpr(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "ContentExpr");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364121);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364123);
     cmajor::sbin::assembly::ContentExprNode* contentExprNode = nullptr;
     std::unique_ptr<cmajor::sbin::assembly::Node> expr;
     soul::parser::Match match(false);
@@ -2955,7 +3103,7 @@ soul::parser::Match AsmParser<LexerT>::SizeExpr(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "SizeExpr");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364122);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364124);
     cmajor::sbin::assembly::SizeExprNode* sizeExprNode = nullptr;
     std::unique_ptr<soul::parser::Value<cmajor::sbin::assembly::Type>> sizePrefix;
     std::unique_ptr<cmajor::sbin::assembly::Node> expr;
@@ -3023,7 +3171,7 @@ soul::parser::Match AsmParser<LexerT>::SizePrefix(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "SizePrefix");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364123);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364125);
     std::unique_ptr<soul::parser::Value<cmajor::sbin::assembly::Type>> type;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -3093,7 +3241,7 @@ soul::parser::Match AsmParser<LexerT>::ParenthesizedExpr(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "ParenthesizedExpr");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364124);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364126);
     std::unique_ptr<cmajor::sbin::assembly::Node> expr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -3183,7 +3331,7 @@ soul::parser::Match AsmParser<LexerT>::Register(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "Register");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364125);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364127);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)
@@ -5651,7 +5799,7 @@ soul::parser::Match AsmParser<LexerT>::Value(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "Value");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364126);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364128);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)
@@ -5799,7 +5947,7 @@ soul::parser::Match AsmParser<LexerT>::CodeSection(LexerT& lexer, cmajor::sbin::
         soul::lexer::WriteBeginRuleToLog(lexer, "CodeSection");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364127);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364129);
     std::unique_ptr<cmajor::sbin::assembly::FunctionDefinitionNode> functionDefinition;
     std::unique_ptr<cmajor::sbin::assembly::MacroDefinitionNode> macroAssignmentLine;
     soul::parser::Match match(false);
@@ -5929,7 +6077,7 @@ soul::parser::Match AsmParser<LexerT>::CodeSectionHeader(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "CodeSectionHeader");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364128);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364130);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -6002,7 +6150,7 @@ soul::parser::Match AsmParser<LexerT>::FunctionDefinition(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionDefinition");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364129);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364131);
     cmajor::sbin::assembly::FunctionDefinitionNode* functionDefinitionNode = nullptr;
     std::unique_ptr<cmajor::sbin::assembly::SymbolNode> header;
     std::unique_ptr<cmajor::sbin::assembly::SymbolNode> trailer;
@@ -6105,7 +6253,7 @@ soul::parser::Match AsmParser<LexerT>::FunctionHeader(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionHeader");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364130);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364132);
     std::unique_ptr<cmajor::sbin::assembly::SymbolNode> symbol;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -6195,7 +6343,7 @@ soul::parser::Match AsmParser<LexerT>::FunctionTrailer(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionTrailer");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364131);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364133);
     std::unique_ptr<cmajor::sbin::assembly::SymbolNode> symbol;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -6285,7 +6433,7 @@ soul::parser::Match AsmParser<LexerT>::FunctionBody(LexerT& lexer, cmajor::sbin:
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionBody");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364132);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364134);
     std::unique_ptr<cmajor::sbin::assembly::InstructionNode> instructionLine;
     std::unique_ptr<cmajor::sbin::assembly::DataDefinitionNode> dataDefinitionLine;
     soul::parser::Match match(true);
@@ -6395,7 +6543,7 @@ soul::parser::Match AsmParser<LexerT>::InstructionLine(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "InstructionLine");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364133);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364135);
     cmajor::sbin::assembly::InstructionNode* inst = nullptr;
     std::unique_ptr<cmajor::sbin::assembly::LabelNode> label;
     std::unique_ptr<cmajor::sbin::assembly::InstructionNode> instruction;
@@ -6507,7 +6655,7 @@ soul::parser::Match AsmParser<LexerT>::Instruction(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "Instruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364134);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364136);
     cmajor::sbin::assembly::InstructionNode* inst = nullptr;
     std::unique_ptr<soul::parser::Value<cmajor::sbin::machine_x64::OpCode>> opCode;
     soul::parser::Match match(false);
@@ -6596,7 +6744,7 @@ soul::parser::Match AsmParser<LexerT>::OpCode(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "OpCode");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364135);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4519251244111364137);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)

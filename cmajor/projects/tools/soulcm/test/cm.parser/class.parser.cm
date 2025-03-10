@@ -1,4 +1,4 @@
-// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/cm.parser/class.parser' using SoulCm parser generator scmpg version 5.0.0
+// this file has been generated from 'D:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/cm.parser/class.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;
@@ -361,7 +361,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Class");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Class");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, classNode.Release()));
                 }
@@ -667,7 +671,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"BaseClassOrInterface");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"BaseClassOrInterface");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, templateId.Release()));
                         }
@@ -694,7 +702,11 @@ namespace cm.parser
                                 if (match.hit)
                                 {
                                     #if (DEBUG)
-                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"BaseClassOrInterface");
+                                        if (parser_debug_write_to_log)
+                                        {
+                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"BaseClassOrInterface");
+                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                        }
                                     #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, qualifiedId.Release()));
                                 }
@@ -913,7 +925,11 @@ namespace cm.parser
                                                                     if (match.hit)
                                                                     {
                                                                         #if (DEBUG)
-                                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                            if (parser_debug_write_to_log)
+                                                                            {
+                                                                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                            }
                                                                         #endif
                                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, staticConstructor.Release()));
                                                                     }
@@ -940,7 +956,11 @@ namespace cm.parser
                                                                             if (match.hit)
                                                                             {
                                                                                 #if (DEBUG)
-                                                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                                    if (parser_debug_write_to_log)
+                                                                                    {
+                                                                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                                    }
                                                                                 #endif
                                                                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constructor.Release()));
                                                                             }
@@ -972,7 +992,11 @@ namespace cm.parser
                                                                         if (match.hit)
                                                                         {
                                                                             #if (DEBUG)
-                                                                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                                if (parser_debug_write_to_log)
+                                                                                {
+                                                                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                                }
                                                                             #endif
                                                                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, destructor.Release()));
                                                                         }
@@ -1004,7 +1028,11 @@ namespace cm.parser
                                                                     if (match.hit)
                                                                     {
                                                                         #if (DEBUG)
-                                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                            if (parser_debug_write_to_log)
+                                                                            {
+                                                                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                            }
                                                                         #endif
                                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, memberFunction.Release()));
                                                                     }
@@ -1036,7 +1064,11 @@ namespace cm.parser
                                                                 if (match.hit)
                                                                 {
                                                                     #if (DEBUG)
-                                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                        if (parser_debug_write_to_log)
+                                                                        {
+                                                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                        }
                                                                     #endif
                                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, conversionFunction.Release()));
                                                                 }
@@ -1068,7 +1100,11 @@ namespace cm.parser
                                                             if (match.hit)
                                                             {
                                                                 #if (DEBUG)
-                                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                    if (parser_debug_write_to_log)
+                                                                    {
+                                                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                    }
                                                                 #endif
                                                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, memberVariable.Release()));
                                                             }
@@ -1100,7 +1136,11 @@ namespace cm.parser
                                                         if (match.hit)
                                                         {
                                                             #if (DEBUG)
-                                                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                if (parser_debug_write_to_log)
+                                                                {
+                                                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                                }
                                                             #endif
                                                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, usingAlias.Release()));
                                                         }
@@ -1132,7 +1172,11 @@ namespace cm.parser
                                                     if (match.hit)
                                                     {
                                                         #if (DEBUG)
-                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                            if (parser_debug_write_to_log)
+                                                            {
+                                                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                            }
                                                         #endif
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, typedefinition.Release()));
                                                     }
@@ -1164,7 +1208,11 @@ namespace cm.parser
                                                 if (match.hit)
                                                 {
                                                     #if (DEBUG)
-                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                        if (parser_debug_write_to_log)
+                                                        {
+                                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                        }
                                                     #endif
                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, cls.Release()));
                                                 }
@@ -1196,7 +1244,11 @@ namespace cm.parser
                                             if (match.hit)
                                             {
                                                 #if (DEBUG)
-                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                    if (parser_debug_write_to_log)
+                                                    {
+                                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                    }
                                                 #endif
                                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, enumType.Release()));
                                             }
@@ -1228,7 +1280,11 @@ namespace cm.parser
                                         if (match.hit)
                                         {
                                             #if (DEBUG)
-                                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                if (parser_debug_write_to_log)
+                                                {
+                                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                }
                                             #endif
                                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constant.Release()));
                                         }
@@ -1260,7 +1316,11 @@ namespace cm.parser
                                     if (match.hit)
                                     {
                                         #if (DEBUG)
-                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                            if (parser_debug_write_to_log)
+                                            {
+                                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                            }
                                         #endif
                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, dlg.Release()));
                                     }
@@ -1292,7 +1352,11 @@ namespace cm.parser
                                 if (match.hit)
                                 {
                                     #if (DEBUG)
-                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                        if (parser_debug_write_to_log)
+                                        {
+                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ClassMember");
+                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                        }
                                     #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, classDelegate.Release()));
                                 }
@@ -1790,7 +1854,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"StaticConstructor");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"StaticConstructor");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, staticConstructorNode.Release()));
                 }
@@ -2244,7 +2312,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Constructor");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Constructor");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constructorNode.Release()));
                 }
@@ -2606,7 +2678,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Destructor");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Destructor");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, destructorNode.Release()));
                 }
@@ -2959,7 +3035,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Initializer");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Initializer");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, initializerNode.Release()));
                 }
@@ -3319,7 +3399,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MemberFunction");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MemberFunction");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, memberFunctionNode.Release()));
                 }
@@ -3709,7 +3793,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConversionFunction");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConversionFunction");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, conversionFunctionNode.Release()));
                 }
@@ -3892,7 +3980,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MemberVariable");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MemberVariable");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.MemberVariableNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release(), attrs.Release())));
                 }

@@ -248,8 +248,6 @@ enum class Mod : uint8_t
     contentMode = 0x0, disp8Mode = 0x1, disp32Mode = 0x2, registerDirectMode = 0x3
 };
 
-uint8_t EncodeModRMRegAndRegRMFieldRegDirect(Register reg, Emitter& emitter, const soul::ast::Span& span);
-
 enum class ModRMRMField : uint8_t
 {
 //  mod=11:
@@ -386,13 +384,17 @@ constexpr Rex operator~(Rex rex)
 // for example these instructions do not require REX prefix in 64-bit mode:
 // CALL (near), Jcc, JMP (near), POP reg, PUSH reg, RET (near)
 
+Rex RexRBitXmmReg(Register xmmReg, Emitter& emitter, const soul::ast::Span& span);
 Rex RexRBitReg64(Register reg64, Emitter& emitter, const soul::ast::Span& span);
 Rex RexRBitReg32(Register reg32, Emitter& emitter, const soul::ast::Span& span);
 Rex RexRBitReg16(Register reg16, Emitter& emitter, const soul::ast::Span& span);
-Rex RexXBitReg64(Register reg64, Emitter& emitter, const soul::ast::Span& span);
-Rex RexBBitReg64(Register reg64, Emitter& emitter, const soul::ast::Span& span);
 Rex RexRBitReg8(Register reg8, Emitter& emitter, const soul::ast::Span& span);
+Rex RexXBitReg64(Register reg64, Emitter& emitter, const soul::ast::Span& span);
 Rex RexXBitReg8(Register reg64, Emitter& emitter, const soul::ast::Span& span);
+Rex RexBBitXmmReg(Register xmmReg, Emitter& emitter, const soul::ast::Span& span);
+Rex RexBBitReg64(Register reg64, Emitter& emitter, const soul::ast::Span& span);
+Rex RexBBitReg32(Register reg32, Emitter& emitter, const soul::ast::Span& span);
+Rex RexBBitReg16(Register reg16, Emitter& emitter, const soul::ast::Span& span);
 Rex RexBBitReg8(Register reg8, Emitter& emitter, const soul::ast::Span& span);
 
 // ModRM.reg: /digit 0-7

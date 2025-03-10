@@ -1,0 +1,11 @@
+using System;
+
+void main()
+{
+    System.Xml.Document doc;
+    System.Xml.Element* root = System.Xml.MakeElement("root");
+    doc.AppendChild(root);
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    auto result = doc.Write(formatter);
+}

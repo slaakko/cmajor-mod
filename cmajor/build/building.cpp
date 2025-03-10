@@ -18,6 +18,7 @@ import cmajor.build.main.unit;
 import cmdoclib;
 import cmajor.cpp.backend.codegen;
 import cmajor.masm.build;
+import cmajor.sbin.build;
 import cmajor.binder;
 import cmajor.ast;
 import soul.lexer;
@@ -55,6 +56,10 @@ std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFile
     {
         backend = cmajor::ast::BackEnd::masm;
     }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+    {
+        backend = cmajor::ast::BackEnd::sbin;
+    }
     std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend, optLevel);
     return project;
 }
@@ -91,6 +96,10 @@ void SetDefines(cmajor::symbols::Module* module, const std::string& definesFileP
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
         module->DefineSymbol(U"MASM_BACKEND");
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+    {
+        module->DefineSymbol(U"SBIN_BACKEND");
     }
     std::ifstream definesFile(definesFilePath);
     if (definesFile)
@@ -173,6 +182,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
             {
                 astBackEnd = cmajor::ast::BackEnd::masm;
+            }
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+            {
+                astBackEnd = cmajor::ast::BackEnd::sbin;
             }
             else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cm)
             {
@@ -274,7 +287,8 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
                 }
                 RunBuildActions(*project, variables);
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
                 {
                     std::vector<std::string> resourceScriptFiles;
                     resourceScriptFiles.push_back(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "rc"), "soul.xml.xpath.lexer.classmap.rc")));
@@ -293,13 +307,32 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
                         rootModule->WriteTraceData(traceDataFilePath);
                     }
-                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
-                        cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-                    if (project->GetTarget() == cmajor::ast::Target::program ||
-                        project->GetTarget() == cmajor::ast::Target::winguiapp ||
-                        project->GetTarget() == cmajor::ast::Target::winapp)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                     {
-                        cmajor::masm::build::Install(project);
+                        cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
+                            cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                        if (project->GetTarget() == cmajor::ast::Target::program ||
+                            project->GetTarget() == cmajor::ast::Target::winguiapp ||
+                            project->GetTarget() == cmajor::ast::Target::winapp)
+                        {
+                            cmajor::masm::build::Install(project);
+                        }
+                    }
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+                    {
+                        bool program = project->GetTarget() == cmajor::ast::Target::program ||
+                            project->GetTarget() == cmajor::ast::Target::winguiapp ||
+                            project->GetTarget() == cmajor::ast::Target::winapp;
+                        std::string libraryFilePath = cmajor::sbin::build::MakeLib(
+                            project, rootModule.get(), objectFilePaths, program, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                        if (program)
+                        {
+                            std::string vsProjectFilePath = cmajor::masm::build::MakeVSProjectFile(
+                                project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath,
+                                traceDataFilePath, libraryFilePath, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                            cmajor::masm::build::MSBuild(vsProjectFilePath, cmajor::symbols::GetConfig(), project->LogStreamId());
+                            cmajor::masm::build::Install(project);
+                        }
                     }
                 }
                 else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
@@ -535,11 +568,11 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
     std::string config = cmajor::symbols::GetConfig();
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
     {
-        util::LogMessage(-1, "Cleaning solution '" + solutionFilePath + " using " + config + " configuration.");
+        util::LogMessage(-1, "Cleaning solution '" + solutionFilePath + "' using " + config + " configuration.");
     }
     else
     {
-        util::LogMessage(-1, "Building solution '" + solutionFilePath + " using " + config + " configuration.");
+        util::LogMessage(-1, "Building solution '" + solutionFilePath + "' using " + config + " configuration.");
     }
     std::unique_ptr<cmajor::ast::Solution> solution = ParseSolutionFile(solutionFilePath);
     solutionName = util::ToUtf8(solution->Name());
@@ -673,6 +706,14 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
             }
         }
     }
+}
+
+void Install(const std::string& projectFilePath)
+{
+    std::unique_ptr<cmajor::ast::Project> project = ReadProject(projectFilePath);
+    cmajor::masm::build::MSBuild(util::Path::ChangeExtension(project->LibraryFilePath(), ".vcxproj"), cmajor::symbols::GetConfig(),
+        cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+    cmajor::masm::build::Install(project.get());
 }
 
 } // namespace cmajor::build

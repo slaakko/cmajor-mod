@@ -160,6 +160,8 @@
     <ClCompile Include="llvm.cppm" />
     <ClCompile Include="masm.cpp" />
     <ClCompile Include="masm.cppm" />
+    <ClCompile Include="sbin.cpp" />
+    <ClCompile Include="sbin.cppm" />
     <ClCompile Include="selector.cpp" />
     <ClCompile Include="selector.cppm" />
     <ClCompile Include="systemx.cpp" />
@@ -183,6 +185,9 @@
     </ProjectReference>
     <ProjectReference Include="..\masm\backend\backend.vcxproj">
       <Project>{399eba6b-7943-42d2-aae9-8bb43cc641b9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\sbin\sbinbackend\sbinbackend.vcxproj">
+      <Project>{6f95765d-03f5-40fa-81ac-1d27cbfc571e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\system-x\backend\backend.vcxproj">
       <Project>{b4430f33-0890-4ff5-a10b-e553a0cc5193}</Project>

@@ -26,6 +26,8 @@ public:
     void Write(util::CodeFormatter& formatter);
 private:
     std::vector<std::unique_ptr<Declaration>> declarations;
+    std::set<std::string> externalFunctionDeclarations;
+    std::set<std::string> externalDataDeclarations;
 };
 
 class DataSection
@@ -55,6 +57,7 @@ public:
     DataSection& GetDataSection() { return dataSection; }
     CodeSection& GetCodeSection() { return codeSection; }
     void Write();
+    const std::string& Id() const { return id; }
 private:
     std::string filePath;
     std::ofstream file;
@@ -62,6 +65,7 @@ private:
     DeclarationSection declarationSection;
     DataSection dataSection;
     CodeSection codeSection;
+    std::string id;
 };
 
 } // cmajor::masm::assembly

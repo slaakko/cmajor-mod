@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/sbin/asm/asm.parser' using soul parser generator spg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/sbin/asm/asm.parser' using soul parser generator spg version 5.0.0
 
 export module cmajor.sbin.assembly.parser;
 
@@ -37,8 +37,10 @@ struct AsmParser
     static soul::parser::Match OperandList(LexerT& lexer, cmajor::sbin::assembly::InstructionBaseNode* instNode);
     static soul::parser::Match Operand(LexerT& lexer);
     static soul::parser::Match Expr(LexerT& lexer);
-    static soul::parser::Match BinaryExpr(LexerT& lexer);
-    static soul::parser::Match BinaryOp(LexerT& lexer);
+    static soul::parser::Match AddExpr(LexerT& lexer);
+    static soul::parser::Match MulExpr(LexerT& lexer);
+    static soul::parser::Match AddOp(LexerT& lexer);
+    static soul::parser::Match MulOp(LexerT& lexer);
     static soul::parser::Match UnaryExpr(LexerT& lexer);
     static soul::parser::Match UnaryOp(LexerT& lexer);
     static soul::parser::Match PrimaryExpr(LexerT& lexer);

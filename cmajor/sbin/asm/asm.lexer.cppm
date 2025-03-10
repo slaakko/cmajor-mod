@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/sbin/asm/asm.lexer' using soul lexer generator slg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/sbin/asm/asm.lexer' using soul lexer generator slg version 5.0.0
 
 export module cmajor.sbin.assembly.lexer;
 
@@ -30,6 +30,7 @@ soul::ast::slg::TokenCollection* GetTokens();
 struct AssemblyLexer_Variables : public soul::lexer::Variables
 {
     AssemblyLexer_Variables();
+    bool parsingDump;
 };
 
 template<typename Char>
@@ -131,7 +132,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(15, lexer);
+                int64_t tokenId = GetTokenId(16, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -152,7 +153,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(12, lexer);
+                int64_t tokenId = GetTokenId(13, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -173,7 +174,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(11, lexer);
+                int64_t tokenId = GetTokenId(12, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -194,7 +195,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(9, lexer);
+                int64_t tokenId = GetTokenId(10, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -215,7 +216,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(8, lexer);
+                int64_t tokenId = GetTokenId(9, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -236,7 +237,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(7, lexer);
+                int64_t tokenId = GetTokenId(8, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -257,7 +258,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(5, lexer);
+                int64_t tokenId = GetTokenId(4, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -312,7 +313,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(5, lexer);
+                int64_t tokenId = GetTokenId(4, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -364,11 +365,26 @@ struct AssemblyLexer
             }
             case 22:
             {
+                auto& token = lexer.CurrentToken();
+                auto prevMatch = token.match;
+                token.match = lexer.CurrentLexeme();
+                int64_t tokenId = GetTokenId(4, lexer);
+                if (tokenId == soul::lexer::CONTINUE_TOKEN)
+                {
+                    token.id = soul::lexer::CONTINUE_TOKEN;
+                    return -1;
+                }
+                else if (tokenId != soul::lexer::INVALID_TOKEN)
+                {
+                    token.id = tokenId;
+                }
+                else
+                {
+                    token.match = prevMatch;
+                }
                 switch (cls)
                 {
                     case 13:
-                    case 17:
-                    case 18:
                     {
                         return 17;
                     }
@@ -377,6 +393,8 @@ struct AssemblyLexer
                         return 18;
                     }
                     case 15:
+                    case 17:
+                    case 18:
                     {
                         return 19;
                     }
@@ -420,8 +438,6 @@ struct AssemblyLexer
                 switch (cls)
                 {
                     case 13:
-                    case 17:
-                    case 18:
                     {
                         return 17;
                     }
@@ -430,6 +446,8 @@ struct AssemblyLexer
                         return 18;
                     }
                     case 15:
+                    case 17:
+                    case 18:
                     {
                         return 19;
                     }
@@ -462,7 +480,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(4, lexer);
+                int64_t tokenId = GetTokenId(5, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -504,11 +522,26 @@ struct AssemblyLexer
             }
             case 21:
             {
+                auto& token = lexer.CurrentToken();
+                auto prevMatch = token.match;
+                token.match = lexer.CurrentLexeme();
+                int64_t tokenId = GetTokenId(4, lexer);
+                if (tokenId == soul::lexer::CONTINUE_TOKEN)
+                {
+                    token.id = soul::lexer::CONTINUE_TOKEN;
+                    return -1;
+                }
+                else if (tokenId != soul::lexer::INVALID_TOKEN)
+                {
+                    token.id = tokenId;
+                }
+                else
+                {
+                    token.match = prevMatch;
+                }
                 switch (cls)
                 {
                     case 13:
-                    case 17:
-                    case 18:
                     {
                         return 17;
                     }
@@ -517,6 +550,8 @@ struct AssemblyLexer
                         return 18;
                     }
                     case 15:
+                    case 17:
+                    case 18:
                     {
                         return 19;
                     }
@@ -543,7 +578,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(4, lexer);
+                int64_t tokenId = GetTokenId(5, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -582,7 +617,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(4, lexer);
+                int64_t tokenId = GetTokenId(5, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -643,7 +678,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(4, lexer);
+                int64_t tokenId = GetTokenId(5, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -724,7 +759,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(3, lexer);
+                int64_t tokenId = GetTokenId(4, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -738,7 +773,28 @@ struct AssemblyLexer
                 {
                     token.match = prevMatch;
                 }
-                return -1;
+                switch (cls)
+                {
+                    case 13:
+                    {
+                        return 17;
+                    }
+                    case 14:
+                    {
+                        return 18;
+                    }
+                    case 15:
+                    case 17:
+                    case 18:
+                    case 21:
+                    {
+                        return 19;
+                    }
+                    default:
+                    {
+                        return -1;
+                    }
+                }
             }
             case 18:
             {
@@ -763,35 +819,31 @@ struct AssemblyLexer
             }
             case 17:
             {
-                switch (cls)
+                auto& token = lexer.CurrentToken();
+                auto prevMatch = token.match;
+                token.match = lexer.CurrentLexeme();
+                int64_t tokenId = GetTokenId(3, lexer);
+                if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
-                    case 13:
-                    case 17:
-                    case 18:
-                    case 21:
-                    {
-                        return 17;
-                    }
-                    case 14:
-                    {
-                        return 18;
-                    }
-                    case 15:
-                    {
-                        return 19;
-                    }
-                    default:
-                    {
-                        return -1;
-                    }
+                    token.id = soul::lexer::CONTINUE_TOKEN;
+                    return -1;
                 }
+                else if (tokenId != soul::lexer::INVALID_TOKEN)
+                {
+                    token.id = tokenId;
+                }
+                else
+                {
+                    token.match = prevMatch;
+                }
+                return -1;
             }
             case 9:
             {
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(14, lexer);
+                int64_t tokenId = GetTokenId(15, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -812,7 +864,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(13, lexer);
+                int64_t tokenId = GetTokenId(14, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -833,7 +885,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(10, lexer);
+                int64_t tokenId = GetTokenId(11, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -1270,7 +1322,7 @@ struct AssemblyLexer
                 auto& token = lexer.CurrentToken();
                 auto prevMatch = token.match;
                 token.match = lexer.CurrentLexeme();
-                int64_t tokenId = GetTokenId(6, lexer);
+                int64_t tokenId = GetTokenId(7, lexer);
                 if (tokenId == soul::lexer::CONTINUE_TOKEN)
                 {
                     token.id = soul::lexer::CONTINUE_TOKEN;
@@ -1447,71 +1499,79 @@ struct AssemblyLexer
             }
             case 4:
             {
+                auto vars = static_cast<Variables*>(lexer.GetVariables());
+                if (!vars->parsingDump) return soul::lexer::INVALID_TOKEN;
                 lexer.Retract();
-                return REAL;
+                return HEXNUMBER;
                 break;
             }
             case 5:
             {
                 lexer.Retract();
-                return INTEGER;
+                return REAL;
                 break;
             }
             case 6:
             {
                 lexer.Retract();
-                return STRING;
+                return INTEGER;
                 break;
             }
             case 7:
             {
                 lexer.Retract();
-                return COMMA;
+                return STRING;
                 break;
             }
             case 8:
             {
                 lexer.Retract();
-                return COLON;
+                return COMMA;
                 break;
             }
             case 9:
             {
                 lexer.Retract();
-                return ASSIGN;
+                return COLON;
                 break;
             }
             case 10:
             {
                 lexer.Retract();
-                return DOT;
+                return ASSIGN;
                 break;
             }
             case 11:
             {
                 lexer.Retract();
-                return LBRACKET;
+                return DOT;
                 break;
             }
             case 12:
             {
                 lexer.Retract();
-                return RBRACKET;
+                return LBRACKET;
                 break;
             }
             case 13:
             {
                 lexer.Retract();
-                return PLUS;
+                return RBRACKET;
                 break;
             }
             case 14:
             {
                 lexer.Retract();
-                return MINUS;
+                return PLUS;
                 break;
             }
             case 15:
+            {
+                lexer.Retract();
+                return MINUS;
+                break;
+            }
+            case 16:
             {
                 lexer.Retract();
                 return TIMES;

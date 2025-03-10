@@ -1,2 +1,3 @@
 project cmajor.sbin.assembly.parser;
 parser <asm.parser>;
+parser <asm_instruction_line.parser>;

@@ -66,7 +66,7 @@ Value* Context::MakeFloatLiteralSymbol(float value)
 {
     FloatLiteral* literal = new FloatLiteral(value);
     values.push_back(std::unique_ptr<Value>(literal));
-    Symbol* symbol = MakeSymbol("floating_" + std::to_string(floatingLiteralCounter++));
+    Symbol* symbol = MakeSymbol("floating_" + std::to_string(floatingLiteralCounter++) + "_" + file->Id());
     Value* expr = MakeSizePrefix(4, MakeContent(symbol));
     Data* data = new Data();
     Instruction* inst = new Instruction(OpCode::REAL4);
@@ -82,7 +82,7 @@ Value* Context::MakeDoubleLiteralSymbol(double value)
 {
     DoubleLiteral* literal = new DoubleLiteral(value);
     values.push_back(std::unique_ptr<Value>(literal));
-    Symbol* symbol = MakeSymbol("floating_" + std::to_string(floatingLiteralCounter++));
+    Symbol* symbol = MakeSymbol("floating_" + std::to_string(floatingLiteralCounter++) + "_" + file->Id());
     Value* expr = MakeSizePrefix(8, MakeContent(symbol));
     Data* data = new Data();
     Instruction* inst = new Instruction(OpCode::REAL8);

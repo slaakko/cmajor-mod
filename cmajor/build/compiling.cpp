@@ -110,7 +110,7 @@ void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Modul
             {
                 asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
             }
-            else
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
             {
                 objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
             }
@@ -214,7 +214,8 @@ void CompileThreadFunction(CompileData* data, int threadId)
                 GenerateCode(*boundCompileUnit, emittingContext.get()); 
                 {
                     std::lock_guard<std::mutex> lock(*data->mtx);
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
                     {
                         data->asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
                     }
@@ -343,7 +344,9 @@ void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std
     {
         CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop);
     }
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose) && cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose) && 
+        (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin))
     {
         int functionsCompiled = 0;
         int functionsInlined = 0;

@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>cmajor.sbin.asmd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>cmajor.sbin.asm</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -148,6 +154,7 @@
     <None Include="asm.slg" />
     <None Include="asm.spg" />
     <None Include="asm.token" />
+    <None Include="asm_instruction_line.parser" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asm.lexer.cpp" />
@@ -159,6 +166,10 @@
     <ClCompile Include="asm_file.cppm" />
     <ClCompile Include="asm_file_parser.cppm" />
     <ClCompile Include="asm_file_parser.cpp" />
+    <ClCompile Include="asm_instruction_line.parser.cpp" />
+    <ClCompile Include="asm_instruction_line.parser.cppm" />
+    <ClCompile Include="asm_line_parser.cpp" />
+    <ClCompile Include="asm_line_parser.cppm" />
     <ClCompile Include="asm_util.cpp" />
     <ClCompile Include="asm_util.cppm" />
     <ClCompile Include="assembler.cpp" />

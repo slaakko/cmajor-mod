@@ -1,0 +1,158 @@
+
+Dump of file foo.obj
+
+File Type: COFF OBJECT
+
+FILE HEADER VALUES
+            8664 machine (x64)
+               2 number of sections
+        67C470EC time date stamp Sun Mar  2 16:53:32 2025
+             18F file pointer to symbol table
+               2 number of symbols
+               0 size of optional header
+               0 characteristics
+
+SECTION HEADER #1
+   .text name
+       0 physical address
+       0 virtual address
+     12B size of raw data
+      64 file pointer to raw data (00000064 to 0000018E)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+60500020 flags
+         Code
+         16 byte align
+         Execute Read
+
+.text:
+  0000000000000000: 4C 8B 00           mov         r8,qword ptr [rax]
+  0000000000000003: 4C 8B 03           mov         r8,qword ptr [rbx]
+  0000000000000006: 4C 8B 01           mov         r8,qword ptr [rcx]
+  0000000000000009: 4C 8B 02           mov         r8,qword ptr [rdx]
+  000000000000000C: 4C 8B 06           mov         r8,qword ptr [rsi]
+  000000000000000F: 4C 8B 07           mov         r8,qword ptr [rdi]
+  0000000000000012: 4C 8B 04 24        mov         r8,qword ptr [rsp]
+  0000000000000016: 4C 8B 45 00        mov         r8,qword ptr [rbp]
+  000000000000001A: 4D 8B 04 20        mov         r8,qword ptr [r8]
+  000000000000001E: 4D 8B 04 21        mov         r8,qword ptr [r9]
+  0000000000000022: 4D 8B 04 22        mov         r8,qword ptr [r10]
+  0000000000000026: 4D 8B 04 23        mov         r8,qword ptr [r11]
+  000000000000002A: 4D 8B 04 24        mov         r8,qword ptr [r12]
+  000000000000002E: 4D 8B 45 00        mov         r8,qword ptr [r13]
+  0000000000000032: 4D 8B 04 26        mov         r8,qword ptr [r14]
+  0000000000000036: 4D 8B 04 27        mov         r8,qword ptr [r15]
+  000000000000003A: 49 8B 45 00        mov         rax,qword ptr [r13]
+  000000000000003E: 49 8B 5D 00        mov         rbx,qword ptr [r13]
+  0000000000000042: 49 8B 4D 00        mov         rcx,qword ptr [r13]
+  0000000000000046: 49 8B 55 00        mov         rdx,qword ptr [r13]
+  000000000000004A: 49 8B 75 00        mov         rsi,qword ptr [r13]
+  000000000000004E: 49 8B 7D 00        mov         rdi,qword ptr [r13]
+  0000000000000052: 49 8B 65 00        mov         rsp,qword ptr [r13]
+  0000000000000056: 49 8B 6D 00        mov         rbp,qword ptr [r13]
+  000000000000005A: 4D 8B 45 00        mov         r8,qword ptr [r13]
+  000000000000005E: 4D 8B 4D 00        mov         r9,qword ptr [r13]
+  0000000000000062: 4D 8B 55 00        mov         r10,qword ptr [r13]
+  0000000000000066: 4D 8B 5D 00        mov         r11,qword ptr [r13]
+  000000000000006A: 4D 8B 65 00        mov         r12,qword ptr [r13]
+  000000000000006E: 4D 8B 6D 00        mov         r13,qword ptr [r13]
+  0000000000000072: 4D 8B 75 00        mov         r14,qword ptr [r13]
+  0000000000000076: 4D 8B 7D 00        mov         r15,qword ptr [r13]
+  000000000000007A: 40 88 00           mov         byte ptr [rax],al
+  000000000000007D: 40 88 03           mov         byte ptr [rbx],al
+  0000000000000080: 40 88 01           mov         byte ptr [rcx],al
+  0000000000000083: 40 88 02           mov         byte ptr [rdx],al
+  0000000000000086: 40 88 06           mov         byte ptr [rsi],al
+  0000000000000089: 40 88 07           mov         byte ptr [rdi],al
+  000000000000008C: 40 88 04 24        mov         byte ptr [rsp],al
+  0000000000000090: 40 88 45 00        mov         byte ptr [rbp],al
+  0000000000000094: 41 88 04 20        mov         byte ptr [r8],al
+  0000000000000098: 41 88 04 21        mov         byte ptr [r9],al
+  000000000000009C: 41 88 04 22        mov         byte ptr [r10],al
+  00000000000000A0: 41 88 04 23        mov         byte ptr [r11],al
+  00000000000000A4: 41 88 04 24        mov         byte ptr [r12],al
+  00000000000000A8: 41 88 45 00        mov         byte ptr [r13],al
+  00000000000000AC: 41 88 04 26        mov         byte ptr [r14],al
+  00000000000000B0: 41 88 04 27        mov         byte ptr [r15],al
+  00000000000000B4: 44 8A 00           mov         r8b,byte ptr [rax]
+  00000000000000B7: 44 8A 03           mov         r8b,byte ptr [rbx]
+  00000000000000BA: 44 8A 01           mov         r8b,byte ptr [rcx]
+  00000000000000BD: 44 8A 02           mov         r8b,byte ptr [rdx]
+  00000000000000C0: 44 8A 06           mov         r8b,byte ptr [rsi]
+  00000000000000C3: 44 8A 07           mov         r8b,byte ptr [rdi]
+  00000000000000C6: 44 8A 45 00        mov         r8b,byte ptr [rbp]
+  00000000000000CA: 44 8A 04 24        mov         r8b,byte ptr [rsp]
+  00000000000000CE: 45 8A 04 20        mov         r8b,byte ptr [r8]
+  00000000000000D2: 45 8A 04 21        mov         r8b,byte ptr [r9]
+  00000000000000D6: 45 8A 04 22        mov         r8b,byte ptr [r10]
+  00000000000000DA: 45 8A 04 23        mov         r8b,byte ptr [r11]
+  00000000000000DE: 45 8A 04 24        mov         r8b,byte ptr [r12]
+  00000000000000E2: 45 8A 45 00        mov         r8b,byte ptr [r13]
+  00000000000000E6: 45 8A 04 26        mov         r8b,byte ptr [r14]
+  00000000000000EA: 45 8A 04 27        mov         r8b,byte ptr [r15]
+  00000000000000EE: 4C 89 00           mov         qword ptr [rax],r8
+  00000000000000F1: 4C 89 03           mov         qword ptr [rbx],r8
+  00000000000000F4: 4C 89 01           mov         qword ptr [rcx],r8
+  00000000000000F7: 4C 89 02           mov         qword ptr [rdx],r8
+  00000000000000FA: 4C 89 06           mov         qword ptr [rsi],r8
+  00000000000000FD: 4C 89 07           mov         qword ptr [rdi],r8
+  0000000000000100: 4C 89 04 24        mov         qword ptr [rsp],r8
+  0000000000000104: 4C 89 45 00        mov         qword ptr [rbp],r8
+  0000000000000108: 4D 89 04 20        mov         qword ptr [r8],r8
+  000000000000010C: 4D 89 04 21        mov         qword ptr [r9],r8
+  0000000000000110: 4D 89 04 22        mov         qword ptr [r10],r8
+  0000000000000114: 4D 89 04 23        mov         qword ptr [r11],r8
+  0000000000000118: 4D 89 04 24        mov         qword ptr [r12],r8
+  000000000000011C: 4D 89 45 00        mov         qword ptr [r13],r8
+  0000000000000120: 4D 89 04 26        mov         qword ptr [r14],r8
+  0000000000000124: 4D 89 04 27        mov         qword ptr [r15],r8
+  0000000000000128: 41 3A F5           cmp         sil,r13b
+
+RAW DATA #1
+  00000000: 4C 8B 00 4C 8B 03 4C 8B 01 4C 8B 02 4C 8B 06 4C  L..L..L..L..L..L
+  00000010: 8B 07 4C 8B 04 24 4C 8B 45 00 4D 8B 04 20 4D 8B  ..L..$L.E.M.. M.
+  00000020: 04 21 4D 8B 04 22 4D 8B 04 23 4D 8B 04 24 4D 8B  .!M.."M..#M..$M.
+  00000030: 45 00 4D 8B 04 26 4D 8B 04 27 49 8B 45 00 49 8B  E.M..&M..'I.E.I.
+  00000040: 5D 00 49 8B 4D 00 49 8B 55 00 49 8B 75 00 49 8B  ].I.M.I.U.I.u.I.
+  00000050: 7D 00 49 8B 65 00 49 8B 6D 00 4D 8B 45 00 4D 8B  }.I.e.I.m.M.E.M.
+  00000060: 4D 00 4D 8B 55 00 4D 8B 5D 00 4D 8B 65 00 4D 8B  M.M.U.M.].M.e.M.
+  00000070: 6D 00 4D 8B 75 00 4D 8B 7D 00 40 88 00 40 88 03  m.M.u.M.}.@..@..
+  00000080: 40 88 01 40 88 02 40 88 06 40 88 07 40 88 04 24  @..@..@..@..@..$
+  00000090: 40 88 45 00 41 88 04 20 41 88 04 21 41 88 04 22  @.E.A.. A..!A.."
+  000000A0: 41 88 04 23 41 88 04 24 41 88 45 00 41 88 04 26  A..#A..$A.E.A..&
+  000000B0: 41 88 04 27 44 8A 00 44 8A 03 44 8A 01 44 8A 02  A..'D..D..D..D..
+  000000C0: 44 8A 06 44 8A 07 44 8A 45 00 44 8A 04 24 45 8A  D..D..D.E.D..$E.
+  000000D0: 04 20 45 8A 04 21 45 8A 04 22 45 8A 04 23 45 8A  . E..!E.."E..#E.
+  000000E0: 04 24 45 8A 45 00 45 8A 04 26 45 8A 04 27 4C 89  .$E.E.E..&E..'L.
+  000000F0: 00 4C 89 03 4C 89 01 4C 89 02 4C 89 06 4C 89 07  .L..L..L..L..L..
+  00000100: 4C 89 04 24 4C 89 45 00 4D 89 04 20 4D 89 04 21  L..$L.E.M.. M..!
+  00000110: 4D 89 04 22 4D 89 04 23 4D 89 04 24 4D 89 45 00  M.."M..#M..$M.E.
+  00000120: 4D 89 04 26 4D 89 04 27 41 3A F5                 M..&M..'A:õ
+
+SECTION HEADER #2
+   .data name
+       0 physical address
+       0 virtual address
+       0 size of raw data
+       0 file pointer to raw data
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0500040 flags
+         Initialized Data
+         16 byte align
+         Read Write
+
+COFF SYMBOL TABLE
+000 00000000 SECT1  notype       Static       | .text
+001 00000000 SECT2  notype       Static       | .data
+
+String Table Size = 0x0 bytes
+
+  Summary
+
+           0 .data
+         12B .text

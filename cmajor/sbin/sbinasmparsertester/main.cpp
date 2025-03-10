@@ -47,7 +47,7 @@ void ParseAsmFiles(const std::vector<std::string>& asmFiles, bool verbose)
     for (const auto& asmFile : asmFiles)
     {
         soul::lexer::FileMap fileMap;
-        std::unique_ptr<cmajor::sbin::assembly::AsmFileNode> asmFileNode = cmajor::sbin::assembly::ParseAsmFile(asmFile, verbose, fileMap);
+        std::unique_ptr<cmajor::sbin::assembly::AsmFileNode> asmFileNode = cmajor::sbin::assembly::ParseAsmFile(-1, asmFile, verbose, fileMap);
     }
 }
 
