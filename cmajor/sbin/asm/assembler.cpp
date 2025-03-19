@@ -12,8 +12,8 @@ namespace cmajor::sbin::assembly {
 Assembler::Assembler(const std::string& asmFilePath_, int logStreamId_, bool verbose_, bool printLines_) :
     verbose(verbose_), printLines(printLines_), logStreamId(logStreamId_), fileMap(), 
     asmFilePath(asmFilePath_), objFilePath(util::Path::ChangeExtension(asmFilePath, ".obj")),
-    objectFile(new cmajor::sbin::coff::CoffObjectFile()), codeSection(nullptr), dataSection(nullptr), 
-    emitOperation(EmitOperation::emitCode), dataInstKind(DataInstKind::db), operandKind(NodeKind::none), 
+    objectFile(new cmajor::sbin::coff::CoffObjectFile()), codeSection(nullptr), dataSection(nullptr), currentCodeStream(nullptr),
+    currentSection(nullptr), emitOperation(EmitOperation::emitCode), dataInstKind(DataInstKind::db), operandKind(NodeKind::none), 
     reg(cmajor::sbin::machine_x64::Register::none), contentReg0(cmajor::sbin::machine_x64::Register::none), 
     contentReg1(cmajor::sbin::machine_x64::Register::none), contentReg2(cmajor::sbin::machine_x64::Register::none),
     indexReg(cmajor::sbin::machine_x64::Register::none), baseReg(cmajor::sbin::machine_x64::Register::none), 
@@ -24,10 +24,6 @@ Assembler::Assembler(const std::string& asmFilePath_, int logStreamId_, bool ver
 
 void Assembler::Assemble()
 {
-    if (util::Path::GetFileName(asmFilePath) == "Element.asm")
-    {
-        int x = 0;
-    }
     asmFile = ParseAsmFile(logStreamId, asmFilePath, verbose, fileMap);
     codeSection = cmajor::sbin::coff::MakeCodeSection(objectFile.get());
     objectFile->AddSection(codeSection);
@@ -55,6 +51,7 @@ void Assembler::WriteObjectFile()
 void Assembler::EmitData()
 {
     emitOperation = EmitOperation::emitData;
+    currentSection = dataSection;
     currentWriter.reset(new util::LittleEndianBinaryStreamWriter(dataStream));
     for (const auto& dataDefinition : asmFile->DataDefinitions())
     {
@@ -66,7 +63,11 @@ void Assembler::EmitData()
 void Assembler::EmitCode()
 {
     emitOperation = EmitOperation::emitCode;
+    currentSection = codeSection;
     currentWriter.reset(new util::LittleEndianBinaryStreamWriter(codeStream));
+    currentCodeStream = &codeStream;
+    currentJmpPositions = &jmpPositions;
+    currentSymbolDifferences = &symbolDifferences;
     for (const auto& definition : asmFile->Definitions())
     {
         definition->Accept(*this);
@@ -124,7 +125,7 @@ void Assembler::EmitCallFunctionSymbol(Symbol* symbol)
 {
     cmajor::sbin::machine_x64::EmitCallNear(*this);
     int64_t pos = currentWriter->Position();
-    codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(), 
+    currentSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(), 
         cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
     EmitDword(static_cast<uint32_t>(0u));
 }
@@ -133,7 +134,7 @@ void Assembler::EmitMovSdSymbol(cmajor::sbin::machine_x64::Register reg, Symbol*
 {
     cmajor::sbin::machine_x64::EmitMovSdXmmRegNear(*this, reg, span);
     int64_t pos = currentWriter->Position();
-    codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
+    currentSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
         cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
     EmitDword(static_cast<uint64_t>(0u));
 }
@@ -142,7 +143,7 @@ void Assembler::EmitMovSsSymbol(cmajor::sbin::machine_x64::Register reg, Symbol*
 {
     cmajor::sbin::machine_x64::EmitMovSsXmmRegNear(*this, reg, span);
     int64_t pos = currentWriter->Position();
-    codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
+    currentSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
         cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
     EmitDword(static_cast<uint64_t>(0u));
 }
@@ -153,7 +154,7 @@ void Assembler::EmitLeaSymbol(cmajor::sbin::machine_x64::Register reg, Symbol* s
     {
         cmajor::sbin::machine_x64::EmitLeaNear(*this, reg, span);
         int64_t pos = currentWriter->Position();
-        codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(), 
+        currentSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
             cmajor::sbin::coff::IMAGE_REL_AMD64_REL32));
         EmitDword(static_cast<uint32_t>(0u));
     }
@@ -172,7 +173,7 @@ void Assembler::EmitMovReg64Symbol(cmajor::sbin::machine_x64::Register reg, Symb
     int64_t pos = currentWriter->Position();
     if (symbol->Entry())
     {
-        codeSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
+        currentSection->GetRelocationTable()->AddRelocation(cmajor::sbin::coff::Relocation(static_cast<uint32_t>(pos), symbol->Entry()->Index(),
             cmajor::sbin::coff::IMAGE_REL_AMD64_ADDR64));
     }
     else
@@ -216,12 +217,12 @@ void Assembler::EmitJae(Symbol* symbol, const soul::ast::Span& span)
 
 void Assembler::AddJmpPos(int64_t pos, Symbol* symbol, const soul::ast::Span& span)
 {
-    jmpPositions.push_back(JmpPos(pos, symbol, span));
+    currentJmpPositions->push_back(JmpPos(pos, symbol, span));
 }
 
 void Assembler::ResolveJumps()
 {
-    for (const auto& jmpPos : jmpPositions)
+    for (const auto& jmpPos : *currentJmpPositions)
     {
         int64_t pos = jmpPos.pos;
         Symbol* symbol = jmpPos.symbol;
@@ -234,7 +235,7 @@ void Assembler::ResolveJumps()
                 ThrowError("jump too far", jmpPos.span);
             }
             int32_t offset = static_cast<int32_t>(offset64);
-            util::LittleEndianMemoryWriter jmpOffsetWriter(codeStream.Data() + pos, 4);
+            util::LittleEndianMemoryWriter jmpOffsetWriter(currentCodeStream->Data() + pos, 4);
             jmpOffsetWriter.Write(static_cast<int32_t>(offset));
         }
         else
@@ -246,7 +247,7 @@ void Assembler::ResolveJumps()
 
 void Assembler::ResolveSymbolDifferences()
 {
-    for (const auto& symbolDifference : symbolDifferences)
+    for (const auto& symbolDifference : *currentSymbolDifferences)
     {
         int64_t pos = symbolDifference.pos;
         int64_t s0pos = 0;
@@ -270,7 +271,7 @@ void Assembler::ResolveSymbolDifferences()
             ThrowError("symbol 1 has no value", symbolDifference.span);
         }
         uint32_t difference = static_cast<uint32_t>(s0pos - s1pos);
-        util::LittleEndianMemoryWriter differenceWriter(codeStream.Data() + pos, 4);
+        util::LittleEndianMemoryWriter differenceWriter(currentCodeStream->Data() + pos, 4);
         differenceWriter.Write(static_cast<uint32_t>(difference));
     }
 }
@@ -399,6 +400,22 @@ void Assembler::MakeSymbols()
             objectFile->GetSymbolTable()->AddEntry(entry);
             symbol->SetEntry(entry);
         }
+        else if (symbol->IsKind(SymbolKind::linkOnce) && symbol->IsKind(SymbolKind::code))
+        {
+            cmajor::sbin::coff::Section* comdatSection = cmajor::sbin::coff::MakeComdatSection(objectFile.get());
+            objectFile->AddSection(comdatSection);
+            cmajor::sbin::coff::SymbolTableEntry* sectionDefinitionEntry = cmajor::sbin::coff::MakeSectionDefinitionSymbolTableEntry(
+                comdatSection->GetSectionHeader()->Number(), objectFile.get());
+            objectFile->GetSymbolTable()->AddEntry(sectionDefinitionEntry);
+            cmajor::sbin::coff::SymbolTableEntry* entry = cmajor::sbin::coff::MakeInternalFunctionSymbolTableEntry(
+                comdatSection->GetSectionHeader()->Number(),
+                symbol->Name(),
+                objectFile.get());
+            objectFile->GetSymbolTable()->AddEntry(entry);
+            symbol->SetEntry(entry);
+            symbol->SetSectionDefinitionEntry(sectionDefinitionEntry);
+            symbol->SetSection(comdatSection);
+        }
         else if (symbol->IsKind(SymbolKind::external) && symbol->IsKind(SymbolKind::code))
         {
             cmajor::sbin::coff::SymbolTableEntry* entry = cmajor::sbin::coff::MakeExternalFunctionSymbolTableEntry(symbol->Name(), objectFile.get());
@@ -508,7 +525,7 @@ void Assembler::Visit(DataDefinitionNode& dataDefinitionNode)
         operand->Accept(*this);
         if (operandKind == NodeKind::symbolDifferenceNode)
         {
-            symbolDifferences.push_back(SymbolDifference(currentWriter->Position(), symbol0, symbol1, dataDefinitionNode.Span()));
+            currentSymbolDifferences->push_back(SymbolDifference(currentWriter->Position(), symbol0, symbol1, dataDefinitionNode.Span()));
             switch (dataInstKind)
             {
                 case DataInstKind::dq:
@@ -2568,12 +2585,46 @@ void Assembler::Visit(FunctionDefinitionNode& functionDefinitionNode)
     }
     else
     {
-        functionSymbol = nullptr;
+        ThrowError("symbol node expected ", functionDefinitionNode.Span());
+    }
+    cmajor::sbin::coff::Section* prevSection = currentSection;
+    std::unique_ptr<util::LittleEndianBinaryStreamWriter> prevWriter;
+    util::MemoryStream linkOnceCodeStream;
+    util::MemoryStream* prevCodeStream = currentCodeStream;
+    std::vector<JmpPos> linkOnceJmpPositions;
+    std::vector<SymbolDifference> linkonceSymbolDifferences;
+    std::vector<JmpPos>* prevJmpPositions = currentJmpPositions;
+    std::vector<SymbolDifference>* prevSymbolDifferences = currentSymbolDifferences;
+    if (functionSymbol->IsKind(SymbolKind::linkOnce))
+    {
+        currentSection = functionSymbol->Section();
+        prevWriter.reset(currentWriter.release());
+        currentWriter.reset(new util::LittleEndianBinaryStreamWriter(linkOnceCodeStream));
+        functionSymbol->SetValue(currentWriter->Position());
+        currentCodeStream = &linkOnceCodeStream;
+        currentJmpPositions = &linkOnceJmpPositions;
+        currentSymbolDifferences = &linkonceSymbolDifferences;
     }
     for (const auto& inst : functionDefinitionNode.Instructions())
     {
         inst->Accept(*this);
     }
+    if (functionSymbol->IsKind(SymbolKind::linkOnce))
+    {
+        linkOnceCodeStream.SetFromContent();
+        ResolveJumps();
+        ResolveSymbolDifferences();
+        functionSymbol->Section()->SetData(linkOnceCodeStream.ReleaseContent());
+        functionSymbol->Section()->ComputeCheckSum();
+        functionSymbol->SectionDefinitionEntry()->SetAuxSectionDefinitionEntry(cmajor::sbin::coff::MakeAuxSectionDefinitionSymbolTableEntry(
+            functionSymbol->Section()->Data().size(), functionSymbol->Section()->GetRelocationTable()->Relocations().size(), functionSymbol->Section()->CheckSum(),
+            functionSymbol->Section()->GetSectionHeader()->Number(), cmajor::sbin::coff::IMAGE_COMDAT_SELECT_ANY));
+        currentWriter.reset(prevWriter.release());
+    }
+    currentSection = prevSection;
+    currentCodeStream = prevCodeStream;
+    currentJmpPositions = prevJmpPositions;
+    currentSymbolDifferences = prevSymbolDifferences;
 }
 
 void Assembler::Visit(MacroDefinitionNode& macroDefinitionNode)

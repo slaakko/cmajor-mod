@@ -15,7 +15,7 @@ import cmajor.binary.message.protocol;
 
 namespace bpm {
 
-const char* binaryPortMapServerVersion = "5.0.0";
+const char* binaryPortMapServerVersion = "5.1.0";
 
 std::string CmajorRootDir()
 {

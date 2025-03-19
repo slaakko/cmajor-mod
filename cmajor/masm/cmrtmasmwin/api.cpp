@@ -20,6 +20,8 @@ module;
 module cmajor.masm.win.rt.api;
 
 import cmajor.masm.win.rt.error;
+import cmajor.masm.rt.error;
+import std.filesystem;
 import util;
 
 using messageProcessorFunction = bool (*)(void* windowHandle, uint32_t message, uint64_t wparam, int64_t lparam, int64_t& result, void*& originalWndProc);
@@ -1372,8 +1374,17 @@ void* WinGraphicsCreateEmptyFontFamily()
 
 void* WinGraphicsCreateFontFamily(const char* familyName)
 {
-    std::u16string name = util::ToUtf16(std::string(familyName));
-    return new Gdiplus::FontFamily((const WCHAR*)name.c_str(), nullptr);
+    try
+    {
+        std::u16string name = util::ToUtf16(std::string(familyName));
+        return new Gdiplus::FontFamily((const WCHAR*)name.c_str(), nullptr);
+    }
+    catch (const std::exception&)
+    {
+        std::string msg("could not create font family");
+        WinFatalError(msg.c_str());
+        return nullptr;
+    }
 }
 
 void* WinGraphicsCloneFontFamily(void* fontFamily)

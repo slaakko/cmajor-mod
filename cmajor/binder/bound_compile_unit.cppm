@@ -126,6 +126,8 @@ public:
     cmajor::symbols::TypeSymbol* GetSystemRuntimeTraceEntryTypeSymbol() const { return traceEntryTypeSymbol; }
     void SetSystemRuntimeTraceGuardTypeSymbol(cmajor::symbols::TypeSymbol* traceGuardTypeSymbol_) { traceGuardTypeSymbol = traceGuardTypeSymbol_; }
     cmajor::symbols::TypeSymbol* GetSystemRuntimeTraceGuardTypeSymbol() const { return traceGuardTypeSymbol; }
+    void SetSystemRuntimeCheckerTypeSymbol(cmajor::symbols::TypeSymbol* checkerTypeSymbol_) { checkerTypeSymbol = checkerTypeSymbol_; }
+    cmajor::symbols::TypeSymbol* GetSystemRuntimeCheckerTypeSymbol() const { return checkerTypeSymbol; }
     void GenerateCompileUnitInitialization(const soul::ast::Span & span);
     cmajor::symbols::FunctionSymbol* GetInitCompileUnitFunctionSymbol() const { return initCompileUnitFunctionSymbol.get(); }
     cmajor::symbols::FunctionSymbol* GetPushCompileUnitUnwindInfoInitFunctionSymbol() const { return pushCompileUnitUnwindInfoInitFunctionSymbol; }
@@ -204,6 +206,7 @@ private:
     std::vector<std::unique_ptr<cmajor::symbols::FunctionSymbol>> allCompileUnitInitFunctionSymbols;
     cmajor::symbols::TypeSymbol* traceEntryTypeSymbol;
     cmajor::symbols::TypeSymbol* traceGuardTypeSymbol;
+    cmajor::symbols::TypeSymbol* checkerTypeSymbol;
     int totalFunctions;
     int functionsInlined;
 };

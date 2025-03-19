@@ -222,6 +222,7 @@ private:
     void LlvmButtonClick();
     void MasmButtonClick();
     void CmButtonClick();
+    void SBinButtonClick();
     void DebugButtonClick();
     void ReleaseButtonClick();
     void ZeroButtonClick();
@@ -312,6 +313,7 @@ private:
     wing::ToolButton* llvmToolButton;
     wing::ToolButton* masmToolButton;
     wing::ToolButton* cmToolButton;
+    wing::ToolButton* sbinToolButton;
     wing::ToolButton* debugToolButton;
     wing::ToolButton* releaseToolButton;
     wing::ToolButton* optLevelZeroToolButton;

@@ -69,6 +69,20 @@ void RunProgram(const std::string& backend, const std::string& config, int optLe
                 util::Path::GetFileName(project->FilePath())), ".exe"));
         }
     }
+    else if (backend == "sbin")
+    {
+        if (config == "release")
+        {
+            executableName = util::GetFullPath(util::Path::ChangeExtension(util::Path::Combine(util::Path::Combine(util::Path::Combine(
+                util::Path::Combine(executableName, "sbin"), config), std::to_string(optLevel)),
+                util::Path::GetFileName(project->FilePath())), ".exe"));
+        }
+        else
+        {
+            executableName = util::GetFullPath(util::Path::ChangeExtension(util::Path::Combine(util::Path::Combine(util::Path::Combine(executableName, "sbin"), config),
+                util::Path::GetFileName(project->FilePath())), ".exe"));
+        }
+    }
     cmajor::service::PutRequest(new cmajor::service::StartProgramRequest(executableName, programArguments, "cmcode"));
 }
 

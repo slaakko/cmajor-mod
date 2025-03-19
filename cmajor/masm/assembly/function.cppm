@@ -16,7 +16,14 @@ class FunctionDeclaration : public Declaration
 {
 public:
     FunctionDeclaration(const std::string& name_);
-    void Write(util::CodeFormatter& formatter);
+    void Write(util::CodeFormatter& formatter) override;
+};
+
+class LinkOnceDeclaration : public Declaration
+{
+public:
+    LinkOnceDeclaration(const std::string& name_);
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class Instruction;

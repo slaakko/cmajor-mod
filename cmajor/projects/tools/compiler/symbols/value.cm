@@ -3130,6 +3130,10 @@ namespace symbols
             intermediate.Value* value = emitter.GetStructureValue(memberConstants, irStructureType);
             return Result<intermediate.Value*>(value);
         }
+        public inline List<UniquePtr<Value>>& MemberValues() const
+        {
+            return memberValues;
+        }
         private List<UniquePtr<Value>> memberValues;
         private TypeSymbol* type;
         private Uuid typeId;

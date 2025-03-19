@@ -847,16 +847,57 @@ namespace intermediate
         }
         public override void Visit(ArrayValue& value)
         {
+            Type* type = value.GetType();
+            long start = currentOffset;
+            ByteValue zero(0u, context->GetTypes()->GetByteType());
             for (Value* x : value.Elements())
             {
+                Type* elementType = x->GetType();
                 x->Accept(*this);
+                if (currentOffset > 0)
+                {
+                    long alignment = elementType->Alignment();
+                    long elementOffset = alignment * ((currentOffset - 1) / alignment + 1);
+                    while (currentOffset < elementOffset)
+                    {
+                        zero.Accept(*this);
+                    }
+                }
+            }
+            while (currentOffset - start < type->Size())
+            {
+                zero.Accept(*this);
             }
         }
         public override void Visit(StructureValue& value)
         {
-            for (Value* x : value.FieldValues())
+            long start = currentOffset;
+            StructureType* structureType = null;
+            Type* type = value.GetType();
+            if (type->IsStructureType())
             {
+                structureType = cast<StructureType*>(type);
+            }
+            else
+            {
+                SetErrorId(Error("structure type expected", value.Span(), context));
+                return;
+            }
+            long n = value.FieldValues().Count();
+            ByteValue zero(0u, context->GetTypes()->GetByteType());
+            for (long i = 0; i < n; ++i)
+            {
+                long fieldOffset = structureType->FieldOffset(i);
+                while (currentOffset - start < fieldOffset)
+                {
+                    zero.Accept(*this);
+                }
+                Value* x = value.FieldValues()[i];
                 x->Accept(*this);
+            }
+            while (currentOffset - start < structureType->Size())
+            {
+                zero.Accept(*this);
             }
         }
         public override void Visit(StringValue& value)
@@ -956,6 +997,10 @@ namespace intermediate
             if (result.Error()) return result;
             return Result<bool>(true);
         }
+        public inline assembly.File* GetAssemblyFile() const
+        {
+            return &file;
+        }
         private Context* context;
         private assembly.File file;
         private Function* currentFunction;
@@ -972,7 +1017,7 @@ namespace intermediate
     }
 
     [nodiscard]
-    public Result<bool> GenerateCode(Context* context, CodeGenerator* codeGenerator)
+    public Result<bool> GenerateCode(Context* context, CodeGenerator* codeGenerator, int logStreamId, bool verbose)
     {
         Result<bool> result = context->GetData()->VisitGlobalVariables(*codeGenerator);
         if (result.Error()) return result;
@@ -980,6 +1025,11 @@ namespace intermediate
         if (result.Error()) return result;
         result = codeGenerator->WriteOutputFile();
         if (result.Error()) return result;
+        if (verbose)
+        {
+            Result<bool> result = LogMessage(logStreamId, "==> " + codeGenerator->GetAssemblyFile()->FilePath());
+            if (result.Error()) return result;
+        }
         return Result<bool>(true);
     }
 }

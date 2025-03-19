@@ -473,7 +473,8 @@ FunctionSymbol::FunctionSymbol(const soul::ast::Span& span_, const std::u32strin
     functionId(util::nil_uuid()), groupName(), parameters(), localVariables(),
     returnType(), flags(FunctionSymbolFlags::none), index(-1), vmtIndex(-1), imtIndex(-1),
     nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
-    conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr)
+    conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr), 
+    checkerVar(nullptr)
 {
 }
 
@@ -482,7 +483,8 @@ FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::Span& sp
     functionId(util::nil_uuid()), groupName(), parameters(), localVariables(),
     returnType(), flags(FunctionSymbolFlags::none), index(-1), vmtIndex(-1), imtIndex(-1),
     nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
-    conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr)
+    conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr),
+    checkerVar(nullptr)
 {
 }
 
@@ -764,8 +766,8 @@ void FunctionSymbol::ComputeMangledName()
     {
         constraintStr = constraint->ToString();
     }
-    mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
-        util::ToUtf8(FullNameWithSpecifiers()) + parentClassStr + templateArgumentStr + compileUnitId + constraintStr)));
+    digestSource = util::ToUtf8(FullNameWithSpecifiers()) + "." + parentClassStr + "." + templateArgumentStr + "." + compileUnitId + "." + constraintStr;
+    mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(digestSource)));
     SetMangledName(mangledName);
 }
 

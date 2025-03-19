@@ -321,17 +321,19 @@ parser IntermediateParser
         ;
 
     FunctionHeader(cmajor::masm::intermediate::Context* context, 
-        var cmajor::masm::intermediate::TypeRef functionTypeRef, var soul::ast::Span span, var std::string functionId, var bool inline_) : cmajor::masm::intermediate::Function*
+        var cmajor::masm::intermediate::TypeRef functionTypeRef, var soul::ast::Span span, var std::string functionId, var bool inline_, var bool linkOnce) : 
+            cmajor::masm::intermediate::Function*
         ::= 
         (   
             (INLINE{ inline_ = true; })?
+            (LINK_ONCE{ linkOnce = true; })?
             FUNCTION{ span = lexer.GetSpan(pos); } 
             TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
             ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
             MetadataRef(context):mdRef?
         )
         {
-            return context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId, inline_, mdRef);
+            return context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId, inline_, linkOnce, mdRef);
         }
         ;
 

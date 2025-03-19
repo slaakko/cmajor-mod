@@ -395,6 +395,7 @@ soul::parser::Match AsmParser<LexerT>::DeclarationSection(LexerT& lexer, cmajor:
                     switch (*lexer)
                     {
                         case EXTRN:
+                        case LINK_ONCE:
                         case PUBLIC:
                         {
                             soul::parser::Match match(false);
@@ -668,6 +669,35 @@ soul::parser::Match AsmParser<LexerT>::SymbolKind(LexerT& lexer)
                     }
                 }
                 *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case LINK_ONCE:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch3 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == LINK_ONCE)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SymbolKind");
+                        #endif
+                        return soul::parser::Match(true, new soul::parser::Value<cmajor::sbin::assembly::SymbolKind>(cmajor::sbin::assembly::SymbolKind::linkOnce));
+                    }
+                }
+                *parentMatch3 = match;
             }
             if (match.hit)
             {

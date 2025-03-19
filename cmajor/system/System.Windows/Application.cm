@@ -53,7 +53,7 @@ namespace System.Windows
 
     public static class Application
     {
-        static Application() : logView(null), activeWindow(null), runningModal(false), errorId(0)
+        static Application() : logView(null), activeWindow(null), errorId(0), runningModal(false)
         {
             MessageProcessorFunction messageProcessorFunction = ProcessMessage;
             ModelessWindowKeyPreviewFunction keyPreviewFunction = ModelessWindowKeyPreview;
@@ -250,7 +250,7 @@ namespace System.Windows
         private static LogView* logView;
         private static Window* activeWindow;
         private static Window* mainWindow;
-        private static bool runningModal;
         private static int errorId;
+        private static bool runningModal;
     }
 }

@@ -19,6 +19,15 @@ void FunctionDeclaration::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("EXTRN " + Name() + ":PROC");
 }
 
+LinkOnceDeclaration::LinkOnceDeclaration(const std::string& name_) : Declaration(name_)
+{
+}
+
+void LinkOnceDeclaration::Write(util::CodeFormatter& formatter)
+{
+    formatter.WriteLine("LINK_ONCE " + Name());
+}
+
 Function::Function(const std::string& name_) : name(name_), activeFunctionPart(FunctionPart::body)
 {
 }

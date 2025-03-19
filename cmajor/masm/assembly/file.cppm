@@ -14,14 +14,16 @@ class Data;
 class Declaration;
 class Function;
 class FunctionDeclaration;
-class PublicDataDeclaration;
+class PublicDeclaration;
+class LinkOnceDeclaration;
 class ExternalDataDeclaration;
 
 class DeclarationSection
 {
 public:
     void AddFunctionDeclaration(FunctionDeclaration* declaration);
-    void AddPublicDataDeclaration(PublicDataDeclaration* declaration);
+    void AddPublicDeclaration(PublicDeclaration* declaration);
+    void AddLinkOnceDeclaration(LinkOnceDeclaration* declaration);
     void AddExternalDataDeclaration(ExternalDataDeclaration* declaration);
     void Write(util::CodeFormatter& formatter);
 private:

@@ -685,7 +685,7 @@ private:
 
 enum class FunctionFlags : int
 {
-    none = 0, defined = 1 << 0, inline_ = 1 << 1
+    none = 0, defined = 1 << 0, inline_ = 1 << 1, linkOnce = 1 << 2
 };
 
 inline FunctionFlags operator|(FunctionFlags left, FunctionFlags right)
@@ -718,6 +718,8 @@ public:
     void SetDefined() { SetFlag(FunctionFlags::defined); }
     bool IsInline() const { return GetFlag(FunctionFlags::inline_); }
     void SetInline() { SetFlag(FunctionFlags::inline_); }
+    bool IsLinkOnce() const { return GetFlag(FunctionFlags::linkOnce); }
+    void SetLinkOnce() { SetFlag(FunctionFlags::linkOnce); }
     int Arity() const { return type->Arity(); }
     void Accept(Visitor& visitor);
     Function* Clone() const;
@@ -794,8 +796,8 @@ public:
     Function* CurrentFunction() const { return currentFunction; }
     void SetCurrentFunction(Function* function);
     Function* GetFunction(const std::string& functionId) const;
-    Function* AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, MetadataRef* metadataRef, 
-        Context* context);
+    Function* AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, bool linkOnce, 
+        MetadataRef* metadataRef, Context* context);
     Function* AddFunctionDeclaration(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId);
     Function* FirstFunction() { return static_cast<Function*>(functions.FirstChild()); }
     Function* LastFunction() { return static_cast<Function*>(functions.LastChild()); }

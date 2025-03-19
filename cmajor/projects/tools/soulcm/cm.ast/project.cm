@@ -137,6 +137,18 @@ namespace cm.ast
         }
     }
 
+    public Result<string> CmajorResourceDir()
+    {
+        Result<string> cmajorRootDirResult = CmajorRootDir();
+        if (cmajorRootDirResult.Error())
+        {
+            return cmajorRootDirResult;
+        }
+        string cmajorRootDir = cmajorRootDirResult.Value();
+        string resourceDir = Path.Combine(cmajorRootDir, "res");
+        return Result<string>(resourceDir);
+    }
+    
     public Result<string> CmajorSystemModuleFilePath(const string& config, BackEnd backend, const string& toolChain, const string& profile)
     {
         auto libDirResult = CmajorSystemLibDir(config, backend, toolChain, profile);

@@ -155,6 +155,68 @@ namespace binder
             currentClass = prevClass;
             containerScope = prevContainerScope;
         }
+        public override void Visit(MemberVariableNode& memberVariableNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&memberVariableNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsMemberVariableSymbol());
+            MemberVariableSymbol* memberVariableSymbol = cast<MemberVariableSymbol*>(symbol);
+            TypeSymbol* typeSymbol = memberVariableSymbol->Type();
+            if (typeSymbol->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(typeSymbol);
+                DestructorSymbol* destructorSymbol = classType->Destructor();
+                if (destructorSymbol != null && destructorSymbol->IsGenerated())
+                {
+                    if (!boundCompileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
+                    {
+                        UniquePtr<BoundClass> boundClass(new BoundClass(memberVariableNode.GetSpan(), classType, memberVariableNode.ModuleId(), memberVariableNode.FileIndex()));
+                        boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                        Result<FunctionSymbol*> copyResult = destructorSymbol->Copy();
+                        if (copyResult.Error())
+                        {
+                            SetErrorId(copyResult.GetErrorId());
+                            return;
+                        }
+                        DestructorSymbol* copy = cast<DestructorSymbol*>(copyResult.Value());
+                        symbolTable->AddFunctionSymbol(UniquePtr<FunctionSymbol>(copy));
+                        SourceFileNode* sourceFile = boundCompileUnit->SourceFile();
+                        if (sourceFile != null)
+                        {
+                            Result<string> sourceFileIdResult = sourceFile->Id();
+                            if (sourceFileIdResult.Error())
+                            {
+                                SetErrorId(sourceFileIdResult.GetErrorId());
+                                return;
+                            }
+                            string sourceFileId = Rvalue(sourceFileIdResult.Value());
+                            copy->SetSourceFileId(sourceFileId);
+                            Result<bool> result = copy->ComputeMangledName();
+                            if (result.Error())
+                            {
+                                SetErrorId(result.GetErrorId());
+                                return;
+                            }
+                        }
+                        destructorSymbol->SetInstantiatedName(copy->MangledName(), context);
+                        destructorSymbol = copy;
+                        Result<bool> destructorResult = GenerateDestructorImplementation(boundClass.Get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction,
+                            &memberVariableNode);
+                        if (destructorResult.Error())
+                        {
+                            SetErrorId(destructorResult.GetErrorId());
+                            return;
+                        }
+                        boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+                    }
+                }
+            }
+        }
         public override void Visit(FunctionNode& functionNode)
         {
             ContainerScope* prevContainerScope = containerScope;

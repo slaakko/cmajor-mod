@@ -37,7 +37,7 @@ import std.filesystem;
 
 namespace cmcode {
 
-const char* cmajorCodeVersion = "5.0.0";
+const char* cmajorCodeVersion = "5.1.0";
 
 bool CmCodeLogFlagExists()
 {
@@ -119,6 +119,7 @@ MainWindow::MainWindow(const std::string& filePath) :
     llvmToolButton(nullptr),
     masmToolButton(nullptr),
     cmToolButton(nullptr),
+    sbinToolButton(nullptr),
     debugToolButton(nullptr),
     releaseToolButton(nullptr),
     optLevelZeroToolButton(nullptr),
@@ -970,6 +971,12 @@ void MainWindow::AddToolButtons()
     cmToolButton->Disable();
     toolBar->AddToolButton(cmToolButtonPtr.release());
 
+    std::unique_ptr<wing::ToolButton> sbinToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("SBIN").Style(wing::ToolButtonStyle::manual).SetSize(backEndTextButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using SBIN Backend")));
+    sbinToolButton = sbinToolButtonPtr.get();
+    sbinToolButton->Click().AddHandler(this, &MainWindow::SBinButtonClick);
+    sbinToolButton->Disable();
+    toolBar->AddToolButton(sbinToolButtonPtr.release());
 
     toolBar->AddToolButton(new wing::ToolButtonSeparator());
 
@@ -2390,6 +2397,7 @@ void MainWindow::SetState(MainWindowState state_)
     llvmToolButton->Disable();
     masmToolButton->Disable();
     cmToolButton->Disable();
+    sbinToolButton->Disable();
     debugToolButton->Disable();
     releaseToolButton->Disable();
     optLevelZeroToolButton->Disable();
@@ -2412,6 +2420,7 @@ void MainWindow::SetState(MainWindowState state_)
         cppToolButton->SetState(wing::ToolButtonState::normal);
         masmToolButton->SetState(wing::ToolButtonState::normal);
         cmToolButton->SetState(wing::ToolButtonState::normal);
+        sbinToolButton->SetState(wing::ToolButtonState::normal);
     }
     if (backend == "cpp")
     {
@@ -2419,6 +2428,7 @@ void MainWindow::SetState(MainWindowState state_)
         llvmToolButton->SetState(wing::ToolButtonState::normal);
         masmToolButton->SetState(wing::ToolButtonState::normal);
         cmToolButton->SetState(wing::ToolButtonState::normal);
+        sbinToolButton->SetState(wing::ToolButtonState::normal);
     }
     if (backend == "masm")
     {
@@ -2426,6 +2436,7 @@ void MainWindow::SetState(MainWindowState state_)
         cppToolButton->SetState(wing::ToolButtonState::normal);
         masmToolButton->SetState(wing::ToolButtonState::pressed);
         cmToolButton->SetState(wing::ToolButtonState::normal);
+        sbinToolButton->SetState(wing::ToolButtonState::normal);
     }
     if (backend == "cm")
     {
@@ -2433,6 +2444,15 @@ void MainWindow::SetState(MainWindowState state_)
         cppToolButton->SetState(wing::ToolButtonState::normal);
         masmToolButton->SetState(wing::ToolButtonState::normal);
         cmToolButton->SetState(wing::ToolButtonState::pressed);
+        sbinToolButton->SetState(wing::ToolButtonState::normal);
+    }
+    if (backend == "sbin")
+    {
+        llvmToolButton->SetState(wing::ToolButtonState::normal);
+        cppToolButton->SetState(wing::ToolButtonState::normal);
+        masmToolButton->SetState(wing::ToolButtonState::normal);
+        cmToolButton->SetState(wing::ToolButtonState::normal);
+        sbinToolButton->SetState(wing::ToolButtonState::pressed);
     }
 
     if (config == "debug")
@@ -2538,6 +2558,7 @@ void MainWindow::SetState(MainWindowState state_)
             llvmToolButton->Enable();
             masmToolButton->Enable();
             cmToolButton->Enable();
+            sbinToolButton->Enable();
             debugToolButton->Enable();
             releaseToolButton->Enable();
             if (config == "release")
@@ -4896,6 +4917,7 @@ void MainWindow::CppButtonClick()
     llvmToolButton->SetState(wing::ToolButtonState::normal);
     masmToolButton->SetState(wing::ToolButtonState::normal);
     cmToolButton->SetState(wing::ToolButtonState::normal);
+    sbinToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
@@ -4911,6 +4933,7 @@ void MainWindow::LlvmButtonClick()
     cppToolButton->SetState(wing::ToolButtonState::normal);
     masmToolButton->SetState(wing::ToolButtonState::normal);
     cmToolButton->SetState(wing::ToolButtonState::normal);
+    sbinToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
@@ -4926,6 +4949,7 @@ void MainWindow::MasmButtonClick()
     cppToolButton->SetState(wing::ToolButtonState::normal);
     llvmToolButton->SetState(wing::ToolButtonState::normal);
     cmToolButton->SetState(wing::ToolButtonState::normal);
+    sbinToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
@@ -4941,11 +4965,28 @@ void MainWindow::CmButtonClick()
     cppToolButton->SetState(wing::ToolButtonState::normal);
     llvmToolButton->SetState(wing::ToolButtonState::normal);
     masmToolButton->SetState(wing::ToolButtonState::normal);
+    sbinToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
     if (solutionData && solutionData->GetSolution())
     {
         solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::cm);
+        solutionData->GetSolution()->Save();
+    }
+}
+
+void MainWindow::SBinButtonClick()
+{
+    backend = "sbin";
+    cppToolButton->SetState(wing::ToolButtonState::normal);
+    llvmToolButton->SetState(wing::ToolButtonState::normal);
+    masmToolButton->SetState(wing::ToolButtonState::normal);
+    cmToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::sbin);
         solutionData->GetSolution()->Save();
     }
 }

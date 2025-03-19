@@ -23,10 +23,10 @@ private:
     std::vector<std::unique_ptr<Instruction>> instructions;
 };
 
-class PublicDataDeclaration : public Declaration
+class PublicDeclaration : public Declaration
 {
 public:
-    PublicDataDeclaration(const std::string& name_);
+    PublicDeclaration(const std::string& name_);
     void Write(util::CodeFormatter& formatter) override;
 };
 

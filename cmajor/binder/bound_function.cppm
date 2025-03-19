@@ -40,6 +40,8 @@ public:
     const std::vector<std::unique_ptr<BoundStatement>>& EnterCode() const { return enterCode; }
     void SetExitCode(std::vector<std::unique_ptr<BoundStatement>>&& exitCode_);
     const std::vector<std::unique_ptr<BoundStatement>>& ExitCode() const { return exitCode; }
+    void SetCheckerCode(std::vector<std::unique_ptr<BoundStatement>>&& checkerCode_);
+    const std::vector<std::unique_ptr<BoundStatement>>& CheckerCode() const { return checkerCode; }
     void SetLineCode(std::unique_ptr<BoundStatement>&& lineCode_);
     BoundStatement* GetLineCode() const { return lineCode.get(); }
     BoundCompileUnit* GetBoundCompileUnit() const { return boundCompileUnit; }
@@ -52,6 +54,7 @@ private:
     std::vector<BoundStatement*> labeledStatements;
     std::vector<std::unique_ptr<BoundStatement>> enterCode;
     std::vector<std::unique_ptr<BoundStatement>> exitCode;
+    std::vector<std::unique_ptr<BoundStatement>> checkerCode;
     std::unique_ptr<BoundStatement> lineCode;
     std::vector<std::unique_ptr<cmajor::symbols::LocalVariableSymbol>> temporaries;
 };

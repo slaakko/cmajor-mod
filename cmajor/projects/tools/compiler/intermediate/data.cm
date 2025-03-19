@@ -512,7 +512,7 @@ namespace intermediate
         }
         public override Value* PowerOfTwoMod(Context* context) const
         {
-            if (value > 0)
+            if (value > 0u)
             {
                 int shift = 0;
                 if (IsPowerOfTwo(cast<ulong>(value), shift))
@@ -632,7 +632,7 @@ namespace intermediate
         }
         public override Value* PowerOfTwoMod(Context* context) const
         {
-            if (value > 0)
+            if (value > 0u)
             {
                 int shift = 0;
                 if (IsPowerOfTwo(cast<ulong>(value), shift))
@@ -752,7 +752,7 @@ namespace intermediate
         }
         public override Value* PowerOfTwoMod(Context* context) const
         {
-            if (value > 0)
+            if (value > 0u)
             {
                 int shift = 0;
                 if (IsPowerOfTwo(cast<ulong>(value), shift))
@@ -872,7 +872,7 @@ namespace intermediate
         }
         public override Value* PowerOfTwoMod(Context* context) const
         {
-            if (value > 0)
+            if (value > 0u)
             {
                 int shift = 0;
                 if (IsPowerOfTwo(cast<ulong>(value), shift))

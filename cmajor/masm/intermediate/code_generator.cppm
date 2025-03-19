@@ -87,7 +87,7 @@ public:
     void Visit(ConversionValue& value) override;
     void Visit(SymbolValue& value) override;
     void Error(const std::string& message);
-    void WriteOutputFile();
+    void WriteOutputFile(int logStreamId, bool verbose);
     void ResetLeader() { leader = false; }
     virtual int ExitLabelId() const;
     virtual void EmitJumpToExit(RetInstruction& retInst);

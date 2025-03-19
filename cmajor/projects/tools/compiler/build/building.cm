@@ -223,6 +223,12 @@ namespace build
             return compileResult;
         }
         if (stop) return Result<bool>(false);
+        result = ProcessResourcesInProject(project, rootModule.Get());
+        if (result.Error())
+        {
+            stop = true;
+            return result;
+        }
         for (const auto& rcFilePath : project->ResourceScriptFilePaths())
         {
             Result<bool> result = rootModule->AddResourceScriptFilePath(rcFilePath);

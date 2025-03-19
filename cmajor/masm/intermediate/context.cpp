@@ -228,7 +228,7 @@ void Context::SetCurrentFunction(Function* function)
     code.SetCurrentFunction(function);
 }
 
-Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, 
+Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, bool linkOnce,
     cmajor::masm::intermediate::MetadataRef* metadataRef)
 {
     if (type->IsPointerType())
@@ -238,7 +238,7 @@ Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type
     if (type->IsFunctionType())
     {
         FunctionType* functionType = static_cast<FunctionType*>(type);
-        return code.AddFunctionDefinition(span, functionType, functionId, inline_, metadataRef, this);
+        return code.AddFunctionDefinition(span, functionType, functionId, inline_, linkOnce, metadataRef, this);
     }
     else
     {

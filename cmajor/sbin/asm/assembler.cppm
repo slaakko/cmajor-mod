@@ -77,9 +77,11 @@ private:
     std::unique_ptr<AsmFileNode> asmFile;
     std::unique_ptr<cmajor::sbin::coff::CoffObjectFile> objectFile;
     util::MemoryStream codeStream;
+    util::MemoryStream* currentCodeStream;
     cmajor::sbin::coff::Section* codeSection;
     util::MemoryStream dataStream;
     cmajor::sbin::coff::Section* dataSection;
+    cmajor::sbin::coff::Section* currentSection;
     std::map<std::string, Symbol*> symbolMap;
     std::vector<std::unique_ptr<Symbol>> symbols;
     std::unique_ptr<util::LittleEndianBinaryStreamWriter> currentWriter;
@@ -103,6 +105,8 @@ private:
     std::vector<JmpPos> jmpPositions;
     std::vector<SymbolDifference> symbolDifferences;
     Symbol* functionSymbol;
+    std::vector<JmpPos>* currentJmpPositions;
+    std::vector<SymbolDifference>* currentSymbolDifferences;
 };
 
 } // namespace cmajor::sbin::assembly

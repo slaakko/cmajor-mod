@@ -214,8 +214,7 @@ void CompileThreadFunction(CompileData* data, int threadId)
                 GenerateCode(*boundCompileUnit, emittingContext.get()); 
                 {
                     std::lock_guard<std::mutex> lock(*data->mtx);
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
-                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                     {
                         data->asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
                     }

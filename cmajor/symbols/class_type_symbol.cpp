@@ -980,16 +980,13 @@ void ClassTypeSymbol::CreateDestructorSymbol()
         destructorSymbol->SetModule(GetModule());
         GetModule()->GetSymbolTable().SetFunctionIdFor(destructorSymbol);
         destructorSymbol->SetGenerated();
+        destructorSymbol->SetLinkOnceOdrLinkage();
         ParameterSymbol* thisParam = new ParameterSymbol(GetSpan(), U"this");
         thisParam->SetType(AddPointer());
         destructorSymbol->SetAccess(SymbolAccess::public_);
         destructorSymbol->AddMember(thisParam);
         AddMember(destructorSymbol);
         Assert(destructor, "destructor expected");
-        if (GetSymbolType() == SymbolType::classTemplateSpecializationSymbol)
-        {
-            destructor->SetLinkOnceOdrLinkage();
-        }
         destructor->ComputeName();
     }
 }

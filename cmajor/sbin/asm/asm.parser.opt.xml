@@ -1,17 +1,17 @@
 <parserFile>
  <grammar name="AsmParser">
-  <rule first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}" name="AsmFile">
-   <action first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}">
-    <group first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}">
-     <sequence first="{#, DOT, END, EXTRN, NEWLINE, PUBLIC}">
-      <sequence first="{#, DOT, EXTRN, NEWLINE, PUBLIC}">
-       <sequence first="{#, DOT, EXTRN, NEWLINE, PUBLIC}">
-        <sequence first="{#, EXTRN, NEWLINE, PUBLIC}">
+  <rule first="{#, DOT, END, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}" name="AsmFile">
+   <action first="{#, DOT, END, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+    <group first="{#, DOT, END, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+     <sequence first="{#, DOT, END, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+      <sequence first="{#, DOT, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+       <sequence first="{#, DOT, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+        <sequence first="{#, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
          <action first="{#}">
           <empty first="{#}"/>
          </action>
-         <optional first="{#, EXTRN, NEWLINE, PUBLIC}">
-          <nonterminal first="{#, EXTRN, NEWLINE, PUBLIC}" ruleName="DeclarationSection"/>
+         <optional first="{#, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+          <nonterminal first="{#, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}" ruleName="DeclarationSection"/>
          </optional>
         </sequence>
         <optional first="{#, DOT}">
@@ -46,14 +46,14 @@
     </kleene>
    </sequence>
   </rule>
-  <rule first="{#, EXTRN, NEWLINE, PUBLIC}" name="DeclarationSection">
-   <kleene first="{#, EXTRN, NEWLINE, PUBLIC}">
-    <group first="{EXTRN, NEWLINE, PUBLIC}">
-     <switch first="{EXTRN, NEWLINE, PUBLIC}">
-      <case first="{EXTRN, PUBLIC}">
-       <sequence first="{EXTRN, PUBLIC}">
-        <action first="{EXTRN, PUBLIC}">
-         <nonterminal first="{EXTRN, PUBLIC}" ruleName="Declaration"/>
+  <rule first="{#, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}" name="DeclarationSection">
+   <kleene first="{#, EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+    <group first="{EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+     <switch first="{EXTRN, LINK_ONCE, NEWLINE, PUBLIC}">
+      <case first="{EXTRN, LINK_ONCE, PUBLIC}">
+       <sequence first="{EXTRN, LINK_ONCE, PUBLIC}">
+        <action first="{EXTRN, LINK_ONCE, PUBLIC}">
+         <nonterminal first="{EXTRN, LINK_ONCE, PUBLIC}" ruleName="Declaration"/>
         </action>
         <token first="{NEWLINE}" name="NEWLINE"/>
        </sequence>
@@ -65,12 +65,12 @@
     </group>
    </kleene>
   </rule>
-  <rule first="{EXTRN, PUBLIC}" name="Declaration">
-   <action first="{EXTRN, PUBLIC}">
-    <group first="{EXTRN, PUBLIC}">
-     <sequence first="{EXTRN, PUBLIC}">
-      <sequence first="{EXTRN, PUBLIC}">
-       <nonterminal first="{EXTRN, PUBLIC}" ruleName="SymbolKind"/>
+  <rule first="{EXTRN, LINK_ONCE, PUBLIC}" name="Declaration">
+   <action first="{EXTRN, LINK_ONCE, PUBLIC}">
+    <group first="{EXTRN, LINK_ONCE, PUBLIC}">
+     <sequence first="{EXTRN, LINK_ONCE, PUBLIC}">
+      <sequence first="{EXTRN, LINK_ONCE, PUBLIC}">
+       <nonterminal first="{EXTRN, LINK_ONCE, PUBLIC}" ruleName="SymbolKind"/>
        <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
       </sequence>
       <group first="{#, COLON}">
@@ -87,8 +87,8 @@
     </group>
    </action>
   </rule>
-  <rule first="{EXTRN, PUBLIC}" name="SymbolKind">
-   <switch first="{EXTRN, PUBLIC}">
+  <rule first="{EXTRN, LINK_ONCE, PUBLIC}" name="SymbolKind">
+   <switch first="{EXTRN, LINK_ONCE, PUBLIC}">
     <case first="{PUBLIC}">
      <action first="{PUBLIC}">
       <token first="{PUBLIC}" name="PUBLIC"/>
@@ -97,6 +97,11 @@
     <case first="{EXTRN}">
      <action first="{EXTRN}">
       <token first="{EXTRN}" name="EXTRN"/>
+     </action>
+    </case>
+    <case first="{LINK_ONCE}">
+     <action first="{LINK_ONCE}">
+      <token first="{LINK_ONCE}" name="LINK_ONCE"/>
      </action>
     </case>
    </switch>

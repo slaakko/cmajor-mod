@@ -1,0 +1,150 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using cm.ast;
+using symbols;
+
+namespace build
+{
+    public Result<bool> AddResourcesInProjectToCurrentModule(Project* project, Module* module)
+    {
+        Result<string> resourceDirResult = CmajorResourceDir();
+        if (resourceDirResult.Error()) return Result<bool>(ErrorId(resourceDirResult.GetErrorId()));
+        string cmajorResourceDir = Rvalue(resourceDirResult.Value());
+        int n = cast<int>(project->ResourceFilePaths().Count());
+        for (int i = 0; i < n; ++i)
+        {
+            string relativeResourceFilePath = project->RelativeResourceFilePaths()[i];
+            string resourceXmlFilePath = project->ResourceFilePaths()[i];
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                Result<bool> result = LogMessage(module->LogStreamId(), "> " + relativeResourceFilePath);
+                if (result.Error()) return result;
+            }
+            System.Lex.FileMap fileMap;
+            Result<UniquePtr<System.Xml.Document>> resourceXmlDocResult = System.Xml.ParseXmlDocument(resourceXmlFilePath, fileMap);
+            if (resourceXmlDocResult.Error()) return Result<bool>(ErrorId(resourceXmlDocResult.GetErrorId()));
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("/resources/resource", resourceXmlDocResult.Value().Get());
+            if (nodeSetResult.Error()) return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int nn = nodeSet->Count();
+            for (int i = 0; i < nn; ++i)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    string resourceName = element->GetAttribute("name");
+                    if (resourceName.IsEmpty())
+                    {
+                        int errorId = AllocateError("resource element has no 'name' attribute in resource XML file '" + resourceXmlFilePath + "' in project '" +
+                            project->FilePath() + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    if (module->GetResourceTable().Contains(resourceName))
+                    {
+                        int errorId = AllocateError("Resource table of module '" + module->Name() + "' already contains resource name '" + resourceName + "'." +
+                            "Detected when processing resource XML file '" + resourceXmlFilePath + "' in project '" + project->FilePath() + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    if (module->GetGlobalResourceTable().Contains(resourceName))
+                    {
+                        int errorId = AllocateError("resource name '" + resourceName + "' not unique. " +
+                            "Detected when processing resource XML file '" + resourceXmlFilePath + "' in project '" + project->FilePath() + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    string resourceType = element->GetAttribute("type");
+                    if (resourceType.IsEmpty())
+                    {
+                        int errorId = AllocateError("resource element has no 'type' attribute in resource XML file '" + resourceXmlFilePath + "' in project '" +
+                            project->FilePath() + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    string resourceFile = element->GetAttribute("file");
+                    if (resourceFile.IsEmpty())
+                    {
+                        int errorId = AllocateError("resource element has no 'file' attribute in resource XML file '" + resourceXmlFilePath + "' in project '" +
+                            project->FilePath() + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    string resourceFilePath = System.IO.Path.MakeCanonical(resourceFile);
+                    string fullResourceFilePath = resourceFilePath;
+                    if (System.IO.Path.IsRelative(resourceFilePath))
+                    {
+                        fullResourceFilePath = System.IO.Path.Combine(cmajorResourceDir, resourceFilePath);
+                    }
+                    Result<string> fullResourceFilePathResult = System.IO.GetFullPath(fullResourceFilePath);
+                    if (fullResourceFilePathResult.Error()) return Result<bool>(ErrorId(fullResourceFilePathResult.GetErrorId()));
+                    fullResourceFilePath = Rvalue(fullResourceFilePathResult.Value());
+                    Result<bool> existsResult = System.IO.File.Exists(fullResourceFilePath);
+                    if (existsResult.Error()) return existsResult;
+                    bool exists = existsResult.Value();
+                    if (!exists)
+                    {
+                        fullResourceFilePathResult = System.IO.GetFullPath(System.IO.Path.Combine(project->SourceBasePath(), resourceFilePath));
+                        if (fullResourceFilePathResult.Error()) return Result<bool>(ErrorId(fullResourceFilePathResult.GetErrorId()));
+                        fullResourceFilePath = Rvalue(fullResourceFilePathResult.Value());
+                    }
+                    existsResult = System.IO.File.Exists(fullResourceFilePath);
+                    if (existsResult.Error()) return existsResult;
+                    exists = existsResult.Value();
+                    if (!exists)
+                    {
+                        int errorId = AllocateError("resource file '" + resourceFile + "' not found when processing resource XML file '" + resourceXmlFilePath + "' in project '" +
+                            project->FilePath() + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    Result<ResourceKind> resourceKindResult = GetResourceKind(resourceType);
+                    if (resourceKindResult.Error()) return Result<bool>(ErrorId(resourceKindResult.GetErrorId()));
+                    ResourceKind resourceKind = resourceKindResult.Value();
+                    Resource resource(resourceName, resourceKind, fullResourceFilePath);
+                    module->GetResourceTable().AddResource(resource);
+                    module->GetGlobalResourceTable().AddResource(resource);
+                }
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> CreateResourceScriptFile(Module* module, const string& resourceScriptFileName)
+    {
+        if (module->GetGlobalResourceTable().Resources().IsEmpty()) return Result<bool>(false);
+        Result<System.IO.StreamWriter> createResult = System.IO.File.CreateText(resourceScriptFileName);
+        if (createResult.Error()) return Result<bool>(ErrorId(createResult.GetErrorId()));
+        System.Text.CodeFormatter formatter(createResult.Value());
+        for (const Resource& resource : module->GetGlobalResourceTable().Resources())
+        {
+            string line;
+            line.Append(resource.Name()).Append(' ');
+            line.Append(GetResourceKindName(resource.Kind())).Append(' ');
+            line.Append('"').Append(resource.FilePath()).Append('"');
+            Result<bool> result = formatter.WriteLine(line);
+            if (result.Error()) return result;
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            Result<bool> result = LogMessage(module->LogStreamId(), "==> " + resourceScriptFileName);
+            if (result.Error()) return result;
+        }
+        Result<bool> result = module->AddResourceScriptFilePath(resourceScriptFileName);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    public Result<bool> ProcessResourcesInProject(Project* project, Module* module)
+    {
+        Result<bool> result = AddResourcesInProjectToCurrentModule(project, module);
+        if (result.Error()) return result;
+        if (project->GetTarget() == Target.program || project->GetTarget() == Target.winapp || project->GetTarget() == Target.winguiapp)
+        {
+            string resourceScriptFileName = System.IO.Path.ChangeExtension(project->ModuleFilePath(), ".rc");
+            result = CreateResourceScriptFile(module, resourceScriptFileName);
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+}
+

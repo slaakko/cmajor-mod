@@ -29,11 +29,11 @@ void Data::Write(util::CodeFormatter& formatter)
     }
 }
 
-PublicDataDeclaration::PublicDataDeclaration(const std::string& name_) : Declaration(name_)
+PublicDeclaration::PublicDeclaration(const std::string& name_) : Declaration(name_)
 {
 }
 
-void PublicDataDeclaration::Write(util::CodeFormatter& formatter)
+void PublicDeclaration::Write(util::CodeFormatter& formatter)
 {
     formatter.Write("PUBLIC ");
     formatter.WriteLine(Name());

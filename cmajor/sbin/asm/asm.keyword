@@ -9,6 +9,7 @@ keywords cmajor.sbin.assembly.keyword
 {
     ("public", PUBLIC),
     ("extrn", EXTRN),
+    ("link_once", LINK_ONCE),
     ("byte", BYTE),
     ("word", WORD),
     ("dword", DWORD),

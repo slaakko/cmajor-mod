@@ -16,5 +16,6 @@ int64_t ReadBytesFromCmdbSession(uint8_t* buffer, int64_t bufferSize);
 bool CmdbSessionEof();
 void InitCmdbSession();
 void DoneCmdbSession();
+extern "C" void RtmDebugBreak();
 
 } // namespace cmajor::masm::rt

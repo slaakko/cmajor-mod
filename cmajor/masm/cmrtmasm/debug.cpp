@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <Windows.h>
+
 module cmajor.masm.rt.debug;
 
 import soul.xml.dom;
@@ -348,6 +351,11 @@ void InitCmdbSession()
 void DoneCmdbSession()
 {
     CmdbSessionServer::Done();
+}
+
+void RtmDebugBreak()
+{
+    DebugBreak();
 }
 
 } // namespace cmajor::rt

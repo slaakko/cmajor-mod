@@ -3,6 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
+#include <Windows.h>
 #include <cmrt/debug.hpp>
 #include <cmrt/io.hpp>
 #include <dom/document.hpp>
@@ -355,6 +356,11 @@ void InitCmdbSession()
 void DoneCmdbSession()
 {
     CmdbSessionServer::Done();
+}
+
+void RtmDebugBreak()
+{ 
+    DebugBreak();
 }
 
 } // namespace cmajor::rt

@@ -2622,7 +2622,7 @@ void CodeGenerator::Visit(GlobalVariable& globalVariable)
     }
     if (globalVariable.Initializer())
     {
-        file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(globalVariable.Name()));
+        file.GetDeclarationSection().AddPublicDeclaration(new cmajor::masm::assembly::PublicDeclaration(globalVariable.Name()));
         label = globalVariable.Name();
         data = new cmajor::masm::assembly::Data();
         file.GetDataSection().AddData(data);
@@ -2651,7 +2651,14 @@ void CodeGenerator::Visit(Function& function)
     else
     {
         std::string fullFunctionName = function.ResolveFullName();
-        file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(function.Name()));
+        if (function.IsLinkOnce())
+        {
+            file.GetDeclarationSection().AddLinkOnceDeclaration(new cmajor::masm::assembly::LinkOnceDeclaration(function.Name()));
+        }
+        else
+        {
+            file.GetDeclarationSection().AddPublicDeclaration(new cmajor::masm::assembly::PublicDeclaration(function.Name()));
+        }
         currentFunction = &function;
         context->AssemblyContext()->ResetRegisterPool();
         assemblyFunction = file.GetCodeSection().CreateFunction(function.Name());
@@ -3104,17 +3111,57 @@ void CodeGenerator::Visit(AddressValue& value)
 
 void CodeGenerator::Visit(ArrayValue& value)
 {
+    Type* type = value.GetType();
+    int64_t start = currentOffset;
+    Value* zero = context->GetByteValue(0u);
     for (const auto& element : value.Elements())
     {
+        Type* elementType = element->GetType();
         element->Accept(*this);
+        if (currentOffset > 0)
+        {
+            int64_t alignment = elementType->Alignment();
+            int64_t elementOffset = alignment * ((currentOffset - 1) / alignment + 1);
+            while (currentOffset < elementOffset)
+            {
+                zero->Accept(*this);
+            }
+        }
+    }
+    while (currentOffset - start < type->Size())
+    {
+        zero->Accept(*this);
     }
 }
 
 void CodeGenerator::Visit(StructureValue& value)
 {
-    for (const auto& fieldValue : value.FieldValues())
+    StructureType* structureType = nullptr;
+    Type* type = value.GetType();
+    if (type->IsStructureType())
     {
+        structureType = static_cast<StructureType*>(type);
+    }
+    else
+    {
+        Error("structure type expected");
+    }
+    int64_t start = currentOffset;
+    int64_t n = value.FieldValues().size();
+    Value* zero = context->GetByteValue(0u);
+    for (int64_t i = 0; i < n; ++i)
+    {
+        int64_t fieldOffset = structureType->GetFieldOffset(i);
+        while (currentOffset - start < fieldOffset)
+        {
+            zero->Accept(*this);
+        }
+        Value* fieldValue = value.FieldValues()[i];
         fieldValue->Accept(*this);
+    }
+    while (currentOffset - start < structureType->Size())
+    {
+        zero->Accept(*this);
     }
 }
 
@@ -3193,13 +3240,17 @@ void CodeGenerator::Error(const std::string& message)
     cmajor::masm::intermediate::Error(message, currentInst->Span(), context);
 }
 
-void CodeGenerator::WriteOutputFile()
+void CodeGenerator::WriteOutputFile(int logStreamId, bool verbose)
 {
     if (data && dataInstruction)
     {
         data->AddInstruction(std::move(dataInstruction));
     }
     file.Write();
+    if (verbose)
+    {
+        util::LogMessage(logStreamId, "==> " + file.FilePath());
+    }
 }
 
 void CodeGenerator::EmitJumpToExit(RetInstruction& retInst) 

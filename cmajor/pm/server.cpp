@@ -15,7 +15,7 @@ import std.filesystem;
 
 namespace cmajor::portmap {
 
-const char* portMapServerVersion = "5.0.0";
+const char* portMapServerVersion = "5.1.0";
 
 std::string CmajorRootDir()
 {

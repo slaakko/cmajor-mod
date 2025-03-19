@@ -312,6 +312,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
             soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
+
     }
     else if (project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
     {
@@ -325,6 +326,17 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
             soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
+    }
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
+    {
+        soul::xml::Element* debugStackReserveSizeElement = soul::xml::MakeElement("StackReserveSize");
+        soul::xml::Text* debugStackReserveSizeText = soul::xml::MakeText(std::to_string(stackSize));
+        debugStackReserveSizeElement->AppendChild(debugStackReserveSizeText);
+        debugLink->AppendChild(debugStackReserveSizeElement);
+        soul::xml::Element* debugStackCommitSizeElement = soul::xml::MakeElement("StackCommitSize");
+        soul::xml::Text* debugStackCommitSizeText = soul::xml::MakeText(std::to_string(stackSize));
+        debugStackCommitSizeElement->AppendChild(debugStackCommitSizeText);
+        debugLink->AppendChild(debugStackCommitSizeElement);
     }
     debugItemDefinitionGroup->AppendChild(debugLink);
 
@@ -408,6 +420,17 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
             dom_release + ";" + soul_lexer_release + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
+    }
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
+    {
+        soul::xml::Element* releaseStackReserveSizeElement = soul::xml::MakeElement("StackReserveSize");
+        soul::xml::Text* releaseStackReserveSizeText = soul::xml::MakeText(std::to_string(stackSize));
+        releaseStackReserveSizeElement->AppendChild(releaseStackReserveSizeText);
+        releaseLink->AppendChild(releaseStackReserveSizeElement);
+        soul::xml::Element* releaseStackCommitSizeElement = soul::xml::MakeElement("StackCommitSize");
+        soul::xml::Text* releaseStackCommitSizeText = soul::xml::MakeText(std::to_string(stackSize));
+        releaseStackCommitSizeElement->AppendChild(releaseStackCommitSizeText);
+        releaseLink->AppendChild(releaseStackCommitSizeElement);
     }
     releaseItemDefinitionGroup->AppendChild(releaseLink);
 

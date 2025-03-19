@@ -20,4 +20,4 @@ IF EXIST ..\cmajor\projects\tools\soulcm\cm2html\bin\llvm\release\2\cm2html.exe 
 IF EXIST ..\cmajor\projects\tools\soulcm\soul2html\bin\llvm\release\2\soul2html.exe xcopy /Y ..\cmajor\projects\tools\soulcm\soul2html\bin\llvm\release\2\soul2html.exe ..\cmajor\bin
 IF EXIST ..\cmajor\projects\tools\txt2html\bin\llvm\release\2\txt2html.exe xcopy /Y ..\cmajor\projects\tools\txt2html\bin\llvm\release\2\txt2html.exe ..\cmajor\bin
 IF EXIST ..\cmajor\projects\tools\spring\bin\llvm\release\2\spring.exe xcopy /Y ..\cmajor\projects\tools\spring\bin\llvm\release\2\spring.exe ..\cmajor\bin
-IF EXIST ..\cmajor\projects\tools\compiler\cmcmc\bin\masm\release\2\cmcmc.exe xcopy /Y ..\cmajor\projects\tools\compiler\cmcmc\bin\masm\release\2\cmcmc.exe ..\cmajor\bin
+IF EXIST ..\cmajor\projects\tools\compiler\cmcmc\bin\sbin\release\2\cmcmc.exe xcopy /Y ..\cmajor\projects\tools\compiler\cmcmc\bin\sbin\release\2\cmcmc.exe ..\cmajor\bin

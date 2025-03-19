@@ -1,17 +1,13 @@
 <diagram>
  <classElement abstract="false" keyword="" name="Class">
-  <bounds h="6.943944931030273" w="12.783379554748535" x="46.037502288818359" y="61.383331298828125"/>
+  <bounds h="6.943944931030273" w="12.783379554748535" x="39.158332824707031" y="30.691665649414062"/>
  </classElement>
  <classElement abstract="false" keyword="" name="Class">
-  <bounds h="6.943944931030273" w="12.783379554748535" x="46.037502288818359" y="29.368747711181640"/>
+  <bounds h="6.943944931030273" w="12.783379554748535" x="39.158332824707031" y="55.297916412353515"/>
  </classElement>
- <noteElement>
-  <bounds h="6.943944931030273" w="16.058115005493164" x="77.258323669433593" y="20.372917175292968"/>
-  <line text="note..."/>
- </noteElement>
  <relationshipElement cardinality="one" rkind="inheritance">
   <bounds h="0" w="0" x="0" y="0"/>
-  <source connector="top.center" index="0" x="52.429191589355468" y="61.383331298828125">
+  <source connector="top.center" index="1" x="45.550022125244140" y="55.297916412353515">
    <primaryText keyword="">
     <bounds h="0" w="0" x="0" y="0"/>
    </primaryText>
@@ -19,26 +15,7 @@
     <bounds h="0" w="0" x="0" y="0"/>
    </secondaryText>
   </source>
-  <target connector="bottom.center" index="1" x="52.429191589355468" y="36.312690734863281">
-   <primaryText keyword="">
-    <bounds h="0" w="0" x="0" y="0"/>
-   </primaryText>
-   <secondaryText keyword="">
-    <bounds h="0" w="0" x="0" y="0"/>
-   </secondaryText>
-  </target>
- </relationshipElement>
- <relationshipElement cardinality="one" rkind="attachNote">
-  <bounds h="0" w="0" x="0" y="0"/>
-  <source connector="right.center" index="1" x="58.820880889892578" y="32.840721130371093">
-   <primaryText keyword="">
-    <bounds h="0" w="0" x="0" y="0"/>
-   </primaryText>
-   <secondaryText keyword="">
-    <bounds h="0" w="0" x="0" y="0"/>
-   </secondaryText>
-  </source>
-  <target connector="left.bottom" index="2" x="77.258323669433593" y="24.316862106323242">
+  <target connector="bottom.center" index="0" x="45.550022125244140" y="37.635612487792968">
    <primaryText keyword="">
     <bounds h="0" w="0" x="0" y="0"/>
    </primaryText>

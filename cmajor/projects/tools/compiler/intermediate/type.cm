@@ -720,7 +720,7 @@ namespace intermediate
         }
         public override long Alignment() const
         {
-            return 1;
+            return 8;
         }
         public inline const List<TypeRef>& FieldTypeRefs() const
         {

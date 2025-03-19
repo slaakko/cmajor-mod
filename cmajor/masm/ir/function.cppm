@@ -31,6 +31,9 @@ public:
     std::string Name(Context& context) override { return "@" + name; }
     void SetComment(const std::string& comment_);
     void SetInline() { isInline = true; }
+    bool Inline() const { return isInline; }
+    void SetLinkOnce() { linkOnce = true; }
+    bool LinkOnce() const { return linkOnce; }
     void SetMdId(int mdId_) { mdId = mdId_; }
     int MdId() const { return mdId; }
     void Write(util::CodeFormatter& formatter, Context& context, util::CodeFormatter& linesFormatter);
@@ -46,6 +49,7 @@ private:
     int nextBBNumber;
     std::string comment;
     bool isInline;
+    bool linkOnce;
     int mdId;
 };
 

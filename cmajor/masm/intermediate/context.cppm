@@ -85,7 +85,8 @@ public:
     Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, bool resolve);
     Function* CurrentFunction() const;
     void SetCurrentFunction(Function* function);
-    Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, cmajor::masm::intermediate::MetadataRef* metadataRef);
+    Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, bool linkOnce, 
+        cmajor::masm::intermediate::MetadataRef* metadataRef);
     Function* AddFunctionDeclaration(const soul::ast::Span& span, Type* type, const std::string& functionId);
     MetadataStruct* AddMetadataStruct(const soul::ast::Span& span, int32_t id);
     MetadataBool* CreateMetadataBool(bool value);

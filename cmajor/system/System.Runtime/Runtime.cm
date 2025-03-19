@@ -5,6 +5,7 @@
 
 public extern cdecl void RtmInit();
 public extern cdecl void RtmDone();
+public extern cdecl void RtmDebugBreak();
 public extern cdecl void RtmEnqueueDestruction(void*, void*);
 public extern cdecl void RtmBeginStaticInitCriticalSection();
 public extern cdecl void RtmEndtaticInitCriticalSection();

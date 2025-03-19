@@ -1253,6 +1253,337 @@ namespace binder
             }
             returned = prevReturned;
         }
+        public override void Visit(ConstructorNode& constructorNode)
+        {
+            bool fileScopeAdded = false;
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&constructorNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(symbol->Parent());
+            ClassTypeSymbol* prevClassType = currentClassType;
+            currentClassType = classType;
+            if (symbol->IsFunctionSymbol())
+            {
+                FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+                int n = cast<int>(functionSymbol->UsingNodes().Count());
+                if (n > 0)
+                {
+                    FileScope* fileScope = new FileScope();
+                    FileScope* prevFileScope = currentFileScope;
+                    currentFileScope = fileScope;
+                    boundCompileUnit->AddFileScope(fileScope);
+                    fileScopeAdded = true;
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* usingNode = functionSymbol->UsingNodes()[i];
+                        usingNode->Accept(*this);
+                        if (Error()) return;
+                    }
+                    currentFileScope = prevFileScope;
+                }
+            }
+            bool prevReturned = returned;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = symbol->GetContainerScope();
+            DeclarationBlockSymbol* prevDeclarationBlock = currentDeclarationBlock;
+            DeclarationBlockSymbol declarationBlock(constructorNode.GetSpan(), u"functionBlock");
+            currentDeclarationBlock = &declarationBlock;
+            declarationBlock.SetParent(containerScope->Container());
+            containerScope = declarationBlock.GetContainerScope();
+            int n = cast<int>(constructorNode.Parameters().Count());
+            if (n != argumentValues.Count())
+            {
+                int errorId = MakeError("wrong number of function arguments", constructorNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                UniquePtr<Value> argumentValue = Rvalue(argumentValues[i]);
+                Result<TypeSymbol*> argumentTypeResult = argumentValue->Type(symbolTable, context);
+                if (argumentTypeResult.Error())
+                {
+                    SetErrorId(argumentTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* argumentType = argumentTypeResult.Value();
+                ParameterNode* parameterNode = constructorNode.Parameters()[i];
+                ustring parameterName = u"@p";
+                Result<ustring> us = ToUtf32(ToString(i));
+                if (us.Error())
+                {
+                    SetErrorId(us.GetErrorId());
+                    return;
+                }
+                parameterName.Append(us.Value());
+                if (parameterNode->Id() != null)
+                {
+                    parameterName = parameterNode->Id()->Str();
+                }
+                VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterName, Rvalue(argumentValue));
+                variableValueSymbol->SetType(argumentType);
+                declarationBlock.AddMember(variableValueSymbol, context);
+            }
+            Map<ustring, MemberInitializerNode*> memberInitializerMap;
+            int ni = constructorNode.Initializers().Count();
+            for (int i = 0; i < ni; ++i)
+            {
+                InitializerNode* initializer = constructorNode.Initializers()[i];
+                if (initializer->IsThisInitializerNode() || initializer->IsBaseInitializerNode())
+                {
+                    int errorId = MakeError("this and base initializers not supported for a constexpr constructor", constructorNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                else
+                {
+                    MemberInitializerNode* memberInitializer = cast<MemberInitializerNode*>(initializer);
+                    ustring memberName = memberInitializer->MemberId()->Str();
+                    auto it = memberInitializerMap.Find(memberName);
+                    if (it != memberInitializerMap.End())
+                    {
+                        Result<string> memberNameStrResult = ToUtf8(memberName);
+                        if (memberNameStrResult.Error())
+                        {
+                            SetErrorId(memberNameStrResult.GetErrorId());
+                            return;
+                        }
+                        string memberNameStr = Rvalue(memberNameStrResult.Value());
+                        int errorId = MakeError("already has initializer for member variable '" + memberNameStr + "'", initializer->GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                    memberInitializerMap[memberName] = memberInitializer;
+                }
+            }
+            List<UniquePtr<Value>> memberValues;
+            int nm = cast<int>(classType->MemberVariables().Count());
+            for (int i = 0; i < nm; ++i)
+            {
+                value.Reset();
+                MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
+                List<UniquePtr<Value>> initializerArgumentValues;
+                auto it = memberInitializerMap.Find(memberVariableSymbol->Name());
+                if (it != memberInitializerMap.End())
+                {
+                    MemberInitializerNode* memberInitializer = it->second;
+                    int na = cast<int>(memberInitializer->Arguments().Count());
+                    for (int i = 0; i < na; ++i)
+                    {
+                        Node* argumentNode = memberInitializer->Arguments()[i];
+                        argumentNode->Accept(*this);
+                        if (Error()) return;
+                        if (value.IsNull())
+                        {
+                            int errorId = MakeCannotEvaluateStaticallyError(&constructorNode);
+                            SetErrorId(errorId);
+                            return;
+                        }
+                        initializerArgumentValues.Add(Rvalue(value));
+                    }
+                }
+                List<FunctionScopeLookup> scopeLookups;
+                scopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                scopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                scopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> initializerArguments;
+                Result<bool> argumentResult = ValuesToLiterals(initializerArgumentValues, symbolTable, context, initializerArguments);
+                if (argumentResult.Error())
+                {
+                    SetErrorId(argumentResult.GetErrorId());
+                    return;
+                }
+                Result<TypeSymbol*> ptrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                if (ptrTypeResult.Error())
+                {
+                    SetErrorId(ptrTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* ptrType = ptrTypeResult.Value();
+                initializerArguments.InsertFront(UniquePtr<BoundExpression>(new BoundTypeExpression(constructorNode.GetSpan(), ptrType)));
+                OverloadResolutionFlags flags = OverloadResolutionFlags.dontInstantiate;
+                List<TypeSymbol*> templateArgumentTypes;
+                Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, scopeLookups,
+                    initializerArguments, boundCompileUnit, currentFunction, &constructorNode, flags, templateArgumentTypes);
+                if (constructorCallResult.Error())
+                {
+                    SetErrorId(constructorCallResult.GetErrorId());
+                    return;
+                }
+                BoundFunctionCall* constructorCall = constructorCallResult.Value().Get();
+                List<UniquePtr<Value>> constructorArgumentValues;
+                Result<bool> result = ArgumentsToValues(constructorCall->Arguments(), true, &constructorNode, constructorArgumentValues);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                FunctionSymbol* constructorSymbol = constructorCall->GetFunctionSymbol();
+                if (constructorSymbol->IsCompileTimePrimitiveFunction())
+                {
+                    Result<UniquePtr<Value>> valueResult = constructorSymbol->Evaluate(constructorArgumentValues, null, &constructorNode);
+                    if (valueResult.Error())
+                    {
+                        SetErrorId(valueResult.GetErrorId());
+                        return;
+                    }
+                    value = Rvalue(valueResult.Value());
+                }
+                else if (constructorSymbol->IsConstExpr())
+                {
+                    Result<FunctionNode*> constructorNodeResult = boundCompileUnit->GetConstExprFunctionRepository()->GetFunctionNode(constructorSymbol);
+                    if (constructorNodeResult.Error())
+                    {
+                        SetErrorId(constructorNodeResult.GetErrorId());
+                        return;
+                    }
+                    FunctionNode* constructorNode = constructorNodeResult.Value();
+                    argumentValues = Rvalue(constructorArgumentValues);
+                    constructorNode->Accept(*this);
+                    if (Error()) return;
+                }
+                else
+                {
+                    SetErrorId(MakeCannotEvaluateStaticallyError(&constructorNode));
+                    return;
+                }
+                memberValues.Add(Rvalue(value));
+            }
+            constructorNode.Body()->Accept(*this);
+            if (Error()) return;
+            value.Reset(new StructureValue(constructorNode.GetSpan(), classType, Rvalue(memberValues)));
+            containerScope = prevContainerScope;
+            currentDeclarationBlock = prevDeclarationBlock;
+            returned = prevReturned;
+            currentClassType = prevClassType;
+            if (fileScopeAdded)
+            {
+                boundCompileUnit->RemoveLastFileScope();
+            }
+        }
+        public override void Visit(MemberFunctionNode& memberFunctionNode)
+        {
+            bool fileScopeAdded = false;
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&memberFunctionNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol->IsFunctionSymbol())
+            {
+                FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+                int n = cast<int>(functionSymbol->UsingNodes().Count());
+                if (n > 0)
+                {
+                    FileScope* fileScope = new FileScope();
+                    FileScope* prevFileScope = currentFileScope;
+                    currentFileScope = fileScope;
+                    boundCompileUnit->AddFileScope(fileScope);
+                    fileScopeAdded = true;
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* usingNode = functionSymbol->UsingNodes()[i];
+                        usingNode->Accept(*this);
+                        if (Error()) return;
+                    }
+                    currentFileScope = prevFileScope;
+                }
+            }
+            bool prevReturned = returned;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = symbol->GetContainerScope();
+            DeclarationBlockSymbol* prevDeclarationBlock = currentDeclarationBlock;
+            DeclarationBlockSymbol declarationBlock(memberFunctionNode.GetSpan(), u"functionBlock");
+            currentDeclarationBlock = &declarationBlock;
+            declarationBlock.SetParent(containerScope->Container());
+            containerScope = declarationBlock.GetContainerScope();
+            int n = cast<int>(memberFunctionNode.Parameters().Count());
+            if (n != argumentValues.Count())
+            {
+                int errorId = MakeError("wrong number of function arguments", memberFunctionNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                UniquePtr<Value> argumentValue = Rvalue(argumentValues[i]);
+                Result<TypeSymbol*> argumentTypeResult = argumentValue->Type(symbolTable, context);
+                if (argumentTypeResult.Error())
+                {
+                    SetErrorId(argumentTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* argumentType = argumentTypeResult.Value();
+                ParameterNode* parameterNode = memberFunctionNode.Parameters()[i];
+                ustring parameterName = u"@p";
+                Result<ustring> us = ToUtf32(ToString(i));
+                if (us.Error())
+                {
+                    SetErrorId(us.GetErrorId());
+                    return;
+                }
+                parameterName.Append(us.Value());
+                if (parameterNode->Id() != null)
+                {
+                    parameterName = parameterNode->Id()->Str();
+                }
+                VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterName, Rvalue(argumentValue));
+                variableValueSymbol->SetType(argumentType);
+                declarationBlock.AddMember(variableValueSymbol, context);
+            }
+            StructureReferenceValue* structureReferenceValue = null;
+            if (!value.IsNull() && value->IsStructureReferenceValue())
+            {
+                structureReferenceValue = cast<StructureReferenceValue*>(value.Get());
+            }
+            if (currentClassType != null && structureReferenceValue != null)
+            {
+                StructureValue* structureValue = structureReferenceValue->GetStructureValue();
+                int n = cast<int>(currentClassType->MemberVariables().Count());
+                if (n != cast<int>(structureValue->MemberValues().Count()))
+                {
+                    int errorId = MakeError("wrong number of structure value members", memberFunctionNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                for (int i = 0; i < n; ++i)
+                {
+                    MemberVariableSymbol* memberVariableSymbol = currentClassType->MemberVariables()[i];
+                    Value* memberValue = structureValue->MemberValues()[i].Get();
+                    ConstantSymbol* constantSymbol = new ConstantSymbol(memberVariableSymbol->Span(), memberVariableSymbol->Name());
+                    constantSymbol->SetModule(module);
+                    constantSymbol->SetType(memberVariableSymbol->Type());
+                    if (memberValue->IsArrayValue())
+                    {
+                        constantSymbol->SetValue(new ArrayReferenceValue(memberVariableSymbol->Span(), cast<ArrayValue*>(memberValue)));
+                    }
+                    else if (memberValue->IsStructureValue())
+                    {
+                        constantSymbol->SetValue(new StructureReferenceValue(memberVariableSymbol->Span(), cast<StructureValue*>(memberValue)));
+                    }
+                    else
+                    {
+                        constantSymbol->SetValue(memberValue->Clone());
+                    }
+                    declarationBlock.AddMember(constantSymbol, context);
+                }
+            }
+            memberFunctionNode.Body()->Accept(*this);
+            if (Error()) return;
+            containerScope = prevContainerScope;
+            currentDeclarationBlock = prevDeclarationBlock;
+            returned = prevReturned;
+            if (fileScopeAdded)
+            {
+                boundCompileUnit->RemoveLastFileScope();
+            }
+        }
         public override void Visit(NamespaceImportNode& namespaceImportNode)
         {
             if (currentFileScope != null)

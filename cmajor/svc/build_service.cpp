@@ -179,6 +179,10 @@ void BuildService::ExecuteCommand()
         {
             backend = cmajor::symbols::BackEnd::masm;
         }
+        else if (buildCommand->backend == "sbin")
+        {
+            backend = cmajor::symbols::BackEnd::sbin;
+        }
         else if (buildCommand->backend == "cm")
         {
             backend = cmajor::symbols::BackEnd::cm;
@@ -248,7 +252,7 @@ void BuildService::ExecuteCommand()
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
         }
-        if (buildCommand->singleThreadedCompile)
+        if (buildCommand->singleThreadedCompile || backend == cmajor::symbols::BackEnd::sbin)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
         }
@@ -286,6 +290,12 @@ void BuildService::ExecuteCommand()
             {
                 cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::masmBackEnd);
                 util::LogMessage(-1, "Cmajor with MASM backend compiler version " + cmajor::symbols::GetCompilerVersion() + " for Windows x64");
+                break;
+            }
+            case cmajor::symbols::BackEnd::sbin:
+            {
+                cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::sbinBackEnd);
+                util::LogMessage(-1, "Cmajor with SBIN backend compiler version " + cmajor::symbols::GetCompilerVersion() + " for Windows x64");
                 break;
             }
         }
@@ -416,6 +426,10 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
         else if (request.backend == "masm")
         {
             backend = cmajor::ast::BackEnd::masm;
+        }
+        else if (request.backend == "sbin")
+        {
+            backend = cmajor::ast::BackEnd::sbin;
         }
         cmajor::ast::Config config = cmajor::ast::Config::debug;
         if (request.config == "release")

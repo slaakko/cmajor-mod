@@ -213,7 +213,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     }
     finalContext->GetData().VisitGlobalVariables(*codeGenerator);
     finalContext->GetCode().VisitFunctions(*codeGenerator);
-    codeGenerator->WriteOutputFile();
+    codeGenerator->WriteOutputFile(boundCompileUnit.GetModule().LogStreamId(), cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
         boundCompileUnit.SetTotal(intermediateContext.TotalFunctions());
@@ -297,7 +297,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (functionSymbol->HasLinkOnceOdrLinkage())
     {
         void* comdat = emitter->GetOrInsertAnyFunctionComdat(util::ToUtf8(functionSymbol->MangledName()), function);
-        emitter->SetFunctionLinkageToLinkOnceODRLinkage(function);
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+        {
+            emitter->SetFunctionLinkageToLinkOnceODRLinkage(function);
+        }
     }
     util::uuid functionId;
     if (functionSymbol->HasSource())
@@ -996,8 +999,9 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
                     cmajor::symbols::DestructorSymbol* destructor = classType->Destructor();
                     if (destructor)
                     {
-                        if (destructor->IsGeneratedFunction() || 
-                            (destructor->IsTemplateSpecialization() && !destructor->Parent()->SpecializationHasFullInstantiation()))
+                        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm && 
+                            (destructor->IsGeneratedFunction() || 
+                            (destructor->IsTemplateSpecialization() && !destructor->Parent()->SpecializationHasFullInstantiation())))
                         {
                             destructor = static_cast<cmajor::symbols::DestructorSymbol*>(classType->Destructor()->Copy());
                             compileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(destructor));
@@ -1554,6 +1558,20 @@ int MasmCodeGenerator::CurrentTryBlockId() const
 
 void MasmCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
 {
+/*
+    const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& checkerCode = boundFunction.CheckerCode();
+    if (checkerCode.empty()) return;
+    bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+    inSetLineOrEntryCode = true;
+    cmajor::symbols::LocalVariableSymbol* checkerVar = boundFunction.GetFunctionSymbol()->CheckerVar();
+    void* checkerAlloca = emitter->CreateAlloca(checkerVar->GetType()->IrType(*emitter));
+    emitter->SetIrObject(checkerVar, checkerAlloca);
+    lastAlloca = checkerAlloca;
+    for (const auto& statement : checkerCode)
+    {
+        statement->Accept(*this);
+    }
+*/
     const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& enterCode = boundFunction.EnterCode();
     if (enterCode.empty()) return;
     bool prevSetLineOrEntryCode = inSetLineOrEntryCode;

@@ -58,7 +58,6 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                 {
                     boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
                     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin || 
                         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
@@ -132,6 +131,11 @@ void BoundFunction::SetEnterCode(std::vector<std::unique_ptr<BoundStatement>>&& 
 void BoundFunction::SetExitCode(std::vector<std::unique_ptr<BoundStatement>>&& exitCode_)
 {
     exitCode = std::move(exitCode_);
+}
+
+void BoundFunction::SetCheckerCode(std::vector<std::unique_ptr<BoundStatement>>&& checkerCode_)
+{
+    checkerCode = std::move(checkerCode_);
 }
 
 void BoundFunction::SetLineCode(std::unique_ptr<BoundStatement>&& lineCode_)

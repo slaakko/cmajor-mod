@@ -1921,7 +1921,6 @@ ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbo
     thisParam->SetType(classType->AddPointer());
     AddMember(thisParam);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
@@ -2138,7 +2137,6 @@ ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* cla
     thatParam->SetType(classType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
@@ -2402,7 +2400,6 @@ ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* cla
     thatParam->SetType(classType->AddRvalueReference());
     AddMember(thatParam);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
@@ -2667,7 +2664,6 @@ ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* class
     AddMember(thatParam);
     SetReturnType(voidType_);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)
@@ -2893,7 +2889,6 @@ ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* class
     AddMember(thatParam);
     SetReturnType(voidType_);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (boundCompileUnit)

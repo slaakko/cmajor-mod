@@ -2695,6 +2695,10 @@ void Function::Write(util::CodeFormatter& formatter)
     {
         formatter.Write("inline ");
     }
+    if (IsLinkOnce())
+    {
+        formatter.Write("link_once ");
+    }
     Context* context = Parent()->GetContext();
     Type* ptrType = type->AddPointer(context);
     if (metadataRef)
@@ -2759,8 +2763,8 @@ Function* Code::GetFunction(const std::string& functionId) const
     }
 }
 
-Function* Code::AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, MetadataRef* metadataRef, 
-    Context* context)
+Function* Code::AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, bool linkOnce, 
+    MetadataRef* metadataRef, Context* context)
 {
     Function* prev = GetFunction(functionId);
     if (prev)
@@ -2787,6 +2791,10 @@ Function* Code::AddFunctionDefinition(const soul::ast::Span& span, FunctionType*
     if (inline_)
     {
         function->SetInline();
+    }
+    if (linkOnce)
+    {
+        function->SetLinkOnce();
     }
     functions.AddChild(function);
     functionMap[function->Name()] = function;

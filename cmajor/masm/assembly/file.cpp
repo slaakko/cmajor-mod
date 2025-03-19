@@ -19,7 +19,12 @@ void DeclarationSection::AddFunctionDeclaration(FunctionDeclaration* declaration
     declarations.push_back(std::unique_ptr<Declaration>(declarationPtr.release()));
 }
 
-void DeclarationSection::AddPublicDataDeclaration(PublicDataDeclaration* declaration)
+void DeclarationSection::AddPublicDeclaration(PublicDeclaration* declaration)
+{
+    declarations.push_back(std::unique_ptr<Declaration>(declaration));
+}
+
+void DeclarationSection::AddLinkOnceDeclaration(LinkOnceDeclaration* declaration)
 {
     declarations.push_back(std::unique_ptr<Declaration>(declaration));
 }

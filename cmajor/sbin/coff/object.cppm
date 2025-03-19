@@ -166,6 +166,10 @@ public:
     {
         characteristics = characteristics | (alignment << IMAGE_SCN_ALIGNMENT_SHIFT);
     }
+    uint32_t Alignment() const
+    {
+        return (characteristics & IMAGE_SCN_ALIGNMENT_MASK) >> IMAGE_SCN_ALIGNMENT_SHIFT;
+    }
     uint16_t Number() const { return number; }
     void SetNumber(uint16_t number_) { number = number_; }
     void SetName(const std::string& name_, CoffObjectFile* file);
@@ -273,6 +277,7 @@ public:
     void Dump(util::CodeFormatter& formatter, CoffObjectFile* file, DumpFlags flags);
     void WriteHeader(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions);
     void WriteData(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions);
+    void Align(int64_t alignment, util::LittleEndianBinaryStreamWriter& writer);
     void WriteRelocationTable(util::LittleEndianBinaryStreamWriter& writer, CoffObjectFile* file, Positions& positions);
     const std::vector<uint8_t>& Data() const { return data; }
     void SetData(std::vector<uint8_t>&& data_) { data = std::move(data_); }
@@ -289,6 +294,7 @@ private:
 
 Section* MakeCodeSection(CoffObjectFile* file);
 Section* MakeDataSection(CoffObjectFile* file);
+Section* MakeComdatSection(CoffObjectFile* file);
 
 class AuxSectionDefinitionSymbolTableEntry
 {
@@ -311,6 +317,7 @@ public:
     uint16_t Number() const { return number; }
     void SetNumber(uint16_t number_) { number = number_; }
     uint8_t Selection() const { return selection; }
+    void SetSelection(uint8_t selection_) { selection = selection_; }
 private:
     uint32_t index;
     uint32_t length;
@@ -320,6 +327,9 @@ private:
     uint16_t number;
     uint8_t selection;
 };
+
+AuxSectionDefinitionSymbolTableEntry* MakeAuxSectionDefinitionSymbolTableEntry(
+    uint32_t length, uint16_t numberOfRelocations, uint32_t checkSum, uint16_t number, uint8_t selection);
 
 class SymbolNameLocation
 {
@@ -377,6 +387,7 @@ private:
 };
 
 SymbolTableEntry* MakeInternalFunctionSymbolTableEntry(int16_t codeSectionNumber, const std::string& functionName, CoffObjectFile* file);
+SymbolTableEntry* MakeSectionDefinitionSymbolTableEntry(int16_t sectionNumber, CoffObjectFile* file);
 SymbolTableEntry* MakeExternalFunctionSymbolTableEntry(const std::string& functionName, CoffObjectFile* file);
 SymbolTableEntry* MakeInternalDataSymbolTableEntry(int16_t dataSectionNumber, const std::string& dataLabelName, CoffObjectFile* file);
 SymbolTableEntry* MakeExternalDataSymbolTableEntry(const std::string& dataLabelName, CoffObjectFile* file);

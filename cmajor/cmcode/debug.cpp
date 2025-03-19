@@ -33,6 +33,11 @@ cmajor::service::DebugServiceStartParams MakeDebugServiceStartParams(const std::
         executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(
             util::Path::GetDirectoryName(projectFilePath), "bin"), "masm"), config), executableName));
     }
+    else if (backend == "sbin")
+    {
+        executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(
+            util::Path::GetDirectoryName(projectFilePath), "bin"), "sbin"), config), executableName));
+    }
     return startParams.Backend(backend).Config(config).ExecutableFilePath(executableFilePath).ProgramArguments(programArguments);
 }
 

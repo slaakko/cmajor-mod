@@ -14,6 +14,55 @@ namespace symbols
         cursor = 0u, icon = 1u, bitmap = 2u, rcdata = 3u
     }
 
+    public class ResourceKindNameRegistry
+    {
+        static ResourceKindNameRegistry() : instance(new ResourceKindNameRegistry())
+        {
+        }
+        public static ResourceKindNameRegistry& Instance()
+        {
+            return *instance;
+        }
+        private ResourceKindNameRegistry()
+        {
+            map["cursor"] = ResourceKind.cursor;
+            map["icon"] = ResourceKind.icon;
+            map["bitmap"] = ResourceKind.bitmap;
+            map["rcdata"] = ResourceKind.rcdata;
+            resourceKindNames.Add("CURSOR");
+            resourceKindNames.Add("ICON");
+            resourceKindNames.Add("BITMAP");
+            resourceKindNames.Add("RCDATA");
+        }
+        public Result<ResourceKind> GetResourceKind(const string& resourceKindName) const
+        {
+            auto it = map.Find(resourceKindName);
+            if (it != map.End())
+            {
+                return Result<ResourceKind>(it->second);
+            }
+            int errorId = AllocateError("resource '" + resourceKindName + "' not found");
+            return Result<ResourceKind>(ErrorId(errorId));
+        }
+        public string GetResourceKindName(ResourceKind kind) const
+        {
+            return resourceKindNames[cast<byte>(kind)];
+        }
+        private static UniquePtr<ResourceKindNameRegistry> instance;
+        private Map<string, ResourceKind> map;
+        private List<string> resourceKindNames;
+    }
+
+    public Result<ResourceKind> GetResourceKind(const string& resourceKindName)
+    {
+        return ResourceKindNameRegistry.Instance().GetResourceKind(resourceKindName);
+    }
+
+    public string GetResourceKindName(ResourceKind resourceKind)
+    {
+        return ResourceKindNameRegistry.Instance().GetResourceKindName(resourceKind);
+    }
+    
     public class Resource
     {
         public Resource() : name(), kind(), filePath()

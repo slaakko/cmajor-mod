@@ -14,7 +14,7 @@ import util;
 namespace cmajor::masm::ir {
 
 Function::Function(const std::string& name_, Type* type_, Context& context) : 
-    Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false), mdId(-1), nextInstructionIndex(0)
+    Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false), linkOnce(false), mdId(-1), nextInstructionIndex(0)
 {
     Type* t = type;
     if (type->IsPtrType())
@@ -97,6 +97,10 @@ void Function::Write(util::CodeFormatter& formatter, Context& context, util::Cod
     else if (isInline)
     {
         formatter.Write("inline ");
+    }
+    if (linkOnce)
+    {
+        formatter.Write("link_once ");
     }
     std::string mdIdStr;
     if (mdId != -1)

@@ -262,7 +262,7 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
     immutable(false), nextExitEntryIndex(0),
     systemRuntimeUnwindInfoSymbol(nullptr), systemRuntimeAddCompileUnitFunctionSymbol(nullptr), pushCompileUnitUnwindInfoInitFunctionSymbol(nullptr),
     initUnwindInfoDelegateType(nullptr), globalInitFunctionSymbol(nullptr), latestIdentifierNode(nullptr), fileIndex(-1), moduleId(module.Id()),
-    traceEntryTypeSymbol(nullptr), traceGuardTypeSymbol(nullptr), totalFunctions(0), functionsInlined(0)
+    traceEntryTypeSymbol(nullptr), traceGuardTypeSymbol(nullptr), checkerTypeSymbol(nullptr), totalFunctions(0), functionsInlined(0)
 {
     if (compileUnitNode)
     {

@@ -305,6 +305,8 @@ public:
     void SetTraceEntryVar(LocalVariableSymbol* traceEntryVar_);
     LocalVariableSymbol* TraceGuardVar() const { return traceGuardVar; }
     void SetTraceGuardVar(LocalVariableSymbol* traceGuardVar_);
+    LocalVariableSymbol* CheckerVar() const { return checkerVar; }
+    void SetCheckerVar(LocalVariableSymbol* checkerVar_) { checkerVar = checkerVar_; }
     int NextTemporaryIndex();
     void CopyFrom(const Symbol* that) override;
     virtual FunctionSymbol* Copy() const;
@@ -314,6 +316,7 @@ public:
     std::string GetSymbolHelp() const override;
     void SetCompileUnitId(const std::string& compileUnitId_);
     const std::string& CompileUnitId() const { return compileUnitId; }
+    const std::string& DigestSource() const { return digestSource; }
 private:
     FunctionSymbol* functionTemplate;
     FunctionSymbol* master;
@@ -328,6 +331,7 @@ private:
     std::unique_ptr<LocalVariableSymbol> prevUnwindInfoVar;
     LocalVariableSymbol* traceEntryVar;
     LocalVariableSymbol* traceGuardVar;
+    LocalVariableSymbol* checkerVar;
     TypeSymbol* returnType;
     FunctionSymbolFlags flags;
     int32_t index;
@@ -344,6 +348,7 @@ private:
     TypeSymbol* conversionTargetType;
     std::string compileUnitId;
     std::u32string instantiatedName;
+    std::string digestSource;
 };
 
 class StaticConstructorSymbol : public FunctionSymbol

@@ -10,6 +10,8 @@ using cm.ast;
 
 namespace build
 {
+    public const int stackSize = 8388608;
+
     public Result<bool> MakeResourceFile(const string& resourceFilePath, const string& classIndexFilePath, const string& traceDataFilePath)
     {
         Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(resourceFilePath);
@@ -342,6 +344,17 @@ namespace build
             debugDependencies->AppendChild(debugDependenciesText);
             debugLink->AppendChild(debugDependencies);
         }
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            System.Xml.Element* debugStackReserveSizeElement = System.Xml.MakeElement("StackReserveSize");
+            System.Xml.Text* debugStackReserveSizeText = System.Xml.MakeText(ToString(stackSize));
+            debugStackReserveSizeElement->AppendChild(debugStackReserveSizeText);
+            debugLink->AppendChild(debugStackReserveSizeElement);
+            System.Xml.Element* debugStackCommitSizeElement = System.Xml.MakeElement("StackCommitSize");
+            System.Xml.Text* debugStackCommitSizeText = System.Xml.MakeText(ToString(stackSize));
+            debugStackCommitSizeElement->AppendChild(debugStackCommitSizeText);
+            debugLink->AppendChild(debugStackCommitSizeElement);
+        }
         debugItemDefinitionGroup->AppendChild(debugLink);
 
         rootElement->AppendChild(debugItemDefinitionGroup);
@@ -424,6 +437,17 @@ namespace build
                 dom_release + ";" + soul_lexer_release + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
             releaseDependencies->AppendChild(releaseDepenciesText);
             releaseLink->AppendChild(releaseDependencies);
+        }
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            System.Xml.Element* releaseStackReserveSizeElement = System.Xml.MakeElement("StackReserveSize");
+            System.Xml.Text* releaseStackReserveSizeText = System.Xml.MakeText(ToString(stackSize));
+            releaseStackReserveSizeElement->AppendChild(releaseStackReserveSizeText);
+            releaseLink->AppendChild(releaseStackReserveSizeElement);
+            System.Xml.Element* releaseStackCommitSizeElement = System.Xml.MakeElement("StackCommitSize");
+            System.Xml.Text* releaseStackCommitSizeText = System.Xml.MakeText(ToString(stackSize));
+            releaseStackCommitSizeElement->AppendChild(releaseStackCommitSizeText);
+            releaseLink->AppendChild(releaseStackCommitSizeElement);
         }
         releaseItemDefinitionGroup->AppendChild(releaseLink);
 

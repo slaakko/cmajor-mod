@@ -4,7 +4,7 @@ using soul.token;
 
 public string Version()
 {
-    return "5.0.0";
+    return "5.1.0";
 }
 
 public List<ustring> GetLines(const ustring& content)

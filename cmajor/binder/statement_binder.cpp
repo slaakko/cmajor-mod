@@ -309,7 +309,6 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
         {
             boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
             if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
                 cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
             {
                 cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
@@ -347,7 +346,6 @@ void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
                     cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
@@ -465,6 +463,45 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
+/*
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+        {
+            cmajor::symbols::Module& currentModule = boundFunction->GetBoundCompileUnit()->GetModule();
+            if (currentModule.Name() == U"System.Core" || currentModule.Name() == U"System.Runtime") return;
+
+            soul::ast::Span span = boundFunction->GetSpan();
+            cmajor::ast::CloneContext cloneContext;
+
+            cmajor::symbols::TypeSymbol* checkerTypeSymbol = boundCompileUnit.GetSystemRuntimeCheckerTypeSymbol();
+            if (!checkerTypeSymbol)
+            {
+                cmajor::ast::IdentifierNode systemRuntimeCheckerNode(span, U"System.Runtime.Checker");
+                checkerTypeSymbol = ResolveType(&systemRuntimeCheckerNode, boundCompileUnit, containerScope);
+                boundCompileUnit.SetSystemRuntimeCheckerTypeSymbol(checkerTypeSymbol);
+            }
+
+            std::unique_ptr<cmajor::ast::IdentifierNode> checkerNode(new cmajor::ast::IdentifierNode(span, U"@checker"));
+
+            std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructChecker(new cmajor::ast::ConstructionStatementNode(span,
+                new cmajor::ast::IdentifierNode(span, U"System.Runtime.Checker"), static_cast<cmajor::ast::IdentifierNode*>(checkerNode->Clone(cloneContext))));
+            symbolTable.BeginContainer(boundFunction->GetFunctionSymbol());
+            symbolTable.AddLocalVariable(*constructChecker);
+            symbolTable.EndContainer();
+            cmajor::symbols::Symbol* checkerSymbol = symbolTable.GetSymbol(constructChecker.get());
+            if (checkerSymbol && checkerSymbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol)
+            {
+                cmajor::symbols::LocalVariableSymbol* checkerVarSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(checkerSymbol);
+                boundFunction->GetFunctionSymbol()->SetCheckerVar(checkerVarSymbol);
+                checkerVarSymbol->SetType(checkerTypeSymbol);
+            }
+            constructChecker->Accept(*this);
+            std::unique_ptr<BoundStatement> constructCheckerStatement(statement.release());
+
+            std::vector<std::unique_ptr<BoundStatement>> checkerCode;
+            checkerCode.push_back(std::move(constructCheckerStatement));
+            boundFunction->SetCheckerCode(std::move(checkerCode));
+        }
+*/
         if (cmajor::symbols::GetConfig() == "release") return;
         cmajor::symbols::Module& currentModule = boundFunction->GetBoundCompileUnit()->GetModule();
         if (currentModule.Name() == U"System.Core" || currentModule.Name() == U"System.Runtime") return;
@@ -1433,7 +1470,6 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
                     cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());

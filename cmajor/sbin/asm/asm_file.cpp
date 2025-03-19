@@ -9,7 +9,8 @@ import cmajor.sbin.assembly.visitor;
 
 namespace cmajor::sbin::assembly {
 
-Symbol::Symbol(SymbolKind kind_, Type type_, const std::string& name_) : kind(kind_), type(type_), name(name_), entry(nullptr), node(nullptr), hasValue(false), value(0)
+Symbol::Symbol(SymbolKind kind_, Type type_, const std::string& name_) : 
+    kind(kind_), type(type_), name(name_), entry(nullptr), sectionDefinitionEntry(nullptr), section(nullptr), node(nullptr), hasValue(false), value(0)
 {
 }
 

@@ -221,6 +221,11 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
         functionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(functionNode.WhereConstraint()->Clone(cloneContext)));
     }
     functionSymbol->ComputeName();
+    cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
+    if (symbolMap)
+    {
+        symbolMap->Add(functionSymbol);
+    }
     for (cmajor::symbols::ParameterSymbol* parameterSymbol : functionSymbol->Parameters())
     {
         parameterSymbol->ComputeMangledName();
@@ -419,6 +424,11 @@ void TypeBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructorNode
         staticConstructorSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(staticConstructorNode.WhereConstraint()->Clone(cloneContext)));
     }
     staticConstructorSymbol->ComputeName();
+    cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
+    if (symbolMap)
+    {
+        symbolMap->Add(staticConstructorSymbol);
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && staticConstructorNode.WhereConstraint())
     {
         constraintSymbolBinder->BindConstraintSymbols(staticConstructorNode.WhereConstraint(), containerScope, boundCompileUnit);
@@ -502,6 +512,11 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
         constructorSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(constructorNode.WhereConstraint()->Clone(cloneContext)));
     }
     constructorSymbol->ComputeName();
+    cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
+    if (symbolMap)
+    {
+        symbolMap->Add(constructorSymbol);
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && constructorNode.WhereConstraint())
     {
         constraintSymbolBinder->BindConstraintSymbols(constructorNode.WhereConstraint(), containerScope, boundCompileUnit);
@@ -588,6 +603,11 @@ void TypeBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
         destructorSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(destructorNode.WhereConstraint()->Clone(cloneContext)));
     }
     destructorSymbol->ComputeName();
+    cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
+    if (symbolMap)
+    {
+        symbolMap->Add(destructorSymbol);
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && destructorNode.WhereConstraint())
     {
         constraintSymbolBinder->BindConstraintSymbols(destructorNode.WhereConstraint(), containerScope, boundCompileUnit);
@@ -686,6 +706,11 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         memberFunctionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(memberFunctionNode.WhereConstraint()->Clone(cloneContext)));
     }
     memberFunctionSymbol->ComputeName();
+    cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
+    if (symbolMap)
+    {
+        symbolMap->Add(memberFunctionSymbol);
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && memberFunctionNode.WhereConstraint())
     {
         constraintSymbolBinder->BindConstraintSymbols(memberFunctionNode.WhereConstraint(), containerScope, boundCompileUnit);
@@ -780,6 +805,11 @@ void TypeBinder::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNo
         conversionFunctionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(conversionFunctionNode.WhereConstraint()->Clone(cloneContext)));
     }
     conversionFunctionSymbol->ComputeName();
+    cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
+    if (symbolMap)
+    {
+        symbolMap->Add(conversionFunctionSymbol);
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && conversionFunctionNode.WhereConstraint())
     {
         constraintSymbolBinder->BindConstraintSymbols(conversionFunctionNode.WhereConstraint(), containerScope, boundCompileUnit);

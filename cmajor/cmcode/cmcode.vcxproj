@@ -281,6 +281,7 @@
     <ResourceCompile Include="..\lexer\cmajor.container.file.lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\cmajor.lexer.classmap.rc" />
     <ResourceCompile Include="..\masm\intermediate\cmajor.masm.intermediate.lexer.classmap.rc" />
+    <ResourceCompile Include="..\sbin\asm\cmajor.sbin.assembly.lexer.classmap.rc" />
     <ResourceCompile Include="res\cmcode.resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

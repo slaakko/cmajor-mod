@@ -383,7 +383,11 @@ namespace binder
             {
                 functionInstanceNode->SetBodySource(new CompoundStatementNode(memberFunctionNode->GetSpan(), memberFunctionNode->FileIndex()));
             }
-            #assert(functionInstanceNode->BodySource() != null);
+            if (functionInstanceNode->BodySource() == null)
+            {
+                int errorId = MakeError("body source is null", node->GetFullSpan());
+                return Result<FunctionSymbol*>(ErrorId(errorId));
+            }
             CloneContext cloneContext;
             functionInstanceNode->SetBody(cast<CompoundStatementNode*>(functionInstanceNode->BodySource()->Clone(cloneContext)));
             if (functionInstanceNode->WhereConstraint() != null)

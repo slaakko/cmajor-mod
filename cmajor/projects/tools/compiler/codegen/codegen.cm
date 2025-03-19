@@ -184,7 +184,7 @@ namespace codegen
             {
                 codeGenerator.Reset(new intermediate.CodeGenerator(finalContext, boundCompileUnit.AsmFilePath()));
             }
-            result = intermediate.GenerateCode(finalContext, codeGenerator.Get());
+            result = intermediate.GenerateCode(finalContext, codeGenerator.Get(), boundCompileUnit.GetModule()->LogStreamId(), GetGlobalFlag(GlobalFlags.verbose));
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());

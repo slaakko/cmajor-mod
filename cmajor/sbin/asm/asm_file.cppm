@@ -19,7 +19,7 @@ class Node;
 
 enum class SymbolKind : uint8_t
 {
-    none = 0u, public_ = 1u << 0u, external = 1u << 1u, code = 1u << 2u, data = 1u << 3u, macro = 1u << 4u, label = 1u << 5u
+    none = 0u, public_ = 1u << 0u, external = 1u << 1u, linkOnce = 1u << 2u, code = 1u << 3u, data = 1u << 4u, macro = 1u << 5u, label = 1u << 6u
 };
 
 constexpr SymbolKind operator|(SymbolKind left, SymbolKind right)
@@ -65,6 +65,10 @@ public:
     void ResetKindFlag(SymbolKind kindFlag) { kind = kind & ~kindFlag; }
     cmajor::sbin::coff::SymbolTableEntry* Entry() const { return entry; }
     void SetEntry(cmajor::sbin::coff::SymbolTableEntry* entry_) { entry = entry_; }
+    cmajor::sbin::coff::SymbolTableEntry* SectionDefinitionEntry() const { return sectionDefinitionEntry; }
+    void SetSectionDefinitionEntry(cmajor::sbin::coff::SymbolTableEntry* sectionDefinitionEntry_) { sectionDefinitionEntry = sectionDefinitionEntry_; }
+    cmajor::sbin::coff::Section* Section() const { return section; }
+    void SetSection(cmajor::sbin::coff::Section* section_) { section = section_; }
     Node* GetNode() const { return node; }
     void SetNode(Node* node_) { node = node_; }
     bool HasValue() const { return hasValue; }
@@ -78,6 +82,8 @@ private:
     Type type;
     std::string name;
     cmajor::sbin::coff::SymbolTableEntry* entry;
+    cmajor::sbin::coff::SymbolTableEntry* sectionDefinitionEntry;
+    cmajor::sbin::coff::Section* section;
     Node* node;
     bool hasValue;
     uint64_t value;

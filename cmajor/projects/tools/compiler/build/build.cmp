@@ -16,5 +16,6 @@ source <install.cm>;
 source <main.cm>;
 source <ms_build.cm>;
 source <parsing.cm>;
+source <resources.cm>;
 source <vs_build.cm>;
 source <vs_project.cm>;

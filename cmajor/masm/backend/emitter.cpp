@@ -1530,7 +1530,7 @@ void MasmEmitter::SetFunctionLinkage(void* function, bool setInline)
 
 void MasmEmitter::SetFunctionLinkageToLinkOnceODRLinkage(void* function)
 {
-    //static_cast<cmajor::systemx::ir::Function*>(function)->SetLinkOnce();
+    static_cast<cmajor::masm::ir::Function*>(function)->SetLinkOnce();
 }
 
 void MasmEmitter::SetFunctionCallConventionToStdCall(void* function)

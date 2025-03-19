@@ -17,6 +17,7 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(SYMBOL, "SYMBOL", "symbol"));
         tokens.AddToken(new soul::ast::slg::Token(PUBLIC, "PUBLIC", "public"));
         tokens.AddToken(new soul::ast::slg::Token(EXTRN, "EXTRN", "extrn"));
+        tokens.AddToken(new soul::ast::slg::Token(LINK_ONCE, "LINK_ONCE", "link_once"));
         tokens.AddToken(new soul::ast::slg::Token(BYTE, "BYTE", "byte"));
         tokens.AddToken(new soul::ast::slg::Token(WORD, "WORD", "word"));
         tokens.AddToken(new soul::ast::slg::Token(DWORD, "DWORD", "dword"));
@@ -208,6 +209,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
     static const soul::lexer::Keyword<char> keywords[] = {
          { "public", PUBLIC },
          { "extrn", EXTRN },
+         { "link_once", LINK_ONCE },
          { "byte", BYTE },
          { "word", WORD },
          { "dword", DWORD },
@@ -378,6 +380,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
     static const soul::lexer::Keyword<char8_t> keywords[] = {
          { u8"public", PUBLIC },
          { u8"extrn", EXTRN },
+         { u8"link_once", LINK_ONCE },
          { u8"byte", BYTE },
          { u8"word", WORD },
          { u8"dword", DWORD },
@@ -548,6 +551,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
     static const soul::lexer::Keyword<char16_t> keywords[] = {
          { u"public", PUBLIC },
          { u"extrn", EXTRN },
+         { u"link_once", LINK_ONCE },
          { u"byte", BYTE },
          { u"word", WORD },
          { u"dword", DWORD },
@@ -718,6 +722,7 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
     static const soul::lexer::Keyword<char32_t> keywords[] = {
          { U"public", PUBLIC },
          { U"extrn", EXTRN },
+         { U"link_once", LINK_ONCE },
          { U"byte", BYTE },
          { U"word", WORD },
          { U"dword", DWORD },

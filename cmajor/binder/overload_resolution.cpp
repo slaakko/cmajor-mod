@@ -1189,7 +1189,6 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
                 {
                     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
-                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
                         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());

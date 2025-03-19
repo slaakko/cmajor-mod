@@ -11,7 +11,7 @@ import util;
 
 std::string Version()
 {
-    return "5.0.0";
+    return "5.1.0";
 }
 
 void PrintHelp()

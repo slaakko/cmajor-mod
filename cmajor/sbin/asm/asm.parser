@@ -60,6 +60,7 @@ parser AsmParser
     SymbolKind : cmajor::sbin::assembly::SymbolKind
         ::= PUBLIC{ return cmajor::sbin::assembly::SymbolKind::public_; }
         |   EXTRN{ return cmajor::sbin::assembly::SymbolKind::external; }
+        |   LINK_ONCE{ return cmajor::sbin::assembly::SymbolKind::linkOnce; }
         ;
 
     Symbol : cmajor::sbin::assembly::SymbolNode*

@@ -21,7 +21,7 @@ void DoneApplication()
     util::Done();
 }
 
-const char* version = "5.0.0";
+const char* version = "5.1.0";
 
 void PrintHelp()
 {
@@ -358,6 +358,9 @@ int main(int argc, const char** argv)
             {
                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
             }
+            //cmajor::symbols::SymbolMap symbolMap(cmajor::symbols::GetConfig(), cmajor::symbols::GetBackEnd(), cmajor::symbols::GetOptimizationLevel());
+            //symbolMap.Read();
+            //cmajor::symbols::SetSymbolMap(&symbolMap);
             for (const std::string& file : files)
             {
                 std::filesystem::path fp(file);
@@ -394,6 +397,8 @@ int main(int argc, const char** argv)
                     cmajor::symbols::EndUnitTest(prevUnitTest);
                 }
             }
+            //symbolMap.Write();
+            //symbolMap.Check();
             if (GetGlobalFlag(cmajor::symbols::GlobalFlags::time))
             {
                 std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

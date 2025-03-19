@@ -15,7 +15,7 @@ import util;
 
 namespace sxgmdb {
 
-const char* sxgmdbVersion = "5.0.0";
+const char* sxgmdbVersion = "5.1.0";
 
 std::string CmajorSystemXProjectsDir()
 {

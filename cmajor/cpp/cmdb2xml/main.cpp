@@ -13,7 +13,7 @@ void InitApplication()
     util::Init();
 }
 
-const char* version = "5.0.0";
+const char* version = "5.1.0";
 
 void PrintHelp()
 {

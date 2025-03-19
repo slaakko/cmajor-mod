@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/masm/intermediate/intermediate.lexer' using soul lexer generator slg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/masm/intermediate/intermediate.lexer' using soul lexer generator slg version 5.0.0
 
 module cmajor.masm.intermediate.lexer;
 
@@ -18,6 +18,7 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(FUNCTION, "FUNCTION", "'function'"));
         tokens.AddToken(new soul::ast::slg::Token(EXTERN, "EXTERN", "'extern'"));
         tokens.AddToken(new soul::ast::slg::Token(INLINE, "INLINE", "'inline'"));
+        tokens.AddToken(new soul::ast::slg::Token(LINK_ONCE, "LINK_ONCE", "'link_once'"));
         tokens.AddToken(new soul::ast::slg::Token(METADATA, "METADATA", "'metadata'"));
         tokens.AddToken(new soul::ast::slg::Token(STORE, "STORE", "'store'"));
         tokens.AddToken(new soul::ast::slg::Token(ARG, "ARG", "'arg'"));
@@ -116,6 +117,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "function", FUNCTION },
          { "extern", EXTERN },
          { "inline", INLINE },
+         { "link_once", LINK_ONCE },
          { "metadata", METADATA },
          { "store", STORE },
          { "arg", ARG },
@@ -189,6 +191,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"function", FUNCTION },
          { u8"extern", EXTERN },
          { u8"inline", INLINE },
+         { u8"link_once", LINK_ONCE },
          { u8"metadata", METADATA },
          { u8"store", STORE },
          { u8"arg", ARG },
@@ -262,6 +265,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"function", FUNCTION },
          { u"extern", EXTERN },
          { u"inline", INLINE },
+         { u"link_once", LINK_ONCE },
          { u"metadata", METADATA },
          { u"store", STORE },
          { u"arg", ARG },
@@ -335,6 +339,7 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"function", FUNCTION },
          { U"extern", EXTERN },
          { U"inline", INLINE },
+         { U"link_once", LINK_ONCE },
          { U"metadata", METADATA },
          { U"store", STORE },
          { U"arg", ARG },

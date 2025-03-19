@@ -394,7 +394,7 @@ public Result<bool> ProcessFile(const string& filePath, bool verbose)
 
 public string Version()
 {
-    return "5.0.0";
+    return "5.1.0";
 }
 
 public void PrintHelp()
