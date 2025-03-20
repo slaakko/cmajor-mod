@@ -1,0 +1,7 @@
+<global>
+    <derivedClassMap>
+        <baseClass classId="class_UpperLayerComponentBase_3CBB0612ADA14F5398D2E82965D6EF96F845ED05">
+            <derivedClass classId="class_UpperLayerComponent_CE3F3245732490F71DE9F37C5C315769EFA4E649"/>
+        </baseClass>
+    </derivedClassMap>
+</global>

@@ -6,32 +6,32 @@
   <classes>
    <class docPath="../../Delegate/doc/class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916.html" extPath="Delegate/doc/class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916.html" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916" line="8" name="Alpha" specifiers="public static">
     <functions>
-     <function docPath="../../Delegate/doc/class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916.html#member_function_bar_Alpha_636A7EFE2AD2FB77EA7DDD425A02CAE0F818B3EA" extPath="Delegate/doc/class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916.html#member_function_bar_Alpha_636A7EFE2AD2FB77EA7DDD425A02CAE0F818B3EA" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="member_function_bar_Alpha_636A7EFE2AD2FB77EA7DDD425A02CAE0F818B3EA" kind="Static Member Function" line="10" name="bar" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public static">
+     <function docPath="../../Delegate/doc/class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916.html#member_function_bar_Alpha_215A2EEA32B712B7AD3CDC33C255312D3795A2FF" extPath="Delegate/doc/class_Alpha_603EF63E3EEAC7420C9F38DDDD44330D1E287916.html#member_function_bar_Alpha_215A2EEA32B712B7AD3CDC33C255312D3795A2FF" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="member_function_bar_Alpha_215A2EEA32B712B7AD3CDC33C255312D3795A2FF" kind="Static Member Function" line="10" name="bar" returnType="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" specifiers="public static">
       <parameters>
-       <parameter id="parameter_x_546F6F19267D5D4F4B70485ECE6D9F77D98DE9B1" name="x" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_x_546F6F19267D5D4F4B70485ECE6D9F77D98DE9B1" name="x" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
       </parameters>
      </function>
     </functions>
    </class>
   </classes>
   <functions>
-   <function docPath="../../Delegate/doc/../index.html#function_foo_D2D7086EDE1F79E16D4B93F23EE9919DE6E75814" extPath="Delegate/doc/../index.html#function_foo_D2D7086EDE1F79E16D4B93F23EE9919DE6E75814" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="function_foo_D2D7086EDE1F79E16D4B93F23EE9919DE6E75814" kind="Function" line="3" name="foo" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public">
+   <function docPath="../../Delegate/doc/../index.html#function_foo_8E7B1E6DB0C4CC2EEB859F4ECDCFBD0A7209E5B7" extPath="Delegate/doc/../index.html#function_foo_8E7B1E6DB0C4CC2EEB859F4ECDCFBD0A7209E5B7" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="function_foo_8E7B1E6DB0C4CC2EEB859F4ECDCFBD0A7209E5B7" kind="Function" line="3" name="foo" returnType="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" specifiers="public">
     <parameters>
-     <parameter id="parameter_x_6B60ECDF1476922A69A47EA77E8D60E4216CD8A7" name="x" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+     <parameter id="parameter_x_6B60ECDF1476922A69A47EA77E8D60E4216CD8A7" name="x" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
     </parameters>
    </function>
-   <function docPath="../../Delegate/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Delegate/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="16" name="main" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+   <function docPath="../../Delegate/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" extPath="Delegate/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="function_main_68B77C3D603240AA3138F2C177E349C27871BC62" kind="Function" line="16" name="main" returnType="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" specifiers=""/>
   </functions>
   <delegates>
-   <delegate docPath="../../Delegate/doc/ns_.html#delegate_Delegate_5250699FF6FBB08252D8F64698B945ACFB996194" extPath="Delegate/doc/ns_.html#delegate_Delegate_5250699FF6FBB08252D8F64698B945ACFB996194" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="delegate_Delegate_5250699FF6FBB08252D8F64698B945ACFB996194" line="1" name="Delegate" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers="public">
+   <delegate docPath="../../Delegate/doc/ns_.html#delegate_Delegate_5250699FF6FBB08252D8F64698B945ACFB996194" extPath="Delegate/doc/ns_.html#delegate_Delegate_5250699FF6FBB08252D8F64698B945ACFB996194" fileName="Delegate/delegate.cm" filePath="../../Delegate/file/delegate.cm.html" id="delegate_Delegate_5250699FF6FBB08252D8F64698B945ACFB996194" line="1" name="Delegate" returnType="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" specifiers="public">
     <parameters>
-     <parameter id="parameter_x_DB41584583F1BAED5CBFD6AB6807536D8B16607C" name="x" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+     <parameter id="parameter_x_DB41584583F1BAED5CBFD6AB6807536D8B16607C" name="x" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
     </parameters>
    </delegate>
   </delegates>
  </namespace>
  <types>
-  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
-  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
+  <basicType id="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" name="void"/>
+  <basicType id="26c9ac31-c77c-0bac-41bd-04d98855bf1f" name="int"/>
  </types>
 </symbolTable>

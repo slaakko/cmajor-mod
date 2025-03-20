@@ -2,9 +2,11 @@
  <module name="Align"/>
  <module name="ClassDelegate"/>
  <module name="deflate"/>
+ <module name="components"/>
  <module name="Delegate"/>
  <module name="FiberTest"/>
  <module name="globalvar"/>
+ <module name="interface_example"/>
  <module name="Min"/>
  <module name="phonebook"/>
  <module name="Point"/>

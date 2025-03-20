@@ -6,34 +6,34 @@
   <classes>
    <class docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="class_Point_44584A66650EC710122E769C218963C7EADA3F36" line="3" name="Point" specifiers="public">
     <ctorsDtors>
-     <ctorDtor docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#default_constructor_Point_C13D11D7F7372465EA450E4BF891A66D90BBFA89" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#default_constructor_Point_C13D11D7F7372465EA450E4BF891A66D90BBFA89" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="default_constructor_Point_C13D11D7F7372465EA450E4BF891A66D90BBFA89" kind="Constructor" line="5" name="Point" specifiers="public inline constexpr"/>
-     <ctorDtor docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#constructor_Point_439962DC4FE997DA8534D269E5996138AA66C082" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#constructor_Point_439962DC4FE997DA8534D269E5996138AA66C082" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="constructor_Point_439962DC4FE997DA8534D269E5996138AA66C082" kind="Constructor" line="8" name="Point" specifiers="public inline constexpr">
+     <ctorDtor docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#default_constructor_Point_0C539BB6A115992A438C80A5BC76962982AFE5D2" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#default_constructor_Point_0C539BB6A115992A438C80A5BC76962982AFE5D2" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="default_constructor_Point_0C539BB6A115992A438C80A5BC76962982AFE5D2" kind="Constructor" line="5" name="Point" specifiers="public inline constexpr"/>
+     <ctorDtor docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#constructor_Point_538141B3D11CCDC66BB46BD3BCE3C23C7CFB8027" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#constructor_Point_538141B3D11CCDC66BB46BD3BCE3C23C7CFB8027" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="constructor_Point_538141B3D11CCDC66BB46BD3BCE3C23C7CFB8027" kind="Constructor" line="8" name="Point" specifiers="public inline constexpr">
       <parameters>
-       <parameter id="parameter_x__78C0E2B46BFAD07F244EBD6DA24FA53EDDA1CCED" name="x_" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
-       <parameter id="parameter_y__3E741439527CD778464086D957B18A808415941D" name="y_" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+       <parameter id="parameter_x__78C0E2B46BFAD07F244EBD6DA24FA53EDDA1CCED" name="x_" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
+       <parameter id="parameter_y__3E741439527CD778464086D957B18A808415941D" name="y_" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
       </parameters>
      </ctorDtor>
     </ctorsDtors>
     <functions>
-     <function const="true" docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_X_Point_E1F34072828F34D49AAA19044F87D91B2478E85F" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_X_Point_E1F34072828F34D49AAA19044F87D91B2478E85F" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="member_function_X_Point_E1F34072828F34D49AAA19044F87D91B2478E85F" kind="Member Function" line="11" name="X" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers="public inline constexpr"/>
-     <function const="true" docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_Y_Point_80CE6280C961EDE7D4BAA6E68D130C59319F053C" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_Y_Point_80CE6280C961EDE7D4BAA6E68D130C59319F053C" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="member_function_Y_Point_80CE6280C961EDE7D4BAA6E68D130C59319F053C" kind="Member Function" line="15" name="Y" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers="public inline constexpr"/>
+     <function const="true" docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_X_Point_A1C73C4B25748465746EBEF234EB9A92F702A57A" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_X_Point_A1C73C4B25748465746EBEF234EB9A92F702A57A" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="member_function_X_Point_A1C73C4B25748465746EBEF234EB9A92F702A57A" kind="Member Function" line="11" name="X" returnType="26c9ac31-c77c-0bac-41bd-04d98855bf1f" specifiers="public inline constexpr"/>
+     <function const="true" docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_Y_Point_090A882CDD4D401F8250923D90E26EA5E53EFE37" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_function_Y_Point_090A882CDD4D401F8250923D90E26EA5E53EFE37" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="member_function_Y_Point_090A882CDD4D401F8250923D90E26EA5E53EFE37" kind="Member Function" line="15" name="Y" returnType="26c9ac31-c77c-0bac-41bd-04d98855bf1f" specifiers="public inline constexpr"/>
     </functions>
     <variables>
-     <variable docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_x_20D2790376B927E5000615AB88CACBE2BD3DF63F" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_x_20D2790376B927E5000615AB88CACBE2BD3DF63F" id="member_variable_x_20D2790376B927E5000615AB88CACBE2BD3DF63F" name="x" specifiers="private" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
-     <variable docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_y_96A65FAB7A80F19F3E32DBD787ED690945A7A27A" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_y_96A65FAB7A80F19F3E32DBD787ED690945A7A27A" id="member_variable_y_96A65FAB7A80F19F3E32DBD787ED690945A7A27A" name="y" specifiers="private" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+     <variable docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_x_20D2790376B927E5000615AB88CACBE2BD3DF63F" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_x_20D2790376B927E5000615AB88CACBE2BD3DF63F" id="member_variable_x_20D2790376B927E5000615AB88CACBE2BD3DF63F" name="x" specifiers="private" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
+     <variable docPath="../../Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_y_96A65FAB7A80F19F3E32DBD787ED690945A7A27A" extPath="Point/doc/class_Point_44584A66650EC710122E769C218963C7EADA3F36.html#member_variable_y_96A65FAB7A80F19F3E32DBD787ED690945A7A27A" id="member_variable_y_96A65FAB7A80F19F3E32DBD787ED690945A7A27A" name="y" specifiers="private" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
     </variables>
    </class>
   </classes>
   <functions>
-   <function docPath="../../Point/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="Point/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="25" name="main" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+   <function docPath="../../Point/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" extPath="Point/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" fileName="Point/point.cm" filePath="../../Point/file/point.cm.html" id="function_main_68B77C3D603240AA3138F2C177E349C27871BC62" kind="Function" line="25" name="main" returnType="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" specifiers=""/>
   </functions>
   <constants>
-   <constant docPath="../../Point/doc/ns_.html#constant_points_5A087457C57B7B56E74FAE725F75DA495C1DE5D9" extPath="Point/doc/ns_.html#constant_points_5A087457C57B7B56E74FAE725F75DA495C1DE5D9" id="constant_points_5A087457C57B7B56E74FAE725F75DA495C1DE5D9" name="points" specifiers="public" type="1d4e45a6-0f3a-8e88-a257-e4b4aad2f469"/>
+   <constant docPath="../../Point/doc/ns_.html#constant_points_5A087457C57B7B56E74FAE725F75DA495C1DE5D9" extPath="Point/doc/ns_.html#constant_points_5A087457C57B7B56E74FAE725F75DA495C1DE5D9" id="constant_points_5A087457C57B7B56E74FAE725F75DA495C1DE5D9" name="points" specifiers="public" type="c8d0a7b2-b073-d8e3-859b-25629e9adbc2"/>
   </constants>
  </namespace>
  <types>
-  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
-  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
-  <arrayType elementType="class_Point_44584A66650EC710122E769C218963C7EADA3F36" id="1d4e45a6-0f3a-8e88-a257-e4b4aad2f469" name="Point[3]" size="3"/>
+  <basicType id="26c9ac31-c77c-0bac-41bd-04d98855bf1f" name="int"/>
+  <basicType id="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" name="void"/>
+  <arrayType elementType="class_Point_44584A66650EC710122E769C218963C7EADA3F36" id="c8d0a7b2-b073-d8e3-859b-25629e9adbc2" name="Point[3]" size="3"/>
  </types>
 </symbolTable>

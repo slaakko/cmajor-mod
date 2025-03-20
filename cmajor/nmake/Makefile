@@ -12,6 +12,26 @@
 
 all: makedirs zlibasm runtime unicode sys tools examples install
 
+clean:
+	cd ../llvm/build && mingw32-make clean
+	cd ../cpp/build && mingw32-make clean
+	cmc -ve ../system/System.Windows.cms 
+	cmc -ve -c=release ../system/System.Windows.cms
+	cppcmc -ve ../system/System.Windows.cms
+	cppcmc -ve -c=release ../system/System.Windows.cms
+	masmcmc -ve ../system/System.Windows.cms
+	masmcmc -ve -c=release ../system/System.Windows.cms
+	sbincmc -ve ../system/System.Windows.cms
+	sbincmc -ve -c=release ../system/System.Windows.cms
+	cmc -ve ../projects/tools/soulcm/soulcm.cms
+	cmc -ve -c=release ../projects/tools/soulcm/soulcm.cms
+	cmc -ve ../projects/tools/spring/spring.cms
+	cmc -ve -c=release ../projects/tools/spring/spring.cms
+	sbincmc -ve ../projects/tools/compiler/compiler.cms
+	sbincmc -ve -c=release ../projects/tools/compiler/compiler.cms
+	cmc -ve ../projects/examples/examples.cms
+	cmc -ve -c=release ../projects/examples/examples.cms
+
 makedirs:
 	makedirs.bat
 
@@ -57,15 +77,17 @@ sys:
 	cppcmc -v -c=release ../system/System.Windows.cms
 	masmcmc -v ../system/System.Windows.cms
 	masmcmc -v -c=release ../system/System.Windows.cms
+	sbincmc -v ../system/System.Windows.cms
+	sbincmc -v -c=release ../system/System.Windows.cms
 
 tools:
 	echo tools:
-	cmc -v ../projects/tools/soulcm/soulcm.cms
-	cmc -v -c=release ../projects/tools/soulcm/soulcm.cms
+	cmc -sv ../projects/tools/soulcm/soulcm.cms
+	cmc -sv -c=release ../projects/tools/soulcm/soulcm.cms
 	cmc -v ../projects/tools/spring/spring.cms
 	cmc -v -c=release ../projects/tools/spring/spring.cms
-	masmcmc -v ../projects/tools/compiler/compiler.cms
-	masmcmc -v -c=release ../projects/tools/compiler/compiler.cms
+	sbincmc -sv ../projects/tools/compiler/compiler.cms
+	sbincmc -sv -c=release ../projects/tools/compiler/compiler.cms
 	
 examples:
 	echo examples:

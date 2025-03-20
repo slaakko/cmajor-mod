@@ -4,10 +4,10 @@
  </files>
  <namespace docPath="../../dom/doc/ns_.html" extPath="dom/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../dom/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="dom/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="dom/dom.cm" filePath="../../dom/file/dom.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="3" name="main" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers=""/>
+   <function docPath="../../dom/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" extPath="dom/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" fileName="dom/dom.cm" filePath="../../dom/file/dom.cm.html" id="function_main_68B77C3D603240AA3138F2C177E349C27871BC62" kind="Function" line="3" name="main" returnType="26c9ac31-c77c-0bac-41bd-04d98855bf1f" specifiers=""/>
   </functions>
  </namespace>
  <types>
-  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
+  <basicType id="26c9ac31-c77c-0bac-41bd-04d98855bf1f" name="int"/>
  </types>
 </symbolTable>

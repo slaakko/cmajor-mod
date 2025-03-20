@@ -110,7 +110,7 @@ void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Modul
             {
                 asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
             }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+            else 
             {
                 objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
             }

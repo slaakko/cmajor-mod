@@ -6,61 +6,61 @@
   <classes>
    <class docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B" line="4" name="PhoneBook" specifiers="public">
     <ctorsDtors>
-     <ctorDtor docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#static_constructor_PhoneBook_810D860610EAB61C02C9A4DB7365C871A1FD77A5" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#static_constructor_PhoneBook_810D860610EAB61C02C9A4DB7365C871A1FD77A5" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="static_constructor_PhoneBook_810D860610EAB61C02C9A4DB7365C871A1FD77A5" kind="Static Constructor" line="6" name="PhoneBook" specifiers="static"/>
-     <ctorDtor docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#default_constructor_PhoneBook_9F14D21438F02CCFD7594F37DEBDE256ED5048FB" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#default_constructor_PhoneBook_9F14D21438F02CCFD7594F37DEBDE256ED5048FB" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="default_constructor_PhoneBook_9F14D21438F02CCFD7594F37DEBDE256ED5048FB" kind="Constructor" line="22" name="PhoneBook" specifiers="private"/>
+     <ctorDtor docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#static_constructor_PhoneBook_88F43B4E1D6DB55C04584F9AA4774D7D8A544C74" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#static_constructor_PhoneBook_88F43B4E1D6DB55C04584F9AA4774D7D8A544C74" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="static_constructor_PhoneBook_88F43B4E1D6DB55C04584F9AA4774D7D8A544C74" kind="Static Constructor" line="6" name="PhoneBook" specifiers="static"/>
+     <ctorDtor docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#default_constructor_PhoneBook_BA1456929D40B737296C2F42CA7C0D0840DF7A30" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#default_constructor_PhoneBook_BA1456929D40B737296C2F42CA7C0D0840DF7A30" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="default_constructor_PhoneBook_BA1456929D40B737296C2F42CA7C0D0840DF7A30" kind="Constructor" line="22" name="PhoneBook" specifiers="private"/>
     </ctorsDtors>
     <functions>
-     <function const="true" docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_GetNumber_PhoneBook_250A38E0A270EA236FFBC8071861035DBED62C30" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_GetNumber_PhoneBook_250A38E0A270EA236FFBC8071861035DBED62C30" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="member_function_GetNumber_PhoneBook_250A38E0A270EA236FFBC8071861035DBED62C30" kind="Member Function" line="13" name="GetNumber" returnType="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" specifiers="public">
+     <function const="true" docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_GetNumber_PhoneBook_774CFFE72C7690C59EBD446A85D475FF9136B65E" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_GetNumber_PhoneBook_774CFFE72C7690C59EBD446A85D475FF9136B65E" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="member_function_GetNumber_PhoneBook_774CFFE72C7690C59EBD446A85D475FF9136B65E" kind="Member Function" line="13" name="GetNumber" returnType="26c9ac31-c77c-0bac-41bd-04d98855bf1f" specifiers="public">
       <parameters>
-       <parameter id="parameter_name_C818F5F660E601CC80FA53498F1FB6B0F25DDD23" name="name" type="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5"/>
+       <parameter id="parameter_name_C818F5F660E601CC80FA53498F1FB6B0F25DDD23" name="name" type="a97d7a15-11a2-7590-3f45-2c1856cd3da0"/>
       </parameters>
      </function>
-     <function docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_Instance_PhoneBook_1484C217EA91E6C327191F4F23A08BE5FE85A790" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_Instance_PhoneBook_1484C217EA91E6C327191F4F23A08BE5FE85A790" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="member_function_Instance_PhoneBook_1484C217EA91E6C327191F4F23A08BE5FE85A790" kind="Static Member Function" line="9" name="Instance" returnType="722dd8bc-264d-7b11-2b84-5aa6c2db2b68" specifiers="public static"/>
+     <function docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_Instance_PhoneBook_F69FFB430CD2FC0A089718F454E668138B5C59C2" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_function_Instance_PhoneBook_F69FFB430CD2FC0A089718F454E668138B5C59C2" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="member_function_Instance_PhoneBook_F69FFB430CD2FC0A089718F454E668138B5C59C2" kind="Static Member Function" line="9" name="Instance" returnType="5ed09f1a-4fdc-42c6-228e-157d2844d634" specifiers="public static"/>
     </functions>
     <variables>
-     <variable docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_instance_5B541C3A5ED6969F6AE7F0E17C2022C2B87A0A04" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_instance_5B541C3A5ED6969F6AE7F0E17C2022C2B87A0A04" id="member_variable_instance_5B541C3A5ED6969F6AE7F0E17C2022C2B87A0A04" name="instance" specifiers="private static" type="c273ed6b-4664-6291-81c5-29a89caa779a"/>
-     <variable docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_map_D041FF490115B686BE99A41EB38C5308978E1B7A" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_map_D041FF490115B686BE99A41EB38C5308978E1B7A" id="member_variable_map_D041FF490115B686BE99A41EB38C5308978E1B7A" name="map" specifiers="private" type="de05d724-6542-7318-1c78-2d697cbf6d64"/>
+     <variable docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_instance_5B541C3A5ED6969F6AE7F0E17C2022C2B87A0A04" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_instance_5B541C3A5ED6969F6AE7F0E17C2022C2B87A0A04" id="member_variable_instance_5B541C3A5ED6969F6AE7F0E17C2022C2B87A0A04" name="instance" specifiers="private static" type="d623617b-6b40-a630-d81d-5da4f3acd0ef"/>
+     <variable docPath="../../phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_map_D041FF490115B686BE99A41EB38C5308978E1B7A" extPath="phonebook/doc/class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B.html#member_variable_map_D041FF490115B686BE99A41EB38C5308978E1B7A" id="member_variable_map_D041FF490115B686BE99A41EB38C5308978E1B7A" name="map" specifiers="private" type="92cf9c09-3c46-f03e-3508-c774794552d1"/>
     </variables>
    </class>
   </classes>
   <functions>
-   <function docPath="../../phonebook/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="phonebook/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="35" name="main" returnType="1903b8f3-82fd-b94c-c73a-b8425e11f566" specifiers=""/>
+   <function docPath="../../phonebook/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" extPath="phonebook/doc/../index.html#function_main_68B77C3D603240AA3138F2C177E349C27871BC62" fileName="phonebook/phonebook.cm" filePath="../../phonebook/file/phonebook.cm.html" id="function_main_68B77C3D603240AA3138F2C177E349C27871BC62" kind="Function" line="35" name="main" returnType="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" specifiers=""/>
   </functions>
  </namespace>
  <types>
-  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
-  <basicType id="be039fba-2b73-6802-3a39-9f3629b2434e" name="uchar"/>
-  <specialization id="e80ea46f-cba7-62be-cfc5-1ad41e3721c3" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
+  <basicType id="26c9ac31-c77c-0bac-41bd-04d98855bf1f" name="int"/>
+  <basicType id="11048696-522d-25fa-bd58-98b71df724e0" name="uchar"/>
+  <specialization id="a89adaab-d32b-a5f4-44e0-bd20d25b1e71" name="String" primaryType="class_String_E0865F4A81B4C745FF2074A1872C8A6EBABC5537">
    <templateArgumentTypes>
-    <templateArgumentType ref="be039fba-2b73-6802-3a39-9f3629b2434e"/>
+    <templateArgumentType ref="11048696-522d-25fa-bd58-98b71df724e0"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="15e712e9-24e3-dc7a-cbfb-b8f6f9eb63a5" name="const String&lt;uchar>&amp;">
+  <derivedType id="a97d7a15-11a2-7590-3f45-2c1856cd3da0" name="const String&lt;uchar>&amp;">
    <derivation name="const"/>
-   <derivation baseType="e80ea46f-cba7-62be-cfc5-1ad41e3721c3"/>
+   <derivation baseType="a89adaab-d32b-a5f4-44e0-bd20d25b1e71"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="722dd8bc-264d-7b11-2b84-5aa6c2db2b68" name="PhoneBook&amp;">
+  <derivedType id="5ed09f1a-4fdc-42c6-228e-157d2844d634" name="PhoneBook&amp;">
    <derivation baseType="class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="c273ed6b-4664-6291-81c5-29a89caa779a" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
+  <specialization id="d623617b-6b40-a630-d81d-5da4f3acd0ef" name="UniquePtr" primaryType="class_UniquePtr_112CCD64ADD57857CAD9A4C7438852C2CD442992">
    <templateArgumentTypes>
     <templateArgumentType ref="class_PhoneBook_AE811C78B388090700AA4459CCC66B91D607FF2B"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="24f234dd-d81f-c81e-a5b4-a94466c13949" name="Less" primaryType="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57">
+  <specialization id="312ff5bd-a143-5511-8d26-d8d25c445908" name="Less" primaryType="class_Less_A69C22196F2BDC27EC6CEF8AFB85C890EDE77C57">
    <templateArgumentTypes>
-    <templateArgumentType ref="e80ea46f-cba7-62be-cfc5-1ad41e3721c3"/>
+    <templateArgumentType ref="a89adaab-d32b-a5f4-44e0-bd20d25b1e71"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="de05d724-6542-7318-1c78-2d697cbf6d64" name="Map" primaryType="class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043">
+  <specialization id="92cf9c09-3c46-f03e-3508-c774794552d1" name="Map" primaryType="class_Map_5EAECC14EAC094F5DF9869C5DC52FED957926043">
    <templateArgumentTypes>
-    <templateArgumentType ref="e80ea46f-cba7-62be-cfc5-1ad41e3721c3"/>
-    <templateArgumentType ref="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
-    <templateArgumentType ref="24f234dd-d81f-c81e-a5b4-a94466c13949"/>
+    <templateArgumentType ref="a89adaab-d32b-a5f4-44e0-bd20d25b1e71"/>
+    <templateArgumentType ref="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
+    <templateArgumentType ref="312ff5bd-a143-5511-8d26-d8d25c445908"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="1903b8f3-82fd-b94c-c73a-b8425e11f566" name="void"/>
+  <basicType id="9041aa06-b4b2-1fd5-8bfe-4214c335ff18" name="void"/>
  </types>
 </symbolTable>

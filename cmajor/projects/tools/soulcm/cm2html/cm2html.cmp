@@ -1,6 +1,7 @@
 project cm2html;
 target=program;
 reference <../cm.lexer/cm.lexer.cmp>;
+reference <../cm.ast/cm.ast.cmp>;
 source <cm.lexer.CmTokenLexer.cm>;
 source <main.cm>;
 rc <cm.lexer.CmTokenLexer.classmap.rc>;

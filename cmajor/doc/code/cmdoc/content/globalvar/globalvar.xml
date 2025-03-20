@@ -6,22 +6,22 @@
   <classes>
    <class docPath="../../globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html" extPath="globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html" fileName="globalvar/globalvar.cm" filePath="../../globalvar/file/globalvar.cm.html" id="class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44" line="5" name="Foo" specifiers="public">
     <variables>
-     <variable docPath="../../globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_x_5F80E88821DD9A449D088317274F69BBF27E2838" extPath="globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_x_5F80E88821DD9A449D088317274F69BBF27E2838" id="member_variable_x_5F80E88821DD9A449D088317274F69BBF27E2838" name="x" specifiers="" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
-     <variable docPath="../../globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_y_6AB11C0B25F9C85FD7274E89D7073F6775A1E9DC" extPath="globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_y_6AB11C0B25F9C85FD7274E89D7073F6775A1E9DC" id="member_variable_y_6AB11C0B25F9C85FD7274E89D7073F6775A1E9DC" name="y" specifiers="" type="10040615-24b0-c4b1-8aba-e3acc70a458a"/>
+     <variable docPath="../../globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_x_5F80E88821DD9A449D088317274F69BBF27E2838" extPath="globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_x_5F80E88821DD9A449D088317274F69BBF27E2838" id="member_variable_x_5F80E88821DD9A449D088317274F69BBF27E2838" name="x" specifiers="" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
+     <variable docPath="../../globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_y_6AB11C0B25F9C85FD7274E89D7073F6775A1E9DC" extPath="globalvar/doc/class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44.html#member_variable_y_6AB11C0B25F9C85FD7274E89D7073F6775A1E9DC" id="member_variable_y_6AB11C0B25F9C85FD7274E89D7073F6775A1E9DC" name="y" specifiers="" type="d66bd035-b99f-2be8-8246-1484b80cd145"/>
     </variables>
    </class>
   </classes>
   <variables>
-   <variable id="global_variable_file_level_global_variable_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" name="file_level_global_variable_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
-   <variable id="global_variable_foo_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" name="foo_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" type="class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44"/>
-   <variable id="global_variable_foo_ptr_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" name="foo_ptr_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" type="9a4f82e0-2c18-325d-d8f0-0a128caf07d2"/>
-   <variable id="global_variable_unique_global_variable_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" name="unique_global_variable_globalvar_FE87DCB4B449CD71040FFC585537426CDC9D97BD" type="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b"/>
+   <variable id="global_variable_file_level_global_variable_globalvar_072825A018BDF935F096848D747C62ABE850E570" name="file_level_global_variable_globalvar_072825A018BDF935F096848D747C62ABE850E570" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
+   <variable id="global_variable_foo_globalvar_072825A018BDF935F096848D747C62ABE850E570" name="foo_globalvar_072825A018BDF935F096848D747C62ABE850E570" type="class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44"/>
+   <variable id="global_variable_foo_ptr_globalvar_072825A018BDF935F096848D747C62ABE850E570" name="foo_ptr_globalvar_072825A018BDF935F096848D747C62ABE850E570" type="0dab1e01-3616-2218-fdec-f1586494712f"/>
+   <variable id="global_variable_unique_global_variable_globalvar_072825A018BDF935F096848D747C62ABE850E570" name="unique_global_variable_globalvar_072825A018BDF935F096848D747C62ABE850E570" type="26c9ac31-c77c-0bac-41bd-04d98855bf1f"/>
   </variables>
  </namespace>
  <types>
-  <basicType id="eac9b65c-1406-7f0b-ee2b-e1edc7d44c1b" name="int"/>
-  <basicType id="10040615-24b0-c4b1-8aba-e3acc70a458a" name="char"/>
-  <derivedType id="9a4f82e0-2c18-325d-d8f0-0a128caf07d2" name="Foo*">
+  <basicType id="26c9ac31-c77c-0bac-41bd-04d98855bf1f" name="int"/>
+  <basicType id="d66bd035-b99f-2be8-8246-1484b80cd145" name="char"/>
+  <derivedType id="0dab1e01-3616-2218-fdec-f1586494712f" name="Foo*">
    <derivation baseType="class_Foo_8B12B79C5168277EC4B3BAFF8D94B0D0C1897E44"/>
    <derivation name="*"/>
   </derivedType>

@@ -304,14 +304,14 @@
     <details>
       The parser accepts full XML 1.0 syntax including a DTD (modulo bugs) but does not process contained DTD in any way.
       It recognizes only standard XML entities <em>&amp;amp;</em>, <em>&amp;quot;</em>, <em>&amp;apos;</em>, <em>&amp;lt;</em> and <em>&amp;gt;</em>.
-      Other entities are skipped and the <ref>member_function_SkippedEntity_XmlContentHandler_DE473F7932700694C4861AB6FCB14554A9598964</ref>
+      Other entities are skipped and the <ref>member_function_SkippedEntity_XmlContentHandler_3F1EAE7A6D33C9D8FC0AB5A9B2788922B24B4638</ref>
       member function of the content handler is called for each of them.
     </details>
     <details>
-      The <ref>function_ParseXmlFile_C7306F811CB6EF48E31E6269B9AE90BAB4C64896</ref> function parses the given XML file with a content handler.
+      The <ref>function_ParseXmlFile_CC0EDC94FAF1AC190B5851CEEF31ADC298226ACE</ref> function parses the given XML file with a content handler.
       As XML file is parsed, the overridden methods of user supplied class derived from the <ref>class_XmlContentHandler_7429223FCBE3A541F14FD9475F2099B20E248715</ref>
       class are called. If the XML document need to be manipulated entirely in memory, it can be parsed with the
-      <ref>function_ParseXmlDocument_11C5F4532C29497DA2F3ADDE83B9EDB70D857939</ref> function instead.
+      <ref>function_ParseXmlDocument_F5AD84448367B504C11F74B2B60DFB1BBA405F19</ref> function instead.
     </details>
     <details title="Example">
       This <a href="../../../code/xml/cmdoc/content/xmlstats/file/xmlstats.cm.html">xmlstats</a> example program prints statistics of an XML file.
@@ -379,7 +379,7 @@
       Represents an error identifier.
     </desc>
     <details>
-      The error id value can be obtained by calling the <ref>function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456</ref> function. 
+      The error id value can be obtained by calling the <ref>function_AllocateError_72106E184C65EEA5CDA421F942DC45C9E6F91D87</ref> function. 
     </details>
   </doc>
   <doc id="class_Result_04842AB1C9F4CA1EAD0D7305C26153EEAE534E78">
@@ -756,11 +756,11 @@
       Most fundamental container class. The list is like an array that can grow.
     </desc>
     <details>
-      Elements can be added by copying (<ref>member_function_Add_List_51C2A75AC0C4BE9A235C82A41D1FE7EB542D8B78</ref>) or by 
-      moving (<ref>member_function_Add_List_89752FEC74E129D30D43E6A2FF7EABB1710B8619</ref>). Adding takes amortized constant time.
-      When moving you may want to use the <ref>function_Rvalue_1B3DB0610C3620EF4E68B21F93F01B306FF74562</ref> to convert an argument to an rvalue.
-      Elements of a list can be accessed by index using the <ref>member_function_op_index_List_754A7E4287036F1DC5E6ED692F2CC7A9BE0031D1</ref> or
-      <ref>member_function_op_index_List_8091A4E54B78EFDE17745646E466335F0CCDD76D</ref> member functions.
+      Elements can be added by copying (<ref>member_function_Add_List_3FC610B7DFC2429D94FC809A70F7DEDB7F69543A</ref>) or by 
+      moving (<ref>member_function_Add_List_85BAFECDDD676C6FD37DD631ADF9F0F61995539D</ref>). Adding takes amortized constant time.
+      When moving you may want to use the <ref>function_Rvalue_534FAF139E46826710A3070BAD72C49B7B8C6E99</ref> to convert an argument to an rvalue.
+      Elements of a list can be accessed by index using the <ref>member_function_op_index_List_481D188EE7D342389E6B9C98B26E820C3DADCFEE</ref> or
+      <ref>member_function_op_index_List_2C3482E4719F38C0D4C6EECC1B9C94E5A81E01AD</ref> member functions.
       Element access is <em>O(1)</em> operation.
     </details>
     <details>
@@ -852,7 +852,7 @@
     <details>
       The second template argument is a hash function object that is by default the
       <ref>class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C</ref>
-      function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_BD15899CCA748FF443AF1574B768E8FF490F2011</ref>
+      function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_02F3B92BD0E01A9211491BC17843C62B2B65BC96</ref>
       function overloads. If there is not a <em>GetHashCode</em> overload for the your element type, you can provide your own, and it should work with the standard
       <ref>class_Hasher_143039CB3C347B7A20C6FA497549273378B9575C</ref>.
     </details>
@@ -1235,7 +1235,7 @@
     <details title="Examples">
       This <a href="../../../../code/threading/cmdoc/content/ThreadFunction/file/threadFunction.cm.html">threadFunction</a> example shows how to execute a function
       in a separate thread. Main function starts a thread that executes the <em>ThreadFunction</em> function, and waits the thread to end by calling the
-      <ref>member_function_Join_Thread_C1E6CF2687F911D52C3B3495CBA24C906969A6A2</ref> member function of the started thread.
+      <ref>member_function_Join_Thread_0E2B02EC7B7C264793B0EEFE66BF7AA5908FAFE4</ref> member function of the started thread.
     </details>
     <details>
       This <a href="../../../../code/threading/cmdoc/content/threadSynchronization/file/threadSynchronization.cm.html">threadSynchronization</a> example
@@ -1244,10 +1244,10 @@
       The main function starts first the <em>Run</em> member function of the
       <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html">OutputCollector</a>
       class in a separate thread. Then it queries the number of cores by calling the
-      <ref>function_HardwareConcurrency_1205CA22BE5F7C8523C7C99C25B03568E302190F</ref> function, and starts twice as many output threads.
+      <ref>function_HardwareConcurrency_C41E7ABE098D279CF6C1744EC879B51F6DBA9DC6</ref> function, and starts twice as many output threads.
       The output threads enqueue message lines by calling the <em>EnqueueLine</em> member function of the
       <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html">OutputCollector</a>.
-      Finally main thread <ref>member_function_Join_Thread_C1E6CF2687F911D52C3B3495CBA24C906969A6A2</ref>s the output threads and the output collector thread.
+      Finally main thread <ref>member_function_Join_Thread_0E2B02EC7B7C264793B0EEFE66BF7AA5908FAFE4</ref>s the output threads and the output collector thread.
     </details>
   </doc>
   <doc id="member_function_Join_Thread_2321207B993A5A106E72F80F93CBAD2DA409A166">
