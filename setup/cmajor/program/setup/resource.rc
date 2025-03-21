@@ -1,3 +1,3 @@
-wng_unicode_db RCDATA "C:\\work\\wingstall-mod\\unicode\\wingstall_ucd.deflate.bin"
-setup_icon ICON "C:\\work\\wingstall-mod\\icon\\setup.ico"
-cmajor.package RCDATA "C:\\work\\cmajor-mod\\setup\\cmajor\\cmajor.package.bin"
+wng_unicode_db RCDATA "D:\\work\\wingstall-mod\\unicode\\wingstall_ucd.deflate.bin"
+setup_icon ICON "D:\\work\\wingstall-mod\\icon\\setup.ico"
+cmajor.package RCDATA "D:\\work\\cmajor-mod\\setup\\cmajor\\cmajor.package.bin"

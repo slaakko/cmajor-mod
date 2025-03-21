@@ -1,0 +1,19 @@
+<h1>Cmajor 5.1.0 for Windows x64</h1>
+
+<h2>Release notes</h2>
+
+<ul>
+<li><p>Bug fix: alignment bug in the assembly code generator of the MASM and CM/MASM backend fixed.</p></li>
+<li><p>Bug fix: single-threaded build bug fixed.</p></li>
+<li><p>LLVM updated to version 19.1.7.
+The 5.0.0 version of the Cmajor compiler did not compile with the recent version of LLVM. </p></li>
+<li><p>Added support to Windows GUI applications to CM/MASM compiler.</p></li>
+<li><p>One new backend and one new compiler: <a href="https://slaakko.github.io/cmajor/tools/sbincmc/sbincmc.html">sbincmc</a>.
+The problem with the MASM and CM/MASM backends introduced in version 5.0.0 is that they generate a lot of redundant code.
+Each class template, function template and inline function generate identical code in each compile unit that uses it.
+The linker is not able to remove the duplicates because the functions are instantiated using a unique name to prevent the linker from 
+complaining about multiply defined symbols. The SBIN backend solves this problem by using its own <strong>sbinasm</strong> assembler that
+is able to generate COMDAT symbols into object files. Each COMDAT symbol is associated with a set of functions with the 
+same name. This COMDAT mechanism enables linker to remove replicated code. The name <strong>sbin</strong> comes from 'smaller binaries'. 
+The <strong>sbincmc</strong> compiler generates somewhat smaller executables than the <strong>masmcmc</strong> and <strong>cmcmc</strong> compilers.</p></li>
+</ul>

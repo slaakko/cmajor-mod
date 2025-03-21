@@ -1,4 +1,4 @@
-<package appName="Cmajor" compression="deflate" iconFilePath="$TARGET_ROOT_DIR$/bin/cmcodesmall.ico" id="f3d90054-58ae-4653-bd6d-a3937bbb7ddb" includeUninstaller="true" name="cmajor" publisher="Seppo Laakko" sourceRootDir="C:/work/cmajor-mod/cmajor" targetRootDir="C:/cmajor" version="5.0.0">
+<package appName="Cmajor" compression="deflate" iconFilePath="$TARGET_ROOT_DIR$/bin/cmcodesmall.ico" id="f3d90054-58ae-4653-bd6d-a3937bbb7ddb" includeUninstaller="true" name="cmajor" publisher="Seppo Laakko" sourceRootDir="D:/work/cmajor-mod/cmajor" targetRootDir="C:/cmajor" version="5.1.0">
  <component name="binaries">
   <directory name="bin"/>
  </component>
@@ -151,6 +151,10 @@
      <include dir="release"/>
     </include>
     <include dir="masm">
+     <include dir="debug"/>
+     <include dir="release"/>
+    </include>
+    <include dir="sbin">
      <include dir="debug"/>
      <include dir="release"/>
     </include>

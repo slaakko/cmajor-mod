@@ -396,11 +396,11 @@ MainWindow::MainWindow(const std::string& filePath) :
     windowMenuItem->AddMenuItem(closeExternalTabsMenuItemPtr.release());
     menuBar->AddMenuItem(windowMenuItem.release());
     std::unique_ptr<wing::MenuItem> helpMenuItem(new wing::MenuItem("&Help"));
-    std::unique_ptr<wing::MenuItem> homepageMenuItemPtr(new wing::MenuItem("&Homepage"));
+    std::unique_ptr<wing::MenuItem> homepageMenuItemPtr(new wing::MenuItem("&Homepage (latest version)"));
     homepageMenuItem = homepageMenuItemPtr.get();
     homepageMenuItem->Click().AddHandler(this, &MainWindow::HomepageClick);
     helpMenuItem->AddMenuItem(homepageMenuItemPtr.release());
-    std::unique_ptr<wing::MenuItem> localDocumentationMenuItemPtr(new wing::MenuItem("&Local Documentation"));
+    std::unique_ptr<wing::MenuItem> localDocumentationMenuItemPtr(new wing::MenuItem("&Local Documentation (current version)"));
     localDocumentationMenuItem = localDocumentationMenuItemPtr.get();
     localDocumentationMenuItem->Click().AddHandler(this, &MainWindow::LocalDocumentationClick);
     helpMenuItem->AddMenuItem(localDocumentationMenuItemPtr.release());
@@ -1259,7 +1259,15 @@ void MainWindow::StartRunning()
     ClearOutput();
     GetConsole()->Clear();
     const std::string& programArguments = projectData->ProgramArguments();
-    RunProgram(backend, config, optLevel, activeProject, programArguments);
+    try
+    {
+        RunProgram(backend, config, optLevel, activeProject, programArguments);
+    }
+    catch (const std::exception& ex)
+    {
+        StopRunning();
+        throw;
+    }
 }
 
 void MainWindow::StopRunning()

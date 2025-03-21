@@ -9,7 +9,7 @@ std::string PackageResourceName()
 
 int64_t UncompressedPackageSize()
 {
-    return 5824559426;
+    return 6451518287;
 }
 
 std::string UnicodeDBResourceName()
@@ -34,7 +34,7 @@ std::string AppName()
 
 std::string AppVersion()
 {
-    return "5.0.0";
+    return "5.1.0";
 }
 
 int Compression()

@@ -83,6 +83,10 @@ void RunProgram(const std::string& backend, const std::string& config, int optLe
                 util::Path::GetFileName(project->FilePath())), ".exe"));
         }
     }
+    if (!std::filesystem::exists(executableName))
+    {
+        throw std::runtime_error("program '" + executableName + "' does not exist");
+    }
     cmajor::service::PutRequest(new cmajor::service::StartProgramRequest(executableName, programArguments, "cmcode"));
 }
 

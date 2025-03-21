@@ -13,7 +13,7 @@
     <PropertyGroup Label="Globals">
         <VCProjectVersion>17.0</VCProjectVersion>
         <Keyword>Win32Proj</Keyword>
-        <ProjectGuid>{e39971ef-31e3-a201-a903-6493a8001bb8}</ProjectGuid>
+        <ProjectGuid>{29a61035-7ca6-17fc-f80d-8b922d26d31f}</ProjectGuid>
         <RootNamespace>setup</RootNamespace>
         <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     </PropertyGroup>
@@ -36,11 +36,11 @@
     <ImportGroup Label="Shared"/>
     <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
         <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"/>
-        <Import Project="C:\work\wingstall-mod\config\build.props"/>
+        <Import Project="D:\work\wingstall-mod\config\build.props"/>
     </ImportGroup>
     <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
         <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"/>
-        <Import Project="C:\work\wingstall-mod\config\build.props"/>
+        <Import Project="D:\work\wingstall-mod\config\build.props"/>
     </ImportGroup>
     <PropertyGroup Label="UserMacros"/>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -99,16 +99,16 @@
         <ClCompile Include="main.cpp"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="C:\work\wingstall-mod\util\util.vcxproj">
+        <ProjectReference Include="D:\work\wingstall-mod\util\util.vcxproj">
             <Project>{C059187A-5946-409B-835E-6CBDC4B40493}</Project>
         </ProjectReference>
-        <ProjectReference Include="C:\work\wingstall-mod\wing\wing.vcxproj">
+        <ProjectReference Include="D:\work\wingstall-mod\wing\wing.vcxproj">
             <Project>{1303F2DE-F74E-4D40-BA58-3FE56AD912C2}</Project>
         </ProjectReference>
-        <ProjectReference Include="C:\work\wingstall-mod\wing_gui\wing_gui.vcxproj">
+        <ProjectReference Include="D:\work\wingstall-mod\wing_gui\wing_gui.vcxproj">
             <Project>{97D97A57-6715-4100-BBD3-5587576BA8D0}</Project>
         </ProjectReference>
-        <ProjectReference Include="C:\work\wingstall-mod\wing_package\wing_package.vcxproj">
+        <ProjectReference Include="D:\work\wingstall-mod\wing_package\wing_package.vcxproj">
             <Project>{C33BC827-8238-4E4D-B2D7-8514891E74B1}</Project>
         </ProjectReference>
     </ItemGroup>

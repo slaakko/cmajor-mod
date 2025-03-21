@@ -11,6 +11,7 @@ all:
 	$(MAKE) -C debug
 	$(MAKE) -C release
 	$(MAKE) -C resource
+	$(MAKE) -C resource install
 	
 clean:
 	$(RM) /Q lib\*.*
@@ -22,12 +23,15 @@ else
 all:
 	$(MAKE) -C debug
 	$(MAKE) -C release
+	$(MAKE) -C resource
+	$(MAKE) -C resource install
 
 clean:
 	$(RM) bin/*
 	$(RM) lib/*
 	$(MAKE) -C debug clean
 	$(MAKE) -C release clean
+	$(MAKE) -C resource clean
 
 endif
 
