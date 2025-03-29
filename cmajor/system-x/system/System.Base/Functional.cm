@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -101,7 +101,7 @@ namespace System
 
     public class EqualTo<T> : Rel<T> where T is Regular
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left == right;
         }
@@ -109,7 +109,7 @@ namespace System
 
     public class EqualTo<T, U> : BinaryPred<T, U> where EqualityComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left == right;
         }
@@ -117,7 +117,7 @@ namespace System
 
     public class NotEqualTo<T> : Rel<T> where T is Regular
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left != right;
         }
@@ -125,7 +125,7 @@ namespace System
 
     public class NotEqualTo<T, U> : BinaryPred<T, U> where EqualityComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left != right;
         }
@@ -133,7 +133,7 @@ namespace System
 
     public class Less<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left < right; 
         }
@@ -141,7 +141,7 @@ namespace System
 
     public class Less<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left < right; 
         }
@@ -149,7 +149,7 @@ namespace System
 
     public class Greater<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left > right;
         }
@@ -157,7 +157,7 @@ namespace System
 
     public class Greater<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left > right;
         }
@@ -165,7 +165,7 @@ namespace System
 
     public class LessOrEqualTo<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left <= right;
         }
@@ -173,7 +173,7 @@ namespace System
 
     public class LessOrEqualTo<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left <= right;
         }
@@ -181,7 +181,7 @@ namespace System
 
     public class GreaterOrEqualTo<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left >= right;
         }
@@ -189,7 +189,7 @@ namespace System
 
     public class GreaterOrEqualTo<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left >= right;
         }
@@ -197,7 +197,7 @@ namespace System
 
     public class LogicalAnd<T = bool> : BinaryPred<bool, bool>
     {
-        public nothrow inline bool operator()(bool left, bool right) const
+        public inline bool operator()(bool left, bool right) const
         {
             return left && right;
         }

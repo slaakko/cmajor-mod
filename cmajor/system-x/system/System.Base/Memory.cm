@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -40,7 +40,7 @@ namespace System
         return free;
     }
 
-    public nothrow void* MemAlloc(long numBytes)
+    public void* MemAlloc(long numBytes)
     {
         Block* prev = free;
         if (free == null)

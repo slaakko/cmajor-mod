@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ namespace System.IO
 {
     public class StreamReader
     {
-        public nothrow StreamReader(const SharedPtr<Stream>& stream_) : stream(stream_), buffered(false), buffer(-1), state(0), eos(false)
+        public StreamReader(const SharedPtr<Stream>& stream_) : stream(stream_), buffered(false), buffer(-1), state(0), eos(false)
         {
         }
         public int Read()

@@ -367,6 +367,7 @@ public:
     void* GetBoundCompileUnit() const override { return nullptr; }
     void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) override;
     void PrintModule() override;
+    void SetCurrentFunctionMain() override;
 private:
     cmajor::ir::EmittingContext* emittingContext;
     cmajor::ir::EmittingDelegate* emittingDelegate;

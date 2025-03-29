@@ -229,12 +229,12 @@ void Context::SetCurrentFunction(Function* function)
     code.SetCurrentFunction(function);
 }
 
-Function* Context::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId, bool once, MetadataRef* metadataRef)
+Function* Context::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId, bool once, bool main, MetadataRef* metadataRef)
 {
     if (type->IsFunctionType())
     {
         FunctionType* functionType = static_cast<FunctionType*>(type);
-        return code.AddFunctionDefinition(sourcePos, functionType, functionId, once, metadataRef, this);
+        return code.AddFunctionDefinition(sourcePos, functionType, functionId, once, main, metadataRef, this);
     }
     else
     {

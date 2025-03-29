@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -19,7 +19,7 @@ namespace System.Screen
 
     public class DirectoryItem
     {
-        public nothrow DirectoryItem(const DirectoryEntry& entry_, const FileStatus& status_) : entry(entry_), status(status_)
+        public DirectoryItem(const DirectoryEntry& entry_, const FileStatus& status_) : entry(entry_), status(status_)
         {
         }
         public DirectoryEntry entry;
@@ -28,7 +28,7 @@ namespace System.Screen
 
     public class DirectoryItemLess : Rel<DirectoryItem>
     {
-        public nothrow bool operator()(const DirectoryItem& left, const DirectoryItem& right) const
+        public bool operator()(const DirectoryItem& left, const DirectoryItem& right) const
         {
             if (left.status.fileType == FileType.directory)
             {
@@ -85,7 +85,7 @@ namespace System.Screen
     
     public class FileDialogCreateParams
     {
-        public nothrow FileDialogCreateParams(): controlCreateParams(), kind(FileDialogKind.openDialog), caption(), directory(GetCurrentWorkingDirectory()), requireFileExists(false)
+        public FileDialogCreateParams(): controlCreateParams(), kind(FileDialogKind.openDialog), caption(), directory(GetCurrentWorkingDirectory()), requireFileExists(false)
         {
         }
         public nothrow FileDialogCreateParams& Defaults()
@@ -97,12 +97,12 @@ namespace System.Screen
             kind = kind_;
             return *this;
         }
-        public nothrow FileDialogCreateParams& SetCaption(const string& caption_)
+        public FileDialogCreateParams& SetCaption(const string& caption_)
         {
             caption = caption_;
             return *this;
         }
-        public nothrow FileDialogCreateParams& SetDirectory(const string& directory_)
+        public FileDialogCreateParams& SetDirectory(const string& directory_)
         {
             directory = directory_;
             return *this;
@@ -121,7 +121,7 @@ namespace System.Screen
 
     public class FileDialog : Window
     {
-        public nothrow FileDialog(FileDialogCreateParams& createParams) : 
+        public FileDialog(FileDialogCreateParams& createParams) : 
             base(createParams.controlCreateParams), 
             kind(createParams.kind), 
             caption(createParams.caption), 

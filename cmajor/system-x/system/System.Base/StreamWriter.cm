@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,10 +9,10 @@ namespace System.IO
 {
     public class StreamWriter : TextWriter
     {
-        public nothrow StreamWriter(const SharedPtr<Stream>& stream_) : this(stream_, stream_->IsHostTextFile())
+        public StreamWriter(const SharedPtr<Stream>& stream_) : this(stream_, stream_->IsHostTextFile())
         {
         }
-        public nothrow StreamWriter(const SharedPtr<Stream>& stream_, bool expandLineEndings_) : 
+        public StreamWriter(const SharedPtr<Stream>& stream_, bool expandLineEndings_) : 
             stream(stream_), expandLineEndings(expandLineEndings_)
         {
         }

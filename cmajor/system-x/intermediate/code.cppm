@@ -37,20 +37,7 @@ enum class OpCode : int
     store, arg, jmp, branch, procedure_call, ret, switch_,
     not_, neg, signextend, zeroextend, truncate, bitcast, inttofloat, floattoint, inttoptr, ptrtoint,
     add, sub, mul, div_, mod, and_, or_, xor_, shl, shr, equal, less,
-    param, local, load, elemaddr, ptroffset, ptrdiff, function_call, trap, phi,
-    nop
-};
-
-class Use
-{
-public:
-    Use(Instruction* user_, Value*& value_) : user(user_), value(value_) {}
-    Instruction* User() const { return user; }
-    Value* Get() const { return value; }
-    void Set(Value* value_);
-private:
-    Instruction* user;
-    Value*& value;
+    param, local, load, elemaddr, ptroffset, ptrdiff, function_call, trap, nop
 };
 
 class Instruction : public Value, public util::Component
@@ -76,22 +63,29 @@ public:
     bool IsLoadInstruction() const { return opCode == OpCode::load; }
     bool IsStoreInstruction() const { return opCode == OpCode::store; }
     bool IsElemAddrInstruction() const { return opCode == OpCode::elemaddr; }
-    bool IsPhiInstruction() const { return opCode == OpCode::phi; }
+    bool IsArgInstruction() const { return opCode == OpCode::arg; }
+    bool IsFunctionCallInstruction() const { return opCode == OpCode::function_call; }
+    bool IsProcedureCallInstruction() const { return opCode == OpCode::procedure_call; }
     bool RequiresLocalRegister() const;
     std::vector<BasicBlock*> Successors() const;
     const std::vector<Instruction*>& Users() const { return users; }
     void AddUser(Instruction* user);
     void RemoveUser(Instruction* user);
-    std::vector<Use> Uses();
-    std::unique_ptr<Instruction> Remove();
+    virtual std::vector<Instruction*> Uses() const { return std::vector<Instruction*>(); }
+    virtual void AddToUses();
     void ReplaceUsesWith(Value* value);
+    void RemoveFromUses();
+    virtual void ReplaceValue(Value* use, Value* value);
     int Index() const { return index; }
     void SetIndex(int index_) { index = index_; }
+    int RegValueIndex() const { return regValueIndex; }
+    void SetRegValueIndex(int regValueIndex_) { regValueIndex = regValueIndex_; }
 private:
     OpCode opCode;
     MetadataRef* metadataRef;
     std::vector<Instruction*> users;
     int index;
+    int regValueIndex;
 };
 
 class StoreInstruction : public Instruction
@@ -101,8 +95,9 @@ public:
     void Accept(Visitor& visitor) override;
     Value* GetValue() const { return value; }
     Value* GetPtr() const { return ptr; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* value;
     Value* ptr;
@@ -114,10 +109,14 @@ public:
     ArgInstruction(const soul::ast::SourcePos& sourcePos_, Value* arg_);
     void Accept(Visitor& visitor) override;
     Value* Arg() const { return arg; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    int ArgIndex() const { return argIndex; }
+    void SetArgIndex(int argIndex_) { argIndex = argIndex_; }
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* arg;
+    int argIndex;
 };
 
 class JmpInstruction : public Instruction
@@ -145,8 +144,9 @@ public:
     int32_t FalseTargetLabelId() const { return falseTargetLabelId; }
     BasicBlock* FalseTargetBasicBlock() const { return falseTargetBasicBlock; }
     void SetFalseTargetBasicBlock(BasicBlock* falseTargetBasicBlock_) { falseTargetBasicBlock = falseTargetBasicBlock_; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* cond;
     int32_t trueTargetLabelId;
@@ -163,8 +163,9 @@ public:
     Value* Callee() const { return callee; }
     const std::vector<Value*>& Args() const { return args; }
     void SetArgs(std::vector<Value*>&& args_);
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -176,8 +177,9 @@ public:
     RetInstruction(const soul::ast::SourcePos& sourcePos_, Value* returnValue_);
     void Accept(Visitor& visitor) override;
     Value* ReturnValue() const { return returnValue; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* returnValue;
 };
@@ -202,8 +204,9 @@ public:
     std::vector<CaseTarget>& CaseTargets() { return caseTargets; }
     BasicBlock* DefaultTargetBlock() const { return defaultTargetBlock; }
     void SetDefaultTargetBlock(BasicBlock* defaultTargetBlock_) { defaultTargetBlock = defaultTargetBlock_; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* cond;
     int32_t defaultTargetLabelId;
@@ -215,6 +218,7 @@ class ValueInstruction : public Instruction
 {
 public:
     ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_);
+    ~ValueInstruction();
     RegValue* Result() const { return result; }
 private:
     RegValue* result;
@@ -226,8 +230,9 @@ public:
     UnaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_, OpCode opCode_);
     Value* Operand() const { return operand; }
     void SetOperand(Value* operand_) { operand = operand_; }
-    void AddUse();
-    void AddOperandToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* operand;
 };
@@ -308,8 +313,9 @@ public:
     BinaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_, OpCode opCode_);
     Value* Left() const { return left; }
     Value* Right() const { return right; }
-    void AddUse();
-    void AddOperandsToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* left;
     Value* right;
@@ -404,6 +410,10 @@ class ParamInstruction : public ValueInstruction
 public:
     ParamInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_);
     void Accept(Visitor& visitor) override;
+    int ParamIndex() const { return paramIndex; }
+    void SetParamIndex(int paramIndex_) { paramIndex = paramIndex_; }
+private:
+    int paramIndex;
 };
 
 class LocalInstruction : public ValueInstruction
@@ -422,8 +432,9 @@ public:
     LoadInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_);
     void Accept(Visitor& visitor) override;
     Value* Ptr() const { return ptr; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* ptr;
 };
@@ -436,16 +447,17 @@ enum class ElemAddrKind
 class ElemAddrInstruction : public ValueInstruction
 {
 public:
-    ElemAddrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* index_);
+    ElemAddrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* indexValue_);
     void Accept(Visitor& visitor) override;
     Value* Ptr() const { return ptr; }
-    Value* Index() const { return index; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    Value* IndexValue() const { return indexValue; }
     ElemAddrKind GetElemAddrKind(Context* context) const;
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* ptr;
-    Value* index;
+    Value* indexValue;
 };
 
 class PtrOffsetInstruction : public ValueInstruction
@@ -455,8 +467,9 @@ public:
     void Accept(Visitor& visitor) override;
     Value* Ptr() const { return ptr; }
     Value* Offset() const { return offset; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* ptr;
     Value* offset;
@@ -469,8 +482,9 @@ public:
     void Accept(Visitor& visitor) override;
     Value* LeftPtr() const { return leftPtr; }
     Value* RightPtr() const { return rightPtr; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* leftPtr;
     Value* rightPtr;
@@ -484,8 +498,9 @@ public:
     Value* Callee() const { return callee; }
     const std::vector<Value*>& Args() const { return args; }
     void SetArgs(std::vector<Value*>&& args_);
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -499,38 +514,16 @@ public:
     Value* Op1() const { return op1; }
     Value* Op2() const { return op2; }
     Value* Op3() const { return op3; }
+    void SetArgs(std::vector<Value*>&& arguments_);
     const std::vector<Value*>& Args() const { return args; }
-    void SetArgs(std::vector<Value*>&& args_);
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
+    void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* op1;
     Value* op2;
     Value* op3;
     std::vector<Value*> args;
-};
-
-struct BlockValue
-{
-    BlockValue(Value* value_, int32_t blockId_) : value(value_), blockId(blockId_), block(nullptr) {}
-    BlockValue(Value* value_, BasicBlock* block_);
-    Value* value;
-    int32_t blockId;
-    BasicBlock* block;
-};
-
-class PhiInstruction : public ValueInstruction
-{
-public:
-    PhiInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_);
-    void Accept(Visitor& visitor) override;
-    void AddBlockValue(const BlockValue& blockValue);
-    const std::vector<BlockValue>& BlockValues() const { return blockValues; }
-    std::vector<BlockValue>& BlockValues() { return blockValues; }
-    void AddUse();
-    void AddToUses(std::vector<Use>& uses);
-private:
-    std::vector<BlockValue> blockValues;
 };
 
 class NoOperationInstruction : public Instruction
@@ -557,7 +550,6 @@ public:
     BasicBlock* Prev() { return static_cast<BasicBlock*>(PrevSibling()); }
     Instruction* FirstInstruction() { return static_cast<Instruction*>(instructions.FirstChild()); }
     Instruction* LastInstruction() { return static_cast<Instruction*>(instructions.LastChild()); }
-    bool HasPhiInstructions() { return FirstInstruction()->IsPhiInstruction(); }
     void AddInstruction(Instruction* instruction, MetadataRef* metadataRef);
     void InsertFront(Instruction* instruction);
     bool IsEmpty() const { return instructions.IsEmpty(); }
@@ -581,7 +573,7 @@ private:
 
 enum class FunctionFlags : int
 {
-    none = 0, defined = 1 << 0, once = 1 << 1
+    none = 0, defined = 1 << 0, once = 1 << 1, main = 1 << 2
 };
 
 inline FunctionFlags operator|(FunctionFlags left, FunctionFlags right)
@@ -602,7 +594,8 @@ inline FunctionFlags operator~(FunctionFlags flags)
 class Function : public util::Component
 {
 public:
-    Function(const soul::ast::SourcePos& sourcePos_, FunctionType* functionType_, const std::string& name_, bool once_, bool definition_, MetadataRef* metadataRef_);
+    Function(const soul::ast::SourcePos& sourcePos_, FunctionType* functionType_, const std::string& name_, bool once_, bool main_, bool definition_, 
+        MetadataRef* metadataRef_);
     Function(const Function&) = delete;
     Function& operator=(const Function&) = delete;
     bool GetFlag(FunctionFlags flag) const { return (flags & flag) != FunctionFlags::none; }
@@ -612,6 +605,8 @@ public:
     bool IsExternal() const { return !IsDefined(); }
     void SetDefined() { SetFlag(FunctionFlags::defined); }
     bool Once() const { return GetFlag(FunctionFlags::once); }
+    bool IsMain() const { return GetFlag(FunctionFlags::main); }
+    void SetMain() { SetFlag(FunctionFlags::main); }
     int Arity() const { return type->Arity(); }
     void Accept(Visitor& visitor);
     void VisitBasicBlocks(Visitor& visitor);
@@ -668,7 +663,8 @@ public:
     Function* CurrentFunction() const { return currentFunction; }
     void SetCurrentFunction(Function* function);
     Function* GetFunction(const std::string& functionId) const;
-    Function* AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId, bool once, MetadataRef* metadataRef, Context* context);
+    Function* AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId, bool once, bool main, 
+        MetadataRef* metadataRef, Context* context);
     Function* AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId);
     Function* FirstFunction() { return static_cast<Function*>(functions.FirstChild()); }
     Function* LastFunction() { return static_cast<Function*>(functions.LastChild()); }

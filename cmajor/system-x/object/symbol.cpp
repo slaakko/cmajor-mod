@@ -377,6 +377,14 @@ void SymbolTable::InstallDefaultSymbols()
     AddSymbol(new Symbol(SymbolKind::global, "", "sp", Value(cmajor::systemx::machine::regSP, ValueFlags::reg)));
     AddSymbol(new Symbol(SymbolKind::global, "", "fp", Value(cmajor::systemx::machine::regFP, ValueFlags::reg)));
     AddSymbol(new Symbol(SymbolKind::global, "", "ix", Value(cmajor::systemx::machine::regIX, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p0", Value(cmajor::systemx::machine::regP0, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p1", Value(cmajor::systemx::machine::regP1, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p2", Value(cmajor::systemx::machine::regP2, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p3", Value(cmajor::systemx::machine::regP3, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p4", Value(cmajor::systemx::machine::regP4, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p5", Value(cmajor::systemx::machine::regP5, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p6", Value(cmajor::systemx::machine::regP6, ValueFlags::reg)));
+    AddSymbol(new Symbol(SymbolKind::global, "", "p7", Value(cmajor::systemx::machine::regP7, ValueFlags::reg)));
     AddSymbol(new Symbol(SymbolKind::global, "", "rA", Value(cmajor::systemx::machine::rA, ValueFlags::pure)));
     AddSymbol(new Symbol(SymbolKind::global, "", "rB", Value(cmajor::systemx::machine::rB, ValueFlags::pure)));
     AddSymbol(new Symbol(SymbolKind::global, "", "rC", Value(cmajor::systemx::machine::rC, ValueFlags::pure)));

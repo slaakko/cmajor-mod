@@ -67,7 +67,7 @@ public:
     ConstantValue* MakeAddressLiteral(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& id);
     Function* CurrentFunction() const;
     void SetCurrentFunction(Function* function);
-    Function* AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId, bool once, MetadataRef* metadataRef);
+    Function* AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId, bool once, bool main, MetadataRef* metadataRef);
     Function* AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId);
     MetadataStruct* AddMetadataStruct(const soul::ast::SourcePos& sourcePos, int32_t id, Context* context);
     MetadataBool* CreateMetadataBool(bool value);

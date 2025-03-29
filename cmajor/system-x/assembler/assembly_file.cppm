@@ -43,11 +43,14 @@ public:
     AssemblyFunction(const std::string& name_);
     AssemblyFunction(const AssemblyFunction&) = delete;
     AssemblyFunction& operator=(const AssemblyFunction&) = delete;
+    void SetComment(const std::string& comment_);
+    const std::string& Comment() const { return comment; }
     void SetActiveFunctionPart(FunctionPart functionPart);
     void AddInstruction(Instruction* inst);
     void Write(util::CodeFormatter& formatter) override;
 private:
     std::string name;
+    std::string comment;
     FunctionPart activeFunctionPart;
     std::vector<std::unique_ptr<Instruction>> prologue;
     std::vector<std::unique_ptr<Instruction>> body;

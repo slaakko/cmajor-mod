@@ -58,9 +58,9 @@ void MainDebuggerObserver::DebuggerProcessExit()
     }
 }
 
-MainWindow::MainWindow(const std::string& filePath_) :
+MainWindow::MainWindow(const std::string& filePath_, const std::vector<std::string>& args_) :
     Window(wing::WindowCreateParams().Text("System X Debugger").BackgroundColor(wing::GetColor("window.background")).WindowClassName("system.x.gm.db.MainWindow")),
-    observer(this), filePath(filePath_), args(), env(), machine(nullptr), process(nullptr), openFileMenuItem(nullptr), closeFileMenuItem(nullptr), exitMenuItem(nullptr),
+    observer(this), filePath(filePath_), args(args_), env(), machine(nullptr), process(nullptr), openFileMenuItem(nullptr), closeFileMenuItem(nullptr), exitMenuItem(nullptr),
     codeView(nullptr), registerView(nullptr), dataView(nullptr), argsView(nullptr), envView(nullptr), heapView(nullptr), stackView(nullptr), logView(nullptr),
     currentTopView(nullptr), currentBottomView(nullptr), waitingDebugger(false), startContinueMenuItem(nullptr), stopMenuItem(nullptr), resetMenuItem(nullptr),
     singleStepMenuItem(nullptr), stepOverMenuItem(nullptr), toggleBreakpointMenuItem(nullptr), fileOpen(false), terminalControl(nullptr),
@@ -573,6 +573,7 @@ void MainWindow::ResetClick()
                 StopDebugging(true);
             }
             waitingDebugger = false;
+            terminalControl->ClearScreen();
             LoadProcess();
         }
         catch (const std::exception& ex)
@@ -1048,8 +1049,6 @@ void MainWindow::LoadProcess()
     EnableViewMenuItems();
     process = cmajor::systemx::kernel::ProcessManager::Instance().CreateProcess();
     process->SetFilePath(filePath);
-    args.clear();
-    args.push_back(filePath);
     cmajor::systemx::kernel::Load(process, args, env, *machine);
     dataRanges.SetMachine(machine.get());
     dataRanges.SetProcess(process);

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -90,7 +90,7 @@ namespace System.Screen
     
     public class StatusBar : ContainerControl
     {
-        public nothrow StatusBar(StatusBarCreateParams& createParams) : base(createParams.controlCreateParams)
+        public StatusBar(StatusBarCreateParams& createParams) : base(createParams.controlCreateParams)
         {
             InvalidateGuard guard(this, InvalidateKind.dontInvalidate);
             if (Location().IsDefault())
@@ -111,15 +111,15 @@ namespace System.Screen
             }
             SetChanged();
         }
-        public nothrow bool IsChanged() const
+        public nothrow inline bool IsChanged() const
         {
             return (flags & StatusBarFlags.changed) != StatusBarFlags.none;
         }
-        public nothrow void SetChanged()
+        public nothrow inline void SetChanged()
         {
             flags = cast<StatusBarFlags>(flags | StatusBarFlags.changed);
         }
-        public nothrow void ResetChanged()
+        public nothrow inline void ResetChanged()
         {
             flags = cast<StatusBarFlags>(flags & ~StatusBarFlags.changed);
         }

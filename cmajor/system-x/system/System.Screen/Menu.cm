@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -58,7 +58,7 @@ namespace System.Screen
 
     public class MenuControl : Control
     {
-        public nothrow MenuControl(MenuControlCreateParams& createParams) : base(createParams.controlCreateParams), flags(MenuControlFlags.none)
+        public MenuControl(MenuControlCreateParams& createParams) : base(createParams.controlCreateParams), flags(MenuControlFlags.none)
         {
             if (createParams.highlightColor == ConsoleColor.defaultColor)
             {
@@ -101,19 +101,19 @@ namespace System.Screen
                 gap = createParams.gap;
             }
         }
-        public nothrow void SetChanged()
+        public nothrow inline void SetChanged()
         {
             flags = cast<MenuControlFlags>(flags | MenuControlFlags.changed);
         }
-        public nothrow bool IsChanged() const
+        public nothrow inline bool IsChanged() const
         {
             return (flags & MenuControlFlags.changed) != MenuControlFlags.none;
         }
-        public nothrow void ResetChanged()
+        public nothrow inline void ResetChanged()
         {
             flags = cast<MenuControlFlags>(flags & ~MenuControlFlags.changed);
         }
-        public nothrow void SetOpen()
+        public void SetOpen()
         {
             if (!IsOpen())
             {
@@ -121,7 +121,7 @@ namespace System.Screen
                 Invalidate();
             }
         }
-        public virtual nothrow void ResetOpen()
+        public virtual void ResetOpen()
         {
             if (IsOpen())
             {
@@ -181,7 +181,7 @@ namespace System.Screen
 
     public class MenuBar : MenuControl
     {
-        public nothrow MenuBar(MenuControlCreateParams& createParams) : base(createParams), menuItems(this)
+        public MenuBar(MenuControlCreateParams& createParams) : base(createParams), menuItems(this)
         {
             InvalidateGuard guard(this, InvalidateKind.dontInvalidate);
             if (Location().IsDefault())
@@ -207,7 +207,7 @@ namespace System.Screen
             menuItems.AddChild(menuItem);
             menuItem->SetAccessKey();
         }
-        public override nothrow void ResetOpen()
+        public override void ResetOpen()
         {
             base->ResetOpen();
             Component* child = menuItems.FirstChild();
@@ -340,30 +340,30 @@ namespace System.Screen
     
     public class MenuItem : Component
     {
-        public nothrow MenuItem(const string& text_, uchar shortcut_) : state(MenuItemState.closed), flags(MenuItemFlags.none), text(ToUtf32(text_)), items(this), accessKey(), shortcut(shortcut_)
+        public MenuItem(const string& text_, uchar shortcut_) : state(MenuItemState.closed), flags(MenuItemFlags.none), text(ToUtf32(text_)), items(this), accessKey(), shortcut(shortcut_)
         {
         }
-        public nothrow MenuItem(const string& text_) : this(text_, uchar())
+        public MenuItem(const string& text_) : this(text_, uchar())
         {
         }
-        public nothrow void SetText(const string& text_)
+        public void SetText(const string& text_)
         {
             text = ToUtf32(text_);
             SetAccessKey();
         }
-        public nothrow void SetDisabled()
+        public nothrow inline void SetDisabled()
         {
             flags = cast<MenuItemFlags>(flags | MenuItemFlags.disabled);
         }
-        public nothrow void SetEnabled()
+        public nothrow inline void SetEnabled()
         {
             flags = cast<MenuItemFlags>(flags & ~MenuItemFlags.disabled);
         }
-        public nothrow bool IsDisabled() const
+        public nothrow inline bool IsDisabled() const
         {
             return (flags & MenuItemFlags.disabled) != MenuItemFlags.none;
         }
-        public nothrow bool IsEnabled() const
+        public nothrow inline bool IsEnabled() const
         {
             return (flags & MenuItemFlags.disabled) == MenuItemFlags.none;
         }
@@ -378,7 +378,7 @@ namespace System.Screen
         {
             return ParentMenuItem() == null;
         }
-        public nothrow bool IsFocused() const
+        public bool IsFocused() const
         {
             MenuControl* menuControl = GetMenuControl();
             if (menuControl != null)
@@ -610,7 +610,7 @@ namespace System.Screen
             }
             selectEvent.Fire();
         }
-        public nothrow void Measure(Point& loc)
+        public void Measure(Point& loc)
         {
             if (IsTopLevel())
             {
@@ -621,7 +621,7 @@ namespace System.Screen
                 MeasureChild(loc);
             }
         }
-        public nothrow int TextLength() const
+        public int TextLength() const
         {
             int ampPos = cast<int>(text.Find('&'));
             if (ampPos != -1)
@@ -634,7 +634,7 @@ namespace System.Screen
                 return cast<int>(text.Length());
             }
         }
-        public nothrow ustring ShortcutText() const
+        public ustring ShortcutText() const
         {
             if (shortcut != '\0')
             {
@@ -650,7 +650,7 @@ namespace System.Screen
         {
             return accessKey;
         }
-        public nothrow void SetAccessKey()
+        public void SetAccessKey()
         {
             int ampPos = cast<int>(text.Find('&'));
             if (ampPos != -1 && ampPos < text.Length() - 1)

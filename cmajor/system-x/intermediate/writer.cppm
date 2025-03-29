@@ -57,7 +57,6 @@ public:
     void Visit(PtrDiffInstruction& inst) override;
     void Visit(FunctionCallInstruction& inst) override;
     void Visit(TrapInstruction& inst) override;
-    void Visit(PhiInstruction& inst) override;
     void Visit(NoOperationInstruction& inst) override;
 private:
     std::ofstream file;

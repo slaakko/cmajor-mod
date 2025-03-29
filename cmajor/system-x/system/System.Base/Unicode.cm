@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,7 +11,7 @@ namespace System.Unicode
 {
     public class UnicodeException : Exception
     {
-        public nothrow UnicodeException(const string& message_) : base(message_)
+        public UnicodeException(const string& message_) : base(message_)
         {
         }
     }
@@ -110,7 +110,7 @@ namespace System.Unicode
     
     public class BinaryProperty
     {
-        public nothrow BinaryProperty(BinaryPropertyId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public BinaryProperty(BinaryPropertyId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
         public inline nothrow BinaryPropertyId Id()
@@ -135,11 +135,11 @@ namespace System.Unicode
         static BinaryPropertyTable() : instance(new BinaryPropertyTable())
         {
         }
-        public static nothrow BinaryPropertyTable& Instance()
+        public static BinaryPropertyTable& Instance()
         {
             return *instance;
         }
-        public nothrow const BinaryProperty* GetBinaryProperty(BinaryPropertyId id) const
+        public const BinaryProperty* GetBinaryProperty(BinaryPropertyId id) const
         {
             HashMap<uint, void*>.ConstIterator it = binaryPropertyIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != binaryPropertyIdMap.CEnd())
@@ -237,9 +237,15 @@ namespace System.Unicode
         }
         public ~BinaryPropertyTable()
         {
-            for (BinaryProperty* binaryProperty : binaryProperties)
+            try
             {
-                delete binaryProperty;
+                for (BinaryProperty* binaryProperty : binaryProperties)
+                {
+                    delete binaryProperty;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private List<BinaryProperty*> binaryProperties;
@@ -249,7 +255,7 @@ namespace System.Unicode
         private static UniquePtr<BinaryPropertyTable> instance;
     }    
     
-    public nothrow const BinaryProperty* GetBinaryProperty(BinaryPropertyId id)
+    public const BinaryProperty* GetBinaryProperty(BinaryPropertyId id)
     {
         return BinaryPropertyTable.Instance().GetBinaryProperty(id);
     }
@@ -300,7 +306,7 @@ namespace System.Unicode
 
     public class Block 
     {
-        public nothrow Block(BlockId id_, const string& shortName_, const string& longName_, uchar start_, uchar end_) : 
+        public Block(BlockId id_, const string& shortName_, const string& longName_, uchar start_, uchar end_) : 
             id(id_), shortName(shortName_), longName(longName_), start(start_), end(end_)
         {
         }
@@ -340,7 +346,7 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public inline nothrow const Block* GetBlock(BlockId id) const
+        public inline const Block* GetBlock(BlockId id) const
         {
             HashMap<uint, void*>.ConstIterator it = blockIdMap.CFind(cast<uint>(cast<ushort>(id)));
             if (it != blockIdMap.CEnd())
@@ -678,9 +684,15 @@ namespace System.Unicode
         }
         public ~BlockTable()
         {
-            for (Block* block : blocks)
+            try
             {
-                delete block;
+                for (Block* block : blocks)
+                {
+                    delete block;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<BlockTable> instance;
@@ -729,7 +741,7 @@ namespace System.Unicode
 
     public class GeneralCategory
     {
-        public nothrow GeneralCategory(GeneralCategoryId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public GeneralCategory(GeneralCategoryId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
         public inline nothrow GeneralCategoryId Id()
@@ -758,7 +770,7 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public nothrow const GeneralCategory* GetGeneralCategory(GeneralCategoryId id) const
+        public const GeneralCategory* GetGeneralCategory(GeneralCategoryId id) const
         {
             HashMap<uint, void*>.ConstIterator it = generalCategoryIdMap.CFind(cast<uint>(id));
             if (it != generalCategoryIdMap.CEnd())
@@ -836,9 +848,15 @@ namespace System.Unicode
         }
         public ~GeneralCategoryTable()
         {
-            for (GeneralCategory* generalCategory : generalCategories)
+            try
             {
-                delete generalCategory;
+                for (GeneralCategory* generalCategory : generalCategories)
+                {
+                    delete generalCategory;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<GeneralCategoryTable> instance;
@@ -882,7 +900,7 @@ namespace System.Unicode
 
     public class Age
     {
-        public nothrow Age(AgeId id_, const string& version_) : id(id_), version(version_)
+        public Age(AgeId id_, const string& version_) : id(id_), version(version_)
         {
         }
         public inline nothrow AgeId Id() const
@@ -956,9 +974,15 @@ namespace System.Unicode
         }
         public ~AgeTable()
         {
-            for (Age* age : ages)
+            try
             {
-                delete age;
+                for (Age* age : ages)
+                {
+                    delete age;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<AgeTable> instance;
@@ -1010,7 +1034,7 @@ namespace System.Unicode
     
     public class Script
     {
-        public nothrow Script(ScriptId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public Script(ScriptId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
         public inline nothrow ScriptId Id() const
@@ -1231,9 +1255,15 @@ namespace System.Unicode
         }
         public ~ScriptTable()
         {
-            for (Script* script : scripts)
+            try
             {
-                delete script;
+                for (Script* script : scripts)
+                {
+                    delete script;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<ScriptTable> instance;
@@ -1341,7 +1371,7 @@ namespace System.Unicode
 
     public class NumericType
     {
-        public nothrow NumericType(NumericTypeId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public NumericType(NumericTypeId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
         public inline nothrow NumericTypeId Id() const
@@ -1412,9 +1442,15 @@ namespace System.Unicode
         }
         public ~NumericTypeTable()
         {
-            for (NumericType* numericType : numericTypes)
+            try
             {
-                delete numericType;
+                for (NumericType* numericType : numericTypes)
+                {
+                    delete numericType;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private List<NumericType*> numericTypes;
@@ -1447,7 +1483,7 @@ namespace System.Unicode
     
     public class BidiClass
     {
-        public nothrow BidiClass(BidiClassId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public BidiClass(BidiClassId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
         public inline nothrow BidiClassId Id() const
@@ -1537,9 +1573,15 @@ namespace System.Unicode
         }
         public ~BidiClassTable()
         {
-            for (BidiClass* bidiClass : bidiClasses)
+            try
             {
-                delete bidiClass;
+                for (BidiClass* bidiClass : bidiClasses)
+                {
+                    delete bidiClass;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<BidiClassTable> instance;
@@ -1572,7 +1614,7 @@ namespace System.Unicode
 
     public class BidiPairedBracketType
     {
-        public nothrow BidiPairedBracketType(BidiPairedBracketTypeId id_, const string& shortName_, const string& longName_) : 
+        public BidiPairedBracketType(BidiPairedBracketTypeId id_, const string& shortName_, const string& longName_) : 
             id(id_), shortName(shortName_), longName(longName_)
         {
         }
@@ -1643,9 +1685,15 @@ namespace System.Unicode
         }
         public ~BidiPairedBracketTypeTable()
         {
-            for (BidiPairedBracketType* bidiPairedBracketType : bidiPairedBracketTypes)
+            try
             {
-                delete bidiPairedBracketType;
+                for (BidiPairedBracketType* bidiPairedBracketType : bidiPairedBracketTypes)
+                {
+                    delete bidiPairedBracketType;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<BidiPairedBracketTypeTable> instance;
@@ -1678,7 +1726,7 @@ namespace System.Unicode
 
     public class AliasType
     {
-        public nothrow AliasType(AliasTypeId id_, const string& name_) : id(id_), name(name_)
+        public AliasType(AliasTypeId id_, const string& name_) : id(id_), name(name_)
         {
         }
         public nothrow inline AliasTypeId Id() const
@@ -1735,9 +1783,15 @@ namespace System.Unicode
         }
         public ~AliasTypeTable()
         {
-            for (AliasType* aliasType : aliasTypes)
+            try
             {
-                delete aliasType;
+                for (AliasType* aliasType : aliasTypes)
+                {
+                    delete aliasType;
+                }
+            }
+            catch (const Exception&)
+            {
             }
         }
         private static UniquePtr<AliasTypeTable> instance;
@@ -1761,7 +1815,7 @@ namespace System.Unicode
         public nothrow Alias() : typeId(AliasTypeId.none), name()
         {
         }
-        public nothrow Alias(AliasTypeId typeId_, const string& name_) : typeId(typeId_), name(name_)
+        public Alias(AliasTypeId typeId_, const string& name_) : typeId(typeId_), name(name_)
         {
         }
         public inline nothrow AliasTypeId TypeId() const
@@ -1783,7 +1837,7 @@ namespace System.Unicode
 
     public class ExtendedCharacterInfo
     {
-        public nothrow ExtendedCharacterInfo() : 
+        public ExtendedCharacterInfo() : 
             characterName(), unicode1Name(), canonicalCombiningClass(0u), fullUpper(), fullLower(), fullTitle(), fullFolding(), bidiClass(BidiClassId.none),
             numericType(NumericTypeId.none), numericValue(), aliases(), bidiMirroringGlyph(cast<uchar>(0u)), bidiPairedBracketType(BidiPairedBracketTypeId.none), 
             bidiPairedBracket(cast<uchar>(0u))

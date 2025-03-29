@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ namespace System.Screen
 {
     public class WindowManager
     {
-        public nothrow WindowManager() : nextWindowHandle(0)
+        public WindowManager() : nextWindowHandle(0), windowMap()
         {
         }
         public void AddWindow(Control* window)
@@ -18,7 +18,7 @@ namespace System.Screen
             window->SetHandle(nextWindowHandle++);
             windowMap[window->Handle()] = window;
         }
-        public Control* GetWindow(int windowHandle)    const
+        public Control* GetWindow(int windowHandle) const
         {
             Map<int, Control*>.ConstIterator it = windowMap.CFind(windowHandle);
             if (it != windowMap.CEnd())

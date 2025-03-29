@@ -5,6 +5,7 @@
 
 import cmajor.systemx.assembler;
 import cmajor.systemx.intermediate;
+import cmajor.systemx.optimizer;
 import cmajor.symbols;
 import cmajor.binder;
 import cmajor.backend;
@@ -43,7 +44,7 @@ void PrintHelp()
         "--config=CONFIG (-c=CONFIG)\n" <<
         "   set configuration to CONFIG (debug | release)\n" <<
         "   default is debug\n" <<
-        "--optimization-level=LEVEL (-O=LEVEL)\n" <<
+        "--opt=LEVEL (-O=LEVEL)\n" <<
         "   set optimization level to LEVEL=0-3\n" <<
         "   defaults: debug=0, release=2\n" <<
         "--verbose (-v)\n" <<
@@ -159,7 +160,7 @@ int main(int argc, const char** argv)
                                     throw std::runtime_error("unknown configuration '" + components[1] + "'");
                                 }
                             }
-                            else if (components[0] == "--optimization-level")
+                            else if (components[0] == "--opt")
                             {
                                 int optimizationLevel = std::stoi(components[1]);
                                 if (optimizationLevel >= 0 && optimizationLevel <= 3)
@@ -316,6 +317,10 @@ int main(int argc, const char** argv)
             if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo)
             {
                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
+            }
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+            {
+                cmajor::systemx::optimizer::SetOptimizations(cmajor::symbols::GetOptimizationLevel());
             }
             for (const std::string& file : files)
             {

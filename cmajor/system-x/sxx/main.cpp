@@ -6,6 +6,7 @@
 import cmajor.systemx.machine;
 import cmajor.systemx.executor.console;
 import cmajor.systemx.kernel;
+import cmajor.systemx.sxutil;
 import soul.xml.xpath;
 import util;
 import std.filesystem;
@@ -29,7 +30,7 @@ void PrintHelp()
 {
     std::cout << "System X Executor version " << version << std::endl;
     std::cout << std::endl;
-    std::cout << "Usage: sxx [options] FILE.x [ arguments for FILE.x ]" << std::endl;
+    std::cout << "Usage: sxx [options] [ FILE.x [ arguments for FILE.x ] ]" << std::endl;
     std::cout << std::endl;
     std::cout << "Run FILE.x in the System X virtual machine." << std::endl;
     std::cout << std::endl;
@@ -40,34 +41,6 @@ void PrintHelp()
     std::cout << "  Be verbose." << std::endl;
     std::cout << "--debug=MODE | -d=MODE" << std::endl;
     std::cout << "  Set debug mode to MODE (default mode is 0=no kernel debugging)." << std::endl;
-}
-
-std::string SearchBin(const std::string& fileName)
-{
-    if (std::filesystem::exists(fileName))
-    {
-        return fileName;
-    }
-    std::string executableFileName = fileName;
-    if (!util::Path::HasExtension(fileName))
-    {
-        executableFileName.append(".x");
-    }
-    std::string fullPath = util::GetFullPath(executableFileName);
-    if (std::filesystem::exists(fullPath))
-    {
-        return fullPath;
-    }
-    std::string binDirectory = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "system-x"), "bin"));
-    fullPath = util::GetFullPath(util::Path::Combine(binDirectory, executableFileName));
-    if (std::filesystem::exists(fullPath))
-    {
-        return fullPath;
-    }
-    else
-    {
-        throw std::runtime_error("executable '" + fileName + "' not found");
-    }
 }
 
 int main(int argc, const char** argv)
@@ -173,7 +146,7 @@ int main(int argc, const char** argv)
             else if (!programFileSeen)
             {
                 programFileSeen = true;
-                std::string filePath = SearchBin(arg);
+                std::string filePath = cmajor::systemx::SearchBin(arg);
                 args.push_back(filePath);
             }
             else
@@ -183,7 +156,7 @@ int main(int argc, const char** argv)
         }
         if (!programFileSeen)
         {
-            std::string filePath = SearchBin("sh");
+            std::string filePath = cmajor::systemx::SearchBin("sh");
             args.push_back(filePath);
         }
         cmajor::systemx::machine::Machine machine;

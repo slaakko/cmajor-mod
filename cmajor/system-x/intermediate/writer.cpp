@@ -173,7 +173,17 @@ void Writer::Visit(Function& function)
     {
         formatter.WriteLine();
     }
-    formatter.WriteLine("function " + function.Name());
+    std::string once;
+    if (function.Once())
+    {
+        once = "once ";
+    }
+    std::string main;
+    if (function.IsMain())
+    {
+        main = "main_fn ";
+    }
+    formatter.WriteLine("function " + function.GetType()->Name() + once + main + function.Name());
     formatter.WriteLine("{");
     formatter.IncIndent();
     function.VisitBasicBlocks(*this);
@@ -610,7 +620,7 @@ void Writer::Visit(ElemAddrInstruction& inst)
     formatter.Write(" = elemaddr ");
     Write(inst.Ptr(), formatter, 0);
     formatter.Write(", ");
-    Write(inst.Index(), formatter, 0);
+    Write(inst.IndexValue(), formatter, 0);
     if (newLines)
     {
         formatter.WriteLine();
@@ -663,33 +673,6 @@ void Writer::Visit(TrapInstruction& inst)
     Write(inst.Op2(), formatter, 0);
     formatter.Write(", ");
     Write(inst.Op3(), formatter, 0);
-    if (newLines)
-    {
-        formatter.WriteLine();
-    }
-}
-
-void Writer::Visit(PhiInstruction& inst)
-{
-    Write(inst.Result(), formatter, 7);
-    formatter.Write(" = phi ");
-    bool first = true;
-    for (const BlockValue& blockValue : inst.BlockValues())
-    {
-        if (first)
-        {
-            first = false;
-        }
-        else
-        {
-            formatter.Write(", ");
-        }
-        formatter.Write("[");
-        Write(blockValue.value, formatter, 0);
-        formatter.Write(", ");
-        WriteLabel(blockValue.blockId, formatter, 0);
-        formatter.Write("]");
-    }
     if (newLines)
     {
         formatter.WriteLine();

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,23 +12,23 @@ namespace System
     {
         public nothrow Pair() : first(), second() {}
         public Pair(const T& first_, const U& second_) : first(first_), second(second_) {}
-        public Pair(T&& first_, U&& second_) : first(Rvalue(first_)), second(Rvalue(second_)) {}
+        public nothrow Pair(T&& first_, U&& second_) : first(Rvalue(first_)), second(Rvalue(second_)) {}
         public Pair(const Pair& that) : first(that.first), second(that.second) {}
-        public Pair(Pair&& that) : first(Rvalue(that.first)), second(Rvalue(that.second)) {}
+        public nothrow Pair(Pair&& that) : first(Rvalue(that.first)), second(Rvalue(that.second)) {}
         public void operator=(const Pair& p) { first = p.first; second = p.second; }
-        public void operator=(Pair&& p) { Swap(first, p.first); Swap(second, p.second); }
+        public nothrow void operator=(Pair&& p) { Swap(first, p.first); Swap(second, p.second); }
         public T first;
         public U second;
     }
 
-    public nothrow inline bool operator<<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is TotallyOrdered and U is TotallyOrdered
+    public inline bool operator<<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is TotallyOrdered and U is TotallyOrdered
     {
         if (left.first < right.first) return true;
         else if (left.first > right.first) return false;
         else return left.second < right.second;
     }
 
-    public nothrow inline bool operator==<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is Regular and U is Regular
+    public inline bool operator==<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is Regular and U is Regular
     {
         return left.first == right.first && left.second == right.second;
     }

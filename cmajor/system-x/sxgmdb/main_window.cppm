@@ -50,7 +50,7 @@ enum class DebuggingState
 class MainWindow : public wing::Window
 {
 public:
-    MainWindow(const std::string& filePath_);
+    MainWindow(const std::string& filePath_, const std::vector<std::string>& args_);
     ~MainWindow();
     bool WaitingDebugger() const { return waitingDebugger; }
     void NotifyDebuggingStopped();

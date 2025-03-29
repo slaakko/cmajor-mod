@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -75,7 +75,7 @@ namespace System
         { 
             return ptr == null; 
         }
-        public inline nothrow T* operator->()
+        public inline T* operator->()
         {
             if (ptr == null)
             {
@@ -83,7 +83,7 @@ namespace System
             }
             return ptr;
         }
-        public inline nothrow const T* operator->() const
+        public inline const T* operator->() const
         {
             if (ptr == null)
             {
@@ -91,7 +91,7 @@ namespace System
             }
             return ptr;
         }
-        public inline nothrow T& operator*()
+        public inline T& operator*()
         {
             if (ptr == null)
             {
@@ -99,7 +99,7 @@ namespace System
             }
             return *ptr;
         }
-        public inline nothrow const T& operator*() const
+        public inline const T& operator*() const
         {
             if (ptr == null)
             {

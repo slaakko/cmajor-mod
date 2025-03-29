@@ -43,7 +43,7 @@ BoundStatement* BoundStatement::StatementParent() const
         }
         else
         {
-            throw cmajor::symbols::Exception("statement parent expected", GetFullSpan());
+            return nullptr;
         }
     }
     else

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,7 +16,7 @@ namespace System.Collections
         805306457, 1610612741
     ];
     
-    public constexpr inline nothrow long GetNextHashtablePrime(long n)
+    public constexpr inline long GetNextHashtablePrime(long n)
     {
         const long* p = LowerBound(hashtablePrimes.CBegin(), hashtablePrimes.CEnd(), n);
         if (p < hashtablePrimes.CEnd())
@@ -56,7 +56,7 @@ namespace System.Collections
         return cast<ulong>(x);
     }
     
-    public inline nothrow ulong GetHashCode(const string& s)
+    public ulong GetHashCode(const string& s)
     {
         ulong hashCode = 14695981039346656037u;
         for (char c : s)
@@ -67,7 +67,7 @@ namespace System.Collections
         return hashCode;
     }
     
-    public inline nothrow ulong GetHashCode(const wstring& s)
+    public ulong GetHashCode(const wstring& s)
     {
         ulong hashCode = 14695981039346656037u;
         for (wchar c : s)
@@ -78,7 +78,7 @@ namespace System.Collections
         return hashCode;
     }
 
-    public inline nothrow ulong GetHashCode(const ustring& s)
+    public ulong GetHashCode(const ustring& s)
     {
         ulong hashCode = 14695981039346656037u;
         for (uchar c : s)
@@ -89,7 +89,7 @@ namespace System.Collections
         return hashCode;
     }
     
-    public inline nothrow ulong GetHashCode(const Uuid& uuid)
+    public ulong GetHashCode(const Uuid& uuid)
     {
         ulong hashCode = 14695981039346656037u;
         for (byte b : uuid)
@@ -102,7 +102,7 @@ namespace System.Collections
 
     public class Hasher<T> : UnaryFun<T, ulong>
     {
-        public inline nothrow ulong operator()(const T& x)
+        public inline ulong operator()(const T& x)
         {
             return GetHashCode(x);
         }
@@ -152,7 +152,7 @@ namespace System.Collections
         public inline nothrow HashtableIterator(HashtableType* table_, Bucket<ValueType>* bucket_) : table(table_), bucket(bucket_)
         {
         }
-        public inline nothrow ReferenceType operator*()
+        public inline ReferenceType operator*()
         {
             if (bucket == null)
             {
@@ -160,7 +160,7 @@ namespace System.Collections
             }
             return bucket->Value();
         }
-        public inline nothrow PointerType operator->()
+        public inline PointerType operator->()
         {
             if (bucket == null)
             {
@@ -168,7 +168,7 @@ namespace System.Collections
             }
             return &(bucket->Value());
         }
-        public inline nothrow Self& operator++()
+        public inline Self& operator++()
         {
             if (bucket == null || table == null)
             {
@@ -218,7 +218,7 @@ namespace System.Collections
         public typedef HashtableIterator<ValueType, ValueType&, ValueType*, Self> Iterator;
         public typedef HashtableIterator<ValueType, const ValueType&, const ValueType*, Self> ConstIterator;
 
-        public nothrow Hashtable() : buckets(), count(0), loadFactor(0.0), maxLoadFactor(0.8), keyOf(), hash(), equal()
+        public Hashtable() : buckets(), count(0), loadFactor(0.0), maxLoadFactor(0.8), keyOf(), hash(), equal()
         {
         }
         public Hashtable(const Self& that) : buckets(), count(0), loadFactor(that.loadFactor), maxLoadFactor(that.maxLoadFactor), keyOf(that.keyOf), hash(that.hash), equal(that.equal)
@@ -247,7 +247,13 @@ namespace System.Collections
         }
         public ~Hashtable()
         {
-            Clear();
+            try
+            {
+                Clear();
+            }
+            catch (const Exception&)
+            {
+            }
         }
         public inline nothrow long Count() const
         {
@@ -257,7 +263,7 @@ namespace System.Collections
         {
             return count == 0;
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             long n = buckets.Count();
             for (long i = 0; i < n; ++i)
@@ -357,7 +363,7 @@ namespace System.Collections
             CheckForRehash();
             return MakePair(Iterator(this, bucket), true);
         }
-        public nothrow void Remove(const KeyType& key) 
+        public void Remove(const KeyType& key) 
         {
             long index = Hash(key);
             if (index == -1) return;
@@ -384,7 +390,7 @@ namespace System.Collections
                 bucket = bucket->Next();
             }
         }
-        public nothrow void Remove(Iterator pos)
+        public void Remove(Iterator pos)
         {
             Bucket<ValueType>* bucket = pos.GetBucket();
             if (bucket != null)
@@ -414,7 +420,7 @@ namespace System.Collections
                 }
             }
         }
-        public nothrow Iterator Find(const KeyType& key) 
+        public Iterator Find(const KeyType& key) 
         {
             long index = Hash(key);
             if (index >= 0)
@@ -431,7 +437,7 @@ namespace System.Collections
             }            
             return Iterator(this, null);
         }
-        public nothrow ConstIterator Find(const KeyType& key) const
+        public ConstIterator Find(const KeyType& key) const
         {
             long index = Hash(key);
             if (index >= 0)
@@ -448,7 +454,7 @@ namespace System.Collections
             }            
             return ConstIterator(this, null);
         }
-        public nothrow ConstIterator CFind(const KeyType& key) const
+        public ConstIterator CFind(const KeyType& key) const
         {
             long index = Hash(key);
             if (index >= 0)
@@ -473,7 +479,7 @@ namespace System.Collections
         {
             return Hash(KeyOf(value));
         }
-        public inline nothrow Bucket<ValueType>* GetBucket(long index) const
+        public inline Bucket<ValueType>* GetBucket(long index) const
         {
             return buckets[index];
         }
@@ -521,7 +527,7 @@ namespace System.Collections
                 }
             }
         }
-        private nothrow Bucket<ValueType>* GetFirstBucket() const
+        private Bucket<ValueType>* GetFirstBucket() const
         {
             Bucket<ValueType>* bucket = null;
             long n = buckets.Count();
@@ -556,12 +562,12 @@ namespace System.Collections
         {
             return keyOf(value);
         }
-        private inline nothrow long Hash(const KeyType& key) const
+        private inline long Hash(const KeyType& key) const
         {
             if (buckets.IsEmpty()) return -1;
             return cast<long>(hash(key) % cast<ulong>(buckets.Count()));
         }
-        private inline nothrow bool KeysEqual(const KeyType& left, const KeyType& right) const
+        private inline bool KeysEqual(const KeyType& left, const KeyType& right) const
         {
             return equal(left, right);
         }

@@ -826,17 +826,26 @@
       <sequence first="{FUNCTION}">
        <sequence first="{FUNCTION}">
         <sequence first="{FUNCTION}">
-         <action first="{FUNCTION}">
-          <token first="{FUNCTION}" name="FUNCTION"/>
-         </action>
-         <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
-          <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
-         </action>
+         <sequence first="{FUNCTION}">
+          <action first="{FUNCTION}">
+           <token first="{FUNCTION}" name="FUNCTION"/>
+          </action>
+          <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+           <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
+          </action>
+         </sequence>
+         <optional first="{#, ONCE}">
+          <group first="{ONCE}">
+           <action first="{ONCE}">
+            <token first="{ONCE}" name="ONCE"/>
+           </action>
+          </group>
+         </optional>
         </sequence>
-        <optional first="{#, ONCE}">
-         <group first="{ONCE}">
-          <action first="{ONCE}">
-           <token first="{ONCE}" name="ONCE"/>
+        <optional first="{#, MAIN}">
+         <group first="{MAIN}">
+          <action first="{MAIN}">
+           <token first="{MAIN}" name="MAIN"/>
           </action>
          </group>
         </optional>
@@ -1157,13 +1166,13 @@
      </sequence>
      <token first="{ASSIGN}" name="ASSIGN"/>
     </sequence>
-    <action first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PHI, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}">
-     <nonterminal first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PHI, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}" ruleName="Operation"/>
+    <action first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}">
+     <nonterminal first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}" ruleName="Operation"/>
     </action>
    </sequence>
   </rule>
-  <rule first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PHI, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}" name="Operation">
-   <switch first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PHI, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}">
+  <rule first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}" name="Operation">
+   <switch first="{ADD, AND, BITCAST, CALL, DIV, ELEMADDR, EQUAL, FLOATTOINT, INTTOFLOAT, INTTOPTR, LESS, LOAD, LOCAL, MOD, MUL, NEG, NOT, OR, PARAM, PTRDIFF, PTROFFSET, PTRTOINT, SHL, SHR, SIGNEXTEND, SUB, TRAP, TRUNCATE, XOR, ZEROEXTEND}">
     <case first="{BITCAST, FLOATTOINT, INTTOFLOAT, INTTOPTR, NEG, NOT, PTRTOINT, SIGNEXTEND, TRUNCATE, ZEROEXTEND}">
      <action first="{BITCAST, FLOATTOINT, INTTOFLOAT, INTTOPTR, NEG, NOT, PTRTOINT, SIGNEXTEND, TRUNCATE, ZEROEXTEND}">
       <nonterminal first="{BITCAST, FLOATTOINT, INTTOFLOAT, INTTOPTR, NEG, NOT, PTRTOINT, SIGNEXTEND, TRUNCATE, ZEROEXTEND}" ruleName="UnaryInstruction"/>
@@ -1212,11 +1221,6 @@
     <case first="{TRAP}">
      <action first="{TRAP}">
       <nonterminal first="{TRAP}" ruleName="TrapInstruction"/>
-     </action>
-    </case>
-    <case first="{PHI}">
-     <action first="{PHI}">
-      <nonterminal first="{PHI}" ruleName="PhiInstruction"/>
      </action>
     </case>
    </switch>
@@ -1654,55 +1658,6 @@
      <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="Operand"/>
     </action>
    </sequence>
-  </rule>
-  <rule first="{PHI}" name="PhiInstruction">
-   <action first="{PHI}">
-    <group first="{PHI}">
-     <sequence first="{PHI}">
-      <action first="{PHI}">
-       <token first="{PHI}" name="PHI"/>
-      </action>
-      <optional first="{#, LBRACKET}">
-       <group first="{LBRACKET}">
-        <sequence first="{LBRACKET}">
-         <action first="{LBRACKET}">
-          <nonterminal first="{LBRACKET}" ruleName="BlockValue"/>
-         </action>
-         <kleene first="{#, COMMA}">
-          <group first="{COMMA}">
-           <sequence first="{COMMA}">
-            <token first="{COMMA}" name="COMMA"/>
-            <action first="{LBRACKET}">
-             <nonterminal first="{LBRACKET}" ruleName="BlockValue"/>
-            </action>
-           </sequence>
-          </group>
-         </kleene>
-        </sequence>
-       </group>
-      </optional>
-     </sequence>
-    </group>
-   </action>
-  </rule>
-  <rule first="{LBRACKET}" name="BlockValue">
-   <action first="{LBRACKET}">
-    <group first="{LBRACKET}">
-     <sequence first="{LBRACKET}">
-      <sequence first="{LBRACKET}">
-       <sequence first="{LBRACKET}">
-        <sequence first="{LBRACKET}">
-         <token first="{LBRACKET}" name="LBRACKET"/>
-         <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="Operand"/>
-        </sequence>
-        <token first="{COMMA}" name="COMMA"/>
-       </sequence>
-       <nonterminal first="{AT}" ruleName="Label"/>
-      </sequence>
-      <token first="{RBRACKET}" name="RBRACKET"/>
-     </sequence>
-    </group>
-   </action>
   </rule>
   <rule first="{NOP}" name="NoOperationInstruction">
    <action first="{NOP}">

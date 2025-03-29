@@ -211,6 +211,9 @@
     <ProjectReference Include="..\object\object.vcxproj">
       <Project>{74000ee5-8498-4d10-beef-ed5743e01300}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sxoptimizer\sxoptimizer.vcxproj">
+      <Project>{7fe81ab0-8ee1-4c93-a7c7-a871c925712a}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />

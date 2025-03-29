@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -36,7 +36,7 @@ namespace System.Screen
             endLine = endLine_;
             endCol = endCol_;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "[(" + ToString(startLine) + ", " + ToString(startCol) + "), (" + ToString(endLine) + ", " + ToString(endCol) + ")]";
         }
@@ -124,7 +124,7 @@ namespace System.Screen
     
     public class Editor : Control
     {
-        public nothrow Editor(EditorCreateParams& createParams) : 
+        public Editor(EditorCreateParams& createParams) : 
             base(createParams.controlCreateParams), flags(EditorFlags.none), xOffset(0), yOffset(0), caretLine(0), caretCol(0)
         {
             InvalidateGuard invalidateGuard(this, InvalidateKind.dontInvalidate);
@@ -165,7 +165,7 @@ namespace System.Screen
         {
             return (flags & EditorFlags.dirty) != EditorFlags.none;
         }
-        public nothrow void SetDirty()
+        public void SetDirty()
         {
             if (!IsDirty())
             {
@@ -173,7 +173,7 @@ namespace System.Screen
                 dirtyChangedEvent.Fire();
             }
         }
-        public nothrow void ResetDirty()
+        public void ResetDirty()
         {
             if (IsDirty())
             {
@@ -196,7 +196,7 @@ namespace System.Screen
             lines.Add(ToUtf32(line));
             Invalidate(GetRect());
         }
-        public nothrow void SetFilePath(const string& filePath_)
+        public void SetFilePath(const string& filePath_)
         {
             if (filePath != filePath_)
             {
@@ -217,11 +217,11 @@ namespace System.Screen
                 caretPosChangedEvent.Fire();
             }
         }
-        public nothrow int CaretLine() const
+        public nothrow inline int CaretLine() const
         {
             return caretLine;
         }
-        public nothrow int CaretCol() const
+        public nothrow inline int CaretCol() const
         {
             return caretCol;
         }
@@ -310,23 +310,23 @@ namespace System.Screen
             Invalidate(GetRect());
             SetDirty();
         }
-        public nothrow Event<ChangedEventHandler>& FilePathChangedEvent() 
+        public Event<ChangedEventHandler>& FilePathChangedEvent() 
         {
             return filePathChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& CaretPosChangedEvent() 
+        public Event<ChangedEventHandler>& CaretPosChangedEvent() 
         {
             return caretPosChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& StatusTextChangedEvent() 
+        public Event<ChangedEventHandler>& StatusTextChangedEvent() 
         {
             return statusTextChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& DirtyChangedEvent()
+        public Event<ChangedEventHandler>& DirtyChangedEvent()
         {
             return dirtyChangedEvent;
         }
-        public nothrow void SetStatusText(const string& statusText_)
+        public void SetStatusText(const string& statusText_)
         {
             if (statusText != statusText_)
             {
@@ -915,8 +915,8 @@ namespace System.Screen
                 {
                     ResetSelection();
                 }
-                SetCaretPos(caretLine - 1, Min(caretCol, cast<int>(line.Length())));
                 ustring& line = lines[caretLine];
+                SetCaretPos(caretLine - 1, Min(caretCol, cast<int>(line.Length())));
                 SetCursorPos();
             }
             if (caretLine < yOffset)

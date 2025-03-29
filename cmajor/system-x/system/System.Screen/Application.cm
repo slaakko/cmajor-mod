@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -36,7 +36,6 @@ namespace System.Screen
         }
         private Application() : msgQ(MsgQ(MakeApplicationMessageQueueName().Chars())), menuBar(null), focusedControl(null), lastDefaultWriteScreenMessageWindow(-1)
         {
-            RegisterMessage<KeyPressedMessage>(systemScreenKeyPressedMessageId);
             BindTerminal(msgQ);
         }
         public nothrow Window* MainWindow() 

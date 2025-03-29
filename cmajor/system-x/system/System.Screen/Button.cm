@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -22,7 +22,7 @@ namespace System.Screen
         {
             return *this;
         }
-        public nothrow ButtonCreateParams& Text(const string& text_)
+        public ButtonCreateParams& Text(const string& text_)
         {
             text = ToUtf32(text_);
             return *this;
@@ -62,7 +62,7 @@ namespace System.Screen
 
     public class Button : Control
     {
-        public nothrow Button(ButtonCreateParams& createParams) : base(createParams.controlCreateParams), flags(ButtonFlags.none), text(createParams.text)
+        public Button(ButtonCreateParams& createParams) : base(createParams.controlCreateParams), flags(ButtonFlags.none), text(createParams.text)
         {
             InvalidateGuard invalidateGuard(this, InvalidateKind.dontInvalidate);
             if (createParams.controlCreateParams.foreColor == ConsoleColor.defaultColor)
@@ -238,7 +238,7 @@ namespace System.Screen
         {
             return accessKey;
         }
-        public nothrow void SetAccessKey()
+        public void SetAccessKey()
         {
             int ampPos = cast<int>(text.Find('&'));
             if (ampPos != -1 && ampPos < text.Length() - 1)

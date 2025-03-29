@@ -27,44 +27,53 @@ RegValue::RegValue(const soul::ast::SourcePos& sourcePos_, Type* type_, int32_t 
 {
 }
 
-void Use::Set(Value* value_)
+void AddUser(Instruction* user, Value* value)
 {
-    if (value == value_)
+    if (value)
     {
-        return;
-    }
-    if (value->IsRegValue())
-    {
-        RegValue* regValue = static_cast<RegValue*>(value);
-        Instruction* inst = regValue->Inst();
-        if (inst)
+        if (value->IsRegValue())
         {
-            inst->RemoveUser(user);
+            RegValue* regValue = static_cast<RegValue*>(value);
+            if (regValue->Inst())
+            {
+                regValue->Inst()->AddUser(user);
+            }
         }
-    }
-    else if (value->IsInstruction())
-    {
-        Instruction* inst = static_cast<Instruction*>(value);
-        inst->RemoveUser(user);
-    }
-    value = value_;
-    if (value->IsRegValue())
-    {
-        RegValue* regValue = static_cast<RegValue*>(value);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(user);
-        }
-    }
-    else if (value->IsInstruction())
-    {
-        Instruction* inst = static_cast<Instruction*>(value);
-        inst->AddUser(user);
     }
 }
 
-Instruction::Instruction(const soul::ast::SourcePos& sourcePos_, Type* type_, OpCode opCode_) : Value(sourcePos_, ValueKind::instruction, type_), opCode(opCode_), metadataRef(nullptr), index(-1)
+void RemoveUser(Instruction* user, Value* value)
+{
+    if (value)
+    {
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = static_cast<RegValue*>(value);
+            if (regValue->Inst())
+            {
+                regValue->Inst()->RemoveUser(user);
+            }
+        }
+    }
+}
+
+void AddToUsesVec(std::vector<Instruction*>& uses, Value* value)
+{
+    if (value)
+    {
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = static_cast<RegValue*>(value);
+            if (regValue->Inst())
+            {
+                uses.push_back(regValue->Inst());
+            }
+        }
+    }
+}
+
+Instruction::Instruction(const soul::ast::SourcePos& sourcePos_, Type* type_, OpCode opCode_) : 
+    Value(sourcePos_, ValueKind::instruction, type_), opCode(opCode_), metadataRef(nullptr), index(-1), regValueIndex(-1)
 {
 }
 
@@ -131,7 +140,6 @@ bool Instruction::IsValueInstruction() const
     case OpCode::ptrdiff:
     case OpCode::function_call:
     case OpCode::trap:
-    case OpCode::phi:
     {
         return true;
     }
@@ -278,143 +286,41 @@ void Instruction::RemoveUser(Instruction* user)
     RemovePtrFromSet(user, users);
 }
 
-std::vector<Use> Instruction::Uses()
+void Instruction::AddToUses()
 {
-    std::vector<Use> uses;
-    switch (opCode)
-    {
-    case OpCode::store:
-    {
-        StoreInstruction* store = static_cast<StoreInstruction*>(this);
-        store->AddToUses(uses);
-        break;
-    }
-    case OpCode::arg:
-    {
-        ArgInstruction* arg = static_cast<ArgInstruction*>(this);
-        arg->AddToUses(uses);
-        break;
-    }
-    case OpCode::branch:
-    {
-        BranchInstruction* branch = static_cast<BranchInstruction*>(this);
-        branch->AddToUses(uses);
-        break;
-    }
-    case OpCode::procedure_call:
-    {
-        ProcedureCallInstruction* call = static_cast<ProcedureCallInstruction*>(this);
-        call->AddToUses(uses);
-        break;
-    }
-    case OpCode::ret:
-    {
-        RetInstruction* ret = static_cast<RetInstruction*>(this);
-        ret->AddToUses(uses);
-        break;
-    }
-    case OpCode::switch_:
-    {
-        SwitchInstruction* switch_ = static_cast<SwitchInstruction*>(this);
-        switch_->AddToUses(uses);
-        break;
-    }
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    {
-        UnaryInstruction* inst = static_cast<UnaryInstruction*>(this);
-        inst->AddOperandToUses(uses);
-        break;
-    }
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    {
-        BinaryInstruction* inst = static_cast<BinaryInstruction*>(this);
-        inst->AddOperandsToUses(uses);
-        break;
-    }
-    case OpCode::load:
-    {
-        LoadInstruction* load = static_cast<LoadInstruction*>(this);
-        load->AddToUses(uses);
-        break;
-    }
-    case OpCode::elemaddr:
-    {
-        ElemAddrInstruction* elemAddr = static_cast<ElemAddrInstruction*>(this);
-        elemAddr->AddToUses(uses);
-        break;
-    }
-    case OpCode::ptroffset:
-    {
-        PtrOffsetInstruction* ptrOffset = static_cast<PtrOffsetInstruction*>(this);
-        ptrOffset->AddToUses(uses);
-        break;
-    }
-    case OpCode::ptrdiff:
-    {
-        PtrDiffInstruction* ptrDiff = static_cast<PtrDiffInstruction*>(this);
-        ptrDiff->AddToUses(uses);
-        break;
-    }
-    case OpCode::function_call:
-    {
-        FunctionCallInstruction* call = static_cast<FunctionCallInstruction*>(this);
-        call->AddToUses(uses);
-        break;
-    }
-    case OpCode::trap:
-    {
-        TrapInstruction* trap = static_cast<TrapInstruction*>(this);
-        trap->AddToUses(uses);
-        break;
-    }
-    case OpCode::phi:
-    {
-        PhiInstruction* phi = static_cast<PhiInstruction*>(this);
-        phi->AddToUses(uses);
-        break;
-    }
-    }
-    return uses;
 }
 
 void Instruction::ReplaceUsesWith(Value* value)
 {
-    std::vector<Instruction*> users = Users();
-    for (Instruction* user : users)
+    Function* fn = Parent()->Parent();
+    RegValue* use = fn->GetRegValue(RegValueIndex());
+    if (use)
     {
-        std::vector<Use> uses = user->Uses();
-        for (Use& use : uses)
+        std::vector<Instruction*> copiedUsers = users;
+        for (const auto& user : copiedUsers)
         {
-            use.Set(value);
+            user->ReplaceValue(use, value);
         }
+    }
+    else
+    {
+        Code* code = fn->Parent();
+        Context* context = code->GetContext();
+        Error("reg value " + std::to_string(RegValueIndex()) + "not found", GetSourcePos(), context);
     }
 }
 
-std::unique_ptr<Instruction> Instruction::Remove()
+void Instruction::RemoveFromUses()
 {
-    BasicBlock* parent = Parent();
-    std::unique_ptr<Component> removed = parent->GetContainer()->RemoveChild(this);
-    return std::unique_ptr<Instruction>(static_cast<Instruction*>(removed.release()));
+    std::vector<Instruction*> uses = Uses();
+    for (Instruction* use : uses)
+    {
+        use->RemoveUser(this);
+    }
+}
+
+void Instruction::ReplaceValue(Value* use, Value* value)
+{
 }
 
 BasicBlock* Instruction::Parent() const
@@ -431,35 +337,37 @@ void StoreInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void StoreInstruction::AddUse()
+void StoreInstruction::AddToUses()
 {
-    if (value->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, value);
+    cmajor::systemx::intermediate::AddUser(this, ptr);
+}
+
+void StoreInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (this->value == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(value);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, this->value);
+        this->value = value;
+        cmajor::systemx::intermediate::AddUser(this, this->value);
     }
-    if (ptr->IsRegValue())
+    if (ptr == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(ptr);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, ptr);
+        ptr = value;
+        cmajor::systemx::intermediate::AddUser(this, ptr);
     }
 }
 
-void StoreInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> StoreInstruction::Uses() const
 {
-    uses.push_back(Use(this, value));
-    uses.push_back(Use(this, ptr));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, value);
+    AddToUsesVec(uses, ptr);
+    return uses;
 }
 
-ArgInstruction::ArgInstruction(const soul::ast::SourcePos& sourcePos_, Value* arg_) : Instruction(sourcePos_, nullptr, OpCode::arg), arg(arg_)
+ArgInstruction::ArgInstruction(const soul::ast::SourcePos& sourcePos_, Value* arg_) : Instruction(sourcePos_, nullptr, OpCode::arg), arg(arg_), argIndex(0)
 {
 }
 
@@ -468,22 +376,26 @@ void ArgInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void ArgInstruction::AddUse()
+void ArgInstruction::AddToUses()
 {
-    if (arg->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, arg);
+}
+
+void ArgInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (arg == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(arg);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, arg);
+        arg = value;
+        cmajor::systemx::intermediate::AddUser(this, arg);
     }
 }
 
-void ArgInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> ArgInstruction::Uses() const
 {
-    uses.push_back(Use(this, arg));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, arg);
+    return uses;
 }
 
 JmpInstruction::JmpInstruction(const soul::ast::SourcePos& sourcePos_, int32_t targetLabelId_) :
@@ -507,22 +419,26 @@ void BranchInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void BranchInstruction::AddUse()
+void BranchInstruction::AddToUses()
 {
-    if (cond->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, cond);
+}
+
+void BranchInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (cond == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(cond);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, cond);
+        cond = value;
+        cmajor::systemx::intermediate::AddUser(this, cond);
     }
 }
 
-void BranchInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> BranchInstruction::Uses() const
 {
-    uses.push_back(Use(this, cond));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, cond);
+    return uses;
 }
 
 ProcedureCallInstruction::ProcedureCallInstruction(const soul::ast::SourcePos& sourcePos_, Value* callee_) : Instruction(sourcePos_, nullptr, OpCode::procedure_call), callee(callee_)
@@ -539,42 +455,43 @@ void ProcedureCallInstruction::SetArgs(std::vector<Value*>&& args_)
     args = std::move(args_);
 }
 
-void ProcedureCallInstruction::AddUse()
+void ProcedureCallInstruction::AddToUses()
 {
-    if (callee->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, callee);
+    for (auto& arg : args)
     {
-        RegValue* regValue = static_cast<RegValue*>(callee);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::AddUser(this, arg);
     }
-    /*  TODO: arg uses required?
-        for (Value* arg : args)
-        {
-            if (arg->IsRegValue())
-            {
-                RegValue* regValue = static_cast<RegValue*>(arg);
-                Instruction* inst = regValue->Inst();
-                if (inst)
-                {
-                    inst->AddUser(this);
-                }
-            }
-        }
-    */
 }
 
-void ProcedureCallInstruction::AddToUses(std::vector<Use>& uses)
+void ProcedureCallInstruction::ReplaceValue(Value* use, Value* value)
 {
-    uses.push_back(Use(this, callee));
-    /*  TODO: arg uses required?
-        for (Value*& arg : args)
+    if (callee == use)
+    {
+        cmajor::systemx::intermediate::RemoveUser(this, callee);
+        callee = value;
+        cmajor::systemx::intermediate::AddUser(this, callee);
+    }
+    for (auto& arg : args)
+    {
+        if (arg == use)
         {
-            uses.push_back(Use(this, arg));
+            cmajor::systemx::intermediate::RemoveUser(this, arg);
+            arg = value;
+            cmajor::systemx::intermediate::AddUser(this, arg);
         }
-    */
+    }
+}
+
+std::vector<Instruction*> ProcedureCallInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, callee);
+    for (auto& arg : args)
+    {
+        AddToUsesVec(uses, arg);
+    }
+    return uses;
 }
 
 RetInstruction::RetInstruction(const soul::ast::SourcePos& sourcePos_, Value* returnValue_) : Instruction(sourcePos_, nullptr, OpCode::ret), returnValue(returnValue_)
@@ -586,28 +503,29 @@ void RetInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void RetInstruction::AddUse()
+void RetInstruction::AddToUses()
 {
-    if (returnValue)
+    cmajor::systemx::intermediate::AddUser(this, returnValue);
+}
+
+void RetInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (returnValue == use)
     {
-        if (returnValue->IsRegValue())
-        {
-            RegValue* regValue = static_cast<RegValue*>(returnValue);
-            Instruction* inst = regValue->Inst();
-            if (inst)
-            {
-                inst->AddUser(this);
-            }
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, returnValue);
+        returnValue = value;
+        cmajor::systemx::intermediate::AddUser(this, returnValue);
     }
 }
 
-void RetInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> RetInstruction::Uses() const
 {
+    std::vector<Instruction*> uses;
     if (returnValue)
     {
-        uses.push_back(Use(this, returnValue));
+        AddToUsesVec(uses, returnValue);
     }
+    return uses;
 }
 
 SwitchInstruction::SwitchInstruction(const soul::ast::SourcePos& sourcePos_, Value* cond_, int32_t defaultTargetLabelId_) :
@@ -625,64 +543,81 @@ void SwitchInstruction::AddCaseTarget(const CaseTarget& caseTarget)
     caseTargets.push_back(caseTarget);
 }
 
-void SwitchInstruction::AddUse()
+void SwitchInstruction::AddToUses()
 {
-    if (cond->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, cond);
+    for (auto& caseTarget : caseTargets)
     {
-        RegValue* regValue = static_cast<RegValue*>(cond);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::AddUser(this, caseTarget.caseValue);
     }
-    for (CaseTarget& caseTarget : caseTargets)
+}
+
+void SwitchInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (cond == use)
     {
-        if (caseTarget.caseValue->IsRegValue())
+        cmajor::systemx::intermediate::RemoveUser(this, cond);
+        cond = value;
+        cmajor::systemx::intermediate::AddUser(this, cond);
+    }
+    for (auto& caseTarget : caseTargets)
+    {
+        if (caseTarget.caseValue == use)
         {
-            RegValue* regValue = static_cast<RegValue*>(caseTarget.caseValue);
-            Instruction* inst = regValue->Inst();
-            if (inst)
-            {
-                inst->AddUser(this);
-            }
+            cmajor::systemx::intermediate::RemoveUser(this, caseTarget.caseValue);
+            caseTarget.caseValue = value;
+            cmajor::systemx::intermediate::AddUser(this, caseTarget.caseValue);
         }
     }
 }
 
-void SwitchInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> SwitchInstruction::Uses() const
 {
-    uses.push_back(Use(this, cond));
-    for (CaseTarget& caseTarget : caseTargets)
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, cond);
+    for (const CaseTarget& caseTarget : caseTargets)
     {
-        uses.push_back(Use(this, caseTarget.caseValue));
+        AddToUsesVec(uses, caseTarget.caseValue);
     }
+    return uses;
 }
 
 ValueInstruction::ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_) : Instruction(sourcePos_, result_->GetType(), opCode_), result(result_)
 {
 }
 
+ValueInstruction::~ValueInstruction()
+{
+    if (result)
+    {
+        result->SetInst(nullptr);
+    }
+}
+
 UnaryInstruction::UnaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_, OpCode opCode_) : ValueInstruction(sourcePos_, result_, opCode_), operand(operand_)
 {
 }
 
-void UnaryInstruction::AddUse()
+void UnaryInstruction::AddToUses()
 {
-    if (operand->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, operand);
+}
+
+void UnaryInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (operand == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(operand);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, operand);
+        operand = value;
+        cmajor::systemx::intermediate::AddUser(this, operand);
     }
 }
 
-void UnaryInstruction::AddOperandToUses(std::vector<Use>& uses)
+std::vector<Instruction*> UnaryInstruction::Uses() const
 {
-    uses.push_back(Use(this, operand));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, operand);
+    return uses;
 }
 
 NotInstruction::NotInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::not_)
@@ -780,32 +715,34 @@ BinaryInstruction::BinaryInstruction(const soul::ast::SourcePos& sourcePos_, Reg
 {
 }
 
-void BinaryInstruction::AddUse()
+void BinaryInstruction::AddToUses()
 {
-    if (Left()->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, left);
+    cmajor::systemx::intermediate::AddUser(this, right);
+}
+
+void BinaryInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (left == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(Left());
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, left);
+        left = value;
+        cmajor::systemx::intermediate::AddUser(this, left);
     }
-    if (Right()->IsRegValue())
+    if (right == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(Right());
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, right);
+        right = value;
+        cmajor::systemx::intermediate::AddUser(this, right);
     }
 }
 
-void BinaryInstruction::AddOperandsToUses(std::vector<Use>& uses)
+std::vector<Instruction*> BinaryInstruction::Uses() const
 {
-    uses.push_back(Use(this, left));
-    uses.push_back(Use(this, right));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, left);
+    AddToUsesVec(uses, right);
+    return uses;
 }
 
 AddInstruction::AddInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::add)
@@ -916,7 +853,7 @@ void LessInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ParamInstruction::ParamInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_) : ValueInstruction(sourcePos_, result_, OpCode::param)
+ParamInstruction::ParamInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_) : ValueInstruction(sourcePos_, result_, OpCode::param), paramIndex(0)
 {
 }
 
@@ -943,26 +880,30 @@ void LoadInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void LoadInstruction::AddUse()
+void LoadInstruction::AddToUses()
 {
-    if (ptr->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, ptr);
+}
+
+void LoadInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (ptr == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(ptr);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, ptr);
+        ptr = value;
+        cmajor::systemx::intermediate::AddUser(this, ptr);
     }
 }
 
-void LoadInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> LoadInstruction::Uses() const
 {
-    uses.push_back(Use(this, ptr));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, ptr);
+    return uses;
 }
 
-ElemAddrInstruction::ElemAddrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* index_) :
-    ValueInstruction(sourcePos_, result_, OpCode::elemaddr), ptr(ptr_), index(index_)
+ElemAddrInstruction::ElemAddrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* indexValue_) :
+    ValueInstruction(sourcePos_, result_, OpCode::elemaddr), ptr(ptr_), indexValue(indexValue_)
 {
 }
 
@@ -971,32 +912,34 @@ void ElemAddrInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void ElemAddrInstruction::AddUse()
+void ElemAddrInstruction::AddToUses()
 {
-    if (ptr->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, ptr);
+    cmajor::systemx::intermediate::AddUser(this, indexValue);
+}
+
+void ElemAddrInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (ptr == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(ptr);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, ptr);
+        ptr = value;
+        cmajor::systemx::intermediate::AddUser(this, ptr);
     }
-    if (index->IsRegValue())
+    if (indexValue == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(index);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, indexValue);
+        indexValue = value;
+        cmajor::systemx::intermediate::AddUser(this, indexValue);
     }
 }
 
-void ElemAddrInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> ElemAddrInstruction::Uses() const
 {
-    uses.push_back(Use(this, ptr));
-    uses.push_back(Use(this, index));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, ptr);
+    AddToUsesVec(uses, indexValue);
+    return uses;
 }
 
 ElemAddrKind ElemAddrInstruction::GetElemAddrKind(Context* context) const
@@ -1028,32 +971,34 @@ void PtrOffsetInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void PtrOffsetInstruction::AddUse()
+void PtrOffsetInstruction::AddToUses()
 {
-    if (ptr->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, ptr);
+    cmajor::systemx::intermediate::AddUser(this, offset);
+}
+
+void PtrOffsetInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (ptr == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(ptr);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, ptr);
+        ptr = value;
+        cmajor::systemx::intermediate::AddUser(this, ptr);
     }
-    if (offset->IsRegValue())
+    if (offset == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(offset);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, offset);
+        offset = value;
+        cmajor::systemx::intermediate::AddUser(this, offset);
     }
 }
 
-void PtrOffsetInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> PtrOffsetInstruction::Uses() const
 {
-    uses.push_back(Use(this, ptr));
-    uses.push_back(Use(this, offset));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, ptr);
+    AddToUsesVec(uses, offset);
+    return uses;
 }
 
 PtrDiffInstruction::PtrDiffInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* leftPtr_, Value* rightPtr_) :
@@ -1066,32 +1011,34 @@ void PtrDiffInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void PtrDiffInstruction::AddUse()
+void PtrDiffInstruction::AddToUses()
 {
-    if (leftPtr->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, leftPtr);
+    cmajor::systemx::intermediate::AddUser(this, rightPtr);
+}
+
+void PtrDiffInstruction::ReplaceValue(Value* use, Value* value)
+{
+    if (leftPtr == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(leftPtr);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, leftPtr);
+        leftPtr = value;
+        cmajor::systemx::intermediate::AddUser(this, leftPtr);
     }
-    if (rightPtr->IsRegValue())
+    if (rightPtr == use)
     {
-        RegValue* regValue = static_cast<RegValue*>(rightPtr);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::RemoveUser(this, rightPtr);
+        rightPtr = value;
+        cmajor::systemx::intermediate::AddUser(this, rightPtr);
     }
 }
 
-void PtrDiffInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> PtrDiffInstruction::Uses() const
 {
-    uses.push_back(Use(this, leftPtr));
-    uses.push_back(Use(this, rightPtr));
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, leftPtr);
+    AddToUsesVec(uses, rightPtr);
+    return uses;
 }
 
 FunctionCallInstruction::FunctionCallInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* callee_) :
@@ -1109,46 +1056,47 @@ void FunctionCallInstruction::SetArgs(std::vector<Value*>&& args_)
     args = std::move(args_);
 }
 
-void FunctionCallInstruction::AddUse()
+void FunctionCallInstruction::AddToUses()
 {
-    if (callee->IsRegValue())
+    cmajor::systemx::intermediate::AddUser(this, callee);
+    for (auto& arg : args)
     {
-        RegValue* regValue = static_cast<RegValue*>(callee);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::AddUser(this, arg);
     }
-    /*  TODO: arg uses required?
-        for (Value* arg : args)
-        {
-            if (arg->IsRegValue())
-            {
-                RegValue* regValue = static_cast<RegValue*>(arg);
-                Instruction* inst = regValue->Inst();
-                if (inst)
-                {
-                    inst->AddUser(this);
-                }
-            }
-        }
-    */
 }
 
-void FunctionCallInstruction::AddToUses(std::vector<Use>& uses)
+void FunctionCallInstruction::ReplaceValue(Value* use, Value* value)
 {
-    uses.push_back(Use(this, callee));
-    /*  TODO: arg uses required?
-        for (Value*& arg : args)
+    if (callee == use)
+    {
+        cmajor::systemx::intermediate::RemoveUser(this, callee);
+        callee = value;
+        cmajor::systemx::intermediate::AddUser(this, callee);
+    }
+    for (auto& arg : args)
+    {
+        if (arg == use)
         {
-            uses.push_back(Use(this, arg));
+            cmajor::systemx::intermediate::RemoveUser(this, arg);
+            arg = value;
+            cmajor::systemx::intermediate::AddUser(this, arg);
         }
-    */
+    }
+}
+
+std::vector<Instruction*> FunctionCallInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, callee);
+    for (const auto& arg : args)
+    {
+        AddToUsesVec(uses, arg);
+    }
+    return uses;
 }
 
 TrapInstruction::TrapInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* op1_, Value* op2_, Value* op3_) :
-    ValueInstruction(sourcePos_, result_, OpCode::trap), op1(op1_), op2(op2_), op3(op3_)
+    ValueInstruction(sourcePos_, result_, OpCode::trap), op1(op1_), op2(op2_), op3(op3_), args()
 {
 }
 
@@ -1162,100 +1110,35 @@ void TrapInstruction::SetArgs(std::vector<Value*>&& args_)
     args = std::move(args_);
 }
 
-void TrapInstruction::AddUse()
+void TrapInstruction::AddToUses()
 {
-    if (op1->IsRegValue())
+    for (auto& arg : args)
     {
-        RegValue* regValue = static_cast<RegValue*>(op1);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
+        cmajor::systemx::intermediate::AddUser(this, arg);
     }
-    if (op2->IsRegValue())
+}
+
+void TrapInstruction::ReplaceValue(Value* use, Value* value)
+{
+    for (auto& arg : args)
     {
-        RegValue* regValue = static_cast<RegValue*>(op2);
-        Instruction* inst = regValue->Inst();
-        if (inst)
+        if (arg == use)
         {
-            inst->AddUser(this);
-        }
-    }
-    if (op3->IsRegValue())
-    {
-        RegValue* regValue = static_cast<RegValue*>(op3);
-        Instruction* inst = regValue->Inst();
-        if (inst)
-        {
-            inst->AddUser(this);
-        }
-    }
-    for (Value* arg : args)
-    {
-        if (arg->IsRegValue())
-        {
-            RegValue* regValue = static_cast<RegValue*>(arg);
-            Instruction* inst = regValue->Inst();
-            if (inst)
-            {
-                inst->AddUser(this);
-            }
+            cmajor::systemx::intermediate::RemoveUser(this, arg);
+            arg = value;
+            cmajor::systemx::intermediate::AddUser(this, arg);
         }
     }
 }
 
-void TrapInstruction::AddToUses(std::vector<Use>& uses)
+std::vector<Instruction*> TrapInstruction::Uses() const
 {
-    uses.push_back(Use(this, op1));
-    uses.push_back(Use(this, op2));
-    uses.push_back(Use(this, op3));
-    for (Value*& arg : args)
+    std::vector<Instruction*> uses;
+    for (const auto& arg : args)
     {
-        uses.push_back(Use(this, arg));
+        AddToUsesVec(uses, arg);
     }
-}
-
-BlockValue::BlockValue(Value* value_, BasicBlock* block_) : value(value_), blockId(block_->Id()), block(block_)
-{
-}
-
-PhiInstruction::PhiInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_) : ValueInstruction(sourcePos_, result_, OpCode::phi)
-{
-}
-
-void PhiInstruction::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-void PhiInstruction::AddBlockValue(const BlockValue& blockValue)
-{
-    blockValues.push_back(blockValue);
-}
-
-void PhiInstruction::AddUse()
-{
-    for (BlockValue& blockValue : blockValues)
-    {
-        if (blockValue.value->IsRegValue())
-        {
-            RegValue* regValue = static_cast<RegValue*>(blockValue.value);
-            Instruction* inst = regValue->Inst();
-            if (inst)
-            {
-                inst->AddUser(this);
-            }
-        }
-    }
-}
-
-void PhiInstruction::AddToUses(std::vector<Use>& uses)
-{
-    for (BlockValue& blockValue : blockValues)
-    {
-        uses.push_back(Use(this, blockValue.value));
-    }
+    return uses;
 }
 
 NoOperationInstruction::NoOperationInstruction(const soul::ast::SourcePos& sourcePos_) : Instruction(sourcePos_, nullptr, OpCode::nop)
@@ -1381,12 +1264,17 @@ Function* BasicBlock::Parent() const
     return static_cast<Function*>(GetContainer()->Parent());
 }
 
-Function::Function(const soul::ast::SourcePos& sourcePos_, FunctionType* type_, const std::string& name_, bool once_, bool definition_, MetadataRef* metadataRef_) :
+Function::Function(const soul::ast::SourcePos& sourcePos_, FunctionType* type_, const std::string& name_, bool once_, bool main_, bool definition_, 
+    MetadataRef* metadataRef_) :
     flags(FunctionFlags::none), sourcePos(sourcePos_), type(type_), name(name_), metadataRef(metadataRef_), basicBlocks(this), nextRegNumber(0)
 {
     if (once_)
     {
         SetFlag(FunctionFlags::once);
+    }
+    if (main_)
+    {
+        SetMain();
     }
     if (definition_)
     {
@@ -1667,7 +1555,8 @@ Function* Code::GetFunction(const std::string& functionId) const
     }
 }
 
-Function* Code::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId, bool once, MetadataRef* metadataRef, Context* context)
+Function* Code::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId, bool once, bool main, 
+    MetadataRef* metadataRef, Context* context)
 {
     Function* prev = GetFunction(functionId);
     if (prev)
@@ -1680,13 +1569,14 @@ Function* Code::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Fun
         {
             if (prev->GetType() != functionType)
             {
-                Error("error adding function '" + functionId + "': type '" + functionType->Name() + "' conflicts with earlier declaration", sourcePos, context, prev->GetSourcePos());
+                Error("error adding function '" + functionId + "': type '" + functionType->Name() + "' conflicts with earlier declaration", sourcePos, context, 
+                    prev->GetSourcePos());
             }
             prev->SetDefined();
             return prev;
         }
     }
-    Function* function = new Function(sourcePos, functionType, functionId, once, true, metadataRef);
+    Function* function = new Function(sourcePos, functionType, functionId, once, main, true, metadataRef);
     functions.AddChild(function);
     functionMap[function->Name()] = function;
     return function;
@@ -1703,7 +1593,7 @@ Function* Code::AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, Fu
         }
         return prev;
     }
-    Function* function = new Function(sourcePos, functionType, functionId, false, false, nullptr);
+    Function* function = new Function(sourcePos, functionType, functionId, false, false, false, nullptr);
     functions.AddChild(function);
     functionMap[function->Name()] = function;
     return function;

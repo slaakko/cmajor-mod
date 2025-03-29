@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/system-x/intermediate/intermediate_code.lexer' using soul lexer generator slg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/system-x/intermediate/intermediate_code.lexer' using soul lexer generator slg version 5.0.0
 
 export module cmajor.systemx.intermediate.code.lexer;
 

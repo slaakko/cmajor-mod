@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -32,12 +32,12 @@ namespace System
         return cast<uchar>(cast<uint>(colorChar) | cast<uint>(cast<ushort>(cast<byte>(foreColor)) | (cast<ushort>(cast<byte>(backColor)) << 8u)));
     }
     
-    public nothrow string SetColors(ConsoleColor foreColor, ConsoleColor backColor)
+    public string SetColors(ConsoleColor foreColor, ConsoleColor backColor)
     {
         return ToUtf8(ustring(ColorChar(foreColor, backColor)));
     }
     
-    public nothrow string ResetColors()
+    public string ResetColors()
     {
         return ToUtf8(ustring(resetColors));
     }

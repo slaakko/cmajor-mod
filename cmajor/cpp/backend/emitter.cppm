@@ -370,6 +370,7 @@ public:
     void SetBoundCompileUnit(void* boundCompileUnit_) override { boundCompileUnit = boundCompileUnit_; }
     void* GetBoundCompileUnit() const override { return boundCompileUnit; }
     void PrintModule() override;
+    void SetCurrentFunctionMain() override;
 private:
     cmajor::ir::EmittingContext* emittingContext;
     cmajor::ir::EmittingDelegate* emittingDelegate;

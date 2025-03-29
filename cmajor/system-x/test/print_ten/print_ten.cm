@@ -1,0 +1,14 @@
+using System;
+
+void Print(int x)
+{
+    Console.Out() << x << endl();
+}
+
+void main()
+{
+    for (int i = 0; i < 10; ++i)
+    {
+        Print(i);
+    }
+}

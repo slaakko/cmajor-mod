@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -27,26 +27,26 @@ namespace System.Screen
 
     public class Window : ContainerControl
     {
-        public nothrow Window(ControlCreateParams& createParams) : base(createParams), flags(WindowFlags.none)
+        public Window(ControlCreateParams& createParams) : base(createParams), flags(WindowFlags.none)
         {
         }
-        public nothrow bool IsMainWindow()
+        public nothrow inline bool IsMainWindow()
         {
             return (flags & WindowFlags.mainWindow) != WindowFlags.none;
         }
-        public nothrow void SetMainWindow()
+        public nothrow inline void SetMainWindow()
         {
             flags = cast<WindowFlags>(flags | WindowFlags.mainWindow);
         }
-        public nothrow bool ShowingDialog() const
+        public nothrow inline bool ShowingDialog() const
         {
             return (flags & WindowFlags.showingDialog) != WindowFlags.none;
         }
-        public nothrow void SetShowingDialog() 
+        public nothrow inline void SetShowingDialog() 
         {
             flags = cast<WindowFlags>(flags | WindowFlags.showingDialog);
         }
-        public nothrow void ResetShowingDialog()
+        public nothrow inline void ResetShowingDialog()
         {
             flags = cast<WindowFlags>(flags & ~WindowFlags.showingDialog);
         }

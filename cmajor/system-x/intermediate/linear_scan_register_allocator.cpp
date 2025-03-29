@@ -16,7 +16,27 @@ LiveRange GetLiveRange(Instruction* inst)
     if (inst->RequiresLocalRegister())
     {
         int lastUserIndex = inst->Index();
-        for (Instruction* user : inst->Users())
+        std::vector<Instruction*> finalUsers;
+        const std::vector<Instruction*>& users = inst->Users();
+        for (Instruction* user : users)
+        {
+            if (user->IsArgInstruction())
+            {
+                while (user && !(user->IsFunctionCallInstruction() || user->IsProcedureCallInstruction()))
+                {
+                    user = user->Next();
+                }
+                if (user)
+                {
+                    finalUsers.push_back(user);
+                }
+            }
+            else
+            {
+                finalUsers.push_back(user);
+            }
+        }
+        for (Instruction* user : finalUsers)
         {
             if (user->Index() > lastUserIndex)
             {

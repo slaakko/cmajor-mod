@@ -19,6 +19,8 @@ class SimpleAssemblyCodeGenerator : public CodeGenerator, public Visitor
 {
 public:
     SimpleAssemblyCodeGenerator(Context* context_, cmajor::systemx::assembler::AssemblyFile* assemblyFile_);
+    void GenerateCode() override;;
+    void WriteOutputFile() override;
     void AddSourceFileInfo(CompileUnit& compileUnit) override;
     void GenerateDebugInfo() override;
     void Error(const std::string& message) override;
@@ -40,7 +42,6 @@ public:
     void Catch(uint32_t catchBlockId, uint32_t tryBlockId, const std::string& caughtTypeIdStr) override;
     void BeginCleanup(uint32_t cleanupBlockId, uint32_t tryBlockId) override;
     void EndCleanup(uint32_t cleanupBlockId) override;
-    void WriteOutputFile();
     void Visit(GlobalVariable& globalVariable) override;
     void Visit(Function& function) override;
     void Visit(BasicBlock& basicBlock) override;
@@ -80,7 +81,6 @@ public:
     void Visit(PtrDiffInstruction& inst) override;
     void Visit(FunctionCallInstruction& inst) override;
     void Visit(TrapInstruction& inst) override;
-    void Visit(PhiInstruction& inst) override;
     void Visit(NoOperationInstruction& inst) override;
     void Visit(BoolValue& value) override;
     void Visit(SByteValue& value) override;
@@ -121,6 +121,7 @@ private:
     std::map<std::string, int64_t > sourceFileNameMap;
     std::map<Function*, int64_t> frameSizeMap;
     int lineNumber;
+    int64_t currentOffset;
 };
 
 } // cmajor::systemx::intermediate

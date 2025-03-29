@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,22 +11,24 @@ namespace System.Screen
 {
     public class QuitMessage : Message
     {
+        public QuitMessage() : base()
+        {
+        }
         public override nothrow int Id() const
         {
             return systemScreenQuitMessageId;
         }
-        public override nothrow string Name() const
+        public override string Name() const
         {
             return "quit"; 
-        }
-        static nothrow QuitMessage() : Message()
-        {
-            RegisterMessage<QuitMessage>(systemScreenQuitMessageId);
         }
     }
 
     public class KeyPressedMessage : Message
     {
+        public KeyPressedMessage() : base()
+        {
+        }
         public override nothrow int Id() const
         {
             return systemScreenKeyPressedMessageId;
@@ -35,13 +37,9 @@ namespace System.Screen
         {
             return cast<int>(base->Size() + sizeof(uchar));
         }
-        public override nothrow string Name() const
+        public override string Name() const
         {
             return "keyPressed"; 
-        }
-        static nothrow KeyPressedMessage() : Message()
-        {
-            RegisterMessage<KeyPressedMessage>(systemScreenKeyPressedMessageId);
         }
         public nothrow KeyPressedMessage(uchar key_) : key(key_)
         {
@@ -69,6 +67,9 @@ namespace System.Screen
     
     public class WriteScreenMessage : Message
     {
+        public WriteScreenMessage() : base()
+        {
+        }
         public override nothrow int Id() const
         {
             return systemScreenWriteScreenMessageId;
@@ -77,13 +78,9 @@ namespace System.Screen
         {
             return cast<int>(base->Size() + sizeof(Rect) + sizeof(int));
         }
-        public override nothrow string Name() const
+        public override string Name() const
         {
             return "writeScreen"; 
-        }
-        static nothrow WriteScreenMessage() : Message()
-        {
-            RegisterMessage<WriteScreenMessage>(systemScreenWriteScreenMessageId);
         }
         public nothrow WriteScreenMessage(const Rect& rect_, InvalidateKind invalidateKind_) : rect(rect_), invalidateKind(invalidateKind_)
         {
@@ -124,6 +121,9 @@ namespace System.Screen
     
     public class TimerMessage : Message
     {
+        public TimerMessage() : base()
+        {
+        }
         public override nothrow int Id() const
         {
             return systemScreenTimerMessageId;
@@ -132,13 +132,9 @@ namespace System.Screen
         {
             return cast<int>(base->Size() + sizeof(int));
         }
-        public override nothrow string Name() const
+        public override string Name() const
         {
             return "timer"; 
-        }
-        static nothrow TimerMessage() : Message()
-        {
-            RegisterMessage<TimerMessage>(systemScreenTimerMessageId);
         }
         public nothrow TimerMessage(int timerId_) : timerId(timerId_)
         {
@@ -163,9 +159,4 @@ namespace System.Screen
         }
         private int timerId;
     }
-    
-    new class ConcreteMessageFactoryFunction<QuitMessage>;
-    new class ConcreteMessageFactoryFunction<KeyPressedMessage>;
-    new class ConcreteMessageFactoryFunction<WriteScreenMessage>;
-    new class ConcreteMessageFactoryFunction<TimerMessage>;
 }

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -85,7 +85,7 @@ namespace System
             rightHalf = (rightHalf << 8u) | data[15];
             return rightHalf;
         }
-        public static nothrow Uuid Random()
+        public static Uuid Random()
         {
             return Uuid(Random64(), Random64());
         }
@@ -101,7 +101,7 @@ namespace System
         return true;
     }
 
-    public nothrow string ToString(const Uuid& uuid)
+    public string ToString(const Uuid& uuid)
     {
         string s;
         int index = 0;

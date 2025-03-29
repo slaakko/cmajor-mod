@@ -1107,9 +1107,9 @@ void EmitElemAddr(ElemAddrInstruction& inst, CodeGenerator& codeGen)
     ElemAddrKind elemAddrKind = inst.GetElemAddrKind(codeGen.Ctx());
     if (elemAddrKind == ElemAddrKind::array)
     {
-        cmajor::systemx::assembler::Node* indexReg = MakeRegOperand(inst.Index(), GetGlobalRegister(codeGen.Ctx(), cmajor::systemx::machine::regBX), codeGen);
+        cmajor::systemx::assembler::Node* indexReg = MakeRegOperand(inst.IndexValue(), GetGlobalRegister(codeGen.Ctx(), cmajor::systemx::machine::regBX), codeGen);
         int64_t indexFactor = GetElementSize(inst.Ptr()->GetType(), codeGen);
-        bool indexTypeIsUnsignedType = inst.Index()->GetType()->IsUnsignedType();
+        bool indexTypeIsUnsignedType = inst.IndexValue()->GetType()->IsUnsignedType();
         cmajor::systemx::assembler::Instruction* setInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::SET);
         setInst->AddOperand(MakeRegOperand(GetGlobalRegister(codeGen.Ctx(), cmajor::systemx::machine::regAX)));
         if (indexTypeIsUnsignedType)
@@ -1134,7 +1134,7 @@ void EmitElemAddr(ElemAddrInstruction& inst, CodeGenerator& codeGen)
     }
     else if (elemAddrKind == ElemAddrKind::structure)
     {
-        int64_t index = GetIndex(inst.Index(), codeGen);
+        int64_t index = GetIndex(inst.IndexValue(), codeGen);
         int64_t offset = GetOffset(inst.Ptr()->GetType(), index, codeGen);
         cmajor::systemx::assembler::Instruction* setInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::SET);
         setInst->AddOperand(MakeRegOperand(GetGlobalRegister(codeGen.Ctx(), cmajor::systemx::machine::regCX)));
@@ -1406,7 +1406,7 @@ void EmitTruncate(TruncateInstruction& inst, CodeGenerator& codeGen)
     codeGen.Emit(andInst);
 }
 
-void EmitArg(ArgInstruction& inst, CodeGenerator& codeGen)
+void EmitArg(ArgInstruction& inst, CodeGenerator& codeGen, cmajor::systemx::assembler::Instruction* targetInst, bool emitArgLocationOperand)
 {
     Register reg = codeGen.RegAllocator()->GetRegister(&inst);
     if (!reg.Valid())
@@ -1428,17 +1428,20 @@ void EmitArg(ArgInstruction& inst, CodeGenerator& codeGen)
             addrEmitted = true;
         }
     }
-    cmajor::systemx::assembler::Instruction* stouInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::machine::STOU);
+    //cmajor::systemx::assembler::Instruction* stouInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::machine::STOU);
     if (addrEmitted)
     {
-        stouInst->AddOperand(MakeRegOperand(reg));
+        targetInst->AddOperand(MakeRegOperand(reg));
     }
     else
     {
-        stouInst->AddOperand(MakeRegOperand(inst.Arg(), reg, codeGen));
+        targetInst->AddOperand(MakeRegOperand(inst.Arg(), reg, codeGen));
     }
-    EmitArgLocationOperand(stouInst, codeGen);
-    codeGen.Emit(stouInst);
+    if (emitArgLocationOperand)
+    {
+        EmitArgLocationOperand(targetInst, codeGen);
+    }
+    codeGen.Emit(targetInst);
 }
 
 void EmitProcedureCall(ProcedureCallInstruction& inst, CodeGenerator& codeGen)

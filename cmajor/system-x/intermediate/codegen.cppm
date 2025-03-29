@@ -68,6 +68,8 @@ class CodeGenerator
 public:
     virtual ~CodeGenerator();
     virtual Context* Ctx() const = 0;
+    virtual void GenerateCode() = 0;
+    virtual void WriteOutputFile() = 0;
     virtual const soul::ast::SourcePos& GetSourcePos() const = 0;
     virtual RegisterAllocator* RegAllocator() const = 0;
     virtual void Emit(cmajor::systemx::assembler::Instruction* assemblyInstruction) = 0;
@@ -120,7 +122,7 @@ void EmitEqual(EqualInstruction& inst, CodeGenerator& codeGen);
 void EmitLess(LessInstruction& inst, CodeGenerator& codeGen);
 void EmitJmp(JmpInstruction& inst, CodeGenerator& codeGen);
 void EmitBranch(BranchInstruction& inst, CodeGenerator& codeGen);
-void EmitArg(ArgInstruction& inst, CodeGenerator& codeGen);
+void EmitArg(ArgInstruction& inst, CodeGenerator& codeGen, cmajor::systemx::assembler::Instruction* targetInst, bool emitArgLocationOperand);
 void EmitProcedureCall(ProcedureCallInstruction& inst, CodeGenerator& codeGen);
 void EmitFunctionCall(FunctionCallInstruction& inst, CodeGenerator& codeGen);
 void EmitRet(RetInstruction& inst, CodeGenerator& codeGen);

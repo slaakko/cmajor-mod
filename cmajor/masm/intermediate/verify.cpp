@@ -304,7 +304,6 @@ void VerifierVisitor::Visit(BasicBlock& basicBlock)
 void VerifierVisitor::Visit(StoreInstruction& inst)
 {
     CheckArithmeticPointerFunctionOrBooleanType(inst.GetValue()->GetType(), "type of value", inst.Span());
-    //CheckArithmeticPointerOrBooleanType(inst.GetValue()->GetType(), "type of value", inst.Span());
     CheckType("type of value", inst.GetValue()->GetType(), inst.GetValue()->GetType()->AddPointer(GetContext()), "pointer type", inst.GetPtr()->GetType(), inst.Span());
     inst.AddToUses();
     inst.SetIndex(index++);

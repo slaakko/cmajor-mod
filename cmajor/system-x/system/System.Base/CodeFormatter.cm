@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -99,7 +99,7 @@ namespace System.Text
         {
             return startText;
         }
-        public nothrow void SetStartText(const string& startText_)
+        public void SetStartText(const string& startText_)
         {
             startText = startText_;
         }

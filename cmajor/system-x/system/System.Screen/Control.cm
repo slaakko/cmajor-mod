@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,7 +20,13 @@ namespace System.Screen
         }
         public ~InvalidateGuard()
         {
-            control->EndInvalidate(invalidateKind);
+            try
+            {
+                control->EndInvalidate(invalidateKind);
+            }
+            catch (const Exception&)
+            {
+            }
         }
         private Control* control;
         private InvalidateKind invalidateKind;
@@ -68,7 +74,7 @@ namespace System.Screen
 
     public class Control : Component
     {
-        public nothrow Control(ControlCreateParams& createParams) : 
+        public Control(ControlCreateParams& createParams) : 
             flags(ControlFlags.none),
             handle(-1), 
             location(createParams.location), 
@@ -81,11 +87,17 @@ namespace System.Screen
         }
         public ~Control()
         {
-            if (IsFocused())
+            try
             {
-                Application.Instance().SetFocusedControl(null);
+                if (IsFocused())
+                {
+                    Application.Instance().SetFocusedControl(null);
+                }
+                Application.Instance().GetWindowManager().RemoveWindow(this);
             }
-            Application.Instance().GetWindowManager().RemoveWindow(this);
+            catch (const Exception&)
+            {
+            }
         }
         public nothrow int Handle() const
         {
@@ -95,7 +107,7 @@ namespace System.Screen
         {
             handle = handle_;
         }
-        public nothrow void SetDisabled()
+        public void SetDisabled()
         {
             if (!IsDisabled())
             {
@@ -104,7 +116,7 @@ namespace System.Screen
                 Invalidate(GetRect());
             }
         }
-        public nothrow void SetEnabled()
+        public void SetEnabled()
         {
             if (IsDisabled())
             {
@@ -125,7 +137,7 @@ namespace System.Screen
         {
             return location;
         }
-        public nothrow void SetLocation(const Point& location_)
+        public void SetLocation(const Point& location_)
         {
             if (location != location_)
             {
@@ -138,7 +150,7 @@ namespace System.Screen
         {
             return size;
         }
-        public nothrow void SetSize(const Size& size_)
+        public void SetSize(const Size& size_)
         {
             if (size != size_)
             {
@@ -243,7 +255,7 @@ namespace System.Screen
         {
             return foreColor;
         }
-        public nothrow void SetForeColor(ConsoleColor foreColor_)
+        public void SetForeColor(ConsoleColor foreColor_)
         {
             if (foreColor != foreColor_)
             {
@@ -256,7 +268,7 @@ namespace System.Screen
         {
             return backColor;
         }
-        public nothrow void SetBackColor(ConsoleColor backColor_)
+        public void SetBackColor(ConsoleColor backColor_)
         {
             if (backColor != backColor_)
             {
@@ -265,7 +277,7 @@ namespace System.Screen
                 Invalidate();
             }
         }
-        public nothrow void Timer(const Duration& duration, int timerId)
+        public void Timer(const Duration& duration, int timerId)
         {
             Application.Instance().Timer(duration, this, timerId);
         }
@@ -282,7 +294,7 @@ namespace System.Screen
             }
             ++invalidateCount;
         }
-        public nothrow void EndInvalidate(InvalidateKind invalidateKind)
+        public void EndInvalidate(InvalidateKind invalidateKind)
         {
             Control* parentControl = ParentControl();
             if (parentControl != null && parentControl->InvalidateCount() > 0)
@@ -336,7 +348,7 @@ namespace System.Screen
         {
             return IsEnabled();
         }
-        public nothrow bool IsFocused() const
+        public bool IsFocused() const
         {
             return Application.Instance().FocusedControl() == this;
         }
@@ -446,43 +458,43 @@ namespace System.Screen
         {
             timerEvent.Fire(args);
         }
-        public nothrow Event<ChangedEventHandler>& LocationChangedEvent() 
+        public Event<ChangedEventHandler>& LocationChangedEvent() 
         {
             return locationChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& SizeChangedEvent() 
+        public Event<ChangedEventHandler>& SizeChangedEvent() 
         {
             return sizeChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& ForeColorChangedEvent() 
+        public Event<ChangedEventHandler>& ForeColorChangedEvent() 
         {
             return foreColorChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& BackColorChangedEvent() 
+        public Event<ChangedEventHandler>& BackColorChangedEvent() 
         {
             return backColorChangedEvent;
         }
-        public nothrow Event<ChangedEventHandler>& EnabledChangedEvent() 
+        public Event<ChangedEventHandler>& EnabledChangedEvent() 
         {
             return enabledChangedEvent;
         }
-        public nothrow Event<FocusEventHandler>& GotFocusEvent() 
+        public Event<FocusEventHandler>& GotFocusEvent() 
         {
             return gotFocusEvent;
         }
-        public nothrow Event<FocusEventHandler>& LostFocusEvent()
+        public Event<FocusEventHandler>& LostFocusEvent()
         {
             return lostFocusEvent;
         }
-        public nothrow Event<WriteScreenEventHandler, WriteScreenEventArgs>& WriteScreenEvent() 
+        public Event<WriteScreenEventHandler, WriteScreenEventArgs>& WriteScreenEvent() 
         {
             return writeScreenEvent;
         }
-        public nothrow Event<KeyEventHandler, KeyEventArgs>& KeyPressedEvent()
+        public Event<KeyEventHandler, KeyEventArgs>& KeyPressedEvent()
         {
             return keyPressedEvent;
         }
-        public nothrow Event<TimerEventHandler, TimerEventArgs> TimerEvent()
+        public Event<TimerEventHandler, TimerEventArgs> TimerEvent()
         {
             return timerEvent;
         }

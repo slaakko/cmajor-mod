@@ -27,6 +27,10 @@ public:
     MetadataItem(MetadataItemKind kind_);
     virtual ~MetadataItem();
     MetadataItemKind Kind() const { return kind; }
+    bool IsMetadataRef() const { return kind == MetadataItemKind::metadataRef; }
+    bool IsMetadataBool() const { return kind == MetadataItemKind::metadataBool; }
+    bool IsMetadataLong() const { return kind == MetadataItemKind::metadataLong; }
+    bool IsMetadataString() const { return kind == MetadataItemKind::metadataString; }
 private:
     MetadataItemKind kind;
 };

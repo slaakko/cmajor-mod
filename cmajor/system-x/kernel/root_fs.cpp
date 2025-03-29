@@ -15,6 +15,7 @@ import cmajor.systemx.kernel.dir.file;
 import cmajor.systemx.kernel.os.api;
 import cmajor.systemx.kernel.debug.help;
 import cmajor.systemx.kernel.process;
+import cmajor.systemx.kernel.config;
 import cmajor.systemx.machine;
 import util;
 import std.filesystem;
@@ -552,11 +553,14 @@ void MountHostDirectories(Filesystem* fs, cmajor::systemx::machine::Process* ker
         if (driveType == fixedDriveType)
         {
             std::string hostPath = util::GetFullPath(drive);
-            std::string driveMountDirPath = "/mnt/" + std::string(1, std::tolower(hostPath[0]));
-            cmajor::systemx::kernel::MountHostDir(hostPath, driveMountDirPath, kernelProcess, mode);
-            std::string driveStr(1, hostPath[0]);
-            driveStr.append(1, ':');
-            cmajor::systemx::kernel::MapDrive(driveStr, driveMountDirPath);
+            if (Config::Instance().IncludedInMountRootDirs(hostPath))
+            {
+                std::string driveMountDirPath = "/mnt/" + std::string(1, std::tolower(hostPath[0]));
+                cmajor::systemx::kernel::MountHostDir(hostPath, driveMountDirPath, kernelProcess, mode);
+                std::string driveStr(1, hostPath[0]);
+                driveStr.append(1, ':');
+                cmajor::systemx::kernel::MapDrive(driveStr, driveMountDirPath);
+            }
         }
     }
     std::string cmajorRootPath = util::GetFullPath(util::CmajorRoot());

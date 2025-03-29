@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -36,7 +36,7 @@ namespace System.Screen
             controlCreateParams.SetBackColor(backColor_);
             return *this;
         }
-        public nothrow LabelCreateParams& SetText(const string& text_)
+        public LabelCreateParams& SetText(const string& text_)
         {
             text = ToUtf32(text_);
             return *this;
@@ -53,7 +53,7 @@ namespace System.Screen
     
     public class Label : Control
     {
-        public nothrow Label(LabelCreateParams& createParams) : base(createParams.controlCreateParams), autoSize(createParams.autoSize), text(createParams.text)
+        public Label(LabelCreateParams& createParams) : base(createParams.controlCreateParams), autoSize(createParams.autoSize), text(createParams.text)
         {
             InvalidateGuard invalidateGuard(this, InvalidateKind.dontInvalidate);
             if (autoSize)

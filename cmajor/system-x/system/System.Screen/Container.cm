@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -38,7 +38,7 @@ namespace System.Screen
         {
             return lastChild;
         }
-        public nothrow void AddChild(Component* child)
+        public void AddChild(Component* child)
         {
             Container* container = child->GetContainer();
             if (container != null)
@@ -57,7 +57,7 @@ namespace System.Screen
             child->SetContainer(this);
             lastChild = child;
         }
-        public nothrow UniquePtr<Component> RemoveChild(Component* child)
+        public UniquePtr<Component> RemoveChild(Component* child)
         {
             child->Unlink();
             if (child == firstChild)
@@ -73,7 +73,7 @@ namespace System.Screen
             child->SetPrevSibling(null);
             return UniquePtr<Component>(child);
         }
-        public nothrow void InsertBefore(Component* child, Component* before)
+        public void InsertBefore(Component* child, Component* before)
         {
             if (before == null)
             {
@@ -95,7 +95,7 @@ namespace System.Screen
                 before->LinkBefore(child);
             }
         }
-        public nothrow void InsertAfter(Component* child, Component* after)
+        public void InsertAfter(Component* child, Component* after)
         {
             if (after == null)
             {

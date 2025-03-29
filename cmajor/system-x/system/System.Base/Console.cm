@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ namespace System
 {
     public static class Console
     {
-        static nothrow Console() : 
+        static Console() : 
             in(SharedPtr<Stream>(new FileStream(stdin))), 
             out(SharedPtr<Stream>(new FileStream(stdout))), 
             err(SharedPtr<Stream>(new FileStream(stderr)))
@@ -231,15 +231,15 @@ namespace System
         {
             return err;
         }
-        public static nothrow void SetIn(StreamReader&& in_)
+        public static void SetIn(StreamReader&& in_)
         {
             in = in_;
         }
-        public static nothrow void SetOut(StreamWriter&& out_)
+        public static void SetOut(StreamWriter&& out_)
         {
             out = out_;
         }
-        public static nothrow void SetError(StreamWriter&& err_)
+        public static void SetError(StreamWriter&& err_)
         {
             err = err_;
         }
@@ -250,12 +250,12 @@ namespace System
 
     public class Endl
     {
-        public nothrow Endl()
+        public Endl()
         {
         }
     }
 
-    public nothrow Endl endl()
+    public Endl endl()
     {
         return Endl();
     }

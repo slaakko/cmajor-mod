@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ namespace System.IO
 {
     public class InvalidPathException : Exception
     {
-        public nothrow InvalidPathException(const string& message_) : base(message_)
+        public InvalidPathException(const string& message_) : base(message_)
         {
         }
     }
@@ -83,7 +83,7 @@ namespace System.IO
             int result = stat(path.Chars(), &statBuf[0], statBufSize);
             return result != -1;
         }
-        public static nothrow string MakeCanonical(const string& path)
+        public static string MakeCanonical(const string& path)
         {
             string result;
             char prev = ' ';
@@ -115,7 +115,7 @@ namespace System.IO
             }
             return result;
         }
-        public static nothrow string ChangeExtension(const string& path, const string& extension)
+        public static string ChangeExtension(const string& path, const string& extension)
         {
             long lastDotPos = path.RFind('.');
             long lastSlashPos = path.RFind('/');
@@ -160,7 +160,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow bool HasExtension(const string& path)
+        public static bool HasExtension(const string& path)
         {
             string p = MakeCanonical(path);
             long lastDotPos = p.RFind('.');
@@ -185,7 +185,7 @@ namespace System.IO
                 return false;
             }
         }
-        public static nothrow string GetExtension(const string& path)
+        public static string GetExtension(const string& path)
         {
             string p = MakeCanonical(path);
             long lastDotPos = p.RFind('.');
@@ -205,7 +205,7 @@ namespace System.IO
                 return string();
             }
         }
-        public static nothrow string GetFileName(const string& path)
+        public static string GetFileName(const string& path)
         {
             if (path.IsEmpty())
             {
@@ -233,7 +233,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow string GetFileNameWithoutExtension(const string& path)
+        public static string GetFileNameWithoutExtension(const string& path)
         {
             string fileName = GetFileName(path);
             long lastDotPos = fileName.RFind('.');
@@ -246,7 +246,7 @@ namespace System.IO
                 return fileName;
             }
         }
-        public static nothrow string GetDirectoryName(const string& path)
+        public static string GetDirectoryName(const string& path)
         {
             string p = MakeCanonical(path);
             if (p.IsEmpty())
@@ -266,7 +266,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow string Combine(const string& path1, const string& path2)
+        public static string Combine(const string& path1, const string& path2)
         {
             string p1 = MakeCanonical(path1);
             string p2 = MakeCanonical(path2);
@@ -296,7 +296,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow bool IsAbsolute(const string& path)
+        public static bool IsAbsolute(const string& path)
         {
             if (path.IsEmpty())
             {
@@ -315,7 +315,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow bool IsRelative(const string& path)
+        public static bool IsRelative(const string& path)
         {
             return !IsAbsolute(path);
         }

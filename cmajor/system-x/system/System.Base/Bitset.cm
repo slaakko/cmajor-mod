@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,16 +10,9 @@ namespace System.Collections
 {
     public class Bitset
     {
-        public nothrow Bitset() : numBits(0), bits()
+        public Bitset() : numBits(0), bits()
         {
-            try
-            {
-                bits.Add(0u);
-            }
-            catch (const Exception& ex)
-            {
-                Exit(1u);
-            }
+            bits.Add(0u);
         }
         public Bitset(long numBits_) : numBits(0), bits()
         {
@@ -66,7 +59,7 @@ namespace System.Collections
                 bits.Resize(1);
             }
         }
-        public nothrow void Set()
+        public void Set()
         {
             long n = bits.Count();
             for (long i = 0; i < n; ++i)
@@ -74,7 +67,7 @@ namespace System.Collections
                 bits[i] = allOne;
             }
         }
-        public nothrow void Reset()
+        public void Reset()
         {
             long n = bits.Count();
             for (long i = 0; i < n; ++i)
@@ -82,7 +75,7 @@ namespace System.Collections
                 bits[i] = cast<ulong>(0u);
             }
         }       
-        public inline nothrow void Set(long pos)
+        public inline void Set(long pos)
         {
             if (pos < 0 || pos >= numBits)
             {
@@ -91,7 +84,7 @@ namespace System.Collections
             ulong& b = bits[pos / blockSize];
             b = b | (1u << (cast<ulong>(pos) & blockMask));
         }
-        public inline nothrow void Reset(long pos)
+        public inline void Reset(long pos)
         {
             if (pos < 0 || pos >= numBits)
             {
@@ -100,7 +93,7 @@ namespace System.Collections
             ulong& b = bits[pos / blockSize];
             b = b & ~(1u << (cast<ulong>(pos) & blockMask));
         }
-        public nothrow void Set(long pos, bool bit)
+        public void Set(long pos, bool bit)
         {
             if (bit)
             {
@@ -111,7 +104,7 @@ namespace System.Collections
                 Reset(pos);
             }
         }
-        public nothrow void Flip()
+        public void Flip()
         {
             long n = bits.Count();
             for (long i = 0; i < n; ++i)
@@ -119,7 +112,7 @@ namespace System.Collections
                 bits[i] = ~(bits[i]);
             }
         }
-        public inline nothrow void Flip(long pos)
+        public inline void Flip(long pos)
         {
             if (pos < 0 || pos >= numBits)
             {
@@ -128,11 +121,11 @@ namespace System.Collections
             ulong& b = bits[pos / blockSize];
             b = b ^ (1u << (cast<ulong>(pos) & blockMask));
         }
-        public inline nothrow bool operator[](long index) const
+        public inline bool operator[](long index) const
         {
             return Test(index);
         }
-        public inline nothrow bool Test(long pos) const
+        public inline bool Test(long pos) const
         {
             if (pos < 0 || pos >= numBits)
             {
@@ -141,7 +134,7 @@ namespace System.Collections
             ulong b = bits[pos / blockSize];
             return (b & (1u << (cast<ulong>(pos) & blockMask))) != 0u;
         }
-        public nothrow bool All() const
+        public bool All() const
         {
             long n = NumFullBlocks();
             for (long i = 0; i < n; ++i)
@@ -160,7 +153,7 @@ namespace System.Collections
             }
             return true;
         }
-        public nothrow bool Any() const
+        public bool Any() const
         {
             long n = NumFullBlocks();
             for (long i = 0; i < n; ++i)
@@ -179,7 +172,7 @@ namespace System.Collections
             }
             return false;
         }
-        public nothrow bool None() const
+        public bool None() const
         {
             long n = NumFullBlocks();
             for (long i = 0; i < n; ++i)
@@ -198,7 +191,7 @@ namespace System.Collections
             }
             return true;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             string s;
             s.Reserve(numBits);

@@ -12,6 +12,7 @@ import cmajor.systemx.intermediate.error;
 import cmajor.systemx.intermediate.compile.unit;
 import cmajor.systemx.intermediate.code;
 import cmajor.systemx.assembler;
+import cmajor.systemx.machine;
 import cmajor.symbols;
 import util;
 
@@ -20,7 +21,7 @@ namespace cmajor::systemx::intermediate {
 SimpleAssemblyCodeGenerator::SimpleAssemblyCodeGenerator(Context* context_, cmajor::systemx::assembler::AssemblyFile* assemblyFile_) :
     Visitor(context_), assemblyFile(assemblyFile_), emitSection(cmajor::systemx::assembler::AssemblySectionKind::code),
     assemblyFunction(nullptr), assemblyStructure(nullptr), assemblyInst(nullptr), currentInst(nullptr), currentFunction(nullptr),
-    registerAllocator(nullptr), leader(false), debugInfo(nullptr), lineNumber(0)
+    registerAllocator(nullptr), leader(false), debugInfo(nullptr), lineNumber(0), currentOffset(0)
 {
 }
 
@@ -76,6 +77,12 @@ void SimpleAssemblyCodeGenerator::GenerateDebugInfo()
     }
 }
 
+void SimpleAssemblyCodeGenerator::GenerateCode()
+{
+    Ctx()->GetData().VisitGlobalVariables(*this);
+    Ctx()->GetCode().VisitFunctions(*this);
+}
+
 void SimpleAssemblyCodeGenerator::WriteOutputFile()
 {
     assemblyFile->Write();
@@ -103,7 +110,14 @@ void SimpleAssemblyCodeGenerator::Visit(GlobalVariable& globalVariable)
         Emit(octaInst);
         leader = true;
         assemblyInst = nullptr;
+        currentOffset = 0;
         globalVariable.Initializer()->Accept(*this);
+        ByteType* byteType = Ctx()->GetTypes().GetByteType();
+        ByteValue zero(0u, byteType);
+        while ((currentOffset & 7) != 0)
+        {
+            zero.Accept(*this);
+        }
     }
 }
 
@@ -274,6 +288,20 @@ void SimpleAssemblyCodeGenerator::Visit(Function& function)
     std::unique_ptr<RegisterAllocator> linearScanRregisterAllocator = LinearScanRegisterAllocation(function, Ctx());
     registerAllocator = linearScanRregisterAllocator.get();
     assemblyFunction = assemblyFile->CreateFunction(function.Name());
+    MetadataRef* metadataRef = function.GetMetadataRef();
+    if (metadataRef)
+    {
+        MetadataStruct* metadataStruct = Ctx()->GetMetadata().GetMetadataStruct(metadataRef->NodeId());
+        if (metadataStruct)
+        {
+            MetadataItem* metadataItem = metadataStruct->GetItem("fullName");
+            if (metadataItem && metadataItem->IsMetadataString())
+            {
+                MetadataString* fullNameItem = static_cast<MetadataString*>(metadataItem);
+                assemblyFunction->SetComment(fullNameItem->Value());
+            }
+        }
+    }
     function.VisitBasicBlocks(*this);
     if (lineNumber != 0)
     {
@@ -318,7 +346,7 @@ void SimpleAssemblyCodeGenerator::Visit(StoreInstruction& inst)
 
 void SimpleAssemblyCodeGenerator::Visit(ArgInstruction& inst)
 {
-    EmitArg(inst, *this);
+    EmitArg(inst, *this, new cmajor::systemx::assembler::Instruction(cmajor::systemx::machine::STOU), true);
 }
 
 void SimpleAssemblyCodeGenerator::Visit(JmpInstruction& inst)
@@ -501,11 +529,6 @@ void SimpleAssemblyCodeGenerator::Visit(TrapInstruction& inst)
     EmitTrap(inst, *this);
 }
 
-void SimpleAssemblyCodeGenerator::Visit(PhiInstruction& inst)
-{
-    Error("simple assembly code generator does not support phi instructions");
-}
-
 void SimpleAssemblyCodeGenerator::Visit(NoOperationInstruction& inst)
 {
     EmitNop(inst, *this);
@@ -514,82 +537,102 @@ void SimpleAssemblyCodeGenerator::Visit(NoOperationInstruction& inst)
 void SimpleAssemblyCodeGenerator::Visit(BoolValue& value)
 {
     EmitBool(value, *this);
+    currentOffset += 1;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(SByteValue& value)
 {
     EmitSByte(value, *this);
+    currentOffset += 1;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(ByteValue& value)
 {
     cmajor::systemx::intermediate::EmitByte(value, *this);
+    currentOffset += 1;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(ShortValue& value)
 {
     EmitShort(value, *this);
+    currentOffset += 2;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(UShortValue& value)
 {
     EmitUShort(value, *this);
+    currentOffset += 2;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(IntValue& value)
 {
     EmitInt(value, *this);
+    currentOffset += 4;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(UIntValue& value)
 {
     EmitUInt(value, *this);
+    currentOffset += 4;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(LongValue& value)
 {
     EmitLong(value, *this);
+    currentOffset += 8;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(ULongValue& value)
 {
     EmitULong(value, *this);
+    currentOffset += 8;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(FloatValue& value)
 {
     EmitFloat(value, *this);
+    currentOffset += 4;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(DoubleValue& value)
 {
     EmitDouble(value, *this);
+    currentOffset += 8;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(NullValue& value)
 {
     EmitNull(*this);
+    currentOffset += 8;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(AddressValue& value)
 {
     EmitAddress(value, *this);
+    currentOffset += 8;
 }
 
 void SimpleAssemblyCodeGenerator::Visit(ArrayValue& value)
 {
     if (value.GetType()->IsArrayType())
     {
-        if (!assemblyInst)
-        {
-            ArrayType* arrayType = static_cast<ArrayType*>(value.GetType());
-            Type* elementType = arrayType->ElementType();
-            assemblyInst = elementType->MakeAssemblyInst(GetContext());
-            Emit(assemblyInst);
-        }
+        ArrayType* arrayType = static_cast<ArrayType*>(value.GetType());
+        Type* elementType = arrayType->ElementType();
+        ConstantValue* zero = Ctx()->GetByteValue(0u);
         for (ConstantValue* elementValue : value.Elements())
         {
+            assemblyInst = nullptr;
             elementValue->Accept(*this);
+            if (currentOffset > 0)
+            {
+                int64_t alignment = elementType->Alignment();
+                int64_t elementOffset = alignment * ((currentOffset - 1) / alignment + 1);
+                while (currentOffset < elementOffset)
+                {
+                    assemblyInst = nullptr;
+                    zero->Accept(*this);
+                }
+            }
         }
     }
     else
@@ -600,10 +643,35 @@ void SimpleAssemblyCodeGenerator::Visit(ArrayValue& value)
 
 void SimpleAssemblyCodeGenerator::Visit(StructureValue& value)
 {
-    for (ConstantValue* fieldValue : value.FieldValues())
+    StructureType* structureType = nullptr;
+    Type* type = value.GetType();
+    if (type->IsStructureType())
     {
+        structureType = static_cast<StructureType*>(type);
+    }
+    else
+    {
+        Error("structure type expected");
+    }
+    int64_t start = currentOffset;
+    ConstantValue* zero = Ctx()->GetByteValue(0u);
+    int64_t n = value.FieldValues().size();
+    for (int64_t i = 0; i < n; ++i)
+    {
+        int64_t fieldOffset = structureType->GetFieldOffset(i);
+        while (currentOffset - start < fieldOffset)
+        {
+            assemblyInst = nullptr;
+            zero->Accept(*this);
+        }
+        ConstantValue* fieldValue = value.FieldValues()[i];
         assemblyInst = nullptr;
         fieldValue->Accept(*this);
+    }
+    while (currentOffset - start < structureType->Size())
+    {
+        assemblyInst = nullptr;
+        zero->Accept(*this);
     }
 }
 

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -54,23 +54,23 @@ namespace System.Collections
         {
             return table.IsEmpty();
         }
-        public inline nothrow void Clear()
+        public inline void Clear()
         {
             table.Clear();
         }
-        public inline nothrow Iterator Find(const KeyType& key) 
+        public inline Iterator Find(const KeyType& key) 
         {
             return table.Find(key);
         }
-        public inline nothrow ConstIterator Find(const KeyType& key) const
+        public inline ConstIterator Find(const KeyType& key) const
         {
             return table.CFind(key);
         }
-        public inline nothrow ConstIterator CFind(const KeyType& key) const
+        public inline ConstIterator CFind(const KeyType& key) const
         {
             return table.CFind(key);
         }
-        public inline MappedType& operator[](const KeyType& key)
+        public MappedType& operator[](const KeyType& key)
         {
             KeyType keyType(key);
             Pair<Iterator, bool> ib = Insert(ValueType(Rvalue(keyType), Rvalue(MappedType())));

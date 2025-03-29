@@ -94,7 +94,7 @@ private:
     std::vector<std::unique_ptr<Instruction>> instructions;
     Instruction* currentInstruction;
     cmajor::systemx::object::Value value;
-    std::vector< cmajor::systemx::object::Value> operands;
+    std::vector<cmajor::systemx::object::Value> operands;
     cmajor::systemx::object::Segment currentSegment;
     cmajor::systemx::object::Section* currentSection;
     cmajor::systemx::object::Symbol* currentSymbol;

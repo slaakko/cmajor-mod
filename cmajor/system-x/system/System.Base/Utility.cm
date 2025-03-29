@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -173,7 +173,7 @@ namespace System
         return resultLen;
     }
 
-    public nothrow long MemGrow(long size)
+    public long MemGrow(long size)
     {
         if (size < 8)
         {
@@ -197,7 +197,7 @@ namespace System
         }
     }
 
-    public nothrow string GetStackTrace()
+    public string GetStackTrace()
     {
         UniquePtr<byte> mem(cast<byte*>(MemAlloc(4096)));
         if (stack_trace(mem.Get(), 4096) == 0)

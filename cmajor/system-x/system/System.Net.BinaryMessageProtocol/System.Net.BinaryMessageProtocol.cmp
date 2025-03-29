@@ -1,0 +1,7 @@
+project System.Net.BinaryMessageProtocol;
+target=library;
+reference <../System.Base/System.Base.cmp>;
+source <IO.cm>;
+source <Number.cm>;
+source <Protocol.cm>;
+source <Registry.cm>;

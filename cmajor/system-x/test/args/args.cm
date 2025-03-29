@@ -1,0 +1,10 @@
+using System;
+
+int main(int argc, const char** argv)
+{
+    for (int i = 1; i < argc; ++i)
+    {
+        Console.Out() << argv[i] << endl();
+    }
+    return 0;
+}

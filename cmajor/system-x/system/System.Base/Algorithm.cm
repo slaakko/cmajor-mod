@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -26,7 +26,7 @@ namespace System
         right = Rvalue(temp);
     }
 
-    public nothrow void Reverse<I>(I begin, I end) where I is RandomAccessIterator
+    public void Reverse<I>(I begin, I end) where I is RandomAccessIterator
     {
         while (begin < end)
         {
@@ -36,7 +36,7 @@ namespace System
         }
     }
 
-    public nothrow void Reverse<I>(I begin, I end) where I is BidirectionalIterator
+    public void Reverse<I>(I begin, I end) where I is BidirectionalIterator
     {
         while (true)
         {
@@ -130,12 +130,12 @@ namespace System
         return distance;
     }
 
-    public constexpr nothrow inline long Distance<I>(I first, I last) where I is RandomAccessIterator
+    public constexpr inline long Distance<I>(I first, I last) where I is RandomAccessIterator
     {
         return last - first;
     }
 
-    public constexpr nothrow I Next<I>(I i, long n) where I is ForwardIterator
+    public constexpr I Next<I>(I i, long n) where I is ForwardIterator
     {
         if (n < 0)
         {
@@ -149,12 +149,12 @@ namespace System
         return i;
     }
 
-    public constexpr nothrow inline I Next<I>(I i, long n) where I is RandomAccessIterator
+    public constexpr inline I Next<I>(I i, long n) where I is RandomAccessIterator
     {
         return i + n;
     }
 
-    public constexpr nothrow I LowerBound<I, T>(I first, I last, const T& value) where I is ForwardIterator and TotallyOrdered<T, I.ValueType>
+    public constexpr I LowerBound<I, T>(I first, I last, const T& value) where I is ForwardIterator and TotallyOrdered<T, I.ValueType>
     {
         long len = Distance(first, last);
         while (len > 0)
@@ -175,7 +175,7 @@ namespace System
         return first;
     }
 
-    public constexpr nothrow I LowerBound<I, T, R>(I first, I last, const T& value, R r) where I is ForwardIterator and T is I.ValueType and R is Relation and R.Domain is I.ValueType
+    public constexpr I LowerBound<I, T, R>(I first, I last, const T& value, R r) where I is ForwardIterator and T is I.ValueType and R is Relation and R.Domain is I.ValueType
     {
         long len = Distance(first, last);
         while (len > 0)
@@ -196,7 +196,7 @@ namespace System
         return first;
     }
 
-    public constexpr nothrow I UpperBound<I, T>(I first, I last, const T& value) where I is ForwardIterator and TotallyOrdered<T, I.ValueType>
+    public constexpr I UpperBound<I, T>(I first, I last, const T& value) where I is ForwardIterator and TotallyOrdered<T, I.ValueType>
     {
         long len = Distance(first, last);
         while (len > 0)
@@ -217,7 +217,7 @@ namespace System
         return first;
     }
 
-    public constexpr nothrow I UpperBound<I, T, R>(I first, I last, const T& value, R r) where I is ForwardIterator and T is I.ValueType and R is Relation and R.Domain is I.ValueType
+    public constexpr I UpperBound<I, T, R>(I first, I last, const T& value, R r) where I is ForwardIterator and T is I.ValueType and R is Relation and R.Domain is I.ValueType
     {
         long len = Distance(first, last);
         while (len > 0)
@@ -296,7 +296,7 @@ namespace System
         return Pair<I, I>(first, first);
     }
 
-    public constexpr nothrow I Find<I, T>(I begin, I end, const T& value) where I is InputIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
+    public constexpr I Find<I, T>(I begin, I end, const T& value) where I is InputIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
     {
         while (begin != end)
         {
@@ -309,7 +309,7 @@ namespace System
         return end;
     }
 
-    public constexpr nothrow I Find<I, P>(I begin, I end, P p) where I is InputIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
+    public constexpr I Find<I, P>(I begin, I end, P p) where I is InputIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
     {
         while (begin != end)
         {
@@ -322,7 +322,20 @@ namespace System
         return end;
     }
 
-    public constexpr nothrow long Count<I, T>(I begin, I end, const T& value) where I is InputIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
+    public constexpr I FindIfNot<I, P>(I begin, I end, P p) where I is InputIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
+    {
+        while (begin != end)
+        {
+            if (!p(*begin))
+            {
+                return begin;
+            }
+            ++begin;
+        }
+        return end;
+    }
+
+    public constexpr long Count<I, T>(I begin, I end, const T& value) where I is InputIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
     {
         long count = 0;
         while (begin != end)
@@ -336,7 +349,7 @@ namespace System
         return count;
     }
 
-    public constexpr nothrow long Count<I, P>(I begin, I end, P p) where I is InputIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
+    public constexpr long Count<I, P>(I begin, I end, P p) where I is InputIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
     {
         long count = 0;
         while (begin != end)
@@ -409,7 +422,7 @@ namespace System
         }
     }
 
-    public nothrow void Fill<I, T>(I begin, I end, const T& value) where T is Semiregular and I is ForwardIterator and I.ValueType is T
+    public void Fill<I, T>(I begin, I end, const T& value) where T is Semiregular and I is ForwardIterator and I.ValueType is T
     {
         while (begin != end)
         {
@@ -418,7 +431,7 @@ namespace System
         }        
     }
 
-    public nothrow T Accumulate<I, T, Op>(I begin, I end, T init, Op op) where I is InputIterator and T is Semiregular and Op is BinaryOperation and Op.FirstArgumentType is T and Op.SecondArgumentType is I.ValueType
+    public T Accumulate<I, T, Op>(I begin, I end, T init, Op op) where I is InputIterator and T is Semiregular and Op is BinaryOperation and Op.FirstArgumentType is T and Op.SecondArgumentType is I.ValueType
     {
         while (begin != end)
         {
@@ -464,110 +477,18 @@ namespace System
         return to;
     }
 
-    public nothrow inline const T& Select_0_2<T, R>(const T& a, const T& b, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        if (r(b, a)) return b;
-        return a;
-    }
-
-    public nothrow inline const T& Select_1_2<T, R>(const T& a, const T& b, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        if (r(b, a)) return a;
-        return b;
-    }
-
-    public nothrow inline const T& Select_0_3<T, R>(const T& a, const T& b, const T& c, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        return Select_0_2(Select_0_2(a, b, r), c, r);
-    }
-
-    public nothrow inline const T& Select_2_3<T, R>(const T& a, const T& b, const T& c, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        return Select_1_2(Select_1_2(a, b, r), c, r);
-    }
-
-    public nothrow inline const T& Select_1_3_ab<T, R>(const T& a, const T& b, const T& c, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        if (!r(c, b)) return b;
-        return Select_1_2(a, c, r);
-    }
-
-    public nothrow inline const T& Select_1_3<T, R>(const T& a, const T& b, const T& c, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        if (r(b, a)) return Select_1_3_ab(b, a, c, r);
-        return Select_1_3_ab(a, b, c, r);
-    }
-
-    public nothrow const T& Median<T, R>(const T& a, const T& b, const T& c, R r) where T is Semiregular and R is Relation and R.Domain is T
-    {
-        return Select_1_3(a, b, c, r);
-    }
-
-    public nothrow const T& Median<T>(const T& a, const T& b, const T& c) where T is TotallyOrdered
-    {
-        return Median(a, b, c, Less<T>());
-    }
-
-    public nothrow I UnguardedPartition<I, T, R>(I begin, I end, const T& pivot, R r)  where I is RandomAccessIterator and T is I.ValueType and R is Relation and R.Domain is I.ValueType
-    {
-        while (true)
-        {
-            while (r(*begin, pivot))
-            {
-                ++begin;
-            }
-            --end;
-            while (r(pivot, *end))
-            {
-                --end;
-            }
-            if (begin >= end)
-            {
-                return begin;
-            }
-            Swap(*begin, *end);
-            ++begin;
-        }
-        // dummy return to keep compiler happy...
-        return begin;
-    }
-
-    public nothrow void UnguardedLinearInsert<I, T, R>(I last, const T& val, R r) where I is RandomAccessIterator and T is I.ValueType and R is Relation and R.Domain is I.ValueType
-    {
-        I next = last;
-        --next;
-        while (r(val, *next))
-        {
-            *last = *next;
-            last = next;
-            --next;
-        }
-        *last = val;
-    }
-
-    public void LinearInsert<I, R>(I first, I last, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
-    {
-        I.ValueType val = *last;
-        if (r(val, *first))
-        {
-            CopyBackward(first, last, last + 1);
-            *first = val;
-        }
-        else
-        {
-            UnguardedLinearInsert(last, val, r);
-        }
-    }
-
     public void InsertionSort<I, R>(I begin, I end, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
     {
-        if (begin == end)
+        I i = begin;
+        while (i < end)
         {
-            return;
-        }
-        for (I i = begin + 1; i != end; ++i)
-        {
-            LinearInsert(begin, i, r);
+            I j = i;
+            while (j > begin && r(*j, *(j - 1)))
+            {
+                Swap(*j, *(j - 1));
+                --j;
+            }
+            ++i;
         }
     }
 
@@ -576,39 +497,96 @@ namespace System
         InsertionSort(begin, end, Less<I.ValueType>());
     }
 
-    public const long insertionSortThreshold = 16;
-
-    public void PartialQuickSort<I, R>(I begin, I end, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
+    public I Partition<I, P>(I begin, I end, P p) where I is ForwardIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
     {
-        while (end - begin > insertionSortThreshold)
+        begin = FindIfNot(begin, end, p);
+        if (begin == end)
         {
-            I.ValueType pivot = Median(*begin, *(begin + (end - begin) / 2), *(end - 1), r);
-            I cut = UnguardedPartition(begin, end, pivot, r);
-            PartialQuickSort(cut, end, r);
-            end = cut;
+            return begin;
         }
+        for (auto i = Next(begin, 1); i != end; ++i)
+        {
+            if (p(*i))
+            {
+                Swap(*i, *begin);
+                ++begin;
+            }
+        }
+        return begin;
+    }
+
+    public class OperandRelX<T, R> : UnaryPred<T> where R is Relation and R.Domain is T
+    {
+        public OperandRelX(const T& x_, R r_) : x(x_), r(r_)
+        {
+        }
+        public inline bool operator()(const T& a) const
+        {
+            return r(a, x);
+        }
+        private T x;
+        private R r;
+    }
+
+    public class NotXRelOperand<T, R> : UnaryPred<T> where R is Relation and R.Domain is T
+    {
+        public NotXRelOperand(const T& x_, R r_) : x(x_), r(r_)
+        {
+        }
+        public inline bool operator()(const T& a) const
+        {
+            return !r(x, a);
+        }
+        private T x;
+        private R r;
+    }
+
+    public void QuickSort<I, R>(I begin, I end, R r)
+        where I is ForwardIterator and R is Relation and R.Domain is I.ValueType and I.ValueType is Copyable
+    {
+        if (begin == end) return;
+        auto pivot = *Next(begin, Distance(begin, end) / 2);
+        auto mid1 = Partition(begin, end, OperandRelX<I.ValueType, R>(pivot, r));
+        auto mid2 = Partition(mid1, end, NotXRelOperand<I.ValueType, R>(pivot, r));
+        QuickSort(begin, mid1, r);
+        QuickSort(mid2, end, r);
     }
 
     public void Sort<I, R>(I begin, I end, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
     {
-        if (begin != end)
+        if (begin == end) return;
+        InsertionSort(begin, end, r);
+    }
+
+    public const int insertionSortThreshold = 16;
+
+    public void Sort<I, R>(I begin, I end, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and I.ValueType is Copyable
+    {
+        if (begin == end) return;
+        if (end - begin <= insertionSortThreshold)
         {
-            PartialQuickSort(begin, end, r);
             InsertionSort(begin, end, r);
+        }
+        else
+        {
+            QuickSort(begin, end, r);
         }
     }
 
-    public inline void Sort<I>(I begin, I end) where I is RandomAccessIterator and I.ValueType is TotallyOrdered
+    public inline void Sort<I>(I begin, I end)
+        where I is RandomAccessIterator and I.ValueType is TotallyOrdered
     {
         Sort(begin, end, Less<I.ValueType>());
     }
 
-    public inline void Sort<C, R>(C& c, R r) where C is RandomAccessContainer and R is Relation and R.Domain is C.Iterator.ValueType
+    public inline void Sort<C, R>(C& c, R r)
+        where C is RandomAccessContainer and R is Relation and R.Domain is C.Iterator.ValueType
     {
         Sort(c.Begin(), c.End(), r);
     }
 
-    public inline void Sort<C>(C& c) where C is RandomAccessContainer and C.Iterator.ValueType is TotallyOrdered
+    public inline void Sort<C>(C& c)
+        where C is RandomAccessContainer and C.Iterator.ValueType is TotallyOrdered
     {
         Sort(c.Begin(), c.End());
     }
@@ -629,7 +607,7 @@ namespace System
         Copy(list.CBegin(), list.CEnd(), c.Begin());
     }
 
-    public constexpr nothrow bool Equal<I1, I2, R>(I1 first1, I1 last1, I2 first2, I2 last2, R r) where I1 is InputIterator and I2 is InputIterator and Relation<R, I1.ValueType, I2.ValueType>
+    public constexpr bool Equal<I1, I2, R>(I1 first1, I1 last1, I2 first2, I2 last2, R r) where I1 is InputIterator and I2 is InputIterator and Relation<R, I1.ValueType, I2.ValueType>
     {
         while (first1 != last1 && first2 != last2)
         {
@@ -643,12 +621,12 @@ namespace System
         return first1 == last1 && first2 == last2;
     }
 
-    public constexpr nothrow inline bool Equal<I1, I2>(I1 first1, I1 last1, I2 first2, I2 last2) where I1 is InputIterator and I2 is InputIterator and EqualityComparable<I1.ValueType, I2.ValueType>
+    public constexpr inline bool Equal<I1, I2>(I1 first1, I1 last1, I2 first2, I2 last2) where I1 is InputIterator and I2 is InputIterator and EqualityComparable<I1.ValueType, I2.ValueType>
     {
         return Equal(first1, last1, first2, last2, EqualTo<I1.ValueType, I2.ValueType>());
     }
 
-    public constexpr nothrow bool LexicographicalCompare<I1, I2, R>(I1 first1, I1 last1, I2 first2, I2 last2, R r)
+    public constexpr bool LexicographicalCompare<I1, I2, R>(I1 first1, I1 last1, I2 first2, I2 last2, R r)
         where I1 is InputIterator and I2 is InputIterator and Same<I1.ValueType, I2.ValueType> and Relation<R, I1.ValueType, I2.ValueType> and Relation<R, I2.ValueType, I1.ValueType>
     {
         while (first1 != last1 && first2 != last2)
@@ -667,12 +645,12 @@ namespace System
         return first1 == last1 && first2 != last2;
     }
 
-    public constexpr nothrow inline bool LexicographicalCompare<I1, I2>(I1 first1, I1 last1, I2 first2, I2 last2) where I1 is InputIterator and I2 is InputIterator and LessThanComparable<I1.ValueType, I2.ValueType>
+    public constexpr inline bool LexicographicalCompare<I1, I2>(I1 first1, I1 last1, I2 first2, I2 last2) where I1 is InputIterator and I2 is InputIterator and LessThanComparable<I1.ValueType, I2.ValueType>
     {
         return LexicographicalCompare(first1, last1, first2, last2, Less<I1.ValueType, I2.ValueType>());
     }
 
-    public constexpr nothrow I MinElement<I>(I first, I last) where I is ForwardIterator and I.ValueType is TotallyOrdered
+    public constexpr I MinElement<I>(I first, I last) where I is ForwardIterator and I.ValueType is TotallyOrdered
     {
         if (first == last)
         {
@@ -691,7 +669,7 @@ namespace System
         return minElementPos;
     }
 
-    public constexpr nothrow I MinElement<I, R>(I first, I last, R r) where I is ForwardIterator and R is Relation and R.Domain is I.ValueType
+    public constexpr I MinElement<I, R>(I first, I last, R r) where I is ForwardIterator and R is Relation and R.Domain is I.ValueType
     {
         if (first == last)
         {
@@ -710,7 +688,7 @@ namespace System
         return minElementPos;
     }
 
-    public constexpr nothrow I MaxElement<I>(I first, I last) where I is ForwardIterator and I.ValueType is TotallyOrdered
+    public constexpr I MaxElement<I>(I first, I last) where I is ForwardIterator and I.ValueType is TotallyOrdered
     {
         if (first == last)
         {
@@ -729,7 +707,7 @@ namespace System
         return maxElementPos;
     }
 
-    public constexpr nothrow I MaxElement<I, R>(I first, I last, R r) where I is ForwardIterator and R is Relation and R.Domain is I.ValueType
+    public constexpr I MaxElement<I, R>(I first, I last, R r) where I is ForwardIterator and R is Relation and R.Domain is I.ValueType
     {
         if (first == last)
         {
@@ -779,7 +757,7 @@ namespace System
         }
     }
 
-    public nothrow bool NextPermutation<I>(I begin, I end) where I is BidirectionalIterator and I.ValueType is LessThanComparable
+    public bool NextPermutation<I>(I begin, I end) where I is BidirectionalIterator and I.ValueType is LessThanComparable
     {
         if (begin == end)
         {
@@ -817,7 +795,7 @@ namespace System
         }
     }
 
-    public nothrow bool NextPermutation<I, R>(I begin, I end, R r) where I is BidirectionalIterator and R is Relation and R.Domain is I.ValueType
+    public bool NextPermutation<I, R>(I begin, I end, R r) where I is BidirectionalIterator and R is Relation and R.Domain is I.ValueType
     {
         if (begin == end)
         {
@@ -855,7 +833,7 @@ namespace System
         }
     }
 
-    public nothrow bool PrevPermutation<I>(I begin, I end) where I is BidirectionalIterator and I.ValueType is LessThanComparable
+    public bool PrevPermutation<I>(I begin, I end) where I is BidirectionalIterator and I.ValueType is LessThanComparable
     {
         if (begin == end)
         {
@@ -893,7 +871,7 @@ namespace System
         }
     }
 
-    public nothrow bool PrevPermutation<I, R>(I begin, I end, R r) where I is BidirectionalIterator and R is Relation and R.Domain is I.ValueType
+    public bool PrevPermutation<I, R>(I begin, I end, R r) where I is BidirectionalIterator and R is Relation and R.Domain is I.ValueType
     {
         if (begin == end)
         {
@@ -931,12 +909,12 @@ namespace System
         }
     }
 
-    public nothrow inline uint RandomNumber(uint n)
+    public inline uint RandomNumber(uint n)
     {
         return Random() % n;
     }
     
-    public nothrow void RandomShuffle<I>(I begin, I end) where I is RandomAccessIterator
+    public void RandomShuffle<I>(I begin, I end) where I is RandomAccessIterator
     {
         if (begin == end) return;
         for (I i = begin + 1; i != end; ++i)

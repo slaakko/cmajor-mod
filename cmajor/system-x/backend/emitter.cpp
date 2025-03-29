@@ -1857,4 +1857,9 @@ void SystemXEmitter::PrintModule()
 {
 }
 
+void SystemXEmitter::SetCurrentFunctionMain()
+{
+    currentFunction->SetMain();
+}
+
 } // namespace cmajor::systemx::backend

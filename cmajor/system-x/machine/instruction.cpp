@@ -3,13 +3,14 @@
 // Distributed under the MIT license
 // =================================
 
-//  module; TODO
-//  #include <boost/multiprecision/cpp_int.hpp> TODO
+module; 
+#include <boost/multiprecision/cpp_int.hpp> 
 
 module cmajor.systemx.machine.instruction;
 
 import cmajor.systemx.machine.interrupt;
 import cmajor.systemx.machine.machine;
+import cmajor.systemx.machine.memory;
 import cmajor.systemx.machine.processor;
 import cmajor.systemx.machine.opcode;
 import cmajor.systemx.machine.formatter;
@@ -1149,8 +1150,6 @@ Mulu::Mulu() : Instruction(MULU)
 
 void Mulu::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
 {
-//  TODO
-    /*
     uint64_t yy = processor.Regs().Get(y);
     boost::multiprecision::uint128_t yv = yy;
     uint64_t zz = processor.Regs().Get(z);
@@ -1160,7 +1159,6 @@ void Mulu::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
     uint64_t hh = static_cast<uint64_t>(value >> 64);
     processor.Regs().Set(x, xx);
     processor.Regs().SetSpecial(rH, hh);
-    */
 }
 
 void Mulu::Format(Formatter& formatter, uint8_t x, uint8_t y, uint8_t z)
@@ -1174,8 +1172,6 @@ Mului::Mului() : Instruction(MULUI)
 
 void Mului::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
 {
-    // TODO
-/*
     uint64_t yy = processor.Regs().Get(y);
     boost::multiprecision::uint128_t yv = yy;
     uint64_t zz = z;
@@ -1185,7 +1181,6 @@ void Mului::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
     uint64_t hh = static_cast<uint64_t>(value >> 64);
     processor.Regs().Set(x, xx);
     processor.Regs().SetSpecial(rH, hh);
-*/
 }
 
 void Mului::Format(Formatter& formatter, uint8_t x, uint8_t y, uint8_t z)
@@ -1199,8 +1194,6 @@ Divu::Divu() : Instruction(DIVU)
 
 void Divu::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
 {
-    // TODO
-/*
     uint64_t yy = processor.Regs().Get(y);
     uint64_t zz = processor.Regs().Get(z);
     uint64_t rd = processor.Regs().GetSpecial(rD);
@@ -1222,7 +1215,6 @@ void Divu::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
     }
     processor.Regs().Set(x, xx);
     processor.Regs().SetSpecial(rR, rr);
-*/
 }
 
 void Divu::Format(Formatter& formatter, uint8_t x, uint8_t y, uint8_t z)
@@ -1236,8 +1228,6 @@ Divui::Divui() : Instruction(DIVUI)
 
 void Divui::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
 {
-    // TODO
-/*
     uint64_t yy = processor.Regs().Get(y);
     uint64_t zz = z;
     uint64_t rd = processor.Regs().GetSpecial(rD);
@@ -1259,7 +1249,6 @@ void Divui::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
     }
     processor.Regs().Set(x, xx);
     processor.Regs().SetSpecial(rR, rr);
-*/
 }
 
 void Divui::Format(Formatter& formatter, uint8_t x, uint8_t y, uint8_t z)

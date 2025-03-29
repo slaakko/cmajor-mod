@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,6 +9,11 @@ using System.Collections;
 
 namespace System.Screen
 {
+    public const int systemScreenQuitMessageId = 0;
+    public const int systemScreenKeyPressedMessageId = 1;
+    public const int systemScreenWriteScreenMessageId = 2;
+    public const int systemScreenTimerMessageId = 3;
+
     public abstract class Message
     {
         public nothrow Message() : targetWindowHandle(-1)
@@ -20,16 +25,16 @@ namespace System.Screen
         {
             return cast<int>(sizeof(int) + sizeof(int));
         }
-        public abstract nothrow string Name() const;
+        public abstract string Name() const;
         public nothrow virtual bool IsDefaultWriteScreenMessage() const
         {
             return false;
         }
-        public nothrow int TargetWindowHandle() const
+        public nothrow inline int TargetWindowHandle() const
         {
             return targetWindowHandle;
         }
-        public nothrow void SetTargetWindowHandle(int targetWindowHandle_)
+        public nothrow inline void SetTargetWindowHandle(int targetWindowHandle_)
         {
             targetWindowHandle = targetWindowHandle_;
         }
@@ -49,67 +54,24 @@ namespace System.Screen
         private int targetWindowHandle;
     }
     
-    public abstract class MessageFactoryFunction
+    public Message* CreateMessage(int messageId)
     {
-        public abstract Message* CreateMessage();
-    }
-    
-    public class MessageFactory
-    {
-        static MessageFactory() : instance(new MessageFactory())
+        switch (messageId)
         {
+            case systemScreenQuitMessageId: return new QuitMessage();
+            case systemScreenKeyPressedMessageId: return new KeyPressedMessage();
+            case systemScreenWriteScreenMessageId: return new WriteScreenMessage();
+            case systemScreenTimerMessageId: return new TimerMessage();
         }
-        private MessageFactory()
-        {
-        }
-        public static MessageFactory& Instance() 
-        {
-            return *instance;
-        }
-        public void Register(int messageId, MessageFactoryFunction* factoryFunction)
-        {
-            factoryFunctionMap[messageId] = factoryFunction;
-            factoryFunctions.Add(UniquePtr<MessageFactoryFunction>(factoryFunction));
-        }
-        public Message* CreateMessage(int messageId)
-        {
-            Map<int, MessageFactoryFunction*>.ConstIterator it = factoryFunctionMap.CFind(messageId);
-            if (it != factoryFunctionMap.CEnd())
-            {
-                MessageFactoryFunction* factoryFunction = it->second;
-                Message* message = factoryFunction->CreateMessage();
-                return message;
-            }
-            else
-            {
-                throw Exception("message id '" + ToString(messageId) + "' not registered with message factory");
-            }
-        }
-        private static UniquePtr<MessageFactory> instance;
-        private Map<int, MessageFactoryFunction*> factoryFunctionMap;
-        private List<UniquePtr<MessageFactoryFunction>> factoryFunctions;
+        throw Exception("no case for message id " + ToString(messageId));
     }
     
     public Message* ReadMessage(byte* messageData, int messageSize)
     {
         MemoryReader reader(messageData, messageSize);
         int messageId = reader.ReadInt();
-        Message* message = MessageFactory.Instance().CreateMessage(messageId);
+        Message* message = CreateMessage(messageId);
         message->Read(reader);
         return message;
-    }
-    
-    public class ConcreteMessageFactoryFunction<T> : MessageFactoryFunction
-    {
-        public override Message* CreateMessage()
-        {
-            T* message = new T();
-            return message;
-        }
-    }
-    
-    public void RegisterMessage<T>(int messageId) 
-    {
-        MessageFactory.Instance().Register(messageId, new ConcreteMessageFactoryFunction<T>());
     }
 }

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -22,7 +22,13 @@ namespace System
         }
         public ~TerminalState()
         {
-            Close(tty);
+            try
+            {
+                Close(tty);
+            }
+            catch (const Exception&)
+            {
+            }
         }
         public nothrow int Descriptor() 
         {
@@ -34,7 +40,7 @@ namespace System
     
     public static class Terminal
     {
-        static nothrow Terminal() :
+        static Terminal() :
             in(SharedPtr<Stream>(new FileStream(TerminalState.Instance().Descriptor()))),
             out(SharedPtr<Stream>(new FileStream(TerminalState.Instance().Descriptor()))),
             err(SharedPtr<Stream>(new FileStream(TerminalState.Instance().Descriptor())))
@@ -244,7 +250,7 @@ namespace System
         {
             return err;
         }
-        public static nothrow int Descriptor() 
+        public static int Descriptor() 
         {
             return TerminalState.Instance().Descriptor();
         }
@@ -253,7 +259,7 @@ namespace System
         private static StreamWriter err;
     }
     
-    public nothrow bool IsConsole(int fd)
+    public bool IsConsole(int fd)
     {
         return IOCtl(fd, IOControlItem.isConsole, null, 0) == 1;
     }
@@ -274,27 +280,27 @@ namespace System
         IOCtl(fd, IOControlItem.set_cooked, null, 0);
     }
     
-    public nothrow int TerminalWindowWidth()
+    public int TerminalWindowWidth()
     {
         return IOCtl(Terminal.Descriptor(), IOControlItem.columns, null, 0);
     }
 
-    public nothrow int TerminalWindowHeight()
+    public int TerminalWindowHeight()
     {
         return IOCtl(Terminal.Descriptor(), IOControlItem.rows, null, 0);
     }
     
-    public nothrow int CursorX() 
+    public int CursorX() 
     {
         return IOCtl(Terminal.Descriptor(), IOControlItem.cursor_x, null, 0);
     }
 
-    public nothrow int CursorY() 
+    public int CursorY() 
     {
         return IOCtl(Terminal.Descriptor(), IOControlItem.cursor_y, null, 0);
     }
 
-    public nothrow void SetCursorPos(int x, int y)
+    public void SetCursorPos(int x, int y)
     {
         byte[8] args;
         MemoryWriter writer(&args[0], 8);

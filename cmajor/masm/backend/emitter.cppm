@@ -368,6 +368,7 @@ public:
     void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) override;
     void SetSpan(const soul::ast::Span& span) override;
     void PrintModule() override;
+    void SetCurrentFunctionMain() override;
 private:
     cmajor::ir::EmittingContext* emittingContext;
     cmajor::ir::EmittingDelegate* emittingDelegate;

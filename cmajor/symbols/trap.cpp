@@ -14,6 +14,7 @@ TrapFunction::TrapFunction(SymbolTable& symbolTable) : FunctionSymbol(SymbolType
 {
     SetGroupName(U"trap");
     SetCDecl();
+    SetNothrow();
     SetVarArg();
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* b0Param = new ParameterSymbol(soul::ast::Span(), U"b0");

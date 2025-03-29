@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -19,7 +19,7 @@ namespace System
     
     public class SystemError : Exception
     {
-        public nothrow SystemError(int errorCode_, const string& message_) : base(message_), errorCode(errorCode_)
+        public SystemError(int errorCode_, const string& message_) : base(message_), errorCode(errorCode_)
         {
         }
         public int errorCode;

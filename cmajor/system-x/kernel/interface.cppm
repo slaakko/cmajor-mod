@@ -51,3 +51,4 @@ export import cmajor.systemx.kernel.time.traps;
 export import cmajor.systemx.kernel.trap;
 export import cmajor.systemx.kernel.trap.exit;
 export import cmajor.systemx.kernel.trap.random;
+export import cmajor.systemx.kernel.config;

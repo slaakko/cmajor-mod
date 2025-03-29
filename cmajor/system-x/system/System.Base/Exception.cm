@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,7 +7,7 @@ namespace System
 {
     public class Exception
     {
-        public nothrow Exception(const string& message_) : message(message_), stackTrace()
+        public Exception(const string& message_) : message(message_), stackTrace()
         {
         }
         public default virtual ~Exception();
@@ -45,28 +45,28 @@ namespace System
 
     public class NullPointerException : Exception
     {
-        public nothrow NullPointerException() : base("null pointer exception")
+        public NullPointerException() : base("null pointer exception")
         {
         }
     }
 
     public class IndexOutOfBoundsException : Exception
     {
-        public nothrow IndexOutOfBoundsException() : base("index out of bounds")
+        public IndexOutOfBoundsException() : base("index out of bounds")
         {
         }
     }
 
     public class InvalidParameterException : Exception
     {
-        public nothrow InvalidParameterException() : base("invalid parameter")
+        public InvalidParameterException() : base("invalid parameter")
         {
         }
     }
 
     public class PreconditionViolationException : Exception
     {
-        public nothrow PreconditionViolationException() : base("precondition violation")
+        public PreconditionViolationException() : base("precondition violation")
         {
         }
     }

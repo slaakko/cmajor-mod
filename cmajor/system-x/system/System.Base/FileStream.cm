@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,7 +11,7 @@ namespace System.IO
     public const int stdout = 1;
     public const int stderr = 2;
 
-    public nothrow string OpenFlagStr(OpenFlags flags)
+    public string OpenFlagStr(OpenFlags flags)
     {
         string s;
         if ((flags & OpenFlags.read) != OpenFlags.none)
@@ -47,17 +47,17 @@ namespace System.IO
     
     public class FileSystemException : Exception
     {
-        public nothrow FileSystemException(const string& message_) : base(message_)
+        public FileSystemException(const string& message_) : base(message_)
         {
         }
     }
     
     public class FileStream : Stream
     {
-        public nothrow FileStream(int fd_) : this(fd_, false)
+        public FileStream(int fd_) : this(fd_, false)
         {
         }
-        public nothrow FileStream(int fd_, bool closeOnExit_) : fd(fd_), closeOnExit(closeOnExit_)
+        public FileStream(int fd_, bool closeOnExit_) : fd(fd_), closeOnExit(closeOnExit_)
         {
         }
         public FileStream(const string& filePath, OpenFlags flags) : this(filePath, flags, 0)
@@ -69,7 +69,7 @@ namespace System.IO
         }
         suppress FileStream(const FileStream&);
         suppress void operator=(const FileStream&);
-        public nothrow FileStream(FileStream&& that) : fd(that.fd), closeOnExit(that.closeOnExit)
+        public nothrow FileStream(FileStream&& that) : base(that), fd(that.fd), closeOnExit(that.closeOnExit)
         {
             that.fd = -1;
             that.closeOnExit = false;

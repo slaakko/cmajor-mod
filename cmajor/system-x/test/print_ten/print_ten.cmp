@@ -1,0 +1,3 @@
+project print_ten;
+target=program;
+source <print_ten.cm>;

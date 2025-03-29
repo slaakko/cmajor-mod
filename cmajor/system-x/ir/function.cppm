@@ -30,6 +30,7 @@ public:
     std::string Name(Context& context) override { return "@" + name; }
     void Write(util::CodeFormatter& formatter, Context& context);
     void SetLinkOnce() { linkOnce = true; }
+    void SetMain() { main = true; }
     void SetMdId(int mdId_) { mdId = mdId_; }
 private:
     std::string name;
@@ -40,6 +41,7 @@ private:
     std::vector<std::unique_ptr<BasicBlock>> cleanupBasicBlocks;
     uint64_t nextResultNumber;
     bool linkOnce;
+    bool main;
     int mdId;
     int nextBBNumber;
 };

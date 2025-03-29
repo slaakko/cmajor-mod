@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -34,7 +34,7 @@ namespace System
         public nothrow inline String() : chars(null), len(0), res(0)
         {
         }
-        public nothrow inline String(const CharT* chars_) : len(StrLen(chars_)), res(0), chars(null)
+        public inline String(const CharT* chars_) : len(StrLen(chars_)), res(0), chars(null)
         {
             if (len > 0)
             {
@@ -42,7 +42,7 @@ namespace System
                 StrCopy(chars, chars_);
             }
         }
-        public nothrow inline String(const CharT* chars_, long length_) : len(0), res(0), chars(null)
+        public inline String(const CharT* chars_, long length_) : len(0), res(0), chars(null)
         {
             if (length_ > 0)
             {
@@ -50,10 +50,10 @@ namespace System
                 len = StrCopy(chars, chars_, length_);
             }
         }
-        public nothrow inline String(const CharT* begin, const CharT* end) : this(begin, end - begin)
+        public String(const CharT* begin, const CharT* end) : this(begin, end - begin)
         {
         }
-        public nothrow String(const String<CharT>& that) : len(that.len), res(0), chars(null)
+        public String(const String<CharT>& that) : len(that.len), res(0), chars(null)
         {
             if (len > 0)
             {
@@ -67,13 +67,13 @@ namespace System
             that.res = 0;
             that.chars = null;
         }
-        public nothrow explicit inline String(CharT c) : len(1), res(0), chars(null)
+        public explicit String(CharT c) : len(1), res(0), chars(null)
         {
             Reserve(1);
             chars[0] = c;
             chars[1] = '\0';
         }
-        public nothrow String(CharT c, long n) : len(n), res(0), chars(null)
+        public String(CharT c, long n) : len(n), res(0), chars(null)
         {
             if (n > 0)
             {
@@ -85,7 +85,7 @@ namespace System
                 chars[n] = '\0';
             }
         }
-        public nothrow void operator=(const String<CharT>& that)
+        public void operator=(const String<CharT>& that)
         {
             Deallocate();
             Reserve(that.len);
@@ -145,7 +145,7 @@ namespace System
             }
             return chars[index];
         }
-        public nothrow void Reserve(long minLen)
+        public void Reserve(long minLen)
         {
             if (minLen > 0)
             {
@@ -156,7 +156,7 @@ namespace System
                 }
             }
         }
-        public nothrow inline String<CharT>& Append(CharT c)
+        public String<CharT>& Append(CharT c)
         {
             Reserve(len + 1);
             chars[len] = c;
@@ -180,17 +180,17 @@ namespace System
             }
             return *this;
         }
-        public nothrow inline String<CharT>& Append(const CharT* that)
+        public String<CharT>& Append(const CharT* that)
         {
             AppendFrom(that, StrLen(that));
             return *this;
         }
-        public nothrow inline String<CharT>& Append(const CharT* that, long count)
+        public String<CharT>& Append(const CharT* that, long count)
         {
             AppendFrom(that, count);
             return *this;
         }
-        public nothrow inline String<CharT>& Append(const String<CharT>& that)
+        public String<CharT>& Append(const String<CharT>& that)
         {
             AppendFrom(that.chars, that.len);
             return *this;
@@ -292,7 +292,7 @@ namespace System
                  pos = Find(oldString, pos + newLen);
              }
         }
-        public nothrow String<CharT> Substring(long start) const
+        public String<CharT> Substring(long start) const
         {
             if (start >= 0 && start < len)
             {
@@ -300,7 +300,7 @@ namespace System
             }
             return String<CharT>();
         }
-        public nothrow String<CharT> Substring(long start, long length) const
+        public String<CharT> Substring(long start, long length) const
         {
             if (start >= 0 && start < len)
             {
@@ -308,19 +308,19 @@ namespace System
             }
             return String<CharT>();
         }
-        public nothrow inline Iterator Begin()
+        public inline Iterator Begin()
         {
             return Iterator(chars);
         }
-        public nothrow inline ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return ConstIterator(chars);
         }
-        public nothrow inline ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return ConstIterator(chars);
         }
-        public nothrow inline Iterator End()
+        public inline Iterator End()
         {
             if (chars != null)
             {
@@ -328,7 +328,7 @@ namespace System
             }
             return Iterator(null);
         }
-        public nothrow inline ConstIterator End() const
+        public inline ConstIterator End() const
         {
             if (chars != null)
             {
@@ -336,7 +336,7 @@ namespace System
             }
             return ConstIterator(null);
         }
-        public nothrow inline ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             if (chars != null)
             {
@@ -344,7 +344,7 @@ namespace System
             }
             return ConstIterator(null);
         }
-        public nothrow bool StartsWith(const String<CharT>& prefix) const
+        public bool StartsWith(const String<CharT>& prefix) const
         {
             long n = prefix.len;
             if (len < n) return false;
@@ -354,7 +354,7 @@ namespace System
             }
             return true;
         }
-        public nothrow bool EndsWith(const String<CharT>& suffix) const
+        public bool EndsWith(const String<CharT>& suffix) const
         {
             long n = len;
             long m = suffix.len;
@@ -403,7 +403,7 @@ namespace System
             }
             return result;
         }
-        public nothrow inline long Find(CharT x) const
+        public inline long Find(CharT x) const
         {
             return Find(x, 0);
         }
@@ -422,7 +422,7 @@ namespace System
             }
             return -1;
         }
-        public nothrow inline long RFind(CharT x) const
+        public inline long RFind(CharT x) const
         {
             return RFind(x, len - 1);
         }
@@ -511,7 +511,7 @@ namespace System
             }
             return -1;
         }
-        private nothrow void AppendFrom(const CharT* that, long thatLen)
+        private void AppendFrom(const CharT* that, long thatLen)
         {
             long newLen = len + thatLen;
             if (newLen > 0)
@@ -521,7 +521,7 @@ namespace System
             }
             len = newLen;
         }
-        private nothrow void Grow(long minRes)
+        private void Grow(long minRes)
         {
             minRes = MemGrow(minRes);
             CharT* newChars = cast<CharT*>(MemAlloc(sizeof(CharT) * minRes));
@@ -548,7 +548,7 @@ namespace System
         private CharT* chars;
     }
 
-    public nothrow bool operator==<CharT>(const String<CharT>& left, const String<CharT>& right)
+    public bool operator==<CharT>(const String<CharT>& left, const String<CharT>& right)
     {
         long len = left.Length();
         if (len != right.Length()) return false;
@@ -562,7 +562,7 @@ namespace System
         return true;
     }
 
-    public nothrow bool operator<<CharT>(const String<CharT>& left, const String<CharT>& right)
+    public bool operator<<CharT>(const String<CharT>& left, const String<CharT>& right)
     {
         long leftLen = left.Length();
         long rightLen = right.Length();
@@ -580,21 +580,21 @@ namespace System
         return false;
     }
 
-    public nothrow String<CharT> operator+<CharT>(const String<CharT>& first, const String<CharT>& second)
+    public String<CharT> operator+<CharT>(const String<CharT>& first, const String<CharT>& second)
     {
         String<CharT> temp(first);
         temp.Append(second);
         return temp;
     }
 
-    public nothrow String<CharT> operator+<CharT>(const String<CharT>& first, const CharT* second)
+    public String<CharT> operator+<CharT>(const String<CharT>& first, const CharT* second)
     {
         String<CharT> temp(first);
         temp.Append(second);
         return temp;
     }
 
-    public nothrow String<CharT> operator+<CharT>(const CharT* first, const String<CharT>& second)
+    public String<CharT> operator+<CharT>(const CharT* first, const String<CharT>& second)
     {
         String<CharT> temp(first);
         temp.Append(second);

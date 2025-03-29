@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ namespace System.Screen
 {
     public class ContainerControl : Control
     {
-        public nothrow ContainerControl(ControlCreateParams& createParams) : base(createParams), controls(this)
+        public ContainerControl(ControlCreateParams& createParams) : base(createParams), controls(this)
         {
         }
         public void AddChild(Control* child)

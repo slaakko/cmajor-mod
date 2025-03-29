@@ -13,7 +13,8 @@ import util;
 
 namespace cmajor::systemx::ir {
 
-Function::Function(const std::string& name_, FunctionType* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), linkOnce(false), mdId(-1), nextBBNumber(0)
+Function::Function(const std::string& name_, FunctionType* type_, Context& context) : 
+    Value(), name(name_), type(type_), nextResultNumber(0), linkOnce(false), main(false), mdId(-1), nextBBNumber(0)
 {
     entryBlock.reset(new BasicBlock(nextBBNumber++));
     for (Type* paramType : type->ParamTypes())
@@ -76,12 +77,17 @@ void Function::Write(util::CodeFormatter& formatter, Context& context)
     {
         once = " once";
     }
+    std::string mn;
+    if (main)
+    {
+        mn = " main_fn";
+    }
     std::string mdIdStr;
     if (mdId != -1)
     {
         mdIdStr = " !" + std::to_string(mdId);
     }
-    formatter.WriteLine("function " + type->Name() + once + " " + name + mdIdStr);
+    formatter.WriteLine("function " + type->Name() + once + mn + " " + name + mdIdStr);
     formatter.WriteLine("{");
     formatter.IncIndent();
     bool first = true;

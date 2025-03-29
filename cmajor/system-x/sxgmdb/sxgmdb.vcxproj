@@ -189,6 +189,9 @@
     <ProjectReference Include="..\object\object.vcxproj">
       <Project>{74000ee5-8498-4d10-beef-ed5743e01300}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sxutil\sxutil.vcxproj">
+      <Project>{66490026-9d0b-4742-946f-6202c7ba12fb}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />

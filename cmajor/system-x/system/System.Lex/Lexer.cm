@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -614,11 +614,11 @@ namespace System.Lex
             tokenLine.endState = state;
             return tokenLine;
         }
-        public nothrow void SetSyncTokens(const List<int>& syncTokens_)
+        public void SetSyncTokens(const List<int>& syncTokens_)
         {
             syncTokens = syncTokens_;
         }
-        public nothrow bool Synchronize()
+        public bool Synchronize()
         {
             if (GetFlag(LexerFlags.synchronize))
             {
@@ -668,7 +668,7 @@ namespace System.Lex
         {
             ruleNameListPtr = ruleNameListPtr_;
         }
-        public nothrow string GetParserStateStr() const
+        public string GetParserStateStr() const
         {
             string parserStateStr;
             long n = farthestRuleContext.Count();
@@ -814,13 +814,19 @@ namespace System.Lex
 
     public class RuleGuard
     {
-        public nothrow RuleGuard(Lexer& lexer_, int ruleId_) : lexer(lexer_)
+        public RuleGuard(Lexer& lexer_, int ruleId_) : lexer(lexer_)
         {
             lexer.PushRule(ruleId_);
         }
         public ~RuleGuard()
         {
-            lexer.PopRule();
+            try
+            {
+                lexer.PopRule();
+            }
+            catch (const Exception&)
+            {
+            }
         }
         private Lexer& lexer;
     }

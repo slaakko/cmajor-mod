@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -67,7 +67,7 @@ namespace System.Screen
     
     public class ListBox : Control
     {
-        public nothrow ListBox(ListBoxCreateParams& createParams) : 
+        public ListBox(ListBoxCreateParams& createParams) : 
             base(createParams.controlCreateParams), 
             selectedItemForeColor(createParams.selectedItemForeColor), 
             selectedItemBackColor(createParams.selectedItemBackColor), 
@@ -359,11 +359,11 @@ namespace System.Screen
         {
             itemSelectedEvent.Fire();
         }
-        public nothrow Event<ChangedEventHandler>& SelectedIndexChangedEvent()
+        public Event<ChangedEventHandler>& SelectedIndexChangedEvent()
         {
             return selectedIndexChangedEvent;
         }
-        public nothrow Event<SelectEventHandler>& ItemSelectedEvent()
+        public Event<SelectEventHandler>& ItemSelectedEvent()
         {
             return itemSelectedEvent;
         }

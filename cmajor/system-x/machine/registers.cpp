@@ -7,6 +7,22 @@ module cmajor.systemx.machine.registers;
 
 namespace cmajor::systemx::machine {
 
+uint8_t GetParamRegNumber(int param)
+{
+    switch (param)
+    {
+        case 0: return regP0;
+        case 1: return regP1;
+        case 2: return regP2;
+        case 3: return regP3;
+        case 4: return regP4;
+        case 5: return regP5;
+        case 6: return regP6;
+        case 7: return regP7;
+    }
+    throw std::runtime_error("invalid param number");
+}
+
 Registers::Registers() : pc(0)
 {
     for (int i = 0; i < 256; ++i)
@@ -67,6 +83,14 @@ RegMap::RegMap()
     globalRegNameMap[regSP] = "sp";
     globalRegNameMap[regFP] = "fp";
     globalRegNameMap[regIX] = "ix";
+    globalRegNameMap[regP0] = "p0";
+    globalRegNameMap[regP1] = "p1";
+    globalRegNameMap[regP2] = "p2";
+    globalRegNameMap[regP3] = "p3";
+    globalRegNameMap[regP4] = "p4";
+    globalRegNameMap[regP5] = "p5";
+    globalRegNameMap[regP6] = "p6";
+    globalRegNameMap[regP7] = "p7";
     globalRegNameMap[rA] = "rA";
     globalRegNameMap[rB] = "rB";
     globalRegNameMap[rC] = "rC";
@@ -107,6 +131,14 @@ RegMap::RegMap()
     globalRegNumberMap["sp"] = regSP;
     globalRegNumberMap["fp"] = regFP;
     globalRegNumberMap["ix"] = regIX;
+    globalRegNumberMap["p0"] = regP0;
+    globalRegNumberMap["p1"] = regP1;
+    globalRegNumberMap["p2"] = regP2;
+    globalRegNumberMap["p3"] = regP3;
+    globalRegNumberMap["p4"] = regP4;
+    globalRegNumberMap["p5"] = regP5;
+    globalRegNumberMap["p6"] = regP6;
+    globalRegNumberMap["p7"] = regP7;
     globalRegNumberMap["rA"] = rA;
     globalRegNumberMap["rB"] = rB;
     globalRegNumberMap["rC"] = rC;
@@ -178,3 +210,4 @@ uint8_t GetGlobalRegNumber(const std::string& globalRegName)
 }
 
 } // namespace cmajor::machine
+

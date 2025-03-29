@@ -16,15 +16,17 @@ BASE ADDRESS=#0000000000000000
 #000000000000002C EA FB FF FF         ORML    ex,#FFFF
 #0000000000000030 EB FB FF FF         ORL     ex,#FFFF
 #0000000000000034 BF 01 FB 00         CALLI   #01,ex,#00:UNDEFINED
-#0000000000000038 AF FF F9 48         STOUI   ax,fp,#48
+#0000000000000038 C1 00 FF 00         ORI     $0,ax,#00
 #000000000000003C E0 FB FF FF         SETH    ex,#FFFF
 #0000000000000040 E9 FB FF FF         ORMH    ex,#FFFF
 #0000000000000044 EA FB FF FF         ORML    ex,#FFFF
 #0000000000000048 EB FB FF FF         ORL     ex,#FFFF
 #000000000000004C BF 01 FB 00         CALLI   #01,ex,#00:UNDEFINED
-#0000000000000050 C1 FA F9 00         ORI     sp,fp,#00
-#0000000000000054 8D F9 FA 00         LDOI    fp,sp,#00
-#0000000000000058 F8 00 00 00         RET     
+#0000000000000050 C1 FF 00 00         ORI     ax,$0,#00
+#0000000000000054 00 00 00 00         TRAP    #00,#00,#00:[trap_exit]
+#0000000000000058 C1 FA F9 00         ORI     sp,fp,#00
+#000000000000005C 8D F9 FA 00         LDOI    fp,sp,#00
+#0000000000000060 F8 00 00 00         RET     
 
 SYMBOL SECTION
 
@@ -118,6 +120,94 @@ global symbol index 7:
     link command ids: ()
 global symbol index 8:
     local name=
+    full name=p0
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F7, symbol='p0')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 9:
+    local name=
+    full name=p1
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F6, symbol='p1')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 10:
+    local name=
+    full name=p2
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F5, symbol='p2')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 11:
+    local name=
+    full name=p3
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F4, symbol='p3')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 12:
+    local name=
+    full name=p4
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F3, symbol='p4')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 13:
+    local name=
+    full name=p5
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F2, symbol='p5')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 14:
+    local name=
+    full name=p6
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F1, symbol='p6')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 15:
+    local name=
+    full name=p7
+    segment=unknown
+    linkage=internal
+    value=(flags=reg, val=#00000000000000F0, symbol='p7')
+    start=#FFFFFFFFFFFFFFFF
+    length=#FFFFFFFFFFFFFFFF
+    parentIndex=-1
+    alignment=1
+    link command ids: ()
+global symbol index 16:
+    local name=
     full name=rA
     segment=unknown
     linkage=internal
@@ -127,7 +217,7 @@ global symbol index 8:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 9:
+global symbol index 17:
     local name=
     full name=rB
     segment=unknown
@@ -138,7 +228,7 @@ global symbol index 9:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 10:
+global symbol index 18:
     local name=
     full name=rC
     segment=unknown
@@ -149,7 +239,7 @@ global symbol index 10:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 11:
+global symbol index 19:
     local name=
     full name=rD
     segment=unknown
@@ -160,7 +250,7 @@ global symbol index 11:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 12:
+global symbol index 20:
     local name=
     full name=rE
     segment=unknown
@@ -171,7 +261,7 @@ global symbol index 12:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 13:
+global symbol index 21:
     local name=
     full name=rF
     segment=unknown
@@ -182,7 +272,7 @@ global symbol index 13:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 14:
+global symbol index 22:
     local name=
     full name=rG
     segment=unknown
@@ -193,7 +283,7 @@ global symbol index 14:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 15:
+global symbol index 23:
     local name=
     full name=rH
     segment=unknown
@@ -204,7 +294,7 @@ global symbol index 15:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 16:
+global symbol index 24:
     local name=
     full name=rI
     segment=unknown
@@ -215,7 +305,7 @@ global symbol index 16:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 17:
+global symbol index 25:
     local name=
     full name=rJ
     segment=unknown
@@ -226,7 +316,7 @@ global symbol index 17:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 18:
+global symbol index 26:
     local name=
     full name=rK
     segment=unknown
@@ -237,7 +327,7 @@ global symbol index 18:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 19:
+global symbol index 27:
     local name=
     full name=rL
     segment=unknown
@@ -248,7 +338,7 @@ global symbol index 19:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 20:
+global symbol index 28:
     local name=
     full name=rM
     segment=unknown
@@ -259,7 +349,7 @@ global symbol index 20:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 21:
+global symbol index 29:
     local name=
     full name=rN
     segment=unknown
@@ -270,7 +360,7 @@ global symbol index 21:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 22:
+global symbol index 30:
     local name=
     full name=rO
     segment=unknown
@@ -281,7 +371,7 @@ global symbol index 22:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 23:
+global symbol index 31:
     local name=
     full name=rP
     segment=unknown
@@ -292,7 +382,7 @@ global symbol index 23:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 24:
+global symbol index 32:
     local name=
     full name=rQ
     segment=unknown
@@ -303,7 +393,7 @@ global symbol index 24:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 25:
+global symbol index 33:
     local name=
     full name=rR
     segment=unknown
@@ -314,7 +404,7 @@ global symbol index 25:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 26:
+global symbol index 34:
     local name=
     full name=rS
     segment=unknown
@@ -325,7 +415,7 @@ global symbol index 26:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 27:
+global symbol index 35:
     local name=
     full name=rT
     segment=unknown
@@ -336,7 +426,7 @@ global symbol index 27:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 28:
+global symbol index 36:
     local name=
     full name=rU
     segment=unknown
@@ -347,7 +437,7 @@ global symbol index 28:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 29:
+global symbol index 37:
     local name=
     full name=rV
     segment=unknown
@@ -358,7 +448,7 @@ global symbol index 29:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 30:
+global symbol index 38:
     local name=
     full name=rW
     segment=unknown
@@ -369,7 +459,7 @@ global symbol index 30:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 31:
+global symbol index 39:
     local name=
     full name=rX
     segment=unknown
@@ -380,7 +470,7 @@ global symbol index 31:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 32:
+global symbol index 40:
     local name=
     full name=rY
     segment=unknown
@@ -391,7 +481,7 @@ global symbol index 32:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 33:
+global symbol index 41:
     local name=
     full name=rZ
     segment=unknown
@@ -402,7 +492,7 @@ global symbol index 33:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 34:
+global symbol index 42:
     local name=
     full name=rBB
     segment=unknown
@@ -413,7 +503,7 @@ global symbol index 34:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 35:
+global symbol index 43:
     local name=
     full name=rTT
     segment=unknown
@@ -424,7 +514,7 @@ global symbol index 35:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 36:
+global symbol index 44:
     local name=
     full name=rWW
     segment=unknown
@@ -435,7 +525,7 @@ global symbol index 36:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 37:
+global symbol index 45:
     local name=
     full name=rXX
     segment=unknown
@@ -446,7 +536,7 @@ global symbol index 37:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 38:
+global symbol index 46:
     local name=
     full name=rYY
     segment=unknown
@@ -457,7 +547,7 @@ global symbol index 38:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 39:
+global symbol index 47:
     local name=
     full name=rZZ
     segment=unknown
@@ -468,7 +558,7 @@ global symbol index 39:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 40:
+global symbol index 48:
     local name=
     full name=Main
     segment=text
@@ -476,11 +566,11 @@ global symbol index 40:
     section=code
     value=(flags=definition | pure | address | function, val=#0000000000000000, symbol='Main')
     start=#0000000000000000
-    length=#000000000000005C
+    length=#0000000000000064
     parentIndex=-1
     alignment=4
     link command ids: (0, 1)
-local symbol index 41:
+local symbol index 49:
     local name=@0
     full name=Main@0
     segment=text
@@ -489,10 +579,10 @@ local symbol index 41:
     value=(flags=pure | address, val=#000000000000000C, symbol='Main@0')
     start=#000000000000000C
     length=#FFFFFFFFFFFFFFFF
-    parentIndex=40
+    parentIndex=48
     alignment=4
     link command ids: ()
-global symbol index 42:
+global symbol index 50:
     local name=
     full name=main
     segment=unknown
@@ -503,12 +593,12 @@ global symbol index 42:
     parentIndex=-1
     alignment=1
     link command ids: ()
-global symbol index 43:
+global symbol index 51:
     local name=
-    full name=exit
+    full name=run_at_exits
     segment=unknown
     linkage=undefined
-    value=(flags=undefined, val=#FFFFFFFFFFFFFFFF, symbol='exit')
+    value=(flags=undefined, val=#FFFFFFFFFFFFFFFF, symbol='run_at_exits')
     start=#FFFFFFFFFFFFFFFF
     length=#FFFFFFFFFFFFFFFF
     parentIndex=-1
@@ -517,13 +607,13 @@ global symbol index 43:
 
 LINK SECTION
 
-ABSOLUTE_ADDR_VALUE(address=#0000000000000024, id=0, symbol_index=42)
-ABSOLUTE_ADDR_VALUE(address=#000000000000003C, id=1, symbol_index=43)
+ABSOLUTE_ADDR_VALUE(address=#0000000000000024, id=0, symbol_index=50)
+ABSOLUTE_ADDR_VALUE(address=#000000000000003C, id=1, symbol_index=51)
 
 DEBUG SECTION
 
-STARTFUNC(functionSymbolIndex=40)
-ENDFUNC(functionSymbolIndex=40)
+STARTFUNC(functionSymbolIndex=48)
+ENDFUNC(functionSymbolIndex=48)
 
 RESOURCE SECTION
 

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,11 +14,11 @@ namespace System.Lex
 {
     public class Lexeme
     {
-        public Lexeme() :
+        public nothrow Lexeme() :
             begin(null), end(null)
         {
         }
-        public Lexeme(const uchar* begin_, const uchar* end_) :
+        public nothrow Lexeme(const uchar* begin_, const uchar* end_) :
             begin(begin_), end(end_)
         {
         }
@@ -29,7 +29,7 @@ namespace System.Lex
         public const uchar* begin;
         public const uchar* end;
     }
-    public inline bool operator==(const Lexeme& left, const Lexeme& right)
+    public inline nothrow bool operator==(const Lexeme& left, const Lexeme& right)
     {
         if (left.end - left.begin != right.end - right.begin) return false;
         const uchar* p = left.begin;
@@ -42,7 +42,7 @@ namespace System.Lex
         }
         return true;
     }
-    public inline bool operator<(const Lexeme& left, const Lexeme& right)
+    public inline nothrow bool operator<(const Lexeme& left, const Lexeme& right)
     {
         const uchar* p = left.begin;
         const uchar* q = right.begin;

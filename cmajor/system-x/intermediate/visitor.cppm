@@ -53,7 +53,6 @@ class PtrOffsetInstruction;
 class PtrDiffInstruction;
 class FunctionCallInstruction;
 class TrapInstruction;
-class PhiInstruction;
 class NoOperationInstruction;
 
 class BoolValue;
@@ -125,7 +124,6 @@ public:
     virtual void Visit(PtrDiffInstruction& inst) {}
     virtual void Visit(FunctionCallInstruction& inst) {}
     virtual void Visit(TrapInstruction& inst) {}
-    virtual void Visit(PhiInstruction& inst) {}
     virtual void Visit(NoOperationInstruction& inst) {}
     virtual void Visit(BoolValue& value) {}
     virtual void Visit(SByteValue& value) {}

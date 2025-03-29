@@ -59,7 +59,6 @@ public:
     void Visit(PtrDiffInstruction& inst) override;
     void Visit(FunctionCallInstruction& inst) override;
     void Visit(TrapInstruction& inst) override;
-    void Visit(PhiInstruction& inst) override;
     void Visit(NoOperationInstruction& inst) override;
 private:
     void CheckSameType(const std::string& typeDescription, Type* type, const std::string& expectedTypeDescription, Type* expected, const soul::ast::SourcePos& sourcePos);
@@ -82,12 +81,15 @@ private:
     Function* currentFunction;
     BasicBlock* currentBasicBlock;
     int numParams;
-    std::vector<Value*> arguments;
     int32_t regNumber;
     int index;
+    int argIndex;
+    int paramIndex;
+    std::vector<Value*> arguments;
 };
 
-VerifierVisitor::VerifierVisitor(Context* context_) : Visitor(context_), currentFunction(nullptr), currentBasicBlock(nullptr), numParams(0), regNumber(0), index(0)
+VerifierVisitor::VerifierVisitor(Context* context_) : 
+    Visitor(context_), currentFunction(nullptr), currentBasicBlock(nullptr), numParams(0), regNumber(0), index(0), argIndex(0), paramIndex(0), arguments()
 {
 }
 
@@ -257,6 +259,8 @@ void VerifierVisitor::Visit(Function& function)
     index = 0;
     numParams = 0;
     regNumber = 0;
+    argIndex = 0;
+    paramIndex = 0;
     currentFunction = &function;
     function.VisitBasicBlocks(*this);
     if (numParams != function.Arity())
@@ -286,16 +290,17 @@ void VerifierVisitor::Visit(StoreInstruction& inst)
 {
     CheckArithmeticPointerOrBooleanType(inst.GetValue()->GetType(), "type of value", inst.GetSourcePos());
     CheckType("type of value", inst.GetValue()->GetType(), inst.GetValue()->GetType()->AddPointer(GetContext()), "pointer type", inst.GetPtr()->GetType(), inst.GetSourcePos());
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
 void VerifierVisitor::Visit(ArgInstruction& inst)
 {
     CheckArithmeticPointerOrBooleanType(inst.Arg()->GetType(), "type of argument", inst.GetSourcePos());
-    arguments.push_back(inst.Arg());
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
+    inst.SetArgIndex(argIndex++);
+    arguments.push_back(inst.Arg());
 }
 
 void VerifierVisitor::Visit(JmpInstruction& inst)
@@ -343,7 +348,7 @@ void VerifierVisitor::Visit(BranchInstruction& inst)
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(inst.Parent()->Id()), inst.GetSourcePos(), GetContext());
     }
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -357,10 +362,10 @@ void VerifierVisitor::Visit(ProcedureCallInstruction& inst)
     if (calleeType->IsFunctionType())
     {
         FunctionType* functionType = static_cast<FunctionType*>(calleeType);
-        if (functionType->Arity() != arguments.size())
+        if (functionType->Arity() != argIndex)
         {
             Error("code verification error: function call has wrong number of arguments: " + std::to_string(functionType->Arity()) + " arguments expected: note: " +
-                std::to_string(arguments.size()) + " arguments passed", inst.GetSourcePos(), GetContext());
+                std::to_string(argIndex) + " arguments passed", inst.GetSourcePos(), GetContext());
         }
         if (inst.Callee()->IsSymbolValue())
         {
@@ -382,9 +387,10 @@ void VerifierVisitor::Visit(ProcedureCallInstruction& inst)
             inst.GetSourcePos(), GetContext());
     }
     inst.SetArgs(std::move(arguments));
-    inst.AddUse();
-    arguments.clear();
+    inst.AddToUses();
     inst.SetIndex(index++);
+    arguments.clear();
+    argIndex = 0;
 }
 
 void VerifierVisitor::Visit(RetInstruction& inst)
@@ -405,7 +411,7 @@ void VerifierVisitor::Visit(RetInstruction& inst)
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(inst.Parent()->Id()), inst.GetSourcePos(), GetContext());
     }
-    inst.AddUse();
+    inst.AddToUses();
     currentFunction->AddRetBlock(inst.Parent());
     inst.SetIndex(index++);
 }
@@ -437,7 +443,7 @@ void VerifierVisitor::Visit(SwitchInstruction& inst)
         }
         caseTarget.targetBlock = caseTargetBlock;
     }
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -446,7 +452,7 @@ void VerifierVisitor::Visit(NotInstruction& inst)
     CheckIntegerOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckIntegerOrBooleanType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -455,7 +461,7 @@ void VerifierVisitor::Visit(NegInstruction& inst)
     CheckSameType("result type", inst.Result()->GetType(), "operand type", inst.Operand()->GetType(), inst.GetSourcePos());
     CheckArithmeticType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -468,7 +474,7 @@ void VerifierVisitor::Visit(SignExtendInstruction& inst)
         Error("code verification error: result type width expected to be greater than operand type width", inst.GetSourcePos(), GetContext());
     }
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -481,7 +487,7 @@ void VerifierVisitor::Visit(ZeroExtendInstruction& inst)
         Error("code verification error: result type width expected to be greater than operand type width", inst.GetSourcePos(), GetContext());
     }
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -494,7 +500,7 @@ void VerifierVisitor::Visit(TruncateInstruction& inst)
         Error("code verification error: result type width expected to be less than operand type width", inst.GetSourcePos(), GetContext());
     }
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -507,7 +513,7 @@ void VerifierVisitor::Visit(BitcastInstruction& inst)
         Error("code verification error: result type width expected to be same as operand type width", inst.GetSourcePos(), GetContext());
     }
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -516,7 +522,7 @@ void VerifierVisitor::Visit(IntToFloatInstruction& inst)
     CheckIntegerType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
     CheckFloatingPointType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -525,7 +531,7 @@ void VerifierVisitor::Visit(FloatToIntInstruction& inst)
     CheckFloatingPointType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
     CheckIntegerType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -534,7 +540,7 @@ void VerifierVisitor::Visit(IntToPtrInstruction& inst)
     CheckIntegerType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
     CheckPointerType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -543,7 +549,7 @@ void VerifierVisitor::Visit(PtrToIntInstruction& inst)
     CheckPointerType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
     CheckIntegerType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckUnaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -553,7 +559,7 @@ void VerifierVisitor::Visit(AddInstruction& inst)
     CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -563,7 +569,7 @@ void VerifierVisitor::Visit(SubInstruction& inst)
     CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -573,7 +579,7 @@ void VerifierVisitor::Visit(MulInstruction& inst)
     CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -583,7 +589,7 @@ void VerifierVisitor::Visit(DivInstruction& inst)
     CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -593,7 +599,7 @@ void VerifierVisitor::Visit(ModInstruction& inst)
     CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -603,7 +609,7 @@ void VerifierVisitor::Visit(AndInstruction& inst)
     CheckIntegerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckIntegerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -613,7 +619,7 @@ void VerifierVisitor::Visit(OrInstruction& inst)
     CheckIntegerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckIntegerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -623,7 +629,7 @@ void VerifierVisitor::Visit(XorInstruction& inst)
     CheckIntegerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckIntegerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -633,7 +639,7 @@ void VerifierVisitor::Visit(ShlInstruction& inst)
     CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -643,7 +649,7 @@ void VerifierVisitor::Visit(ShrInstruction& inst)
     CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -653,7 +659,7 @@ void VerifierVisitor::Visit(EqualInstruction& inst)
     CheckArithmeticPointerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckArithmeticPointerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -663,7 +669,7 @@ void VerifierVisitor::Visit(LessInstruction& inst)
     CheckArithmeticOrPointerType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
     CheckArithmeticOrPointerType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -673,6 +679,7 @@ void VerifierVisitor::Visit(ParamInstruction& inst)
     CheckValueInstruction(&inst);
     ++numParams;
     inst.SetIndex(index++);
+    inst.SetParamIndex(paramIndex++);
 }
 
 void VerifierVisitor::Visit(LocalInstruction& inst)
@@ -688,7 +695,7 @@ void VerifierVisitor::Visit(LoadInstruction& inst)
     CheckType("result type", inst.Result()->GetType(), inst.Ptr()->GetType(), "pointer to result type", inst.Result()->GetType()->AddPointer(GetContext()), inst.GetSourcePos());
     CheckArithmeticPointerOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckValueInstruction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -701,11 +708,11 @@ void VerifierVisitor::Visit(ElemAddrInstruction& inst)
     if (baseType->IsStructureType())
     {
         StructureType* structureType = static_cast<StructureType*>(baseType);
-        CheckIntegerType(inst.Index()->GetType(), "integer type index", inst.GetSourcePos());
+        CheckIntegerType(inst.IndexValue()->GetType(), "integer type index", inst.GetSourcePos());
         CheckValueInstruction(&inst);
-        if (inst.Index()->IsIntegerValue())
+        if (inst.IndexValue()->IsIntegerValue())
         {
-            int64_t index = inst.Index()->GetIntegerValue();
+            int64_t index = inst.IndexValue()->GetIntegerValue();
             if (index < 0 || index >= structureType->FieldCount())
             {
                 Error("code verification error: invalid index", inst.GetSourcePos(), GetContext());
@@ -715,11 +722,11 @@ void VerifierVisitor::Visit(ElemAddrInstruction& inst)
     else if (baseType->IsArrayType())
     {
         ArrayType* arrayType = static_cast<ArrayType*>(baseType);
-        CheckIntegerType(inst.Index()->GetType(), "integer type index", inst.GetSourcePos());
+        CheckIntegerType(inst.IndexValue()->GetType(), "integer type index", inst.GetSourcePos());
         CheckValueInstruction(&inst);
-        if (inst.Index()->IsIntegerValue())
+        if (inst.IndexValue()->IsIntegerValue())
         {
-            int64_t index = inst.Index()->GetIntegerValue();
+            int64_t index = inst.IndexValue()->GetIntegerValue();
             if (index < 0 || index > arrayType->ElementCount())
             {
                 Error("code verification error: invalid index", inst.GetSourcePos(), GetContext());
@@ -730,7 +737,7 @@ void VerifierVisitor::Visit(ElemAddrInstruction& inst)
     {
         Error("type check error: pointer to structure or array type expected", inst.GetSourcePos(), GetContext());
     }
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -739,7 +746,7 @@ void VerifierVisitor::Visit(PtrOffsetInstruction& inst)
     CheckPointerType(inst.Ptr()->GetType(), "pointer operand type", inst.GetSourcePos());
     CheckIntegerType(inst.Offset()->GetType(), "offset type", inst.GetSourcePos());
     CheckValueInstruction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -750,7 +757,7 @@ void VerifierVisitor::Visit(PtrDiffInstruction& inst)
     CheckPointerType(inst.RightPtr()->GetType(), "right pointer operand type", inst.GetSourcePos());
     CheckSameType("left pointer operand type", inst.LeftPtr()->GetType(), "right pointer operand type", inst.RightPtr()->GetType(), inst.GetSourcePos());
     CheckValueInstruction(&inst);
-    inst.AddUse();
+    inst.AddToUses();
     inst.SetIndex(index++);
 }
 
@@ -764,10 +771,10 @@ void VerifierVisitor::Visit(FunctionCallInstruction& inst)
     if (calleeType->IsFunctionType())
     {
         FunctionType* functionType = static_cast<FunctionType*>(calleeType);
-        if (functionType->Arity() != arguments.size())
+        if (functionType->Arity() != argIndex)
         {
             Error("code verification error: function call has wrong number of arguments: " + std::to_string(functionType->Arity()) + " arguments expected: note: " +
-                std::to_string(arguments.size()) + " arguments passed", inst.GetSourcePos(), GetContext());
+                std::to_string(argIndex) + " arguments passed", inst.GetSourcePos(), GetContext());
         }
         if (inst.Callee()->IsSymbolValue())
         {
@@ -790,9 +797,10 @@ void VerifierVisitor::Visit(FunctionCallInstruction& inst)
     }
     CheckValueInstruction(&inst);
     inst.SetArgs(std::move(arguments));
-    inst.AddUse();
-    arguments.clear();
+    inst.AddToUses();
     inst.SetIndex(index++);
+    arguments.clear();
+    argIndex = 0;
 }
 
 void VerifierVisitor::Visit(TrapInstruction& inst)
@@ -803,28 +811,10 @@ void VerifierVisitor::Visit(TrapInstruction& inst)
     CheckSameType("operand 2 type", inst.Op3()->GetType(), "byte type", byteType, inst.GetSourcePos());
     CheckValueInstruction(&inst);
     inst.SetArgs(std::move(arguments));
-    inst.AddUse();
+    inst.AddToUses();
+    inst.SetIndex(index++);
+    argIndex = 0;
     arguments.clear();
-    inst.SetIndex(index++);
-}
-
-void VerifierVisitor::Visit(PhiInstruction& inst)
-{
-    Type* type = inst.Result()->GetType();
-    for (BlockValue& blockValue : inst.BlockValues())
-    {
-        CheckSameType("value type", blockValue.value->GetType(), "result type", type, inst.GetSourcePos());
-        int32_t blockId = blockValue.blockId;
-        BasicBlock* block = currentFunction->GetBasicBlock(blockId);
-        if (!block)
-        {
-            Error("code verification error: phi source basic block " + std::to_string(blockId) + " not found from function '" + currentFunction->Name() + "'",
-                inst.GetSourcePos(), GetContext());
-        }
-        blockValue.block = block;
-    }
-    inst.AddUse();
-    inst.SetIndex(index++);
 }
 
 void VerifierVisitor::Visit(NoOperationInstruction& inst)

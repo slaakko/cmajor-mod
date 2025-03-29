@@ -316,17 +316,19 @@ parser IntermediateCodeParser
         ;
 
     FunctionHeader(cmajor::systemx::intermediate::Context* context, 
-        var cmajor::systemx::intermediate::TypeRef functionTypeRef, var soul::ast::SourcePos sp, var bool once, var std::string functionId) : cmajor::systemx::intermediate::Function*
+        var cmajor::systemx::intermediate::TypeRef functionTypeRef, var soul::ast::SourcePos sp, var bool once, var bool main_, var std::string functionId) : 
+            cmajor::systemx::intermediate::Function*
         ::= 
         (   
             FUNCTION{ sp = lexer.GetSourcePos(pos); } 
             TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
             (ONCE{ once = true; })? 
+            (MAIN{ main_ = true; })?
             ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
             MetadataRef(context):mdRef?
         )
         {
-            return context->AddFunctionDefinition(sp, functionTypeRef.GetType(), functionId, once, mdRef);
+            return context->AddFunctionDefinition(sp, functionTypeRef.GetType(), functionId, once, main_, mdRef);
         }
         ;
 
@@ -468,7 +470,6 @@ parser IntermediateCodeParser
         |   PtrDiffInstruction(context, result):ptrDiffInst{ return ptrDiffInst; }
         |   FunctionCallInstruction(context, result):functionCallInst{ return functionCallInst; }
         |   TrapInstruction(context, result):trapInst{ return trapInst; }
-        |   PhiInstruction(context, result):phiInst{ return phiInst; }
         ;
 
     UnaryInstruction(cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::RegValue* result, var soul::ast::SourcePos sp) : cmajor::systemx::intermediate::Instruction*
@@ -642,28 +643,6 @@ parser IntermediateCodeParser
         ::= TRAP{ sp = lexer.GetSourcePos(pos); } Operand(context):op1 COMMA Operand(context):op2 COMMA Operand(context):op3
         { 
             return new cmajor::systemx::intermediate::TrapInstruction(sp, result, op1, op2, op3); 
-        }
-        ;
-
-    PhiInstruction(cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::RegValue* result, var soul::ast::SourcePos sp, var cmajor::systemx::intermediate::PhiInstruction* inst) : 
-        cmajor::systemx::intermediate::Instruction*
-        ::= 
-        (
-            PHI{ sp = lexer.GetSourcePos(pos); inst = new cmajor::systemx::intermediate::PhiInstruction(sp, result); } 
-            (BlockValue(context):first{ inst->AddBlockValue(first); } (COMMA BlockValue(context):next{ inst->AddBlockValue(next); })*)?
-        )
-        {
-            return inst;
-        }
-        ;
-
-    BlockValue(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::BlockValue
-        ::= 
-        (
-            LBRACKET Operand(context):operand COMMA Label:blockId RBRACKET
-        )
-        {
-            return cmajor::systemx::intermediate::BlockValue(operand, blockId);
         }
         ;
 

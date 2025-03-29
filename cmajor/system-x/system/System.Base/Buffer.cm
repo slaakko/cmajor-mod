@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ namespace System.IO
 {
     public class Buffer
     {
-        public nothrow Buffer(long size_) : size(size_), mem(cast<byte*>(MemAlloc(size)))
+        public Buffer(long size_) : size(size_), mem(cast<byte*>(MemAlloc(size)))
         {
         }
         suppress Buffer(const Buffer&);
@@ -35,7 +35,7 @@ namespace System.IO
         {
             return mem;
         }
-        public nothrow inline byte operator[](long index) const
+        public inline byte operator[](long index) const
         {
             if (index < 0 || index >= size)
             {
@@ -43,7 +43,7 @@ namespace System.IO
             }
             return mem[index];
         }
-        public nothrow inline byte& operator[](long index) 
+        public inline byte& operator[](long index) 
         {
             if (index < 0 || index >= size)
             {

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -23,12 +23,12 @@ namespace System.Screen
         {
             return *this;
         }
-        public nothrow MessageBoxCreateParams& Caption(const string& caption_)
+        public MessageBoxCreateParams& Caption(const string& caption_)
         {
             caption = caption_;
             return *this;
         }
-        public nothrow MessageBoxCreateParams& Text(const string& text_)
+        public MessageBoxCreateParams& Text(const string& text_)
         {
             text = text_;
             return *this;
@@ -46,7 +46,7 @@ namespace System.Screen
 
     public class MessageBox : Window
     {
-        public nothrow MessageBox(MessageBoxCreateParams& createParams) : base(createParams.controlCreateParams), caption(createParams.caption), text(createParams.text), buttons(createParams.buttons)
+        public MessageBox(MessageBoxCreateParams& createParams) : base(createParams.controlCreateParams), caption(createParams.caption), text(createParams.text), buttons(createParams.buttons)
         {
             InvalidateGuard guard(this, InvalidateKind.invalidateIfNotDefault);
             bool setLoc = false;

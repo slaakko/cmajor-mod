@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -19,16 +19,16 @@ namespace System.Screen
         {
             return Point(-1, -1);
         }
-        public nothrow bool IsDefault() const
+        public nothrow inline bool IsDefault() const
         {
             return x == -1 && y == -1;
         }
-        public nothrow void Offset(int dx, int dy)
+        public nothrow inline void Offset(int dx, int dy)
         {
             x = x + dx;
             y = y + dy;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(x) + ", " + ToString(y) + ")";
         }
@@ -36,7 +36,7 @@ namespace System.Screen
         public int y;
     }
     
-    public nothrow bool operator==(const Point& left, const Point& right)
+    public nothrow inline bool operator==(const Point& left, const Point& right)
     {
         return left.x == right.x && left.y == right.y;
     }
@@ -53,11 +53,11 @@ namespace System.Screen
         {
             return Size(-1, -1);
         }
-        public nothrow bool IsDefault() const
+        public nothrow inline bool IsDefault() const
         {
             return w == -1 && h == -1;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(w) + ", " + ToString(h) + ")";
         }
@@ -65,7 +65,7 @@ namespace System.Screen
         public int h;
     }
     
-    public nothrow bool operator==(const Size& left, const Size& right)
+    public nothrow inline bool operator==(const Size& left, const Size& right)
     {
         return left.w == right.w && left.h == right.h;
     }
@@ -86,7 +86,7 @@ namespace System.Screen
         {
             return location.IsDefault() && size.IsDefault();
         }
-        public nothrow bool IsEmpty() const
+        public nothrow inline bool IsEmpty() const
         {
             return size.w == 0 && size.h == 0;
         }

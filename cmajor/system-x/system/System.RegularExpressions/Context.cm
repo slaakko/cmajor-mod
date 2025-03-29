@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,13 +20,19 @@ namespace System.RegularExpressions
         }
         public ~Context()
         {
-            for (NfaState* state : nfaStates)
+            try
             {
-                delete state;
+                for (NfaState* state : nfaStates)
+                {
+                    delete state;
+                }
+                for (Symbol* symbol : symbols)
+                {
+                    delete symbol;
+                }
             }
-            for (Symbol* symbol : symbols)
+            catch (const Exception&)
             {
-                delete symbol;
             }
         }
         public Symbol* MakeAny()

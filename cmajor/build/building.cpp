@@ -163,7 +163,12 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
             bool systemLibraryInstalled = false;
             std::string config = cmajor::symbols::GetConfig();
+            std::string configOptLevel = config;
             int optLevel = cmajor::symbols::GetOptimizationLevel();
+            if (configOptLevel == "release")
+            {
+                configOptLevel.append("/").append(std::to_string(optLevel));
+            }
             bool isSystemModule = cmajor::symbols::IsSystemModule(project->Name());
             if (isSystemModule)
             {
@@ -205,7 +210,8 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
-                util::LogMessage(project->LogStreamId(), "===== Building project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") using " + config + " configuration.");
+                util::LogMessage(project->LogStreamId(), "===== Building project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") using " + configOptLevel + 
+                    " configuration.");
             }
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
             {
@@ -566,6 +572,10 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
 {
     std::set<std::string> builtProjects;
     std::string config = cmajor::symbols::GetConfig();
+    if (config == "release")
+    {
+        config.append("/").append(std::to_string(cmajor::symbols::GetOptimizationLevel()));
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
     {
         util::LogMessage(-1, "Cleaning solution '" + solutionFilePath + "' using " + config + " configuration.");

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,14 +14,14 @@ namespace System.Screen
     
     public class Event<Handler, Args = EmptyEventArgs>
     {
-        public nothrow void AddHandler(Handler handler)
+        public void AddHandler(Handler handler)
         {
             if (Find(handlers.CBegin(), handlers.CEnd(), handler) == handlers.CEnd())
             {
                 handlers.Add(handler);
             }
         }
-        public nothrow void RemoveHandler(Handler handler)
+        public void RemoveHandler(Handler handler)
         {
             handlers.Remove(handler);
         }

@@ -256,15 +256,6 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
         util::LogMessage(project->LogStreamId(), "Compiling using " + std::to_string(numThreads) + " threads...");
     }
     module->StartBuild();
-    bool ready = false;
-    CompileQueue input(&mtx, "input", stop, ready, module->LogStreamId());
-    CompileQueue output(&mtx, "output", stop, ready, module->LogStreamId());
-    CompileData compileData(&mtx, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop, ready, numThreads, input, output);
-    std::vector<std::thread> threads;
-    for (int i = 0; i < numThreads; ++i)
-    {
-        threads.push_back(std::thread{ CompileThreadFunction, &compileData, i });
-    }
     int n = boundCompileUnits.size();
     for (int i = 0; i < n; ++i)
     {
@@ -285,17 +276,21 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
         catch (...)
         {
             stop = true;
-            input.NotifyAll();
-            for (int i = 0; i < numThreads; ++i)
-            {
-                if (threads[i].joinable())
-                {
-                    threads[i].join();
-                }
-            } 
             throw;
         }
-        input.Put(i); 
+    }
+    bool ready = false;
+    CompileQueue input(&mtx, "input", stop, ready, module->LogStreamId());
+    CompileQueue output(&mtx, "output", stop, ready, module->LogStreamId());
+    CompileData compileData(&mtx, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop, ready, numThreads, input, output);
+    std::vector<std::thread> threads;
+    for (int i = 0; i < numThreads; ++i)
+    {
+        threads.push_back(std::thread{ CompileThreadFunction, &compileData, i });
+    }
+    for (int i = 0; i < n; ++i)
+    {
+        input.Put(i);
     }
     int numOutputsReceived = 0;
     while (numOutputsReceived < n && !stop)

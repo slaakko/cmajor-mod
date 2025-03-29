@@ -21,6 +21,11 @@ AssemblyFunction::AssemblyFunction(const std::string& name_) : AssemblyObject(As
 {
 }
 
+void AssemblyFunction::SetComment(const std::string& comment_)
+{
+    comment = comment_;
+}
+
 void AssemblyFunction::SetActiveFunctionPart(FunctionPart functionPart)
 {
     activeFunctionPart = functionPart;
@@ -38,6 +43,11 @@ void AssemblyFunction::AddInstruction(Instruction* inst)
 
 void AssemblyFunction::Write(util::CodeFormatter& formatter)
 {
+    if (!comment.empty())
+    {
+        formatter.WriteLine("// " + comment);
+        formatter.WriteLine();
+    }
     formatter.WriteLine(name + " FUNC");
     formatter.IncIndent();
     for (const auto& instruction : prologue)

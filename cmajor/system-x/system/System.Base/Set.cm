@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,27 +20,27 @@ namespace System.Collections
         private typedef Set<ValueType, Compare> Self;
         private typedef RedBlackTree<KeyType, ValueType, Identity<ValueType>, Compare> TreeType;
 
-        public inline nothrow Iterator Begin() 
+        public inline Iterator Begin() 
         {
             return tree.Begin();
         }
-        public inline nothrow ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return tree.CBegin();
         }
-        public inline nothrow ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return tree.CBegin();
         }
-        public inline nothrow Iterator End() 
+        public inline Iterator End() 
         {
             return tree.End();
         }
-        public inline nothrow ConstIterator End() const
+        public inline ConstIterator End() const
         {
             return tree.CEnd();
         }
-        public inline nothrow ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             return tree.CEnd();
         }
@@ -52,19 +52,19 @@ namespace System.Collections
         {
             return tree.IsEmpty();
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             tree.Clear();
         }
-        public inline nothrow Iterator Find(const KeyType& key)
+        public inline Iterator Find(const KeyType& key)
         {
             return tree.Find(key);
         }
-        public inline nothrow ConstIterator Find(const KeyType& key) const
+        public inline ConstIterator Find(const KeyType& key) const
         {
             return tree.CFind(key);
         }
-        public inline nothrow ConstIterator CFind(const KeyType& key) const
+        public inline ConstIterator CFind(const KeyType& key) const
         {
             return tree.CFind(key);
         }
@@ -73,11 +73,11 @@ namespace System.Collections
         {
             return tree.Insert(value);
         }
-        public inline nothrow bool Remove(const KeyType& key)
+        public inline bool Remove(const KeyType& key)
         {
             return tree.Remove(key);
         }
-        public inline nothrow void Remove(Iterator pos)
+        public inline void Remove(Iterator pos)
         {
             tree.Remove(pos);
         }

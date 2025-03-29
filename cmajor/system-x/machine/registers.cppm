@@ -20,7 +20,19 @@ const uint8_t regEX = 251;
 const uint8_t regSP = 250;
 const uint8_t regFP = 249;
 const uint8_t regIX = 248;
-const uint8_t firstGlobalReg = 248;
+const uint8_t regP0 = 247;
+const uint8_t regP1 = 246;
+const uint8_t regP2 = 245;
+const uint8_t regP3 = 244;
+const uint8_t regP4 = 243;
+const uint8_t regP5 = 242;
+const uint8_t regP6 = 241;
+const uint8_t regP7 = 240;
+const uint8_t firstGlobalReg = 240;
+
+const int numParamRegs = 8;
+
+uint8_t GetParamRegNumber(int param);
 
 //      register                           description                          S = saved, P = put
 // ===============================================================================================

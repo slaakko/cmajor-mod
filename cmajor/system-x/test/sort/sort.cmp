@@ -1,0 +1,3 @@
+project sort;
+target=program;
+source <sort.cm>;

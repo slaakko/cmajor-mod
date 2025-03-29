@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -17,15 +17,15 @@ namespace System.Lex
     public const int END_TOKEN = 0;
     public class Token
     {
-        public Token() :
+        public nothrow Token() :
             id(INVALID_TOKEN), match(), line(1)
         {
         }
-        public Token(int id_) :
+        public nothrow Token(int id_) :
             id(id_), match(), line(1)
         {
         }
-        public Token(int id_, const Lexeme& match_, int line_) :
+        public nothrow Token(int id_, const Lexeme& match_, int line_) :
             id(id_), match(match_), line(line_)
         {
         }
@@ -48,7 +48,7 @@ namespace System.Lex
         public nothrow TokenLine() : tokens(), startState(0), endState(0)
         {
         }
-        public nothrow int TokenIndex(short columnNumber)
+        public int TokenIndex(short columnNumber)
         {
             short col = 1;
             int index = 0;

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -31,15 +31,15 @@ namespace System
                 }
             }
         }
-        public static nothrow Environment& Instance()
+        public static Environment& Instance()
         {
             return *instance;
         }
-        public nothrow bool Has(const string& envVarName) const
+        public bool Has(const string& envVarName) const
         {
             return variables.CFind(envVarName) != variables.CEnd();
         }
-        public nothrow string Get(const string& envVarName) const
+        public string Get(const string& envVarName) const
         {
             Map<string, string>.ConstIterator it = variables.CFind(envVarName);
             if (it != variables.CEnd())
@@ -59,11 +59,11 @@ namespace System
             }
             variables[envVarName] = envVarValue;
         }
-        public nothrow void Remove(const string& envVarName)
+        public void Remove(const string& envVarName)
         {
             variables.Remove(envVarName);
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             variables.Clear();
         }
@@ -74,7 +74,7 @@ namespace System
                 that.Set(v.first, v.second);
             }
         }
-        public nothrow long Size() const
+        public long Size() const
         {
             long size = 0;
             for (const Pair<string, string>& v : variables)
@@ -91,12 +91,12 @@ namespace System
         private Map<string, string> variables;
     }
 
-    public nothrow bool HasEnv(const string& envVarName)
+    public bool HasEnv(const string& envVarName)
     {
         return Environment.Instance().Has(envVarName);
     }
     
-    public nothrow string GetEnv(const string& envVarName)
+    public string GetEnv(const string& envVarName)
     {
         return Environment.Instance().Get(envVarName);
     }
@@ -106,12 +106,12 @@ namespace System
         Environment.Instance().Set(envVarName, envVarValue);
     }
     
-    public nothrow void RemoveEnv(const string& envVarName)
+    public void RemoveEnv(const string& envVarName)
     {
         Environment.Instance().Remove(envVarName);
     }
     
-    public nothrow void ClearEnvironment()
+    public void ClearEnvironment()
     {
         Environment.Instance().Clear();
     }

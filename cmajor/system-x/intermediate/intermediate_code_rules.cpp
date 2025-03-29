@@ -74,17 +74,15 @@ std::map<int64_t, std::string>* GetRuleNameMapPtr()
         { 4396680239057469504, "IntermediateCodeParser.PtrDiffInstruction" },
         { 4396680239057469505, "IntermediateCodeParser.FunctionCallInstruction" },
         { 4396680239057469506, "IntermediateCodeParser.TrapInstruction" },
-        { 4396680239057469507, "IntermediateCodeParser.PhiInstruction" },
-        { 4396680239057469508, "IntermediateCodeParser.BlockValue" },
-        { 4396680239057469509, "IntermediateCodeParser.NoOperationInstruction" },
-        { 4396680239057469510, "IntermediateCodeParser.Metadata" },
-        { 4396680239057469511, "IntermediateCodeParser.MetadataStruct" },
-        { 4396680239057469512, "IntermediateCodeParser.MetadataField" },
-        { 4396680239057469513, "IntermediateCodeParser.MetadataItem" },
-        { 4396680239057469514, "IntermediateCodeParser.MetadataBool" },
-        { 4396680239057469515, "IntermediateCodeParser.MetadataLong" },
-        { 4396680239057469516, "IntermediateCodeParser.MetadataString" },
-        { 4396680239057469517, "IntermediateCodeParser.MetadataRef" }
+        { 4396680239057469507, "IntermediateCodeParser.NoOperationInstruction" },
+        { 4396680239057469508, "IntermediateCodeParser.Metadata" },
+        { 4396680239057469509, "IntermediateCodeParser.MetadataStruct" },
+        { 4396680239057469510, "IntermediateCodeParser.MetadataField" },
+        { 4396680239057469511, "IntermediateCodeParser.MetadataItem" },
+        { 4396680239057469512, "IntermediateCodeParser.MetadataBool" },
+        { 4396680239057469513, "IntermediateCodeParser.MetadataLong" },
+        { 4396680239057469514, "IntermediateCodeParser.MetadataString" },
+        { 4396680239057469515, "IntermediateCodeParser.MetadataRef" }
     };
     return &ruleNameMap;
 }

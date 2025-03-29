@@ -10,6 +10,7 @@ module cmajor.systemx.backend.codegen;
 
 import cmajor.systemx.intermediate;
 import cmajor.systemx.assembler;
+import cmajor.systemx.optimizer;
 import util;
 
 namespace cmajor::systemx::backend {
@@ -30,7 +31,7 @@ struct NativeModule
 };
 
 SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) : 
-    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fileIndex(-1),
+    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fullSpan(),
     nativeCompileUnit(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false), destructorCallGenerated(false), genJumpingBoolCode(false),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
@@ -42,8 +43,8 @@ SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) :
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
-    fileIndex = boundCompileUnit.FileIndex();
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
+    std::string optimizedIntermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".opt.i");
     NativeModule nativeModule(emitter, intermediateFilePath);
     compileUnitId = boundCompileUnit.Id();
     emitter->SetCompileUnitId(compileUnitId);
@@ -72,9 +73,13 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileU
     }
     nativeCompileUnit->Write();
     cmajor::systemx::intermediate::Context intermediateContext;
-    cmajor::systemx::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), intermediateFilePath, intermediateContext, 
+    cmajor::systemx::intermediate::Context optimizationContext;
+    cmajor::systemx::intermediate::Context* finalContext = &intermediateContext;
+    cmajor::systemx::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), intermediateFilePath, intermediateContext,
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
     cmajor::systemx::intermediate::Verify(intermediateContext);
+    std::unique_ptr<cmajor::systemx::intermediate::CodeGenerator> codeGenerator;
+/*/
     std::string pass = cmajor::symbols::Pass();
     if (pass.empty())
     {
@@ -83,8 +88,31 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileU
     }
     cmajor::systemx::intermediate::PassManager::Instance().Run(boundCompileUnit.GetModule().LogStreamId(), &intermediateContext, pass, 
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+*/
     std::string objectFilePath = boundCompileUnit.ObjectFilePath();
     std::string assemblyFilePath = util::Path::ChangeExtension(objectFilePath, ".s");
+    std::unique_ptr<cmajor::systemx::assembler::AssemblyFile> assemblyFile(new cmajor::systemx::assembler::AssemblyFile(assemblyFilePath));
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+    {
+        if (cmajor::systemx::optimizer::CurrentOptimizations() != cmajor::systemx::optimizer::Optimizations::o0)
+        {
+            cmajor::systemx::optimizer::Optimize(&intermediateContext);
+            cmajor::systemx::intermediate::Write(intermediateContext, optimizedIntermediateFilePath);
+            cmajor::systemx::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), optimizedIntermediateFilePath, optimizationContext,
+                cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+            cmajor::systemx::intermediate::Verify(optimizationContext);
+            finalContext = &optimizationContext;
+        }
+        codeGenerator.reset(new cmajor::systemx::optimizer::OptimizingCodeGenerator(finalContext, assemblyFile.get()));
+    }
+    else
+    {
+        codeGenerator.reset(new cmajor::systemx::intermediate::SimpleAssemblyCodeGenerator(finalContext, assemblyFile.get()));
+    }
+    codeGenerator->GenerateCode();
+    codeGenerator->GenerateDebugInfo();
+    codeGenerator->WriteOutputFile();
+    assemblyFile.reset();
     cmajor::systemx::assembler::Assemble(boundCompileUnit.GetModule().LogStreamId(), assemblyFilePath, objectFilePath, 
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
 }
@@ -133,11 +161,13 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (functionSymbol->HasSource())
     {
         generateLineNumbers = true;
+        fullSpan = soul::ast::FullSpan(functionSymbol->ModuleId(), functionSymbol->FileIndex(), boundFunction.Body()->GetSpan());
         emitter->SetCurrentSourcePos(GetLineNumber(boundFunction.Body()->GetSpan()), 0, 0); 
     }
     else
     {
         generateLineNumbers = false;
+        fullSpan = soul::ast::FullSpan();
         emitter->SetCurrentSourcePos(0, 0, 0); 
     }
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
@@ -146,7 +176,8 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         void* mdStruct = emitter->CreateMDStruct();
         emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(funcInfoNodeType));
         emitter->AddMDItem(mdStruct, "fullName", emitter->CreateMDString(util::ToUtf8(functionSymbol->FullName())));
-        void* mdFile = emitter->GetMDStructRefForSourceFile(module->GetFilePath(fileIndex));
+        util::uuid moduleId = functionSymbol->ModuleId();
+        void* mdFile = emitter->GetMDStructRefForSourceFile(cmajor::symbols::GetSourceFilePath(functionSymbol->FileIndex(), moduleId));
         emitter->AddMDItem(mdStruct, "sourceFile", mdFile);
         int mdId = emitter->GetMDStructId(mdStruct);
         emitter->SetFunctionMdId(function, mdId);
@@ -171,7 +202,11 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         functionId = functionSymbol->FunctionId();
     }
-    emitter->SetFunction(function, fileIndex, functionSymbol->ModuleId(), functionId);
+    emitter->SetFunction(function, functionSymbol->FileIndex(), functionSymbol->ModuleId(), functionId);
+    if (functionSymbol->IsProgramMain())
+    {
+        emitter->SetCurrentFunctionMain();
+    }
     void* entryBlock = emitter->CreateBasicBlock("entry");
     entryBasicBlock = entryBlock;
     emitter->SetCurrentBasicBlock(entryBlock);
@@ -1462,7 +1497,7 @@ void SystemXCodeGenerator::CreateCleanup()
     {
         parent = parent->StatementParent();
     }
-    if (parent)
+    if (parent && parent->IsBoundStatement())
     {
         targetBlock = parent->Block();
     }
@@ -1523,8 +1558,8 @@ void SystemXCodeGenerator::GenerateCodeForCleanups()
 
 int SystemXCodeGenerator::GetLineNumber(const soul::ast::Span& span)
 {
-    soul::ast::LineColLen lineColLen = module->GetLineColLen(span, fileIndex);
-    return lineColLen.line;
+    fullSpan.span = span;
+    return cmajor::symbols::GetLineNumber(fullSpan);
 }
 
 } // namespace cmajor::systemx::backend

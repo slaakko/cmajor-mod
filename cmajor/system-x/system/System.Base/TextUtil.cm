@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,7 +7,7 @@ using System;
 
 namespace System.Text
 {
-    public nothrow string Trim(const string& s)
+    public string Trim(const string& s)
     {
         long b = 0;
         while (b < s.Length() && IsSpace(s[b]))
@@ -137,22 +137,22 @@ namespace System.Text
         return result;
     }
     
-    public nothrow string HexEscape(char c)
+    public string HexEscape(char c)
     {
         return "\\x" + ToHexString(cast<byte>(c));
     }
     
-    public nothrow string HexEscape(wchar c)
+    public string HexEscape(wchar c)
     {
         return "\\x" + ToHexString(cast<ushort>(c));
     }
     
-    public nothrow string HexEscape(uchar c)
+    public string HexEscape(uchar c)
     {
         return "\\x" + ToHexString(cast<uint>(c));
     }
     
-    public nothrow string CharStr(char c)
+    public string CharStr(char c)
     {
         switch (c)
         {
@@ -182,7 +182,7 @@ namespace System.Text
         return string();
     }
     
-    public nothrow string MakeCharLiteral(char c)
+    public string MakeCharLiteral(char c)
     {
         if (c == '"')
         {
@@ -252,7 +252,7 @@ namespace System.Text
         return ustring();
     }   
     
-    public nothrow string StringStr(const string& s)
+    public string StringStr(const string& s)
     {
         string result;
         for (char c : s)
@@ -286,7 +286,7 @@ namespace System.Text
         return result;
     }
 
-    public nothrow string MakeStringLiteral(const string& s)
+    public string MakeStringLiteral(const string& s)
     {
         string result = "\"";
         result.Append(StringStr(s));
@@ -312,27 +312,27 @@ namespace System.Text
         left, right
     }
     
-    public nothrow string Format(const string& s, int width)
+    public string Format(const string& s, int width)
     {
         return Format(s, width, FormatWidth.exact, FormatJustify.left);
     }
 
-    public nothrow string Format(const string& s, int width, FormatJustify justify)
+    public string Format(const string& s, int width, FormatJustify justify)
     {
         return Format(s, width, FormatWidth.exact, justify);
     }
 
-    public nothrow string Format(const string& s, int width, FormatWidth fw)
+    public string Format(const string& s, int width, FormatWidth fw)
     {
         return Format(s, width, fw, FormatJustify.left);
     }
 
-    public nothrow string Format(const string& s, int width, FormatWidth fw, FormatJustify justify)
+    public string Format(const string& s, int width, FormatWidth fw, FormatJustify justify)
     {
         return Format(s, width, fw, justify, ' ');
     }
 
-    public nothrow string Format(const string& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
+    public string Format(const string& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
     {
         if (fw == FormatWidth.min)
         {
@@ -352,27 +352,27 @@ namespace System.Text
         return result;
     }
 
-    public nothrow ustring Format(const ustring& s, int width)
+    public ustring Format(const ustring& s, int width)
     {
         return Format(s, width, FormatWidth.exact, FormatJustify.left);
     }
 
-    public nothrow ustring Format(const ustring& s, int width, FormatJustify justify)
+    public ustring Format(const ustring& s, int width, FormatJustify justify)
     {
         return Format(s, width, FormatWidth.exact, justify);
     }
 
-    public nothrow ustring Format(const ustring& s, int width, FormatWidth fw)
+    public ustring Format(const ustring& s, int width, FormatWidth fw)
     {
         return Format(s, width, fw, FormatJustify.left);
     }
     
-    public nothrow ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify)
+    public ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify)
     {
         return Format(s, width, fw, justify, ' ');
     }
 
-    public nothrow ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
+    public ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
     {
         ustring result;
         int m = cast<int>(s.Length());

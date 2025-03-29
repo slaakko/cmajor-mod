@@ -114,7 +114,7 @@ private:
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;
-    int fileIndex;
+    soul::ast::FullSpan fullSpan;
     cmajor::systemx::ir::CompileUnit* nativeCompileUnit;
     void* function;
     void* entryBasicBlock;

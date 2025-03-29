@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,6 +9,7 @@ namespace System.IO
 {
     public abstract class TextWriter
     {
+        public default nothrow TextWriter();
         public default virtual ~TextWriter();
         public abstract void Write(const string& x);
         public abstract void Write(const wstring& x);

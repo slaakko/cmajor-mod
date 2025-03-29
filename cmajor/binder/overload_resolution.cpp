@@ -1470,10 +1470,13 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                 }
                 else
                 {
-                    cmajor::symbols::Warning warning(cmajor::symbols::nothrowWarning, module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
-                    warning.SetDefined(node->GetFullSpan());
-                    warning.SetReferences(references);
-                    module->WarningCollection().AddWarning(warning);
+                    if ((flags & OverloadResolutionFlags::dontInstantiate) == OverloadResolutionFlags::none)
+                    {
+                        cmajor::symbols::Warning warning(cmajor::symbols::nothrowWarning, module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
+                        warning.SetDefined(node->GetFullSpan());
+                        warning.SetReferences(references);
+                        module->WarningCollection().AddWarning(warning);
+                    }
                 }
             }
             return CreateBoundFunctionCall(bestFun, arguments, boundCompileUnit, boundFunction, bestMatch, containerScope, node);
@@ -1594,11 +1597,14 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
             }
             else
             {
-                cmajor::symbols::Warning warning(cmajor::symbols::nothrowWarning, module->GetCurrentProjectName(), 
-                    "a nothrow function calls a function that can throw and does not handle exceptions");
-                warning.SetDefined(node->GetFullSpan());
-                warning.SetReferences(references);
-                module->WarningCollection().AddWarning(warning);
+                if ((flags & OverloadResolutionFlags::dontInstantiate) == OverloadResolutionFlags::none)
+                {
+                    cmajor::symbols::Warning warning(cmajor::symbols::nothrowWarning, module->GetCurrentProjectName(),
+                        "a nothrow function calls a function that can throw and does not handle exceptions");
+                    warning.SetDefined(node->GetFullSpan());
+                    warning.SetReferences(references);
+                    module->WarningCollection().AddWarning(warning);
+                }
             }
         }
         return CreateBoundFunctionCall(singleBest, arguments, boundCompileUnit, boundFunction, bestMatch, containerScope, node);

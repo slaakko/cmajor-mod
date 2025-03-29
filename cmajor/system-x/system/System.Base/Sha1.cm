@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -47,7 +47,7 @@ namespace System.Security
         {
             Process(buf, buf + count);
         }
-        public nothrow string GetDigest()
+        public string GetDigest()
         {
             ProcessByte(0x80u);
             if (byteIndex > 56u)
@@ -154,14 +154,14 @@ namespace System.Security
         private ulong bitCount;
     }
 
-    public nothrow string GetSha1MessageDigest(const string& message)
+    public string GetSha1MessageDigest(const string& message)
     {
         byte* data = cast<byte*>(cast<void*>(message.Chars()));
         long count = message.Length();
         return GetSha1MessageDigest(data, count);
     }
     
-    public nothrow string GetSha1MessageDigest(byte* data, long count)
+    public string GetSha1MessageDigest(byte* data, long count)
     {
         Sha1 sha1;
         sha1.Process(data, count);

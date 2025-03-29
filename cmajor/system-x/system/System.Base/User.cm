@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,14 +11,14 @@ namespace System.Security
 {
     public class SecurityException : Exception
     {
-        public nothrow SecurityException(const string& message_) : base(message_)
+        public SecurityException(const string& message_) : base(message_)
         {
         }
     }
 
     public class User
     {
-        public nothrow User(const string& username_, bool hasPassword_, int uid_, int gid_, const string& info_, const string& home_, const string& shell_) : 
+        public User(const string& username_, bool hasPassword_, int uid_, int gid_, const string& info_, const string& home_, const string& shell_) : 
             username(username_), hasPassword(hasPassword_), uid(uid_), gid(gid_), info(info_), home(home_), shell(shell_)
         {
         }
@@ -74,7 +74,7 @@ namespace System.Security
     
     public class Users
     {
-        public nothrow Users() : lastUserId(0)
+        public Users() : lastUserId(0)
         {
         }
         public void AddUser(const User& user)
@@ -154,7 +154,7 @@ namespace System.Security
     
     public class Group
     {
-        public nothrow Group(const string& groupname_, int gid_, const List<string>& users_) : 
+        public Group(const string& groupname_, int gid_, const List<string>& users_) : 
             groupname(groupname_), gid(gid_), users(users_)
         {
         }
@@ -185,7 +185,7 @@ namespace System.Security
     
     public class Groups
     {
-        public nothrow Groups() : lastGroupId(0)
+        public Groups() : lastGroupId(0)
         {
         }
         public void AddGroup(const Group& group)

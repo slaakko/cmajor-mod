@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -85,7 +85,7 @@ namespace System
         public nothrow SharedCount() : counter(null)
         {
         }
-        public nothrow SharedCount(T* ptr_) : counter(new Counter<T>(ptr_))
+        public SharedCount(T* ptr_) : counter(new Counter<T>(ptr_))
         {
         }
         public nothrow SharedCount(Counter<T>* counter_) : counter(counter_) // to support SharedCountCast
@@ -276,7 +276,7 @@ namespace System
         public nothrow SharedPtr() : ptr(null), count()
         {
         }
-        public nothrow explicit SharedPtr(T* ptr_) : ptr(ptr_), count(ptr)
+        public explicit SharedPtr(T* ptr_) : ptr(ptr_), count(ptr)
         {
             EnableSharedFromThis(ptr_, ptr_, count);
         }
@@ -312,7 +312,7 @@ namespace System
             Swap(ptr, that.ptr);
             Swap(count, that.count);
         }
-        public nothrow inline T* operator->() const
+        public inline T* operator->() const
         {
             if (ptr == null)
             {
@@ -320,7 +320,7 @@ namespace System
             }
             return ptr;
         }
-        public nothrow inline T& operator*() const
+        public inline T& operator*() const
         {
             if (ptr == null)
             {

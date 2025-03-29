@@ -116,6 +116,14 @@ RegisterPool::RegisterPool() : localRegisterCount(cmajor::systemx::machine::NumL
     globalRegisterMap[cmajor::systemx::machine::regIX] = Register(RegisterKind::global, cmajor::systemx::machine::regIX);
     globalRegisterMap[cmajor::systemx::machine::regFP] = Register(RegisterKind::global, cmajor::systemx::machine::regFP);
     globalRegisterMap[cmajor::systemx::machine::regSP] = Register(RegisterKind::global, cmajor::systemx::machine::regSP);
+    globalRegisterMap[cmajor::systemx::machine::regP0] = Register(RegisterKind::global, cmajor::systemx::machine::regP0);
+    globalRegisterMap[cmajor::systemx::machine::regP1] = Register(RegisterKind::global, cmajor::systemx::machine::regP1);
+    globalRegisterMap[cmajor::systemx::machine::regP2] = Register(RegisterKind::global, cmajor::systemx::machine::regP2);
+    globalRegisterMap[cmajor::systemx::machine::regP3] = Register(RegisterKind::global, cmajor::systemx::machine::regP3);
+    globalRegisterMap[cmajor::systemx::machine::regP4] = Register(RegisterKind::global, cmajor::systemx::machine::regP4);
+    globalRegisterMap[cmajor::systemx::machine::regP5] = Register(RegisterKind::global, cmajor::systemx::machine::regP5);
+    globalRegisterMap[cmajor::systemx::machine::regP6] = Register(RegisterKind::global, cmajor::systemx::machine::regP6);
+    globalRegisterMap[cmajor::systemx::machine::regP7] = Register(RegisterKind::global, cmajor::systemx::machine::regP7);
 }
 
 Register RegisterPool::GetGlobalRegister(uint8_t number)

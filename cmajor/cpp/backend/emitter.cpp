@@ -1895,4 +1895,8 @@ void CppEmitter::PrintModule()
 {
 }
 
+void CppEmitter::SetCurrentFunctionMain()
+{
+}
+
 } // namespace cmajor::cpp::backend

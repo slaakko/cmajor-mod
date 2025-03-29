@@ -1867,4 +1867,8 @@ void MasmEmitter::PrintModule()
 {
 }
 
+void MasmEmitter::SetCurrentFunctionMain()
+{
+}
+
 } // namespace cmajor::masm::backend

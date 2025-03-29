@@ -2624,4 +2624,8 @@ void LLVMEmitter::PrintModule()
     module->print(llvm::errs(), nullptr);
 }
 
+void LLVMEmitter::SetCurrentFunctionMain()
+{
+}
+
 } // namespace cmllvm

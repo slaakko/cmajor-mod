@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/system-x/intermediate/intermediate_code.parser' using soul parser generator spg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/system-x/intermediate/intermediate_code.parser' using soul parser generator spg version 5.0.0
 
 export module cmajor.systemx.intermediate.code.parser;
 
@@ -88,8 +88,6 @@ struct IntermediateCodeParser
     static soul::parser::Match PtrDiffInstruction(LexerT& lexer, cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::RegValue* result);
     static soul::parser::Match FunctionCallInstruction(LexerT& lexer, cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::RegValue* result);
     static soul::parser::Match TrapInstruction(LexerT& lexer, cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::RegValue* result);
-    static soul::parser::Match PhiInstruction(LexerT& lexer, cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::RegValue* result);
-    static soul::parser::Match BlockValue(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match NoOperationInstruction(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match Metadata(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match MetadataStruct(LexerT& lexer, cmajor::systemx::intermediate::Context* context);

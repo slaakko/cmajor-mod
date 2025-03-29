@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -74,7 +74,7 @@ namespace System.Collections
         {
             return color == Color.red && parent != null && parent->parent == this;
         }
-        public static inline nothrow RedBlackTreeNodeBase* Min(RedBlackTreeNodeBase* n)
+        public static RedBlackTreeNodeBase* Min(RedBlackTreeNodeBase* n)
         {
             if (n == null)
             {
@@ -86,7 +86,7 @@ namespace System.Collections
             }
             return n;
         }
-        public static inline nothrow RedBlackTreeNodeBase* Max(RedBlackTreeNodeBase* n)
+        public static RedBlackTreeNodeBase* Max(RedBlackTreeNodeBase* n)
         {
             if (n == null)
             {
@@ -98,7 +98,7 @@ namespace System.Collections
             }
             return n;
         }
-        public static inline nothrow RedBlackTreeNodeBase* Prev(RedBlackTreeNodeBase* n)
+        public static RedBlackTreeNodeBase* Prev(RedBlackTreeNodeBase* n)
         {
             if (n == null)
             {
@@ -123,7 +123,7 @@ namespace System.Collections
                 return u;
             }
         }
-        public static inline nothrow RedBlackTreeNodeBase* Next(RedBlackTreeNodeBase* n)
+        public static RedBlackTreeNodeBase* Next(RedBlackTreeNodeBase* n)
         {
             if (n == null)
             {
@@ -158,7 +158,7 @@ namespace System.Collections
              n                     n
 
         */
-        public static nothrow void RebalanceAfterInsert(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
+        public static void RebalanceAfterInsert(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
         {
             if (n == null)
             {
@@ -217,7 +217,7 @@ namespace System.Collections
         /*
             REBALANCE-FOR-REMOVE:
         */
-        public static nothrow RedBlackTreeNodeBase* RebalanceForRemove(RedBlackTreeNodeBase* z, RedBlackTreeNodeBase*& root, RedBlackTreeNodeBase*& leftmost, RedBlackTreeNodeBase*& rightmost)
+        public static RedBlackTreeNodeBase* RebalanceForRemove(RedBlackTreeNodeBase* z, RedBlackTreeNodeBase*& root, RedBlackTreeNodeBase*& leftmost, RedBlackTreeNodeBase*& rightmost)
         {
             if (z == null)
             {
@@ -426,7 +426,7 @@ namespace System.Collections
                    / \        / \
                   b   c      a   b
         */
-        private static inline nothrow void RotateLeft(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
+        private static void RotateLeft(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
         {
             if (n == null)
             {
@@ -465,7 +465,7 @@ namespace System.Collections
              / \                  / \
             a   b               b    c
         */
-        private static inline nothrow void RotateRight(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
+        private static void RotateRight(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
         {
             if (n == null)
             {
@@ -510,7 +510,7 @@ namespace System.Collections
         public RedBlackTreeNode(const ValueType& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(value_) 
         {
         }
-        public RedBlackTreeNode(ValueType&& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(Rvalue(value_))
+        public nothrow RedBlackTreeNode(ValueType&& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(Rvalue(value_))
         {
         }
         public inline nothrow const ValueType& Value() const 
@@ -537,7 +537,9 @@ namespace System.Collections
         public nothrow RedBlackTreeNodeIterator(RedBlackTreeNode<ValueType>* node_) : node(node_)
         {
         }
-        public inline nothrow ReferenceType operator*()
+        public default nothrow RedBlackTreeNodeIterator(RedBlackTreeNodeIterator&&);
+        public default nothrow void operator=(RedBlackTreeNodeIterator&&);
+        public inline ReferenceType operator*()
         {
             if (node == null)
             {
@@ -545,7 +547,7 @@ namespace System.Collections
             }
             return node->Value();
         }
-        public inline nothrow PointerType operator->()
+        public inline PointerType operator->()
         {
             if (node == null)
             {
@@ -553,7 +555,7 @@ namespace System.Collections
             }
             return &(node->Value());
         }
-        public inline nothrow Self& operator++()
+        public inline Self& operator++()
         {
             if (node == null)
             {
@@ -562,7 +564,7 @@ namespace System.Collections
             node = cast<RedBlackTreeNode<ValueType>*>(RedBlackTreeNodeBase.Next(node));
             return *this;
         }
-        public inline nothrow Self& operator--()
+        public inline Self& operator--()
         {
             if (node == null)
             {
@@ -622,9 +624,15 @@ namespace System.Collections
         }
         public ~RedBlackTree()
         {
-            Clear();
+            try
+            {
+                Clear();
+            }
+            catch (const Exception&)
+            {
+            }
         }
-        public inline nothrow ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             if (header.IsNull())
             {
@@ -635,7 +643,7 @@ namespace System.Collections
                 return ConstIterator(Leftmost());
             }            
         }
-        public inline nothrow Iterator Begin()
+        public inline Iterator Begin()
         {
             if (header.IsNull())
             {
@@ -646,7 +654,7 @@ namespace System.Collections
                 return Iterator(Leftmost());
             }            
         }
-        public inline nothrow ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             if (header.IsNull())
             {
@@ -657,19 +665,19 @@ namespace System.Collections
                 return ConstIterator(Leftmost());
             }            
         }
-        public inline nothrow ConstIterator End() const
+        public inline ConstIterator End() const
         {
             return ConstIterator(header.Get());
         }
-        public inline nothrow Iterator End()
+        public inline Iterator End()
         {
             return Iterator(header.Get());
         }
-        public inline nothrow ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             return ConstIterator(header.Get());
         }
-        public inline nothrow long Count() const
+        public inline long Count() const
         {
             if (count < 0)
             {
@@ -677,7 +685,7 @@ namespace System.Collections
             }
             return count;
         }
-        public inline nothrow bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             if (count < 0)
             {
@@ -685,7 +693,7 @@ namespace System.Collections
             }
             return count == 0;
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             if (header.IsNull())
             {
@@ -701,7 +709,7 @@ namespace System.Collections
             SetRightmost(header.Get());
             count = 0;
         }
-        public nothrow Iterator Find(const KeyType& key)
+        public Iterator Find(const KeyType& key)
         {
             if (IsEmpty())
             {
@@ -731,7 +739,7 @@ namespace System.Collections
                 return j;
             }
         }
-        public nothrow ConstIterator Find(const KeyType& key) const
+        public ConstIterator Find(const KeyType& key) const
         {
             if (IsEmpty())
             {
@@ -761,7 +769,7 @@ namespace System.Collections
                 return j;
             }
         }
-        public nothrow ConstIterator CFind(const KeyType& key) const
+        public ConstIterator CFind(const KeyType& key) const
         {
             if (IsEmpty())
             {
@@ -939,7 +947,7 @@ namespace System.Collections
             ++count;
             return Iterator(n);
         }
-        public nothrow bool Remove(const KeyType& key)
+        public bool Remove(const KeyType& key)
         {
             if (IsEmpty())
             {
@@ -975,7 +983,7 @@ namespace System.Collections
             }
             return false;
         }
-        public nothrow void Remove(Iterator pos)
+        public void Remove(Iterator pos)
         {
             RedBlackTreeNode<ValueType>* toRemove = cast<RedBlackTreeNode<ValueType>*>(RedBlackTreeNodeBase.RebalanceForRemove(pos.Node(), RootRef(), LeftmostRef(), RightmostRef()));
             toRemove->SetLeft(null);
@@ -1049,43 +1057,43 @@ namespace System.Collections
         {
             return keyOf(value);
         }
-        private inline nothrow bool Comp(const KeyType& left, const KeyType& right) const
+        private inline bool Comp(const KeyType& left, const KeyType& right) const
         {
             return comp(left, right);
         }
-        private inline nothrow RedBlackTreeNode<ValueType>* Root()
+        private inline RedBlackTreeNode<ValueType>* Root()
         {
             return cast<RedBlackTreeNode<ValueType>*>(header->Parent());
         }
-        private inline nothrow RedBlackTreeNodeBase*& RootRef()
+        private inline RedBlackTreeNodeBase*& RootRef()
         {
             return header->ParentRef();
         }
-        private inline nothrow void SetRoot(RedBlackTreeNode<ValueType>* root)
+        private inline void SetRoot(RedBlackTreeNode<ValueType>* root)
         {
             header->SetParent(root);
         }
-        private inline nothrow RedBlackTreeNode<ValueType>* Leftmost()
+        private inline RedBlackTreeNode<ValueType>* Leftmost()
         {
             return cast<RedBlackTreeNode<ValueType>*>(header->Left());
         }
-        private inline nothrow RedBlackTreeNodeBase*& LeftmostRef()
+        private inline RedBlackTreeNodeBase*& LeftmostRef()
         {
             return header->LeftRef();
         }
-        private inline nothrow void SetLeftmost(RedBlackTreeNode<ValueType>* lm)
+        private inline void SetLeftmost(RedBlackTreeNode<ValueType>* lm)
         {
             header->SetLeft(lm);
         }
-        private inline nothrow RedBlackTreeNode<ValueType>* Rightmost()
+        private inline RedBlackTreeNode<ValueType>* Rightmost()
         {
             return cast<RedBlackTreeNode<ValueType>*>(header->Right());
         }
-        private inline nothrow RedBlackTreeNodeBase*& RightmostRef()
+        private inline RedBlackTreeNodeBase*& RightmostRef()
         {
             return header->RightRef();
         }
-        private inline nothrow void SetRightmost(RedBlackTreeNode<ValueType>* rm)
+        private inline void SetRightmost(RedBlackTreeNode<ValueType>* rm)
         {
             header->SetRight(rm);
         }

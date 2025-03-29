@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -28,6 +28,10 @@ namespace System
         public explicit nothrow Duration(long nanosecs_) : nanosecs(nanosecs_)
         {
         }
+        public default nothrow Duration(const Duration&);
+        public default nothrow Duration(Duration&&);
+        public default nothrow void operator=(const Duration&);
+        public default nothrow void operator=(Duration&&);
         public nothrow long Hours() const
         {
             return nanosecs / (3600 * long(1000000000));
@@ -193,7 +197,7 @@ namespace System
         systemTime = Duration(systemTm);
     }
 
-    public nothrow string HourStr(const Duration& duration)
+    public string HourStr(const Duration& duration)
     {
         string s;
         long hours = duration.Hours();
@@ -203,7 +207,7 @@ namespace System
         return s;
     }
     
-    public nothrow string MinuteStr(const Duration& duration)
+    public string MinuteStr(const Duration& duration)
     {
         string s;
         long minutes = duration.Minutes();
@@ -213,7 +217,7 @@ namespace System
         return s;
     }
     
-    public nothrow string SecondStr(const Duration& duration)
+    public string SecondStr(const Duration& duration)
     {
         string s;
         long seconds = duration.Seconds();
@@ -223,7 +227,7 @@ namespace System
         return s;
     }
     
-    public nothrow string MillisecondStr(const Duration& duration)
+    public string MillisecondStr(const Duration& duration)
     {
         string s;
         long milliseconds = duration.Milliseconds();
@@ -234,7 +238,7 @@ namespace System
         return s;
     }
     
-    public nothrow string MicrosecondStr(const Duration& duration)
+    public string MicrosecondStr(const Duration& duration)
     {
         string s;
         long microseconds = duration.Microseconds();
@@ -245,7 +249,7 @@ namespace System
         return s;
     }
 
-    public nothrow string DurationStr(const Duration& duration)
+    public string DurationStr(const Duration& duration)
     {
         string s;
         s.Append(HourStr(duration));
@@ -273,6 +277,8 @@ namespace System
         public nothrow Date(short year_, Month month_, sbyte day_) : year(year_), month(month_), day(day_)
         {
         }
+        public default nothrow Date(Date&& that);
+        public default nothrow void operator=(Date&& that);
         public nothrow inline short Year() const
         {
             return year;
@@ -285,11 +291,11 @@ namespace System
         {
             return day;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return this->ToString(false);
         }
-        public nothrow string ToString(bool omitDashes) const
+        public string ToString(bool omitDashes) const
         {
             string date;
             date.Append(cast<char>(cast<short>('0') + ((year / 1000) % 10)));
@@ -365,7 +371,7 @@ namespace System
         {
             return secs;
         }
-        public nothrow string TimeString() const
+        public string TimeString() const
         {
             string timeString;
             int hh = Hours() % 24;
@@ -381,11 +387,11 @@ namespace System
             timeString.Append(cast<char>(cast<int>('0') + (ss % 10)));
             return timeString;
         }
-        public nothrow string ToString()
+        public string ToString()
         {
             return this->ToString(false, false, false, false);
         }
-        public nothrow string ToString(bool omitDashes, bool omitColons, bool omitMins, bool omitSecs)
+        public string ToString(bool omitDashes, bool omitColons, bool omitMins, bool omitSecs)
         {
             string dateTime = date.ToString(omitDashes);
             dateTime.Append('T');
