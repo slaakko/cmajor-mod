@@ -283,9 +283,8 @@ std::vector<cmajor::symbols::VariableSymbol*> GetVariables(cmajor::symbols::Cont
 class SymbolTableXmlBuilder : cmajor::ast::Visitor
 {
 public:
-    SymbolTableXmlBuilder(const std::string& moduleName_, cmajor::symbols::SymbolTable& symbolTable_, std::map<int, File>& fileMap_, 
+    SymbolTableXmlBuilder(cmajor::symbols::Context* context_, const std::string& moduleName_, cmajor::symbols::SymbolTable& symbolTable_, std::map<int, File>& fileMap_, 
         const std::string& modulePrefix_, const std::string& extModulePrefix_);
-
     void WriteDocument(const std::string& symbolTableXmlFilePath);
     bool AddNamespace(cmajor::symbols::NamespaceSymbol& ns);
     void AddConcept(cmajor::symbols::ConceptSymbol& conceptSymbol);
@@ -334,6 +333,7 @@ public:
     void Visit(cmajor::ast::UCharNode& ucharNode) override;
     void Visit(cmajor::ast::VoidNode& voidNode) override;
 private:
+    cmajor::symbols::Context* context;
     std::string moduleName;
     cmajor::symbols::SymbolTable& symbolTable;
     std::map<int, File>& fileMap;
@@ -350,9 +350,9 @@ private:
     void AddChildren(cmajor::symbols::ContainerSymbol& container);
 };
 
-SymbolTableXmlBuilder::SymbolTableXmlBuilder(const std::string& moduleName_, cmajor::symbols::SymbolTable& symbolTable_, std::map<int, File>& fileMap_,
-    const std::string& modulePrefix_, const std::string& extModulePrefix_) :
-    moduleName(moduleName_), symbolTableXmlDocument(new soul::xml::Document()),
+SymbolTableXmlBuilder::SymbolTableXmlBuilder(cmajor::symbols::Context* context_, const std::string& moduleName_, cmajor::symbols::SymbolTable& symbolTable_, 
+    std::map<int, File>& fileMap_, const std::string& modulePrefix_, const std::string& extModulePrefix_) :
+    context(context_), moduleName(moduleName_), symbolTableXmlDocument(new soul::xml::Document()),
     symbolTableElement(soul::xml::MakeElement("symbolTable")), currentElement(symbolTableElement), symbolTable(symbolTable_),
     fileMap(fileMap_), modulePrefix(modulePrefix_), extModulePrefix(extModulePrefix_)
 {
@@ -546,7 +546,7 @@ void SymbolTableXmlBuilder::AddClass(cmajor::symbols::ClassTypeSymbol& cls)
         {
             cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(baseClass);
             baseClass = specialization->GetClassTemplate();
-            baseClassSpecializationName = util::ToUtf8(baseClass->Ns()->FullName());
+            baseClassSpecializationName = util::ToUtf8(baseClass->Ns(context)->FullName());
             if (!baseClassSpecializationName.empty())
             {
                 baseClassSpecializationName.append(1, '.');
@@ -1712,10 +1712,12 @@ void SymbolTableXmlBuilder::AddChildren(cmajor::symbols::ContainerSymbol& contai
 
 void GenerateSymbolTableXml(cmajor::symbols::Module* rootModule, std::map<int, File>& fileMap)
 {
+    cmajor::symbols::Context context;
+    context.SetRootModule(rootModule);
     cmajor::symbols::SymbolTable& symbolTable = rootModule->GetSymbolTable();
     std::string modulePrefix = util::Path::Combine(util::Path::Combine("../..", util::ToUtf8(rootModule->Name())), "doc");
     std::string extModulePrefix = util::Path::Combine(util::ToUtf8(rootModule->Name()), "doc");
-    SymbolTableXmlBuilder symbolTableXmlBuilder(util::ToUtf8(rootModule->Name()), symbolTable, fileMap, modulePrefix, extModulePrefix);
+    SymbolTableXmlBuilder symbolTableXmlBuilder(&context, util::ToUtf8(rootModule->Name()), symbolTable, fileMap, modulePrefix, extModulePrefix);
     Input* input = GetInputPtr();
     std::string targetDir = input->targetDirPath;
     std::filesystem::create_directories(targetDir);

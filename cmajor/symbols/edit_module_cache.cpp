@@ -5,6 +5,7 @@
 
 module cmajor.symbols.edit_module_cache;
 
+import cmajor.symbols.context;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.modules;
 import cmajor.symbols.module_cache;
@@ -100,15 +101,16 @@ LoadEditModuleResult EditModuleCache::LoadEditModule(const std::string& projectF
         return result;
     }
     std::unique_ptr<cmajor::ast::Project> project = readProjectFunction(projectFilePath);
-    std::unique_ptr<Module> module(new Module(project->Name(), project->ModuleFilePath(), project->GetTarget()));
+    Context context;
+    std::unique_ptr<Module> module(new Module(&context, project->Name(), project->ModuleFilePath(), project->GetTarget()));
+    context.SetRootModule(module.get());
     module->SetIndex(index);
     module->SetRootModule();
-    SetRootModuleForCurrentThread(module.get());
     module->SetLogStreamId(project->LogStreamId());
     module->SetCurrentProjectName(project->Name());
     module->SetCurrentToolName(U"cmccs");
     module->SetFlag(cmajor::symbols::ModuleFlags::compiling);
-    PrepareModuleForCompilation(module.get(), project->References(), project->GetTarget(), soul::ast::Span(), -1, nullptr);
+    PrepareModuleForCompilation(&context, project->References(), project->GetTarget(), soul::ast::Span(), -1, nullptr);
     // TODO module->SetSources(new Sources(project->SourceFilePaths()));
     ParseResult parseResult = module->ParseSources();
     result.ok = parseResult.ok;

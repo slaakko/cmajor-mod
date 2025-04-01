@@ -17,10 +17,10 @@ export namespace cmajor::symbols {
 class StringFunctionContainerSymbol : public TypeSymbol
 {
 public:
-    StringFunctionContainerSymbol(const soul::ast::Span& span_);
+    StringFunctionContainerSymbol(const soul::ast::Span& span_, Context* context);
     StringFunctionContainerSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    void* IrType(cmajor::ir::Emitter& emitter) override;
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override;
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsStringFunctionContainer() const override { return true; }
@@ -29,11 +29,11 @@ public:
 class StringLengthFunction : public FunctionSymbol
 {
 public:
-    StringLengthFunction(TypeSymbol* parentType);
+    StringLengthFunction(TypeSymbol* parentType, Context* context);
     StringLengthFunction(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     std::unique_ptr<Value> ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::Span& span, Value* receiver) const override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsCompileTimePrimitiveFunction() const override { return true; }

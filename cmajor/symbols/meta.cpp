@@ -37,7 +37,7 @@ std::unique_ptr<Value> IntrinsicFunction::Evaluate(const std::vector<std::unique
     return DoEvaluate(arguments, templateArguments, node);
 }
 
-FunctionSymbol* CreateIntrinsic(IntrinsicFunction* intrinsic, SymbolTable& symbolTable, ContainerSymbol* parent)
+FunctionSymbol* CreateIntrinsic(IntrinsicFunction* intrinsic, SymbolTable& symbolTable, ContainerSymbol* parent, Context* context)
 {
     FunctionSymbol* fun = new FunctionSymbol(intrinsic->GetSpan(), util::ToUtf32(intrinsic->GroupName()));
     fun->SetModule(symbolTable.GetModule());
@@ -57,9 +57,9 @@ FunctionSymbol* CreateIntrinsic(IntrinsicFunction* intrinsic, SymbolTable& symbo
         TemplateParameterSymbol* s = new TemplateParameterSymbol(soul::ast::Span(), p);
         symbolTable.SetTypeIdFor(s);
         s->SetModule(symbolTable.GetModule());
-        fun->AddMember(s);
+        fun->AddMember(s, context);
     }
-    fun->ComputeName();
+    fun->ComputeName(context);
     return fun;
 }
 
@@ -647,44 +647,44 @@ ArrayLengthIntrinsicFunction::ArrayLengthIntrinsicFunction(const soul::ast::Span
 {
 }
 
-void MetaInit(SymbolTable& symbolTable, const soul::ast::Span& rootSpan)
+void MetaInit(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, Context* context)
 {
-    symbolTable.BeginNamespace(U"System.Meta", rootSpan, symbolTable.GlobalNs().ModuleId(), symbolTable.GlobalNs().FileIndex());
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntegralTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSignedTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUnsignedTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatingPointTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBasicTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBoolTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSByteTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsByteTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsShortTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUShortTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUIntTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLongTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsULongTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDoubleTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsCharTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsWCharTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUCharTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsVoidTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPolymorphicTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsInterfaceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDelegateTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassDelegateTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsEnumeratedTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsConstTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsRvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsArrayTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPointerTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsGenericPtrTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new PointerCountIntrinsicFunction(rootSpan), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new ArrayLengthIntrinsicFunction(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.BeginNamespace(U"System.Meta", rootSpan, symbolTable.GlobalNs().ModuleId(), symbolTable.GlobalNs().FileIndex(), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntegralTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSignedTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUnsignedTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatingPointTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBasicTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBoolTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSByteTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsByteTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsShortTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUShortTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUIntTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLongTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsULongTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDoubleTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsCharTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsWCharTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUCharTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsVoidTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPolymorphicTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsInterfaceTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDelegateTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassDelegateTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsEnumeratedTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsConstTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsRvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsArrayTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPointerTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsGenericPtrTypePredicate(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new PointerCountIntrinsicFunction(rootSpan), symbolTable, symbolTable.Container(), context), context);
+    symbolTable.Container()->AddMember(CreateIntrinsic(new ArrayLengthIntrinsicFunction(rootSpan), symbolTable, symbolTable.Container(), context), context);
     symbolTable.EndNamespace();
 }
 

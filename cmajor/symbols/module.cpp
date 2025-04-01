@@ -8,6 +8,7 @@ module;
 
 module cmajor.symbols.modules;
 
+import cmajor.symbols.context;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
@@ -202,6 +203,22 @@ void ModuleDependency::Dump(util::CodeFormatter& formatter)
     formatter.DecIndent();
 }
 
+void ModuleDependency::Check()
+{
+    if (module->Name().empty())
+    {
+        util::DebugBreak();
+    }
+    for (Module* ref : referencedModules)
+    {
+        if (ref->Name().empty())
+        {
+            util::DebugBreak();
+        }
+        ref->GetModuleDependency().Check();
+    }
+}
+
 int32_t FileTable::RegisterFilePath(const std::string& filePath)
 {
     int32_t fileIndex = filePaths.size();
@@ -365,11 +382,11 @@ std::vector<Module*> CreateFinishReadOrder(std::vector<Module*>& modules, std::u
     return finishReadOrder;
 }
 
-void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool all, bool readRoot)
+void FinishReads(Context* context, std::vector<Module*>& finishReadOrder, bool all, bool readRoot)
 {
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "FinishReads: begin " + ToUtf8(rootModule->Name()), rootModule->DebugLogIndent());
-    rootModule->IncDebugLogIndent();
+    LogMessage(context->RootModule()->LogStreamId(), "FinishReads: begin " + ToUtf8(context->RootModule()->Name()), context->RootModule()->DebugLogIndent());
+    context->RootModule()->IncDebugLogIndent();
 #endif 
     int n = finishReadOrder.size() - 1;
     if (all)
@@ -379,10 +396,10 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
     for (int i = 0; i < n; ++i)
     {
         Module* module = finishReadOrder[i];
-        if (!module->HasSymbolTable() || (module == rootModule && all && readRoot))
+        if (!module->HasSymbolTable() || (module == context->RootModule() && all && readRoot))
         {
 #ifdef MODULE_READING_DEBUG
-            LogMessage(rootModule->LogStreamId(), "FinishReads: reading " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
+            LogMessage(context->RootModule()->LogStreamId(), "FinishReads: reading " + ToUtf8(module->Name()), context->RootModule()->DebugLogIndent());
 #endif 
             module->CreateSymbolTable();
             std::vector<TypeOrConceptRequest> typeAndConceptRequests;
@@ -394,6 +411,7 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             SymbolReader reader(module->FilePathReadFrom());
             // TODO reader.GetAstReader().SetModuleMaps(rootModule->Id(), module->GetModuleNameTable(), rootModule->GetModuleIdMap());
             reader.SetModule(module);
+            reader.SetContext(context);
             reader.SetArrayTypesTarget(&arrayTypes);
             reader.SetDerivedTypesTarget(&derivedTypes);
             reader.SetClassTemplateSpecializationTarget(&classTemplateSpecializations);
@@ -401,51 +419,55 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             reader.SetFunctionRequestTarget(&functionRequests);
             reader.SetConversionsTarget(&conversions);
             reader.GetBinaryStreamReader().GetStream().Seek(module->SymbolTablePos(), util::Origin::seekSet);
-            reader.SetRootModule(rootModule);
+            reader.SetRootModule(context->RootModule());
             module->GetSymbolTable().Read(reader);
             module->ReadFunctionTraceData(reader.GetBinaryStreamReader());
             module->ReadClassTypeFlagMap(reader);
             for (Module* referencedModule : module->ReferencedModules())
             {
-                module->GetSymbolTable().Import(referencedModule->GetSymbolTable());
-                rootModule->ImportTraceData(referencedModule);
-                rootModule->ImportResourceScriptFilePaths(referencedModule);
-                rootModule->ImportClassTypeFlagMap(referencedModule->GetClassTypeFlagMap());
+                module->GetSymbolTable().Import(referencedModule->GetSymbolTable(), context);
+                context->RootModule()->ImportTraceData(referencedModule);
+                context->RootModule()->ImportResourceScriptFilePaths(referencedModule);
+                context->RootModule()->ImportClassTypeFlagMap(referencedModule->GetClassTypeFlagMap());
             }
             module->GetSymbolTable().FinishRead(arrayTypes, derivedTypes, classTemplateSpecializations, typeAndConceptRequests, functionRequests, conversions);
             module->SetImmutable();
 #ifdef MODULE_CHECKING
             module->Check();
 #endif
-            if (rootModule == module) continue;
-            rootModule->GetSymbolTable().Import(module->GetSymbolTable());
-            rootModule->ImportTraceData(module);
-            rootModule->ImportResourceScriptFilePaths(module);
-            rootModule->ImportClassTypeFlagMap(module->GetClassTypeFlagMap());
+            if (context->RootModule() == module) continue;
+            context->RootModule()->GetSymbolTable().Import(module->GetSymbolTable(), context);
+            context->RootModule()->ImportTraceData(module);
+            context->RootModule()->ImportResourceScriptFilePaths(module);
+            context->RootModule()->ImportClassTypeFlagMap(module->GetClassTypeFlagMap());
         }
         else
         {
 #ifdef MODULE_READING_DEBUG
-            LogMessage(rootModule->LogStreamId(), "FinishReads: " + ToUtf8(module->Name()) + " in cache", rootModule->DebugLogIndent());
+            LogMessage(context->RootModule()->LogStreamId(), "FinishReads: " + ToUtf8(module->Name()) + " in cache", context->RootModule()->DebugLogIndent());
 #endif 
-            rootModule->GetSymbolTable().Import(module->GetSymbolTable());
-            rootModule->ImportTraceData(module);
-            rootModule->ImportResourceScriptFilePaths(module);
-            rootModule->ImportClassTypeFlagMap(module->GetClassTypeFlagMap());
+            context->RootModule()->GetSymbolTable().Import(module->GetSymbolTable(), context);
+            context->RootModule()->ImportTraceData(module);
+            context->RootModule()->ImportResourceScriptFilePaths(module);
+            context->RootModule()->ImportClassTypeFlagMap(module->GetClassTypeFlagMap());
         }
     }
 #ifdef MODULE_READING_DEBUG
-    rootModule->DecDebugLogIndent();
-    LogMessage(rootModule->LogStreamId(), "FinishReads: end " + ToUtf8(rootModule->Name()), rootModule->DebugLogIndent());
+    context->RootModule()->DecDebugLogIndent();
+    LogMessage(context->RootModule()->LogStreamId(), "FinishReads: end " + ToUtf8(context->RootModule()->Name()), context->RootModule()->DebugLogIndent());
 #endif 
 }
 
-void Import(cmajor::ast::Target target, Module* rootModule, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
-    std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
+void Import(cmajor::ast::Target target, Context* context, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, 
+    std::vector<Module*>& modules, std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
+    for (const auto& md : moduleDependencyMap)
+    {
+        md.second->Check();
+    }
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "Import: begin " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
-    rootModule->IncDebugLogIndent();
+    LogMessage(context->RootModule()->LogStreamId(), "Import: begin " + ToUtf8(module->Name()), context->RootModule()->DebugLogIndent());
+    context->RootModule()->IncDebugLogIndent();
 #endif 
     for (const std::string& reference : references)
     {
@@ -460,7 +482,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             std::filesystem::path mfn = std::filesystem::path(reference).filename();
             std::filesystem::path mfp;
             std::string searchedDirectories;
-            if (!rootModule->IsSystemModule())
+            if (!context->RootModule()->IsSystemModule())
             {
                 cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
                 if (GetBackEnd() == cmajor::symbols::BackEnd::systemx)
@@ -520,18 +542,19 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                     referencedModule->ResetFlag(ModuleFlags::readFromModuleFile);
                     referencedModule = ResetCachedModule(moduleFilePath);
                 }
-                rootModule->AllRefModules().push_back(referencedModule);
+                context->RootModule()->AllRefModules().push_back(referencedModule);
                 readMap[moduleFilePath] = referencedModule;
                 importSet.insert(moduleFilePath);
                 SymbolReader reader(moduleFilePath);
+                reader.SetContext(context);
                 // TODO reader.GetAstReader().SetModuleMaps(rootModule->Id(), referencedModule->GetModuleNameTable(), rootModule->GetModuleIdMap());
-                referencedModule->ReadHeader(target, reader, rootModule, importSet, modules, moduleDependencyMap, readMap, first);
+                referencedModule->ReadHeader(target, reader, context, importSet, modules, moduleDependencyMap, readMap, first);
                 module->AddReferencedModule(referencedModule);
-                if (module != rootModule)
+                if (module != context->RootModule())
                 {
                     module->RegisterFileTable(&referencedModule->GetFileTable(), referencedModule);
                 }
-                Import(target, rootModule, module, referencedModule->ReferenceFilePaths(), importSet, modules, moduleDependencyMap, readMap, first);
+                Import(target, context, module, referencedModule->ReferenceFilePaths(), importSet, modules, moduleDependencyMap, readMap, first);
             }
         }
         else
@@ -541,7 +564,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             std::filesystem::path mfn = std::filesystem::path(reference).filename();
             std::filesystem::path mfp;
             std::string searchedDirectories;
-            if (!rootModule->IsSystemModule())
+            if (!context->RootModule()->IsSystemModule())
             {
                 cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
                 if (GetBackEnd() == cmajor::symbols::BackEnd::systemx)
@@ -594,14 +617,14 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             if (it != readMap.cend())
             {
                 Module* referencedModule = it->second;
-                if (rootModule->IsSystemModule() ||
+                if (context->RootModule()->IsSystemModule() ||
                     ((target == cmajor::ast::Target::program || target == cmajor::ast::Target::library || target == cmajor::ast::Target::unitTest) &&
                         referencedModule->Name() != U"System" ||
                         (target == cmajor::ast::Target::winguiapp || target == cmajor::ast::Target::winapp || target == cmajor::ast::Target::winlib) &&
                         referencedModule->Name() != U"System.Windows"))
                 {
                     module->AddReferencedModule(referencedModule);
-                    if (module != rootModule)
+                    if (module != context->RootModule())
                     {
                         module->RegisterFileTable(&referencedModule->GetFileTable(), referencedModule);
                     }
@@ -612,7 +635,8 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             }
             else
             {
-                throw std::runtime_error("module file path '" + moduleFilePath + "' not found from module read map for module '" + util::ToUtf8(rootModule->Name()) + "'");
+                throw std::runtime_error("module file path '" + moduleFilePath + "' not found from module read map for module '" + 
+                    util::ToUtf8(context->RootModule()->Name()) + "'");
             }
         }
     }
@@ -620,18 +644,22 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
     rootModule->DecDebugLogIndent();
     LogMessage(rootModule->LogStreamId(), "Import: end " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
 #endif 
+    for (const auto& md : moduleDependencyMap)
+    {
+        md.second->Check();
+    }
 }
 
 void ImportModulesWithReferences(cmajor::ast::Target target,
-    Module* rootModule, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
+    Context* context, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
     std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: begin " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
-    rootModule->IncDebugLogIndent();
+    LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: begin " + ToUtf8(module->Name()), context->RootModule()->DebugLogIndent());
+    context->RootModule()->IncDebugLogIndent();
 #endif 
     std::vector<std::string> allReferences = references;
-    if (!rootModule->IsSystemModule() && !GetGlobalFlag(GlobalFlags::profile))
+    if (!context->RootModule()->IsSystemModule() && !GetGlobalFlag(GlobalFlags::profile))
     {
         cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
         if (GetBackEnd() == cmajor::symbols::BackEnd::systemx)
@@ -667,29 +695,29 @@ void ImportModulesWithReferences(cmajor::ast::Target target,
             }
         }
     }
-    Import(target, rootModule, module, allReferences, importSet, modules, moduleDependencyMap, readMap, first);
+    Import(target, context, module, allReferences, importSet, modules, moduleDependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
     rootModule->DecDebugLogIndent();
     LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: end " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
 #endif 
 }
 
-void ImportModules(cmajor::ast::Target target, Module* rootModule, Module* module, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
+void ImportModules(cmajor::ast::Target target, Context* context, Module* module, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
     std::unordered_map<std::string, ModuleDependency*>& dependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "ImportModules: begin " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
-    rootModule->IncDebugLogIndent();
+    LogMessage(context->RootModule()->LogStreamId(), "ImportModules: begin " + util::ToUtf8(module->Name()), context->RootModule()->DebugLogIndent());
+    context->RootModule()->IncDebugLogIndent();
 #endif 
-    ImportModulesWithReferences(target, rootModule, module, module->ReferenceFilePaths(), importSet, modules, dependencyMap, readMap, first);
+    ImportModulesWithReferences(target, context, module, module->ReferenceFilePaths(), importSet, modules, dependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
-    rootModule->DecDebugLogIndent();
-    LogMessage(rootModule->LogStreamId(), "ImportModules: end " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
+    context->RootModule()->DecDebugLogIndent();
+    LogMessage(context->RootModule()->LogStreamId(), "ImportModules: end " + util::ToUtf8(module->Name()), context->RootModule()->DebugLogIndent());
 #endif 
 }
 
 Module::Module() :
-    format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::random_uuid()),
+    context(nullptr), format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::random_uuid()),
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
     symbolTable(nullptr), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
     systemCoreModule(nullptr), debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), 
@@ -697,14 +725,14 @@ Module::Module() :
 {
 }
 
-Module::Module(const std::string& filePath) : Module(filePath, false)
+Module::Module(Context* context_, const std::string& filePath) : Module(context_, filePath, false)
 {
 }
 
-Module::Module(const std::string& filePath, bool readRoot) :
-    format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::random_uuid()),
+Module::Module(Context* context_, const std::string& filePath, bool readRoot) :
+    context(context_), format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::random_uuid()),
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
-    symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
+    symbolTable(new SymbolTable(this, context)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
     systemCoreModule(nullptr), debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), 
     config(cmajor::ast::Config::debug), functionIndex(this), lexer(nullptr)
 {
@@ -732,19 +760,27 @@ Module::Module(const std::string& filePath, bool readRoot) :
     config = static_cast<cmajor::ast::Config>(reader.GetBinaryStreamReader().ReadSByte());
     std::unordered_set<std::string> importSet;
     Module* rootModule = this;
+    if (!context->RootModule())
+    {
+        context->SetRootModule(rootModule);
+    }
+/*
+    context.SetRootModule(rootModule);
     if (!HasRootModuleForCurrentThread())
     {
         rootModule->SetRootModule();
         SetRootModuleForCurrentThread(rootModule);
     }
+*/
     std::vector<Module*> modules;
     std::unordered_map<std::string, ModuleDependency*> moduleDependencyMap;
     std::unordered_map<std::string, Module*> readMap;
     if (SystemModuleSet::Instance().IsSystemModule(name)) SetSystemModule();
     SymbolReader reader2(filePath);
+    reader2.SetContext(context);
     // TODO reader2.GetAstReader().SetModuleMaps(rootModule->Id(), this->GetModuleNameTable(), rootModule->GetModuleIdMap());
     bool first = true;
-    ReadHeader(cmajor::ast::Target::library, reader2, rootModule, importSet, modules, moduleDependencyMap, readMap, first);
+    ReadHeader(cmajor::ast::Target::library, reader2, context, importSet, modules, moduleDependencyMap, readMap, first);
     moduleDependencyMap[originalFilePath] = &moduleDependency;
     std::unordered_map<Module*, ModuleDependency*> dependencyMap;
     for (const auto& p : moduleDependencyMap)
@@ -797,14 +833,14 @@ Module::Module(const std::string& filePath, bool readRoot) :
             libraryFilePaths.push_back(module->LibraryFilePath());
         }
     }
-    FinishReads(rootModule, finishReadOrder, true, readRoot);
+    FinishReads(context, finishReadOrder, true, readRoot);
     MakeFilePathFileIndexMap();
 }
 
-Module::Module(const std::u32string& name_, const std::string& filePath_, cmajor::ast::Target target) :
-    format(currentModuleFormat), flags(ModuleFlags::none), name(name_), id(util::random_uuid()),
+Module::Module(Context* context_, const std::u32string& name_, const std::string& filePath_, cmajor::ast::Target target) :
+    context(context_), format(currentModuleFormat), flags(ModuleFlags::none), name(name_), id(util::random_uuid()),
     originalFilePath(filePath_), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
-    symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), debugLogIndent(0),
+    symbolTable(new SymbolTable(this, context)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), debugLogIndent(0),
     index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this), lexer(nullptr)
 {
     if (SystemModuleSet::Instance().IsSystemModule(name))
@@ -847,8 +883,9 @@ void Module::AddResourceScriptFilePath(const std::string& resourceScriptFilePath
 }
 
 void Module::PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
-    cmajor::ast::CompileUnitNode* rootCompileUnit)
+    cmajor::ast::CompileUnitNode* rootCompileUnit, Context* context)
 {
+    this->context = context;
     MapModule(this);
     switch (GetBackEnd())
     {
@@ -909,7 +946,7 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     symbolTable->GlobalNs().SetFileIndex(rootFileIndex);
     if (name == U"System.Core")
     {
-        InitCoreSymbolTable(*symbolTable, rootSpan, rootCompileUnit);
+        InitCoreSymbolTable(*symbolTable, rootSpan, rootCompileUnit, context);
     }
     std::unordered_set<std::string> importSet;
     Module* rootModule = this;
@@ -918,7 +955,7 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     std::unordered_map<std::string, Module*> readMap;
     std::vector<Module*> modules;
     bool first = true;
-    ImportModulesWithReferences(target, rootModule, rootModule, references, importSet, modules, moduleDependencyMap, readMap, first);
+    ImportModulesWithReferences(target, context, rootModule, references, importSet, modules, moduleDependencyMap, readMap, first);
     modules.push_back(this);
     moduleDependencyMap[originalFilePath] = &moduleDependency;
     std::unordered_map<Module*, ModuleDependency*> dependencyMap;
@@ -980,13 +1017,13 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
             libraryFilePaths.push_back(module->LibraryFilePath());
         }
     }
-    FinishReads(rootModule, finishReadOrder, false, false);
+    FinishReads(context, finishReadOrder, false, false);
     MakeFilePathFileIndexMap();
 }
 
 void Module::CreateSymbolTable()
 {
-    symbolTable.reset(new SymbolTable(this));
+    symbolTable.reset(new SymbolTable(this, context));
 }
 
 void Module::RegisterFileTable(FileTable* fileTable, Module* module)
@@ -1248,6 +1285,7 @@ void Module::WriteTraceData(const std::string& traceDataFilePath)
 
 void Module::AddReferencedModule(Module* referencedModule)
 {
+    std::lock_guard<std::recursive_mutex> lock(Lock());
     moduleDependency.AddReferencedModule(referencedModule);
     if (std::find(referencedModules.cbegin(), referencedModules.cend(), referencedModule) == referencedModules.cend())
     {
@@ -1255,7 +1293,7 @@ void Module::AddReferencedModule(Module* referencedModule)
     }
 }
 
-void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module* rootModule, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
+void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Context* context, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
     std::unordered_map<std::string, ModuleDependency*>& dependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
     if (headerRead)
@@ -1264,14 +1302,14 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         LogMessage(rootModule->LogStreamId(), "ReadHeader: cached begin " + ToUtf8(name), rootModule->DebugLogIndent());
         rootModule->IncDebugLogIndent();
 #endif 
-        rootModule->RegisterFileTable(&fileTable, this);
-        if (this != rootModule)
+        context->RootModule()->RegisterFileTable(&fileTable, this);
+        if (this != context->RootModule())
         {
             RegisterFileTable(&fileTable, this);
         }
         for (const std::string& compileUnitId : compileUnitIds)
         {
-            rootModule->allCompileUnitIds.insert(compileUnitId);
+            context->RootModule()->allCompileUnitIds.insert(compileUnitId);
         }
 #ifdef _WIN32
         int nres = resourceTable.Resources().size();
@@ -1284,9 +1322,9 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
 #ifdef RESOURCE_DEBUG
             LogMessage(rootModule->LogStreamId(), "ReadHeader: " + ToUtf8(name) + ": resource name=" + ToUtf8(resource.name) + ", file=" + resource.filePath);
 #endif 
-            if (!rootModule->globalResourceTable.Contains(resource.name))
+            if (!context->RootModule()->globalResourceTable.Contains(resource.name))
             {
-                rootModule->globalResourceTable.AddResource(resource);
+                context->RootModule()->globalResourceTable.AddResource(resource);
             }
         }
         int nrc = resourceScriptFilePaths.size();
@@ -1306,13 +1344,13 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         }
         for (const std::string& exportedFunction : exportedFunctions)
         {
-            rootModule->allExportedFunctions.push_back(exportedFunction);
+            context->RootModule()->allExportedFunctions.push_back(exportedFunction);
             for (const std::string& data : exportedData)
             {
-                rootModule->allExportedData.push_back(data);
+                context->RootModule()->allExportedData.push_back(data);
             }
         }
-        ImportModules(target, rootModule, this, importSet, modules, dependencyMap, readMap, first);
+        ImportModules(target, context, this, importSet, modules, dependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
         rootModule->DecDebugLogIndent();
         LogMessage(rootModule->LogStreamId(), "ReadHeader: cached end " + ToUtf8(name), rootModule->DebugLogIndent());
@@ -1346,8 +1384,8 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     MapModule(this);
     backend = static_cast<cmajor::ast::BackEnd>(reader.GetBinaryStreamReader().ReadSByte());
     config = static_cast<cmajor::ast::Config>(reader.GetBinaryStreamReader().ReadSByte());
-    rootModule->RegisterFileTable(&fileTable, this);
-    if (this != rootModule)
+    context->RootModule()->RegisterFileTable(&fileTable, this);
+    if (this != context->RootModule())
     {
         RegisterFileTable(&fileTable, this);
     }
@@ -1427,7 +1465,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     }
     for (const std::string& compileUnitId : compileUnitIds)
     {
-        rootModule->allCompileUnitIds.insert(compileUnitId);
+        context->RootModule()->allCompileUnitIds.insert(compileUnitId);
     }
 #ifdef _WIN32
     resourceTable.Read(reader.GetBinaryStreamReader());
@@ -1441,9 +1479,9 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
 #ifdef RESOURCE_DEBUG
         LogMessage(rootModule->LogStreamId(), "ReadHeader: " + ToUtf8(name) + ": resource name=" + ToUtf8(resource.name) + ", file=" + resource.filePath);
 #endif 
-        if (!rootModule->globalResourceTable.Contains(resource.name))
+        if (!context->RootModule()->globalResourceTable.Contains(resource.name))
         {
-            rootModule->globalResourceTable.AddResource(resource);
+            context->RootModule()->globalResourceTable.AddResource(resource);
         }
     }
     int nrc = reader.GetBinaryStreamReader().ReadInt();
@@ -1465,7 +1503,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     }
     for (const std::string& exportedFunction : exportedFunctions)
     {
-        rootModule->allExportedFunctions.push_back(exportedFunction);
+        context->RootModule()->allExportedFunctions.push_back(exportedFunction);
     }
     exportedData.clear();
     uint32_t edn = reader.GetBinaryStreamReader().ReadULEB128UInt();
@@ -1475,11 +1513,11 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     }
     for (const std::string& data : exportedData)
     {
-        rootModule->allExportedData.push_back(data);
+        context->RootModule()->allExportedData.push_back(data);
     }
     CheckUpToDate();
     symbolTablePos = reader.GetBinaryStreamReader().GetStream().Tell();
-    ImportModules(target, rootModule, this, importSet, modules, dependencyMap, readMap, first);
+    ImportModules(target, context, this, importSet, modules, dependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
     rootModule->DecDebugLogIndent();
     LogMessage(rootModule->LogStreamId(), "ReadHeader: read end " + ToUtf8(name), rootModule->DebugLogIndent());
@@ -1508,7 +1546,7 @@ void Module::AddExportedData(const std::string& data)
     exportedData.push_back(data);
 }
 
-void Module::Dump()
+void Module::Dump(Context* context)
 {
     util::CodeFormatter formatter(std::cout);
     formatter.WriteLine("========================");
@@ -1543,7 +1581,7 @@ void Module::Dump()
     formatter.WriteLine(util::ToUtf8(Name()));
     moduleDependency.Dump(formatter);
     formatter.DecIndent();
-    SymbolCollector collector;
+    SymbolCollector collector(context);
     symbolTable->GlobalNs().Accept(&collector);
     collector.SortByFullName();
     if (!collector.BasicTypes().empty())
@@ -1553,7 +1591,7 @@ void Module::Dump()
         for (BasicTypeSymbol* basicType : collector.BasicTypes())
         {
             formatter.WriteLine();
-            basicType->Dump(formatter);
+            basicType->Dump(formatter, context);
         }
     }
     if (!collector.Classes().empty())
@@ -1563,7 +1601,7 @@ void Module::Dump()
         for (ClassTypeSymbol* class_ : collector.Classes())
         {
             formatter.WriteLine();
-            class_->Dump(formatter);
+            class_->Dump(formatter, context);
         }
     }
     if (!collector.Interfaces().empty())
@@ -1573,7 +1611,7 @@ void Module::Dump()
         for (InterfaceTypeSymbol* interface : collector.Interfaces())
         {
             formatter.WriteLine();
-            interface->Dump(formatter);
+            interface->Dump(formatter, context);
         }
     }
     if (!collector.Functions().empty())
@@ -1583,7 +1621,7 @@ void Module::Dump()
         for (FunctionSymbol* function : collector.Functions())
         {
             formatter.WriteLine();
-            function->Dump(formatter);
+            function->Dump(formatter, context);
         }
     }
     if (!collector.AliasTypes().empty())
@@ -1593,7 +1631,7 @@ void Module::Dump()
         for (AliasTypeSymbol* aliasType : collector.AliasTypes())
         {
             formatter.WriteLine();
-            aliasType->Dump(formatter);
+            aliasType->Dump(formatter, context);
         }
     }
     if (!collector.Concepts().empty())
@@ -1603,7 +1641,7 @@ void Module::Dump()
         for (ConceptSymbol* concept_ : collector.Concepts())
         {
             formatter.WriteLine();
-            concept_->Dump(formatter);
+            concept_->Dump(formatter, context);
         }
     }
     if (!collector.Delegates().empty())
@@ -1613,7 +1651,7 @@ void Module::Dump()
         for (DelegateTypeSymbol* delegate_ : collector.Delegates())
         {
             formatter.WriteLine();
-            delegate_->Dump(formatter);
+            delegate_->Dump(formatter, context);
         }
     }
     if (!collector.ClassDelegates().empty())
@@ -1623,7 +1661,7 @@ void Module::Dump()
         for (ClassDelegateTypeSymbol* classDelegate : collector.ClassDelegates())
         {
             formatter.WriteLine();
-            classDelegate->Dump(formatter);
+            classDelegate->Dump(formatter, context);
         }
     }
     if (!collector.Constants().empty())
@@ -1633,7 +1671,7 @@ void Module::Dump()
         for (ConstantSymbol* constant : collector.Constants())
         {
             formatter.WriteLine();
-            constant->Dump(formatter);
+            constant->Dump(formatter, context);
         }
     }
     if (!collector.EnumeratedTypes().empty())
@@ -1643,7 +1681,7 @@ void Module::Dump()
         for (EnumTypeSymbol* enumeratedType : collector.EnumeratedTypes())
         {
             formatter.WriteLine();
-            enumeratedType->Dump(formatter);
+            enumeratedType->Dump(formatter, context);
         }
     }
 }
@@ -2177,7 +2215,7 @@ int64_t Module::MakeFunctionId(const std::string& fullFunctionName, const std::s
     return functionTraceInfo->FunctionId();
 }
 
-thread_local Module* rootModule = nullptr;
+// thread_local Module* rootModule = nullptr;
 
 std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
 {
@@ -2185,14 +2223,11 @@ std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
     {
         return std::string();
     }
-    Module* module = rootModule;
-    if (!moduleId.is_nil())
+    Module* module = nullptr;
+    Module* m = GetModuleById(moduleId);
+    if (m)
     {
-        Module* m = GetModuleById(moduleId);
-        if (m)
-        {
-            module = m;
-        }
+        module = m;
     }
     if (module)
     {
@@ -2209,6 +2244,7 @@ int GetLineNumber(const soul::ast::FullSpan& fullSpan)
 {
     Module* module = GetModuleById(fullSpan.moduleId);
     if (!module) return -1;
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     soul::ast::LineColLen lineColLen = module->GetLineColLen(fullSpan.span, fullSpan.fileIndex);
     if (!lineColLen.IsValid()) return -1;
     return lineColLen.line;
@@ -2218,10 +2254,12 @@ soul::ast::LineColLen GetLineColLen(const soul::ast::FullSpan& fullSpan)
 {
     Module* module = GetModuleById(fullSpan.moduleId);
     if (!module) return soul::ast::LineColLen();
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     soul::ast::LineColLen lineColLen = module->GetLineColLen(fullSpan.span, fullSpan.fileIndex);
     return lineColLen;
 }
 
+/*
 bool HasRootModuleForCurrentThread()
 {
     return rootModule != nullptr;
@@ -2240,6 +2278,7 @@ void SetRootModuleForCurrentThread(Module* rootModule_)
 {
     rootModule = rootModule_;
 }
+*/
 
 class SystemModuleVersionTagVerifier : public cmajor::ast::ModuleVersionTagVerifier
 {

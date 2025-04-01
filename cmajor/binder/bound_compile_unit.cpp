@@ -28,7 +28,8 @@ public:
     cmajor::symbols::ConversionType GetConversionType() const override { return conversionType; }
     uint8_t ConversionDistance() const override { return conversionDistance; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     const char* ClassName() const override { return "ClassTypeConversion"; }
 private:
     cmajor::symbols::ConversionType conversionType;
@@ -47,47 +48,50 @@ ClassTypeConversion::ClassTypeConversion(const std::u32string& name_, cmajor::sy
     SetConversionTargetType(targetType);
 }
 
-void ClassTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void ClassTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     void* value = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateBitCast(value, targetType->IrType(emitter)));
+    emitter.Stack().Push(emitter.CreateBitCast(value, targetType->IrType(emitter, context)));
 }
 
 class NullPtrToPtrConversion : public cmajor::symbols::FunctionSymbol
 {
 public:
-    NullPtrToPtrConversion(cmajor::symbols::TypeSymbol* nullPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_);
+    NullPtrToPtrConversion(cmajor::symbols::TypeSymbol* nullPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_, cmajor::symbols::Context* context);
     cmajor::symbols::ConversionType GetConversionType() const override { return cmajor::symbols::ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 1; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
-    std::unique_ptr<cmajor::symbols::Value> ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value) const override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
+    std::unique_ptr<cmajor::symbols::Value> ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value, cmajor::symbols::Context* context) const override;
     const char* ClassName() const override { return "NullPtrToPtrConversion"; }
 private:
     cmajor::symbols::TypeSymbol* nullPtrType;
     cmajor::symbols::TypeSymbol* targetPointerType;
 };
 
-NullPtrToPtrConversion::NullPtrToPtrConversion(cmajor::symbols::TypeSymbol* nullPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_) :
+NullPtrToPtrConversion::NullPtrToPtrConversion(cmajor::symbols::TypeSymbol* nullPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(soul::ast::Span(), U"nullptr2ptr"), nullPtrType(nullPtrType_), targetPointerType(targetPointerType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
-    SetConversionSourceType(nullPtrType->PlainType());
-    SetConversionTargetType(targetPointerType->PlainType());
+    SetConversionSourceType(nullPtrType->PlainType(context));
+    SetConversionTargetType(targetPointerType->PlainType(context));
 
 }
 
-void NullPtrToPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void NullPtrToPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     void* value = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateBitCast(value, targetPointerType->IrType(emitter)));
+    emitter.Stack().Push(emitter.CreateBitCast(value, targetPointerType->IrType(emitter, context)));
 }
 
-std::unique_ptr<cmajor::symbols::Value> NullPtrToPtrConversion::ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value) const
+std::unique_ptr<cmajor::symbols::Value> NullPtrToPtrConversion::ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value, cmajor::symbols::Context* context) const
 {
-    cmajor::symbols::TypeSymbol* type = value->GetType(&nullPtrType->GetModule()->GetSymbolTable());
+    cmajor::symbols::TypeSymbol* type = value->GetType(&nullPtrType->GetModule()->GetSymbolTable(), context);
     if (type->IsPointerType())
     {
         return std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::PointerValue(value->GetSpan(), type, nullptr));
@@ -101,167 +105,179 @@ std::unique_ptr<cmajor::symbols::Value> NullPtrToPtrConversion::ConvertValue(con
 class VoidPtrToPtrConversion : public cmajor::symbols::FunctionSymbol
 {
 public:
-    VoidPtrToPtrConversion(cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_);
+    VoidPtrToPtrConversion(cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_, cmajor::symbols::Context* context);
     cmajor::symbols::ConversionType GetConversionType() const override { return cmajor::symbols::ConversionType::explicit_; }
     uint8_t ConversionDistance() const override { return 255; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     const char* ClassName() const override { return "VoidPtrToPtrConversion"; }
 private:
     cmajor::symbols::TypeSymbol* voidPtrType;
     cmajor::symbols::TypeSymbol* targetPointerType;
 };
 
-VoidPtrToPtrConversion::VoidPtrToPtrConversion(cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_) :
+VoidPtrToPtrConversion::VoidPtrToPtrConversion(cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::TypeSymbol* targetPointerType_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(soul::ast::Span(), U"voidPtr2ptr"), voidPtrType(voidPtrType_), targetPointerType(targetPointerType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
-    SetConversionSourceType(voidPtrType->PlainType());
-    SetConversionTargetType(targetPointerType->PlainType());
+    SetConversionSourceType(voidPtrType->PlainType(context));
+    SetConversionTargetType(targetPointerType->PlainType(context));
 }
 
-void VoidPtrToPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void VoidPtrToPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     void* value = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateBitCast(value, targetPointerType->IrType(emitter)));
+    emitter.Stack().Push(emitter.CreateBitCast(value, targetPointerType->IrType(emitter, context)));
 }
 
 class PtrToVoidPtrConversion : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PtrToVoidPtrConversion(cmajor::symbols::TypeSymbol* sourcePtrType_, cmajor::symbols::TypeSymbol* voidPtrType_);
+    PtrToVoidPtrConversion(cmajor::symbols::TypeSymbol* sourcePtrType_, cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::Context* context);
     cmajor::symbols::ConversionType GetConversionType() const override { return cmajor::symbols::ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 10; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     const char* ClassName() const override { return "PtrToVoidPtrConversion"; }
 private:
     cmajor::symbols::TypeSymbol* sourcePtrType;
     cmajor::symbols::TypeSymbol* voidPtrType;
 };
 
-PtrToVoidPtrConversion::PtrToVoidPtrConversion(cmajor::symbols::TypeSymbol* sourcePtrType_, cmajor::symbols::TypeSymbol* voidPtrType_) :
+PtrToVoidPtrConversion::PtrToVoidPtrConversion(cmajor::symbols::TypeSymbol* sourcePtrType_, cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(soul::ast::Span(), U"ptr2voidPtr"), sourcePtrType(sourcePtrType_), voidPtrType(voidPtrType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
-    SetConversionSourceType(sourcePtrType->PlainType());
-    SetConversionTargetType(voidPtrType->PlainType());
+    SetConversionSourceType(sourcePtrType->PlainType(context));
+    SetConversionTargetType(voidPtrType->PlainType(context));
 }
 
-void PtrToVoidPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PtrToVoidPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     void* value = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateBitCast(value, voidPtrType->IrType(emitter)));
+    emitter.Stack().Push(emitter.CreateBitCast(value, voidPtrType->IrType(emitter, context)));
 }
 
 class PtrToULongConversion : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PtrToULongConversion(cmajor::symbols::TypeSymbol* ptrType_, cmajor::symbols::TypeSymbol* ulongType_);
+    PtrToULongConversion(cmajor::symbols::TypeSymbol* ptrType_, cmajor::symbols::TypeSymbol* ulongType_, cmajor::symbols::Context* context);
     cmajor::symbols::ConversionType GetConversionType() const override { return cmajor::symbols::ConversionType::explicit_; }
     uint8_t ConversionDistance() const override { return 255; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     const char* ClassName() const override { return "PtrToULongConversion"; }
 private:
     cmajor::symbols::TypeSymbol* ptrType;
     cmajor::symbols::TypeSymbol* ulongType;
 };
 
-PtrToULongConversion::PtrToULongConversion(cmajor::symbols::TypeSymbol* ptrType_, cmajor::symbols::TypeSymbol* ulongType_) :
+PtrToULongConversion::PtrToULongConversion(cmajor::symbols::TypeSymbol* ptrType_, cmajor::symbols::TypeSymbol* ulongType_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(soul::ast::Span(), U"ptr2ulong"), ptrType(ptrType_), ulongType(ulongType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
-    SetConversionSourceType(ptrType->PlainType());
-    SetConversionTargetType(ulongType->PlainType());
+    SetConversionSourceType(ptrType->PlainType(context));
+    SetConversionTargetType(ulongType->PlainType(context));
 }
 
-void PtrToULongConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PtrToULongConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     void* value = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreatePtrToInt(value, ulongType->IrType(emitter)));
+    emitter.Stack().Push(emitter.CreatePtrToInt(value, ulongType->IrType(emitter, context)));
 }
 
 class ULongToVoidPtrConversion : public cmajor::symbols::FunctionSymbol
 {
 public:
-    ULongToVoidPtrConversion(cmajor::symbols::TypeSymbol* ulongType_, cmajor::symbols::TypeSymbol* voidPtrType_);
+    ULongToVoidPtrConversion(cmajor::symbols::TypeSymbol* ulongType_, cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::Context* context);
     cmajor::symbols::ConversionType GetConversionType() const override { return cmajor::symbols::ConversionType::explicit_; }
     uint8_t ConversionDistance() const override { return 255; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     const char* ClassName() const override { return "ULongToVoidPtrConversion"; }
 private:
     cmajor::symbols::TypeSymbol* ulongType;
     cmajor::symbols::TypeSymbol* voidPtrType;
 };
 
-ULongToVoidPtrConversion::ULongToVoidPtrConversion(cmajor::symbols::TypeSymbol* ulongType_, cmajor::symbols::TypeSymbol* voidPtrType_) :
+ULongToVoidPtrConversion::ULongToVoidPtrConversion(cmajor::symbols::TypeSymbol* ulongType_, cmajor::symbols::TypeSymbol* voidPtrType_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(soul::ast::Span(), U"ulong2voidPtr"), ulongType(ulongType_), voidPtrType(voidPtrType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
-    SetConversionSourceType(ulongType->PlainType());
-    SetConversionTargetType(voidPtrType->PlainType());
+    SetConversionSourceType(ulongType->PlainType(context));
+    SetConversionTargetType(voidPtrType->PlainType(context));
 }
 
-void ULongToVoidPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void ULongToVoidPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     void* value = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateIntToPtr(value, voidPtrType->IrType(emitter)));
+    emitter.Stack().Push(emitter.CreateIntToPtr(value, voidPtrType->IrType(emitter, context)));
 }
 
 class CharacterPointerLiteralToStringFunctionContainerConversion : public cmajor::symbols::FunctionSymbol
 {
 public:
-    CharacterPointerLiteralToStringFunctionContainerConversion(cmajor::symbols::TypeSymbol* characterPtrType_, cmajor::symbols::TypeSymbol* stringFunctionContainerType_);
+    CharacterPointerLiteralToStringFunctionContainerConversion(cmajor::symbols::TypeSymbol* characterPtrType_, cmajor::symbols::TypeSymbol* stringFunctionContainerType_, 
+        cmajor::symbols::Context* context);
     cmajor::symbols::ConversionType GetConversionType() const override { return cmajor::symbols::ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 1; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
-    std::unique_ptr<cmajor::symbols::Value> ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value) const override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
+    std::unique_ptr<cmajor::symbols::Value> ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value, cmajor::symbols::Context* context) const override;
     const char* ClassName() const override { return "CharacterPointerLiteralToStringFunctionContainerConversion"; }
 private:
     cmajor::symbols::TypeSymbol* characterPtrType;
     cmajor::symbols::TypeSymbol* stringFunctionContainerType;
 };
 
-CharacterPointerLiteralToStringFunctionContainerConversion::CharacterPointerLiteralToStringFunctionContainerConversion(cmajor::symbols::TypeSymbol* characterPtrType_, cmajor::symbols::TypeSymbol* stringFunctionContainerType_) :
+CharacterPointerLiteralToStringFunctionContainerConversion::CharacterPointerLiteralToStringFunctionContainerConversion(cmajor::symbols::TypeSymbol* characterPtrType_, 
+    cmajor::symbols::TypeSymbol* stringFunctionContainerType_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(soul::ast::Span(), U"charlit2stringFun"), characterPtrType(characterPtrType_), stringFunctionContainerType(stringFunctionContainerType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
-    SetConversionSourceType(characterPtrType->PlainType());
-    SetConversionTargetType(stringFunctionContainerType->PlainType());
+    SetConversionSourceType(characterPtrType->PlainType(context));
+    SetConversionTargetType(stringFunctionContainerType->PlainType(context));
 }
 
 void CharacterPointerLiteralToStringFunctionContainerConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, 
-    cmajor::ir::OperationFlags flags)
+    cmajor::ir::OperationFlags flags, cmajor::symbols::Context* context)
 {
     throw std::runtime_error(util::ToUtf8(Name()) + " function provides compile time calls only");
 }
 
-std::unique_ptr<cmajor::symbols::Value> CharacterPointerLiteralToStringFunctionContainerConversion::ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value) const
+std::unique_ptr<cmajor::symbols::Value> CharacterPointerLiteralToStringFunctionContainerConversion::ConvertValue(const std::unique_ptr<cmajor::symbols::Value>& value, 
+    cmajor::symbols::Context* context) const
 {
     return std::unique_ptr<cmajor::symbols::Value>();
 }
 
-BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast::CompileUnitNode* compileUnitNode_, AttributeBinder* attributeBinder_) :
-    BoundNode(soul::ast::Span(), BoundNodeType::boundCompileUnit), module(module_), symbolTable(module.GetSymbolTable()),
+BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Context* context_, cmajor::ast::CompileUnitNode* compileUnitNode_, AttributeBinder* attributeBinder_) :
+    BoundNode(soul::ast::Span(), BoundNodeType::boundCompileUnit), context(context_), symbolTable(context->RootModule()->GetSymbolTable()),
     compileUnitNode(compileUnitNode_), attributeBinder(attributeBinder_), currentNamespace(nullptr),
     hasGotos(false), operationRepository(*this), functionTemplateRepository(*this), classTemplateRepository(*this), inlineFunctionRepository(*this),
-    constExprFunctionRepository(*this), conversionTable(cmajor::symbols::ConversionTable::Owner::compileUnit, nullptr), bindingTypes(false), compileUnitIndex(-2), 
+    constExprFunctionRepository(*this), conversionTable(cmajor::symbols::ConversionTable::Owner::compileUnit, context, nullptr), bindingTypes(false), compileUnitIndex(-2), 
     immutable(false), nextExitEntryIndex(0),
     systemRuntimeUnwindInfoSymbol(nullptr), systemRuntimeAddCompileUnitFunctionSymbol(nullptr), pushCompileUnitUnwindInfoInitFunctionSymbol(nullptr),
-    initUnwindInfoDelegateType(nullptr), globalInitFunctionSymbol(nullptr), latestIdentifierNode(nullptr), fileIndex(-1), moduleId(module.Id()),
+    initUnwindInfoDelegateType(nullptr), globalInitFunctionSymbol(nullptr), latestIdentifierNode(nullptr), fileIndex(-1), moduleId(context->RootModule()->Id()),
     traceEntryTypeSymbol(nullptr), traceGuardTypeSymbol(nullptr), checkerTypeSymbol(nullptr), totalFunctions(0), functionsInlined(0)
 {
     if (compileUnitNode)
@@ -269,8 +285,8 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
         SetSpan(compileUnitNode->GetSpan());
         fileIndex = compileUnitNode->FileIndex();
         std::filesystem::path fileName = std::filesystem::path(compileUnitNode->FilePath()).filename();
-        std::filesystem::path directory = module.DirectoryPath();
-        std::filesystem::path objectFileDirectory = module.ObjectFileDirectoryPath();
+        std::filesystem::path directory = context->RootModule()->DirectoryPath();
+        std::filesystem::path objectFileDirectory = context->RootModule()->ObjectFileDirectoryPath();
         std::filesystem::path llfp = (directory / fileName).replace_extension(".ll");
         std::filesystem::path cppfp = (directory / fileName).replace_extension(".cpp");
         std::filesystem::path bcfp = (directory / fileName).replace_extension(".bc");
@@ -374,19 +390,20 @@ void BoundCompileUnit::AddBoundNode(std::unique_ptr<BoundNode>&& boundNode)
 cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, 
     cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, ArgumentMatch& argumentMatch, cmajor::ast::Node* node)
 {
-    cmajor::symbols::FunctionSymbol* conversion = symbolTable.GetConversion(sourceType, targetType);
+    cmajor::symbols::FunctionSymbol* conversion = symbolTable.GetConversion(sourceType, targetType, context);
     if (conversion && conversion->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol)
     {
         argumentMatch.preReferenceConversionFlags = cmajor::ir::OperationFlags::addr;
     }
     if (!conversion)
     {
-        conversion = conversionTable.GetConversion(sourceType, targetType);
+        conversion = conversionTable.GetConversion(sourceType, targetType, context);
         if (!conversion)
         {
             if (sourceType->IsNullPtrType() && targetType->IsPointerType() && !targetType->IsReferenceType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> nullPtrToPtrConversion(new NullPtrToPtrConversion(symbolTable.GetTypeByName(U"System.NullPtrType"), targetType));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> nullPtrToPtrConversion(new NullPtrToPtrConversion(symbolTable.GetTypeByName(U"System.NullPtrType"), 
+                    targetType, context));
                 nullPtrToPtrConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = nullPtrToPtrConversion.get();
                 conversionTable.AddConversion(conversion);
@@ -395,16 +412,18 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
             }
             else if (sourceType->IsVoidPtrType() && targetType->IsPointerType() && !targetType->IsReferenceType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> voidPtrToPtrConversion(new VoidPtrToPtrConversion(symbolTable.GetTypeByName(U"void")->AddPointer(), targetType));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> voidPtrToPtrConversion(new VoidPtrToPtrConversion(
+                    symbolTable.GetTypeByName(U"void")->AddPointer(context), targetType, context));
                 voidPtrToPtrConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = voidPtrToPtrConversion.get();
                 conversionTable.AddConversion(conversion);
                 conversionTable.AddGeneratedConversion(std::move(voidPtrToPtrConversion));
                 return conversion;
             }
-            else if (sourceType->PlainType()->IsPointerType() && targetType == symbolTable.GetTypeByName(U"ulong"))
+            else if (sourceType->PlainType(context)->IsPointerType() && targetType == symbolTable.GetTypeByName(U"ulong"))
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> ptrToULongConversion(new PtrToULongConversion(sourceType->PlainType(), symbolTable.GetTypeByName(U"ulong")));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> ptrToULongConversion(new PtrToULongConversion(sourceType->PlainType(context), 
+                    symbolTable.GetTypeByName(U"ulong"), context));
                 ptrToULongConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = ptrToULongConversion.get();
                 conversionTable.AddConversion(conversion);
@@ -413,7 +432,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
             }
             else if (sourceType == symbolTable.GetTypeByName(U"ulong") && targetType->IsVoidPtrType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> ulongToVoidPtrConversion(new ULongToVoidPtrConversion(sourceType, targetType));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> ulongToVoidPtrConversion(new ULongToVoidPtrConversion(sourceType, targetType, context));
                 ulongToVoidPtrConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = ulongToVoidPtrConversion.get();
                 conversionTable.AddConversion(conversion);
@@ -422,7 +441,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
             }
             else if (sourceType->IsDelegateType() && targetType->IsVoidPtrType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> dlgToVoidPtrConversion(new cmajor::symbols::DelegateToVoidPtrConversion(sourceType, targetType));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> dlgToVoidPtrConversion(new cmajor::symbols::DelegateToVoidPtrConversion(sourceType, targetType, context));
                 dlgToVoidPtrConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = dlgToVoidPtrConversion.get();
                 conversionTable.AddConversion(conversion);
@@ -431,26 +450,29 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
             }
             else if (sourceType->IsVoidPtrType() && targetType->IsDelegateType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> voidPtrToDlgConversion(new cmajor::symbols::VoidPtrToDelegateConversion(sourceType, targetType, symbolTable.GetTypeByName(U"ulong")));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> voidPtrToDlgConversion(new cmajor::symbols::VoidPtrToDelegateConversion(sourceType, targetType,
+                    symbolTable.GetTypeByName(U"ulong"), context));
                 voidPtrToDlgConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = voidPtrToDlgConversion.get();
                 conversionTable.AddConversion(conversion);
                 conversionTable.AddGeneratedConversion(std::move(voidPtrToDlgConversion));
                 return conversion;
             }
-            else if (sourceType->PlainType()->IsPointerType() && targetType->RemoveConst()->IsVoidPtrType())
+            else if (sourceType->PlainType(context)->IsPointerType() && targetType->RemoveConst(context)->IsVoidPtrType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> ptrToVoidPtrConversion(new PtrToVoidPtrConversion(sourceType->PlainType(), symbolTable.GetTypeByName(U"void")->AddPointer()));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> ptrToVoidPtrConversion(new PtrToVoidPtrConversion(sourceType->PlainType(context), 
+                    symbolTable.GetTypeByName(U"void")->AddPointer(context), context));
                 ptrToVoidPtrConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = ptrToVoidPtrConversion.get();
                 conversionTable.AddConversion(conversion);
                 conversionTable.AddGeneratedConversion(std::move(ptrToVoidPtrConversion));
                 return conversion;
             }
-            else if (sourceType->PlainType()->IsCharacterPointerType() && targetType->IsStringFunctionContainer())
+            else if (sourceType->PlainType(context)->IsCharacterPointerType() && targetType->IsStringFunctionContainer())
             {
                 std::unique_ptr<cmajor::symbols::FunctionSymbol> charPtr2StringFunctionsConversion(
-                    new CharacterPointerLiteralToStringFunctionContainerConversion(sourceType->PlainType(), symbolTable.GetTypeByName(U"@string_functions")));
+                    new CharacterPointerLiteralToStringFunctionContainerConversion(sourceType->PlainType(context), symbolTable.GetTypeByName(U"@string_functions"),
+                        context));
                 charPtr2StringFunctionsConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = charPtr2StringFunctionsConversion.get();
                 conversionTable.AddConversion(conversion);
@@ -471,10 +493,10 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                         if (targetType->IsReferenceType() && !sourceType->IsReferenceType())
                         {
                             argumentMatch.preReferenceConversionFlags = cmajor::ir::OperationFlags::addr;
-                            sourceType = sourceType->AddLvalueReference();
+                            sourceType = sourceType->AddLvalueReference(context);
                             if (targetType->IsConstType())
                             {
-                                sourceType = sourceType->AddConst();
+                                sourceType = sourceType->AddConst(context);
                             }
                         }
                         std::u32string conversionName = sourceType->FullName() + U"2" + targetType->FullName();
@@ -493,10 +515,10 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                             if (targetType->IsReferenceType() && !sourceType->IsReferenceType())
                             {
                                 argumentMatch.preReferenceConversionFlags = cmajor::ir::OperationFlags::addr;
-                                sourceType = sourceType->AddLvalueReference();
+                                sourceType = sourceType->AddLvalueReference(context);
                                 if (targetType->IsConstType())
                                 {
-                                    sourceType = sourceType->AddConst();
+                                    sourceType = sourceType->AddConst(context);
                                 }
                             }
                             std::u32string conversionName = sourceType->FullName() + U"2" + targetType->FullName();
@@ -611,7 +633,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                                 }
                             }
                             std::unique_ptr<cmajor::symbols::FunctionSymbol> functionToDelegateConversion(new cmajor::symbols::FunctionToDelegateConversion(
-                                sourceType, delegateTypeSymbol, viableFunction));
+                                sourceType, delegateTypeSymbol, viableFunction, context));
                             functionToDelegateConversion->SetParent(&symbolTable.GlobalNs());
                             conversion = functionToDelegateConversion.get();
                             // do not add entry to the conversion table
@@ -622,9 +644,9 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                 }
             }
             else if ((sourceType->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol || sourceType->GetSymbolType() == cmajor::symbols::SymbolType::memberExpressionTypeSymbol) &&
-                targetType->PlainType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol && currentFunction)
+                targetType->PlainType(context)->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol && currentFunction)
             {
-                cmajor::symbols::ClassDelegateTypeSymbol* classDelegateType = static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(targetType->PlainType());
+                cmajor::symbols::ClassDelegateTypeSymbol* classDelegateType = static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(targetType->PlainType(context));
                 cmajor::symbols::FunctionGroupSymbol* functionGroup = nullptr;
                 if (sourceType->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol)
                 {
@@ -667,7 +689,8 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                         if (found)
                         {
                             //LocalVariableSymbol* objectDelegatePairVariable = currentFunction->GetFunctionSymbol()->CreateTemporary(classDelegateType->ObjectDelegatePairType(), sourcePos);
-                            std::unique_ptr<cmajor::symbols::FunctionSymbol> memberFunctionToClassDelegateConversion(new cmajor::symbols::MemberFunctionToClassDelegateConversion(node->GetSpan(), sourceType, classDelegateType, viableFunction));
+                            std::unique_ptr<cmajor::symbols::FunctionSymbol> memberFunctionToClassDelegateConversion(
+                                new cmajor::symbols::MemberFunctionToClassDelegateConversion(node->GetSpan(), sourceType, classDelegateType, viableFunction, context));
                             memberFunctionToClassDelegateConversion->SetParent(&symbolTable.GlobalNs());
                             conversion = memberFunctionToClassDelegateConversion.get();
                             // do not add entry to the conversion table
@@ -677,12 +700,12 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                     }
                 }
             }
-            else if (targetType->PlainType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol && currentFunction)
+            else if (targetType->PlainType(context)->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol && currentFunction)
             {
-                cmajor::symbols::InterfaceTypeSymbol* targetInterfaceType = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(targetType->PlainType());
-                if (sourceType->PlainType()->IsClassTypeSymbol())
+                cmajor::symbols::InterfaceTypeSymbol* targetInterfaceType = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(targetType->PlainType(context));
+                if (sourceType->PlainType(context)->IsClassTypeSymbol())
                 {
-                    cmajor::symbols::ClassTypeSymbol* sourceClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(sourceType->PlainType());
+                    cmajor::symbols::ClassTypeSymbol* sourceClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(sourceType->PlainType(context));
                     int32_t n = sourceClassType->ImplementedInterfaces().size();
                     for (int32_t i = 0; i < n; ++i)
                     {
@@ -691,7 +714,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                         {
                             //LocalVariableSymbol* temporaryInterfaceObjectVar = currentFunction->GetFunctionSymbol()->CreateTemporary(targetInterfaceType, sourcePos);
                             std::unique_ptr<cmajor::symbols::FunctionSymbol> classToInterfaceConversion(
-                                new cmajor::symbols::ClassToInterfaceConversion(sourceClassType, targetInterfaceType, i, node->GetSpan()));
+                                new cmajor::symbols::ClassToInterfaceConversion(sourceClassType, targetInterfaceType, i, node->GetSpan(), context));
                             classToInterfaceConversion->SetParent(&symbolTable.GlobalNs());
                             classToInterfaceConversion->SetModule(&GetModule());
                             conversion = classToInterfaceConversion.get();
@@ -779,7 +802,7 @@ void BoundCompileUnit::GenerateCopyConstructorFor(cmajor::symbols::ClassTypeSymb
 void BoundCompileUnit::GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, 
     cmajor::ast::Node* node)
 {
-    operationRepository.GenerateCopyConstructorFor(interfaceTypeSymbol, containerScope, node);
+    operationRepository.GenerateCopyConstructorFor(interfaceTypeSymbol, containerScope, context, node);
 }
 
 int BoundCompileUnit::Install(const std::string& str)
@@ -861,7 +884,7 @@ void BoundCompileUnit::PopBindingTypes()
 
 void BoundCompileUnit::FinalizeBinding(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization)
 {
-    if (classTemplateSpecialization->GetModule() == &module && classTemplateSpecialization->StatementsNotBound())
+    if (classTemplateSpecialization->GetModule() == context->RootModule() && classTemplateSpecialization->StatementsNotBound())
     {
         classTemplateSpecialization->ResetStatementsNotBound();
         cmajor::symbols::FileScope* fileScope = classTemplateSpecialization->ReleaseFileScope();
@@ -957,7 +980,7 @@ void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Spa
     functionSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     functionSymbol->SetCDecl();
     functionSymbol->SetNothrow();
-    functionSymbol->ComputeMangledName();
+    functionSymbol->ComputeMangledName(context);
     functionSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
     symbolTable.SetFunctionIdFor(functionSymbol);
     initUnwindInfoFunctionSymbol.reset(functionSymbol);
@@ -965,7 +988,7 @@ void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Spa
 
 void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& span)
 {
-    if (module.IsCore()) return;
+    if (context->RootModule()->IsCore()) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin) return;
@@ -979,11 +1002,11 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
     functionSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     functionSymbol->SetCDecl();
     functionSymbol->SetNothrow();
-    functionSymbol->ComputeMangledName();
+    functionSymbol->ComputeMangledName(context);
     functionSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
     symbolTable.SetFunctionIdFor(functionSymbol);
     initCompileUnitFunctionSymbol.reset(functionSymbol);
-    cmajor::symbols::Symbol* symbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.PushCompileUnitUnwindInfoInit");
+    cmajor::symbols::Symbol* symbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.PushCompileUnitUnwindInfoInit", context);
     if (symbol)
     {
         if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupSymbol)
@@ -998,8 +1021,8 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
     }
     compileUnitUnwindInfoVarSymbol.reset(new cmajor::symbols::GlobalVariableSymbol(span, U"unwindInfoInit_" + util::ToUtf32(compileUnitId)));
     compileUnitUnwindInfoVarSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    compileUnitUnwindInfoVarSymbol->ComputeMangledName();
-    cmajor::symbols::Symbol* cuUnwindInfoTypeSymbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.CompileUnitUnwindInfo");
+    compileUnitUnwindInfoVarSymbol->ComputeMangledName(context);
+    cmajor::symbols::Symbol* cuUnwindInfoTypeSymbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.CompileUnitUnwindInfo", context);
     if (cuUnwindInfoTypeSymbol && cuUnwindInfoTypeSymbol->GetSymbolType() == cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(cuUnwindInfoTypeSymbol);
@@ -1016,7 +1039,7 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
     {
         throw std::runtime_error("internal error: 'System.Runtime.CompileUnitUnwindInfo' symbol not found");
     }
-    cmajor::symbols::Symbol* initUnwindInfoDelegateSymbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.InitCompileUnitUnwindInfoFunction");
+    cmajor::symbols::Symbol* initUnwindInfoDelegateSymbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.InitCompileUnitUnwindInfoFunction", context);
     if (initUnwindInfoDelegateSymbol && initUnwindInfoDelegateSymbol->IsTypeSymbol())
     {
         initUnwindInfoDelegateType = static_cast<cmajor::symbols::TypeSymbol*>(initUnwindInfoDelegateSymbol);
@@ -1041,10 +1064,10 @@ void BoundCompileUnit::GenerateGlobalInitializationFunction(const soul::ast::Spa
     globalInitFunctionSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     globalInitFunctionSymbol->SetCDecl();
     globalInitFunctionSymbol->SetNothrow();
-    globalInitFunctionSymbol->ComputeMangledName();
+    globalInitFunctionSymbol->ComputeMangledName(context);
     globalInitFunctionSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
     symbolTable.SetFunctionIdFor(globalInitFunctionSymbol);
-    symbolTable.GlobalNs().AddMember(globalInitFunctionSymbol);
+    symbolTable.GlobalNs().AddMember(globalInitFunctionSymbol, context);
     const std::set<std::string>& compileUnitIds = symbolTable.GetModule()->AllCompileUnitIds();
     for (const std::string& compileUnitId : compileUnitIds)
     {
@@ -1056,7 +1079,7 @@ void BoundCompileUnit::GenerateGlobalInitializationFunction(const soul::ast::Spa
         initFunctionSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
         initFunctionSymbol->SetCDecl();
         initFunctionSymbol->SetNothrow();
-        initFunctionSymbol->ComputeMangledName();
+        initFunctionSymbol->ComputeMangledName(context);
         initFunctionSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
         symbolTable.SetFunctionIdFor(initFunctionSymbol);
         allCompileUnitInitFunctionSymbols.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(initFunctionSymbol));

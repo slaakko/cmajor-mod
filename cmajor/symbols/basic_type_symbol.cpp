@@ -152,7 +152,7 @@ void BasicTypeSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void BasicTypeSymbol::Dump(util::CodeFormatter& formatter)
+void BasicTypeSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("typeid: " + util::ToString(TypeId()));
@@ -196,12 +196,12 @@ AutoTypeSymbol::AutoTypeSymbol(const soul::ast::Span& span_, const std::u32strin
 {
 }
 
-void* AutoTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* AutoTypeSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     throw Exception("'auto' type has no IR type", GetFullSpan());
 }
 
-void* AutoTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+void* AutoTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     throw Exception("'auto' type: cannot create IR value", GetFullSpan());
 }
@@ -221,7 +221,7 @@ Value* BoolTypeSymbol::MakeValue() const
     return new BoolValue(GetSpan(), false);
 }
 
-void* BoolTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* BoolTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForBool();
 }
@@ -240,7 +240,7 @@ Value* SByteTypeSymbol::MakeValue() const
     return new SByteValue(GetSpan(), 0);
 }
 
-void* SByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* SByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForSByte();
 }
@@ -259,7 +259,7 @@ Value* ByteTypeSymbol::MakeValue() const
     return new ByteValue(GetSpan(), 0);
 }
 
-void* ByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* ByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForByte();
 }
@@ -278,7 +278,7 @@ Value* ShortTypeSymbol::MakeValue() const
     return new ShortValue(GetSpan(), 0);
 }
 
-void* ShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* ShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForShort();
 }
@@ -297,7 +297,7 @@ Value* UShortTypeSymbol::MakeValue() const
     return new UShortValue(GetSpan(), 0);
 }
 
-void* UShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* UShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForUShort();
 }
@@ -316,7 +316,7 @@ Value* IntTypeSymbol::MakeValue() const
     return new IntValue(GetSpan(), 0);
 }
 
-void* IntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* IntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForInt();
 }
@@ -335,7 +335,7 @@ Value* UIntTypeSymbol::MakeValue() const
     return new UIntValue(GetSpan(), 0);
 }
 
-void* UIntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* UIntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForUInt();
 }
@@ -354,7 +354,7 @@ Value* LongTypeSymbol::MakeValue() const
     return new LongValue(GetSpan(), 0);
 }
 
-void* LongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* LongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForLong();
 }
@@ -373,7 +373,7 @@ Value* ULongTypeSymbol::MakeValue() const
     return new ULongValue(GetSpan(), 0);
 }
 
-void* ULongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* ULongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForULong();
 }
@@ -392,7 +392,7 @@ Value* FloatTypeSymbol::MakeValue() const
     return new FloatValue(GetSpan(), 0.0);
 }
 
-void* FloatTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* FloatTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForFloat();
 }
@@ -411,7 +411,7 @@ Value* DoubleTypeSymbol::MakeValue() const
     return new DoubleValue(GetSpan(), 0.0);
 }
 
-void* DoubleTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* DoubleTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForDouble();
 }
@@ -431,7 +431,7 @@ Value* CharTypeSymbol::MakeValue() const
     return new CharValue(GetSpan(), '\0');
 }
 
-void* CharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* CharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForChar();
 }
@@ -451,7 +451,7 @@ Value* WCharTypeSymbol::MakeValue() const
     return new WCharValue(GetSpan(), '\0');
 }
 
-void* WCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* WCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForWChar();
 }
@@ -471,7 +471,7 @@ Value* UCharTypeSymbol::MakeValue() const
     return new UCharValue(GetSpan(), '\0');
 }
 
-void* UCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* UCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForUChar();
 }
@@ -480,7 +480,7 @@ VoidTypeSymbol::VoidTypeSymbol(const soul::ast::Span& span_, const std::u32strin
 {
 }
 
-void* VoidTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* VoidTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateDITypeForVoid();
 }

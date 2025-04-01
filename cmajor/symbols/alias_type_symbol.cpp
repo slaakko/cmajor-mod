@@ -58,7 +58,7 @@ void AliasTypeSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void AliasTypeSymbol::Dump(util::CodeFormatter& formatter)
+void AliasTypeSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("full name: " + util::ToUtf8(FullNameWithSpecifiers()));
@@ -66,7 +66,7 @@ void AliasTypeSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("type: " + util::ToUtf8(type->FullName()));
 }
 
-std::string AliasTypeSymbol::Syntax() 
+std::string AliasTypeSymbol::Syntax(Context* context) 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
@@ -74,9 +74,9 @@ std::string AliasTypeSymbol::Syntax()
         syntax.append(1, ' ');
     }
     syntax.append("alias type ");
-    syntax.append(util::ToUtf8(GetType()->DocName()));
+    syntax.append(util::ToUtf8(GetType()->DocName(context)));
     syntax.append(1, ' ');
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     syntax.append(1, ';');
     return syntax;
 }

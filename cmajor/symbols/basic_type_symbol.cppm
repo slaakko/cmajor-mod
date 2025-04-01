@@ -19,13 +19,13 @@ class BasicTypeSymbol : public TypeSymbol
 {
 public:
     BasicTypeSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "basic_type"; }
+    std::string TypeString(Context* context) const override { return "basic_type"; }
     bool IsBasicTypeSymbol() const override { return true; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
     void Accept(SymbolCollector* collector) override;
-    void Dump(util::CodeFormatter& formatter) override;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
     FunctionSymbol* DefaultConstructor() { return defaultConstructor; }
     void SetDefaultConstructor(FunctionSymbol* defaultConstructor_) { defaultConstructor = defaultConstructor_; }
     FunctionSymbol* CopyConstructor() { return copyConstructor; }
@@ -58,20 +58,20 @@ class AutoTypeSymbol : public BasicTypeSymbol
 {
 public:
     AutoTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "auto"; }
+    std::string TypeString(Context* context) const override { return "auto"; }
     const char* ClassName() const override { return "AutoTypeSymbol"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override;
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override;
 };
 
 class BoolTypeSymbol : public BasicTypeSymbol
 {
 public:
     BoolTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "bool"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForBool(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForBool(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "bool"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForBool(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForBool(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsSwitchConditionType() const override { return true; }
     ValueType GetValueType() const override;
     Value* MakeValue() const override;
@@ -82,10 +82,10 @@ class SByteTypeSymbol : public BasicTypeSymbol
 {
 public:
     SByteTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "sbyte"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForSByte(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForSByte(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "sbyte"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForSByte(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForSByte(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
     ValueType GetValueType() const override;
@@ -97,10 +97,10 @@ class ByteTypeSymbol : public BasicTypeSymbol
 {
 public:
     ByteTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "byte"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForByte(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForByte(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "byte"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForByte(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForByte(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
@@ -113,10 +113,10 @@ class ShortTypeSymbol : public BasicTypeSymbol
 {
 public:
     ShortTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "short"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForShort(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForShort(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "short"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForShort(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForShort(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
     ValueType GetValueType() const override;
@@ -128,10 +128,10 @@ class UShortTypeSymbol : public BasicTypeSymbol
 {
 public:
     UShortTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "ushort"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForUShort(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForUShort(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "ushort"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForUShort(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForUShort(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
@@ -144,10 +144,10 @@ class IntTypeSymbol : public BasicTypeSymbol
 {
 public:
     IntTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "int"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForInt(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForInt(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "int"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForInt(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForInt(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
     ValueType GetValueType() const override;
@@ -159,10 +159,10 @@ class UIntTypeSymbol : public BasicTypeSymbol
 {
 public:
     UIntTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "uint"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForUInt(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForUInt(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "uint"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForUInt(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForUInt(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
@@ -175,10 +175,10 @@ class LongTypeSymbol : public BasicTypeSymbol
 {
 public:
     LongTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "long"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForLong(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForLong(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "long"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForLong(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForLong(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
     ValueType GetValueType() const override;
@@ -190,10 +190,10 @@ class ULongTypeSymbol : public BasicTypeSymbol
 {
 public:
     ULongTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "ulong"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForULong(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForULong(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "ulong"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForULong(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForULong(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsIntegralType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsSwitchConditionType() const override { return true; }
@@ -206,10 +206,10 @@ class FloatTypeSymbol : public BasicTypeSymbol
 {
 public:
     FloatTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "float"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForFloat(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForFloat(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "float"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForFloat(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForFloat(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsFloatingPointType() const override { return true; }
     ValueType GetValueType() const override;
     Value* MakeValue() const override;
@@ -220,10 +220,10 @@ class DoubleTypeSymbol : public BasicTypeSymbol
 {
 public:
     DoubleTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "double"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForDouble(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForDouble(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "double"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForDouble(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForDouble(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsFloatingPointType() const override { return true; }
     ValueType GetValueType() const override;
     Value* MakeValue() const override;
@@ -234,10 +234,10 @@ class CharTypeSymbol : public BasicTypeSymbol
 {
 public:
     CharTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "char"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForChar(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForChar(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "char"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForChar(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForChar(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsSwitchConditionType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsCharacterType() const override { return true; }
@@ -250,10 +250,10 @@ class WCharTypeSymbol : public BasicTypeSymbol
 {
 public:
     WCharTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "wchar"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForWChar(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForWChar(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "wchar"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForWChar(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForWChar(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsSwitchConditionType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsCharacterType() const override { return true; }
@@ -266,10 +266,10 @@ class UCharTypeSymbol : public BasicTypeSymbol
 {
 public:
     UCharTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "uchar"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForUChar(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForUChar(); }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "uchar"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForUChar(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.CreateDefaultIrValueForUChar(); }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsSwitchConditionType() const override { return true; }
     bool IsUnsignedType() const override { return true; }
     bool IsCharacterType() const override { return true; }
@@ -282,10 +282,10 @@ class VoidTypeSymbol : public BasicTypeSymbol
 {
 public:
     VoidTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "void"; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForVoid(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to create default value for void type"); return nullptr; }
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    std::string TypeString(Context* context) const override { return "void"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { return emitter.GetIrTypeForVoid(); }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { Assert(false, "tried to create default value for void type"); return nullptr; }
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsVoidType() const override { return true; }
     const char* ClassName() const override { return "VoidTypeSymbol"; }
 };

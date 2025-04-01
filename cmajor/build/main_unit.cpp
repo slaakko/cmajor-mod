@@ -17,14 +17,14 @@ import std.filesystem;
 namespace cmajor::build {
 
 
-void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths)
 {
     std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
     std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
     bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
     if (verbose)
     {
-        util::LogMessage(rootModule->LogStreamId(), "Generating program...");
+        util::LogMessage(context->RootModule()->LogStreamId(), "Generating program...");
     }
     std::filesystem::path bdp = project->ExecutableFilePath();
     bdp.remove_filename();
@@ -38,8 +38,8 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     }
     std::string command = clangxxPath;
     command.append(" -g");
-    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
-    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    std::string mainFilePath = std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
     {
         throw std::runtime_error("program has no main function");
@@ -129,15 +129,15 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     }
     command.append(" ").append(mainFilePath);
     command.append(" -std=c++20");
-    int n = rootModule->LibraryFilePaths().size();
+    int n = context->RootModule()->LibraryFilePaths().size();
     for (int i = 0; i < n; ++i)
     {
-        command.append(" ").append(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
+        command.append(" ").append(util::QuotedPath(context->RootModule()->LibraryFilePaths()[i]));
     }
-    int nr = rootModule->ResourceFilePaths().size();
+    int nr = context->RootModule()->ResourceFilePaths().size();
     for (int i = 0; i < nr; ++i)
     {
-        command.append(" ").append(util::QuotedPath(rootModule->ResourceFilePaths()[i]));
+        command.append(" ").append(util::QuotedPath(context->RootModule()->ResourceFilePaths()[i]));
     }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
@@ -180,9 +180,9 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     }
 }
 
-void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+void GenerateMainUnitSystemX(cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths)
 {
-    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
+    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
     mainCompileUnit.SetSynthesizedUnit();
     mainCompileUnit.SetProgramMainUnit();
     mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System")));
@@ -208,7 +208,7 @@ void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<st
     invokeSetupEnvironment->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"envp"));
     cmajor::ast::StatementNode* callSetEnvironmentStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeSetupEnvironment);
     tryBlock->AddStatement(callSetEnvironmentStatement);
-    cmajor::symbols::FunctionSymbol* userMain = rootModule->GetSymbolTable().MainFunctionSymbol();
+    cmajor::symbols::FunctionSymbol* userMain = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), userMain->GroupName()));
     if (!userMain->Parameters().empty())
     {
@@ -252,11 +252,11 @@ void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<st
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
-    std::lock_guard<std::recursive_mutex> lock(rootModule->Lock());
-    cmajor::symbols::SymbolCreatorVisitor symbolCreator(rootModule->GetSymbolTable());
+    std::lock_guard<std::recursive_mutex> lock(context->RootModule()->Lock());
+    cmajor::symbols::SymbolCreatorVisitor symbolCreator(context->RootModule()->GetSymbolTable(), context);
     mainCompileUnit.Accept(symbolCreator);
-    cmajor::binder::AttributeBinder attributeBinder(rootModule);
-    cmajor::binder::BoundCompileUnit boundMainCompileUnit(*rootModule, &mainCompileUnit, &attributeBinder);
+    cmajor::binder::AttributeBinder attributeBinder(context);
+    cmajor::binder::BoundCompileUnit boundMainCompileUnit(context, &mainCompileUnit, &attributeBinder);
     boundMainCompileUnit.PushBindingTypes();
     cmajor::binder::TypeBinder typeBinder(boundMainCompileUnit);
     mainCompileUnit.Accept(typeBinder);
@@ -276,14 +276,14 @@ void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<st
     objectFilePaths.push_back(mainObjectFilePath);
 }
 
-void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths)
 {
     std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
     std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
     bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
     if (verbose)
     {
-        util::LogMessage(rootModule->LogStreamId(), "Generating program...");
+        util::LogMessage(context->RootModule()->LogStreamId(), "Generating program...");
     }
     std::filesystem::path bdp = project->ExecutableFilePath();
     bdp.remove_filename();
@@ -299,8 +299,8 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
     std::string command = gxxPath;
     command.append(" -g");
     command.append(" -std=c++20");
-    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
-    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    std::string mainFilePath = std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
     {
         throw std::runtime_error("program has no main function");
@@ -389,16 +389,16 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
         formatter.WriteLine("}");
     }
     command.append(" ").append(mainFilePath);
-    int n = rootModule->LibraryFilePaths().size();
+    int n = context->RootModule()->LibraryFilePaths().size();
     for (int i = n - 1; i >= 0; --i)
     {
-        const std::string& libraryFilePath = rootModule->LibraryFilePaths()[i];
+        const std::string& libraryFilePath = context->RootModule()->LibraryFilePaths()[i];
         command.append(" ").append(util::QuotedPath(libraryFilePath));
     }
-    int nr = rootModule->ResourceFilePaths().size();
+    int nr = context->RootModule()->ResourceFilePaths().size();
     for (int i = 0; i < nr; ++i)
     {
-        command.append(" ").append(util::QuotedPath(rootModule->ResourceFilePaths()[i]));
+        command.append(" ").append(util::QuotedPath(context->RootModule()->ResourceFilePaths()[i]));
     }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
@@ -441,14 +441,14 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
     }
 }
 
-void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths)
 {
     std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
     std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
     bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
     if (verbose)
     {
-        util::LogMessage(rootModule->LogStreamId(), "Generating program...");
+        util::LogMessage(context->RootModule()->LogStreamId(), "Generating program...");
     }
     std::filesystem::path bdp = project->ExecutableFilePath();
     bdp.remove_filename();
@@ -463,8 +463,8 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbo
 
     std::string command = clangxxPath;
     command.append(" -g");
-    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
-    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    std::string mainFilePath = std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
     {
         throw std::runtime_error("program has no main function");
@@ -560,15 +560,15 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbo
     }
     command.append(" ").append(mainFilePath);
     command.append(" -std=c++20");
-    int n = rootModule->LibraryFilePaths().size();
+    int n = context->RootModule()->LibraryFilePaths().size();
     for (int i = 0; i < n; ++i)
     {
-        command.append(" ").append(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
+        command.append(" ").append(util::QuotedPath(context->RootModule()->LibraryFilePaths()[i]));
     }
-    int nr = rootModule->ResourceFilePaths().size();
+    int nr = context->RootModule()->ResourceFilePaths().size();
     for (int i = 0; i < nr; ++i)
     {
-        command.append(" ").append(util::QuotedPath(rootModule->ResourceFilePaths()[i]));
+        command.append(" ").append(util::QuotedPath(context->RootModule()->ResourceFilePaths()[i]));
     }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
@@ -625,14 +625,14 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbo
     }
 }
 
-void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths)
 {
     std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
     std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
     bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
     if (verbose)
     {
-        util::LogMessage(rootModule->LogStreamId(), "Generating program...");
+        util::LogMessage(context->RootModule()->LogStreamId(), "Generating program...");
     }
     std::filesystem::path bdp = project->ExecutableFilePath();
     bdp.remove_filename();
@@ -648,8 +648,8 @@ void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbol
     std::string command = gxxPath;
     command.append(" -g");
     command.append(" -std=c++20");
-    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
-    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    std::string mainFilePath = std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
     {
         throw std::runtime_error("program has no main function");
@@ -745,16 +745,16 @@ void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbol
     }
     command.append(" ").append(mainFilePath);
     command.append(" -std=c++20");
-    int n = rootModule->LibraryFilePaths().size();
+    int n = context->RootModule()->LibraryFilePaths().size();
     for (int i = n - 1; i >= 0; --i)
     {
-        const std::string& libraryFilePath = rootModule->LibraryFilePaths()[i];
+        const std::string& libraryFilePath = context->RootModule()->LibraryFilePaths()[i];
         command.append(" ").append(util::QuotedPath(libraryFilePath));
     }
-    int nr = rootModule->ResourceFilePaths().size();
+    int nr = context->RootModule()->ResourceFilePaths().size();
     for (int i = 0; i < nr; ++i)
     {
-        command.append(" ").append(util::QuotedPath(rootModule->ResourceFilePaths()[i]));
+        command.append(" ").append(util::QuotedPath(context->RootModule()->ResourceFilePaths()[i]));
     }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
@@ -814,11 +814,11 @@ void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbol
     }
 }
 
-void GenerateMainUnitMasmConsole(cmajor::symbols::Module* rootModule, std::vector<std::string>& cppFilePaths)
+void GenerateMainUnitMasmConsole(cmajor::symbols::Context* context, std::vector<std::string>& cppFilePaths)
 {
-    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    std::string mainFilePath = std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cppFilePaths.push_back(mainFilePath);
-    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
     {
         throw std::runtime_error("program has no main function");
@@ -906,11 +906,11 @@ void GenerateMainUnitMasmConsole(cmajor::symbols::Module* rootModule, std::vecto
     formatter.WriteLine("}");
 }
 
-void GenerateMainUnitMasmWindowsGUI(cmajor::symbols::Module* rootModule, std::vector<std::string>& cppFilePaths)
+void GenerateMainUnitMasmWindowsGUI(cmajor::symbols::Context* context, std::vector<std::string>& cppFilePaths)
 {
-    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    std::string mainFilePath = std::filesystem::path(context->RootModule()->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cppFilePaths.push_back(mainFilePath);
-    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = context->RootModule()->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
     {
         throw std::runtime_error("program has no main function");
@@ -1003,7 +1003,7 @@ void GenerateMainUnitMasmWindowsGUI(cmajor::symbols::Module* rootModule, std::ve
     formatter.WriteLine("}");
 }
 
-void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths, std::vector<std::string>& cppFilePaths)
+void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths, std::vector<std::string>& cppFilePaths)
 {
     std::lock_guard<std::recursive_mutex> lock(GetResourceLock());
     switch (project->GetTarget())
@@ -1015,27 +1015,27 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
             {
                 case cmajor::symbols::BackEnd::llvm:
                 {
-                    GenerateMainUnitLLvmConsole(project, rootModule, objectFilePaths);
+                    GenerateMainUnitLLvmConsole(project, context, objectFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::systemx:
                 {
-                    GenerateMainUnitSystemX(rootModule, objectFilePaths);
+                    GenerateMainUnitSystemX(context, objectFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::cpp:
                 {
-                    GenerateMainUnitCppConsole(project, rootModule, objectFilePaths);
+                    GenerateMainUnitCppConsole(project, context, objectFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::masm:
                 {
-                    GenerateMainUnitMasmConsole(rootModule, cppFilePaths);
+                    GenerateMainUnitMasmConsole(context, cppFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::sbin:
                 {
-                    GenerateMainUnitMasmConsole(rootModule, cppFilePaths);
+                    GenerateMainUnitMasmConsole(context, cppFilePaths);
                     break;
                 }
             }
@@ -1047,22 +1047,22 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
             {
                 case cmajor::symbols::BackEnd::llvm:
                 {
-                    GenerateMainUnitLLvmWindowsGUI(project, rootModule, objectFilePaths);
+                    GenerateMainUnitLLvmWindowsGUI(project, context, objectFilePaths);
                     break; 
                 }
                 case cmajor::symbols::BackEnd::cpp:
                 {
-                    GenerateMainUnitCppWindowsGUI(project, rootModule, objectFilePaths);
+                    GenerateMainUnitCppWindowsGUI(project, context, objectFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::masm:
                 {
-                    GenerateMainUnitMasmWindowsGUI(rootModule, cppFilePaths);
+                    GenerateMainUnitMasmWindowsGUI(context, cppFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::sbin:
                 {
-                    GenerateMainUnitMasmWindowsGUI(rootModule, cppFilePaths);
+                    GenerateMainUnitMasmWindowsGUI(context, cppFilePaths);
                     break;
                 }
             }

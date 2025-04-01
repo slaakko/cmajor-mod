@@ -111,6 +111,7 @@ public:
     int GetLineNumber(const soul::ast::Span& span);
 private:
     cmajor::ir::Emitter* emitter;
+    cmajor::symbols::Context* context;
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;

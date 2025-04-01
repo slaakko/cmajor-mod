@@ -66,7 +66,7 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                         if (compileUnitNode)
                         {
                             copy->SetCompileUnitId(compileUnitNode->Id());
-                            copy->ComputeMangledName();
+                            copy->ComputeMangledName(boundCompileUnit->GetContext());
                         }
                         destructorSymbol->SetInstantiatedName(copy->MangledName());
                         destructorSymbol = copy;

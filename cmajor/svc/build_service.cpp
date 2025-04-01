@@ -153,7 +153,6 @@ void BuildService::Run()
 
 void BuildService::ExecuteCommand()
 {
-    cmajor::symbols::SetRootModuleForCurrentThread(nullptr);
     buildInProgress = true;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
@@ -409,7 +408,6 @@ GetDefinitionReplyServiceMessage::GetDefinitionReplyServiceMessage(const cmajor:
 
 cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDefinitionRequest& request)
 {
-    cmajor::symbols::SetRootModuleForCurrentThread(nullptr);
     cmajor::info::bs::GetDefinitionReply reply;
     int len = util::ToUtf32(request.identifier).length();
     try
@@ -471,7 +469,8 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                         cmajor::symbols::MoveNonSystemModulesTo(prevCache);
                         cmajor::symbols::UpdateModuleCache();
                     }
-                    std::unique_ptr<cmajor::symbols::Module> module(new cmajor::symbols::Module(moduleFilePath, true));
+                    cmajor::symbols::Context context;
+                    std::unique_ptr<cmajor::symbols::Module> module(new cmajor::symbols::Module(&context, moduleFilePath, true));
                     cmajor::symbols::SetCacheModule(moduleFilePath, std::move(module));
                     cmajor::symbols::RestoreModulesFrom(prevCache.get());
                 }

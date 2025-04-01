@@ -168,6 +168,8 @@
     <ClCompile Include="constant_symbol.cppm" />
     <ClCompile Include="container_symbol.cpp" />
     <ClCompile Include="container_symbol.cppm" />
+    <ClCompile Include="context.cpp" />
+    <ClCompile Include="context.cppm" />
     <ClCompile Include="conversion_table.cpp" />
     <ClCompile Include="conversion_table.cppm" />
     <ClCompile Include="delegate_symbol.cpp" />

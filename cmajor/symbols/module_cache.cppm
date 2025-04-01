@@ -12,6 +12,7 @@ import cmajor.ast;
 
 export namespace cmajor::symbols {
 
+class Context;
 class Module;
 
 class ModuleCache
@@ -47,7 +48,7 @@ private:
     void CollectModuleIndices(Module* module, std::unordered_set<int>& moduleIndeces);
 };
 
-void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int32_t rootFileIndex,
+void PrepareModuleForCompilation(Context* context, const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int32_t rootFileIndex,
     cmajor::ast::CompileUnitNode* rootCompileUnit);
 Module* GetModuleFromModuleCache(const std::string& moduleFilePath);
 void PutModuleToModuleCache(std::unique_ptr<Module>&& module);

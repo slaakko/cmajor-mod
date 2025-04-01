@@ -64,8 +64,8 @@ class FunctionGroupSymbol : public Symbol
 public:
     FunctionGroupSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
-    std::string TypeString() const override { return "function_group"; }
-    void ComputeMangledName() override;
+    std::string TypeString(Context* context) const override { return "function_group"; }
+    void ComputeMangledName(Context* context) override;
     void AddFunction(FunctionSymbol* function);
     void RemoveFunction(FunctionSymbol* function);
     bool IsEmpty() const;
@@ -159,20 +159,20 @@ public:
     cmajor::ast::ConstraintNode* Constraint() { return constraint.get(); }
     void SetConstraint(cmajor::ast::ConstraintNode* constraint_) { constraint.reset(constraint_); }
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void AddMember(Symbol* member) override;
+    void AddMember(Symbol* member, Context* context) override;
     bool IsFunctionSymbol() const override { return true; }
-    std::string TypeString() const override { return "function"; }
+    std::string TypeString(Context* context) const override { return "function"; }
     bool IsExportSymbol() const override;
-    virtual void ComputeName();
+    virtual void ComputeName(Context* context);
     const std::u32string& InstantiatedName() const;
     void SetInstantiatedName(const std::u32string& instantiatedName_);
     std::u32string FullName() const override;
     std::u32string FullName(bool withParamNames) const;
     std::u32string FullNameWithSpecifiers() const override;
-    std::u32string DocName() const override;
+    std::u32string DocName(Context* context) const override;
     std::u32string CodeName() const override { return groupName; }
     std::string GetSpecifierStr() override;
-    std::string Syntax() override;
+    std::string Syntax(Context* context) override;
     int32_t GetIndex() const { return index; }
     void SetIndex(int32_t index_) { index = index_; }
     virtual ConversionType GetConversionType() const { return ConversionType::implicit_; }
@@ -188,19 +188,19 @@ public:
     virtual bool IsCompileTimePrimitiveFunction() const { return false; }
     virtual bool IsClassToInterfaceTypeConversion() const { return false; }
     virtual bool IsMemberFunctionToClassDelegateConversion() const { return false; }
-    virtual void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags);
-    void GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags);
+    virtual void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context);
+    void GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context);
     virtual std::unique_ptr<Value> ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::Span& span, Value* receiver) const;
-    virtual std::unique_ptr<Value> ConvertValue(const std::unique_ptr<Value>& value) const;
+    virtual std::unique_ptr<Value> ConvertValue(const std::unique_ptr<Value>& value, Context* context) const;
     virtual ParameterSymbol* GetThisParam() const { return nullptr; }
     virtual bool IsConstructorDestructorOrNonstaticMemberFunction() const { return false; }
     virtual bool IsClassDelegateCopyConstructor() const { return false; }
-    void Dump(util::CodeFormatter& formatter) override;
-    bool IsDefaultConstructor() const;
-    bool IsCopyConstructor() const;
-    bool IsMoveConstructor() const;
-    bool IsCopyAssignment() const;
-    bool IsMoveAssignment() const;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
+    bool IsDefaultConstructor(Context* context) const;
+    bool IsCopyConstructor(Context* context) const;
+    bool IsMoveConstructor(Context* context) const;
+    bool IsCopyAssignment(Context* context) const;
+    bool IsMoveAssignment(Context* context) const;
     virtual bool CanInline() const { return true; }
     virtual int StartParamIndex() const { return 0; }
     const util::uuid& FunctionId() const { Assert(!functionId.is_nil(), "function id not initialized"); return functionId; }
@@ -258,7 +258,7 @@ public:
     bool GetFlag(FunctionSymbolFlags flag) const { return (flags & flag) != FunctionSymbolFlags::none; }
     void SetFlag(FunctionSymbolFlags flag) { flags = flags | flag; }
     void ResetFlag(FunctionSymbolFlags flag) { flags = flags & ~flag; }
-    void ComputeMangledName() override;
+    void ComputeMangledName(Context* context) override;
     int Arity() const { return parameters.size(); }
     const std::vector<ParameterSymbol*>& Parameters() const { return parameters; }
     void AddLocalVariable(LocalVariableSymbol* localVariable);
@@ -270,9 +270,9 @@ public:
     bool ReturnsClassInterfaceOrClassDelegateByValue() const;
     bool IsFunctionTemplate() const { return !templateParameters.empty(); }
     void CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usingNodes_);
-    LocalVariableSymbol* CreateTemporary(TypeSymbol* type, const soul::ast::Span& span);
-    virtual std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction);
-    void* IrType(cmajor::ir::Emitter& emitter);
+    LocalVariableSymbol* CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context);
+    virtual std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context);
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context);
     int32_t VmtIndex() const { return vmtIndex; }
     void SetVmtIndex(int32_t vmtIndex_) { vmtIndex = vmtIndex_; }
     int32_t ImtIndex() const { return imtIndex; }
@@ -355,7 +355,7 @@ class StaticConstructorSymbol : public FunctionSymbol
 {
 public:
     StaticConstructorSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "static_constructor"; }
+    std::string TypeString(Context* context) const override { return "static_constructor"; }
     void Accept(SymbolCollector* collector) override {}
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     std::u32string FullNameWithSpecifiers() const override;
@@ -370,8 +370,8 @@ class ConstructorSymbol : public FunctionSymbol
 {
 public:
     ConstructorSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override;
-    std::u32string DocName() const override;
+    std::string TypeString(Context* context) const override;
+    std::u32string DocName(Context* context) const override;
     std::u32string CodeName() const override;
     ParameterSymbol* GetThisParam() const override { return Parameters()[0]; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
@@ -391,7 +391,7 @@ public:
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;
     void Accept(SymbolCollector* collector) override {}
-    std::string TypeString() const override { return "destructor"; }
+    std::string TypeString(Context* context) const override { return "destructor"; }
     ParameterSymbol* GetThisParam() const override { return Parameters()[0]; }
     std::u32string CodeName() const override;
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
@@ -412,8 +412,8 @@ class MemberFunctionSymbol : public FunctionSymbol
 {
 public:
     MemberFunctionSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override;
-    std::u32string DocName() const override;
+    std::string TypeString(Context* context) const override;
+    std::u32string DocName(Context* context) const override;
     ParameterSymbol* GetThisParam() const override { if (IsStatic()) return nullptr; else return Parameters()[0]; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return !IsStatic(); }
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
@@ -426,8 +426,8 @@ class ConversionFunctionSymbol : public FunctionSymbol
 {
 public:
     ConversionFunctionSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "conversion_function"; }
-    std::u32string DocName() const override;
+    std::string TypeString(Context* context) const override { return "conversion_function"; }
+    std::u32string DocName(Context* context) const override;
     ParameterSymbol* GetThisParam() const override { return Parameters()[0]; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     ConversionType GetConversionType() const override { return ConversionType::implicit_; }
@@ -445,8 +445,8 @@ class FunctionGroupTypeSymbol : public TypeSymbol
 public:
     FunctionGroupTypeSymbol(FunctionGroupSymbol* functionGroup_, void* boundFunctionGroup_, const soul::ast::Span& span_, int fileIndex_, const util::uuid& moduleId_);
     bool IsExportSymbol() const override { return false; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get ir type of function group type"); return nullptr; }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get default ir value of function group type"); return nullptr; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { Assert(false, "tried to get ir type of function group type"); return nullptr; }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { Assert(false, "tried to get default ir value of function group type"); return nullptr; }
     const FunctionGroupSymbol* FunctionGroup() const { return functionGroup; }
     FunctionGroupSymbol* FunctionGroup() { return functionGroup; }
     void* BoundFunctionGroup() const { return boundFunctionGroup; }
@@ -465,9 +465,9 @@ class MemberExpressionTypeSymbol : public TypeSymbol
 public:
     MemberExpressionTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_, void* boundMemberExpression_);
     bool IsExportSymbol() const override { return false; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get ir type of member expression type");  return nullptr; }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get default ir value of member expression type"); return nullptr; }
-    std::string TypeString() const override { return "member_expression_type"; }
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override { Assert(false, "tried to get ir type of member expression type");  return nullptr; }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override { Assert(false, "tried to get default ir value of member expression type"); return nullptr; }
+    std::string TypeString(Context* context) const override { return "member_expression_type"; }
     void* BoundMemberExpression() const { return boundMemberExpression; }
     const char* ClassName() const override { return "MemberExpressionTypeSymbol"; }
 private:

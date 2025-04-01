@@ -15,7 +15,7 @@ import cmajor.symbols.symbol.table;
 namespace cmajor::symbols {
 
 SymbolReader::SymbolReader(const std::string& fileName_) :
-    astReader(fileName_), symbolTable(nullptr), module(nullptr), rootModule(nullptr), conversions(nullptr), arrayTypes(nullptr), derivedTypes(nullptr),
+    astReader(fileName_), symbolTable(nullptr), module(nullptr), rootModule(nullptr), context(nullptr), conversions(nullptr), arrayTypes(nullptr), derivedTypes(nullptr),
     classTemplateSpecializations(nullptr), typeAndConceptRequests(nullptr), functionRequests(nullptr), setProjectBit(false), symbolsCached(false)
 {
 }

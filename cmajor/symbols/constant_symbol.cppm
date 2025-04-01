@@ -23,11 +23,11 @@ public:
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void Accept(SymbolCollector* collector) override;
-    void Dump(util::CodeFormatter& formatter) override;
-    std::string TypeString() const override { return "constant"; }
-    std::string Syntax() override;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
+    std::string TypeString(Context* context) const override { return "constant"; }
+    std::string Syntax(Context* context) override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
-    void ComputeMangledName() override;
+    void ComputeMangledName(Context* context) override;
     bool Evaluating() const { return evaluating; }
     void SetEvaluating() { evaluating = true; }
     void ResetEvaluating() { evaluating = false; }
@@ -36,8 +36,8 @@ public:
     void SetType(TypeSymbol* typeSymbol) { type = typeSymbol; }
     void SetValue(Value* value_);
     Value* GetValue();
-    void* ArrayIrObject(cmajor::ir::Emitter& emitter, bool create);
-    void* StructureIrObject(cmajor::ir::Emitter& emitter, bool create);
+    void* ArrayIrObject(cmajor::ir::Emitter& emitter, bool create, Context* context);
+    void* StructureIrObject(cmajor::ir::Emitter& emitter, bool create, Context* context);
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "ConstantSymbol"; }
     void SetStrValue(const std::string& strValue_) { strValue = strValue_; }

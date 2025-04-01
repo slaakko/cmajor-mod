@@ -37,6 +37,7 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
     int m = templateArgumentTypes.size();
     if (m == n) return;
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::ast::Node* classTemplateNode = symbolTable.GetNodeNoThrow(classTemplate);
     if (!classTemplateNode)
     {
@@ -56,7 +57,7 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
             if (usingNode->GetNodeType() == cmajor::ast::NodeType::namespaceImportNode)
             {
                 cmajor::ast::NamespaceImportNode* namespaceImportNode = static_cast<cmajor::ast::NamespaceImportNode*>(usingNode);
-                fileScope->InstallNamespaceImport(containerScope, namespaceImportNode);
+                fileScope->InstallNamespaceImport(containerScope, namespaceImportNode, context);
             }
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
@@ -68,10 +69,10 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
         boundCompileUnit.AddFileScope(fileScope);
         ++numFileScopeAdded;
     }
-    if (!classTemplate->Ns()->IsGlobalNamespace())
+    if (!classTemplate->Ns(context)->IsGlobalNamespace())
     {
         cmajor::symbols::FileScope* primaryFileScope = new cmajor::symbols::FileScope();
-        primaryFileScope->AddContainerScope(classTemplate->Ns()->GetContainerScope());
+        primaryFileScope->AddContainerScope(classTemplate->Ns(context)->GetContainerScope());
         boundCompileUnit.AddFileScope(primaryFileScope);
         ++numFileScopeAdded;
     }
@@ -114,6 +115,7 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node)
 {
     if (classTemplateSpecialization->IsBound()) return;
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::ClassTypeSymbol* classTemplate = classTemplateSpecialization->GetClassTemplate();
     cmajor::ast::Node* classTemplateNode = symbolTable.GetNodeNoThrow(classTemplate);
@@ -137,13 +139,13 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
         globalNs->AddMember(usingNode->Clone(cloneContext));
     }
     bool fileScopeAdded = false;
-    if (!classTemplate->Ns()->IsGlobalNamespace())
+    if (!classTemplate->Ns(context)->IsGlobalNamespace())
     {
         cmajor::symbols::FileScope* primaryFileScope = new cmajor::symbols::FileScope();
-        primaryFileScope->AddContainerScope(classTemplate->Ns()->GetContainerScope());
+        primaryFileScope->AddContainerScope(classTemplate->Ns(context)->GetContainerScope());
         boundCompileUnit.AddFileScope(primaryFileScope);
         fileScopeAdded = true;
-        std::u32string fullNsName = classTemplate->Ns()->FullName();
+        std::u32string fullNsName = classTemplate->Ns(context)->FullName();
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
@@ -191,12 +193,12 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
                 }
             }
         }
-        classTemplateSpecialization->AddMember(boundTemplateParameter);
+        classTemplateSpecialization->AddMember(boundTemplateParameter, context);
     }
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, classTemplateSpecialization->FileIndex(), classTemplateSpecialization->ModuleId());
-    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, context);
     symbolCreatorVisitor.SetClassInstanceNode(classInstanceNode);
     symbolCreatorVisitor.SetClassTemplateSpecialization(classTemplateSpecialization);
     globalNs->Accept(symbolCreatorVisitor);
@@ -248,6 +250,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
     try
     {
         cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
+        cmajor::symbols::Context* context = boundCompileUnit.GetContext();
         cmajor::symbols::Symbol* parent = memberFunction->Parent();
         Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class template specialization expected"); 
         cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(parent);
@@ -318,7 +321,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
             if (usingNode->GetNodeType() == cmajor::ast::NodeType::namespaceImportNode)
             {
                 cmajor::ast::NamespaceImportNode* namespaceImportNode = static_cast<cmajor::ast::NamespaceImportNode*>(usingNode);
-                fileScope->InstallNamespaceImport(containerScope, namespaceImportNode);
+                fileScope->InstallNamespaceImport(containerScope, namespaceImportNode, context);
             }
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
@@ -327,9 +330,9 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
                 fileScope->InstallAlias(aliasNode, type); 
             }
         }
-        if (!classTemplate->Ns()->IsGlobalNamespace())
+        if (!classTemplate->Ns(context)->IsGlobalNamespace())
         {
-            fileScope->AddContainerScope(classTemplate->Ns()->GetContainerScope());
+            fileScope->AddContainerScope(classTemplate->Ns(context)->GetContainerScope());
         }
         boundCompileUnit.AddFileScope(fileScope);
         Assert(memberFunctionNode->IsFunctionNode(), "function node expected");
@@ -381,7 +384,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         master->SetImmutable();
         symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
         InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
-        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, context);
         if ((cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
             cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) && 
             (!classTemplateSpecialization->HasFullInstantiation() || cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && memberFunction->IsInline()))
@@ -391,7 +394,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
             {
                 memberFunction->SetCompileUnitId(compileUnitNode->Id());
                 memberFunction->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
-                memberFunction->ComputeMangledName();
+                memberFunction->ComputeMangledName(context);
                 master->SetInstantiatedName(memberFunction->MangledName());
                 boundCompileUnit.SetCanReuse(memberFunction);
             }

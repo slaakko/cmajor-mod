@@ -24,9 +24,10 @@ namespace cmajor::binder {
 class PointerDefaultCtor : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerDefaultCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    PointerDefaultCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerDefaultCtor"; }
 private:
@@ -34,23 +35,24 @@ private:
     void* nullValue;
 };
 
-PointerDefaultCtor::PointerDefaultCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+PointerDefaultCtor::PointerDefaultCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(span_, U"@constructor"), type(type_), nullValue(nullptr)
 {
     SetGroupName(U"@constructor");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
-    ComputeName();
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
+    ComputeName(context);
 }
 
-void PointerDefaultCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerDefaultCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 1, "default constructor needs one object"); 
     if (!nullValue)
     {
-        nullValue = emitter.CreateDefaultIrValueForPtrType(type->IrType(emitter));
+        nullValue = emitter.CreateDefaultIrValueForPtrType(type->IrType(emitter, context));
     }
     emitter.Stack().Push(nullValue);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -83,11 +85,11 @@ void PointerDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols:
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer();
+    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer(GetContext());
     cmajor::symbols::FunctionSymbol* function = functionMap[pointerType];
     if (!function)
     {
-        function = new PointerDefaultCtor(pointerType, node->GetSpan());
+        function = new PointerDefaultCtor(pointerType, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[pointerType] = function;
@@ -99,30 +101,32 @@ void PointerDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols:
 class PointerCopyCtor : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    PointerCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerCopyCtor"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-PointerCopyCtor::PointerCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+PointerCopyCtor::PointerCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"@constructor"), type(type_)
 {
     SetGroupName(U"@constructor");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
     thatParam->SetType(type);
-    AddMember(thatParam);
-    ComputeName();
+    AddMember(thatParam, context);
+    ComputeName(context);
 }
 
-void PointerCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -162,14 +166,14 @@ void PointerCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Co
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer();
+    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer(GetContext());
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none ||
-        !TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference()) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+        !TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference(GetContext())) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[pointerType];
         if (!function)
         {
-            function = new PointerCopyCtor(pointerType, node->GetSpan());
+            function = new PointerCopyCtor(pointerType, node->GetSpan(), GetContext());
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(&GetSymbolTable()->GlobalNs());
             functionMap[pointerType] = function;
@@ -182,35 +186,37 @@ void PointerCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Co
 class PointerMoveCtor : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerMoveCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    PointerMoveCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerMoveCtor"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-PointerMoveCtor::PointerMoveCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+PointerMoveCtor::PointerMoveCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"@constructor"), type(type_)
 {
     SetGroupName(U"@constructor");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
-    thatParam->SetType(type->AddRvalueReference());
-    AddMember(thatParam);
-    ComputeName();
+    thatParam->SetType(type->AddRvalueReference(context));
+    AddMember(thatParam, context);
+    ComputeName(context);
 }
 
-void PointerMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), rvalueRefValue)); // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter, context), rvalueRefValue)); // TODO
     if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
     {
         emitter.Stack().Dup();
@@ -248,13 +254,13 @@ void PointerMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Co
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer();
-    if (TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference()) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer(GetContext());
+    if (TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference(GetContext())) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[pointerType];
         if (!function)
         {
-            function = new PointerMoveCtor(pointerType, node->GetSpan());
+            function = new PointerMoveCtor(pointerType, node->GetSpan(), GetContext());
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(&GetSymbolTable()->GlobalNs());
             functionMap[pointerType] = function;
@@ -267,31 +273,34 @@ void PointerMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Co
 class PointerCopyAssignment : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_);
+    PointerCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerCopyAssignment"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-PointerCopyAssignment::PointerCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_) : 
+PointerCopyAssignment::PointerCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_, 
+    cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator="), type(type_)
 {
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
     thatParam->SetType(type);
-    AddMember(thatParam);
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -325,14 +334,14 @@ void PointerCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Con
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer();
+    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer(GetContext());
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none ||
-        !TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference()) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+        !TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference(GetContext())) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[pointerType];
         if (!function)
         {
-            function = new PointerCopyAssignment(pointerType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan());
+            function = new PointerCopyAssignment(pointerType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan(), GetContext());
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(&GetSymbolTable()->GlobalNs());
             functionMap[pointerType] = function;
@@ -345,9 +354,10 @@ void PointerCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Con
 class PointerMoveAssignment : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_);
+    PointerMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerMoveAssignment"; }
 private:
@@ -355,26 +365,27 @@ private:
 };
 
 PointerMoveAssignment::PointerMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, 
-    const soul::ast::Span& span_) : cmajor::symbols::FunctionSymbol(span_, U"operator="), type(type_)
+    const soul::ast::Span& span_, cmajor::symbols::Context* context) : cmajor::symbols::FunctionSymbol(span_, U"operator="), type(type_)
 {
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
-    thatParam->SetType(type->AddRvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(type->AddRvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), rvalueRefValue)); // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter, context), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -405,13 +416,13 @@ void PointerMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Con
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer();
-    if (TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference()) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer(GetContext());
+    if (TypesEqual(arguments[1]->GetType(), pointerType->AddRvalueReference(GetContext())) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[pointerType];
         if (!function)
         {
-            function = new PointerMoveAssignment(pointerType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan());
+            function = new PointerMoveAssignment(pointerType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan(), GetContext());
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(&GetSymbolTable()->GlobalNs());
             functionMap[pointerType] = function;
@@ -424,27 +435,30 @@ void PointerMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Con
 class PointerReturn : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    PointerReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerReturn"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-PointerReturn::PointerReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : cmajor::symbols::FunctionSymbol(span_, U"@return"), type(type_)
+PointerReturn::PointerReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
+    cmajor::symbols::FunctionSymbol(span_, U"@return"), type(type_)
 {
     SetGroupName(U"@return");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* valueParam = new cmajor::symbols::ParameterSymbol(span_, U"value");
     valueParam->SetType(type);
-    AddMember(valueParam);
+    AddMember(valueParam, context);
     SetReturnType(type);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -486,7 +500,7 @@ void PointerReturnOperation::CollectViableFunctions(cmajor::symbols::ContainerSc
     cmajor::symbols::FunctionSymbol* function = functionMap[type];
     if (!function)
     {
-        function = new PointerReturn(type, node->GetSpan());
+        function = new PointerReturn(type, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[type] = function;
@@ -498,38 +512,41 @@ void PointerReturnOperation::CollectViableFunctions(cmajor::symbols::ContainerSc
 class PointerPlusOffset : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_);
+    PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerPlusOffset"; }
 private:
     cmajor::symbols::TypeSymbol* pointerType;
 };
 
-PointerPlusOffset::PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_) : 
+PointerPlusOffset::PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_, 
+    cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator+"), pointerType(pointerType_)
 {
     SetGroupName(U"operator+");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(span_, U"left");
     leftParam->SetType(pointerType);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(span_, U"right");
     rightParam->SetType(longType_);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(pointerType);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerPlusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerPlusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "operator+ needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer()->IrType(emitter), left, right));
+    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer(context)->IrType(emitter, context), left, right));
 }
 
 class PointerPlusOffsetOperation : public Operation
@@ -553,9 +570,9 @@ void PointerPlusOffsetOperation::CollectViableFunctions(cmajor::symbols::Contain
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
     if (!leftType->IsPointerType()) return;
-    leftType = leftType->PlainType();
+    leftType = leftType->PlainType(GetContext());
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
-    if (!rightType->PlainType()->IsIntegralType())
+    if (!rightType->PlainType(GetContext())->IsIntegralType())
     {
         ArgumentMatch argumentMatch;
         if (!GetBoundCompileUnit().GetConversion(rightType, GetSymbolTable()->GetTypeByName(U"long"), containerScope, currentFunction, argumentMatch, node))
@@ -571,7 +588,7 @@ void PointerPlusOffsetOperation::CollectViableFunctions(cmajor::symbols::Contain
     cmajor::symbols::FunctionSymbol* function = functionMap[leftType];
     if (!function)
     {
-        function = new PointerPlusOffset(leftType, GetSymbolTable()->GetTypeByName(U"long"), node->GetSpan());
+        function = new PointerPlusOffset(leftType, GetSymbolTable()->GetTypeByName(U"long"), node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[leftType] = function;
@@ -583,38 +600,41 @@ void PointerPlusOffsetOperation::CollectViableFunctions(cmajor::symbols::Contain
 class OffsetPlusPointer : public cmajor::symbols::FunctionSymbol
 {
 public:
-    OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cmajor::symbols::TypeSymbol* pointerType_, const soul::ast::Span& span_);
+    OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cmajor::symbols::TypeSymbol* pointerType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "OffsetPlusPointer"; }
 private:
     cmajor::symbols::TypeSymbol* pointerType;
 };
 
-OffsetPlusPointer::OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cmajor::symbols::TypeSymbol* pointerType_, const soul::ast::Span& span_) : 
+OffsetPlusPointer::OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cmajor::symbols::TypeSymbol* pointerType_, const soul::ast::Span& span_, 
+    cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator+"), pointerType(pointerType_)
 {
     SetGroupName(U"operator+");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(span_, U"left");
     leftParam->SetType(longType_);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(span_, U"right");
     rightParam->SetType(pointerType);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(pointerType);
-    ComputeName();
+    ComputeName(context);
 }
 
-void OffsetPlusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void OffsetPlusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "operator+ needs two objects"); 
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer()->IrType(emitter), right, left));
+    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer(context)->IrType(emitter, context), right, left));
 }
 
 class OffsetPlusPointerOperation : public Operation
@@ -637,7 +657,7 @@ void OffsetPlusPointerOperation::CollectViableFunctions(cmajor::symbols::Contain
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
-    if (!leftType->PlainType()->IsIntegralType())
+    if (!leftType->PlainType(GetContext())->IsIntegralType())
     {
         ArgumentMatch argumentMatch;
         if (!GetBoundCompileUnit().GetConversion(leftType, GetSymbolTable()->GetTypeByName(U"long"), containerScope, currentFunction, argumentMatch, node))
@@ -647,7 +667,7 @@ void OffsetPlusPointerOperation::CollectViableFunctions(cmajor::symbols::Contain
     }
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
     if (!rightType->IsPointerType()) return;
-    rightType = rightType->PlainType();
+    rightType = rightType->PlainType(GetContext());
     cmajor::symbols::TypeSymbol* longType = GetSymbolTable()->GetTypeByName(U"long");
     if (rightType->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
@@ -657,7 +677,7 @@ void OffsetPlusPointerOperation::CollectViableFunctions(cmajor::symbols::Contain
     cmajor::symbols::FunctionSymbol* function = functionMap[rightType];
     if (!function)
     {
-        function = new OffsetPlusPointer(longType, rightType, node->GetSpan());
+        function = new OffsetPlusPointer(longType, rightType, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[rightType] = function;
@@ -669,9 +689,10 @@ void OffsetPlusPointerOperation::CollectViableFunctions(cmajor::symbols::Contain
 class PointerMinusOffset : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_);
+    PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerMinusOffset"; }
 private:
@@ -679,21 +700,22 @@ private:
 };
 
 PointerMinusOffset::PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, 
-    const soul::ast::Span& span_) : cmajor::symbols::FunctionSymbol(span_, U"operator-"), pointerType(pointerType_)
+    const soul::ast::Span& span_, cmajor::symbols::Context* context) : cmajor::symbols::FunctionSymbol(span_, U"operator-"), pointerType(pointerType_)
 {
     SetGroupName(U"operator-");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(span_, U"left");
     leftParam->SetType(pointerType_);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(span_, U"right");
     rightParam->SetType(longType_);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(pointerType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "operator- needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -701,7 +723,7 @@ void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
     void* offset = emitter.CreateNeg(right);
-    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer()->IrType(emitter), left, offset));
+    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer(context)->IrType(emitter, context), left, offset));
 }
 
 class PointerMinusOffsetOperation : public Operation
@@ -725,9 +747,9 @@ void PointerMinusOffsetOperation::CollectViableFunctions(cmajor::symbols::Contai
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
     if (!leftType->IsPointerType()) return;
-    leftType = leftType->PlainType();
+    leftType = leftType->PlainType(GetContext());
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
-    if (!rightType->PlainType()->IsIntegralType())
+    if (!rightType->PlainType(GetContext())->IsIntegralType())
     {
         ArgumentMatch argumentMatch;
         if (!GetBoundCompileUnit().GetConversion(rightType, GetSymbolTable()->GetTypeByName(U"long"), containerScope, currentFunction, argumentMatch, node))
@@ -743,7 +765,7 @@ void PointerMinusOffsetOperation::CollectViableFunctions(cmajor::symbols::Contai
     cmajor::symbols::FunctionSymbol* function = functionMap[leftType];
     if (!function)
     {
-        function = new PointerMinusOffset(leftType, GetSymbolTable()->GetTypeByName(U"long"), node->GetSpan());
+        function = new PointerMinusOffset(leftType, GetSymbolTable()->GetTypeByName(U"long"), node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[leftType] = function;
@@ -755,9 +777,10 @@ void PointerMinusOffsetOperation::CollectViableFunctions(cmajor::symbols::Contai
 class PointerMinusPointer : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerMinusPointer(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_);
+    PointerMinusPointer(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerMinusPointer"; }
 private:
@@ -765,29 +788,30 @@ private:
 };
 
 PointerMinusPointer::PointerMinusPointer(cmajor::symbols::TypeSymbol* pointerType_, 
-    cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_) : 
+    cmajor::symbols::TypeSymbol* longType_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator-"), pointerType(pointerType_)
 {
     SetGroupName(U"operator-");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(span_, U"left");
     leftParam->SetType(pointerType_);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(span_, U"right");
     rightParam->SetType(pointerType_);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(longType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerMinusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerMinusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "operator- needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreatePtrDiff(pointerType->RemovePointer()->IrType(emitter), left, right));
+    emitter.Stack().Push(emitter.CreatePtrDiff(pointerType->RemovePointer(context)->IrType(emitter, context), left, right));
 }
 
 class PointerMinusPointerOperation : public Operation
@@ -811,10 +835,10 @@ void PointerMinusPointerOperation::CollectViableFunctions(cmajor::symbols::Conta
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
     if (!leftType->IsPointerType()) return;
-    leftType = leftType->PlainType();
+    leftType = leftType->PlainType(GetContext());
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
     if (!rightType->IsPointerType()) return;
-    rightType = rightType->PlainType();
+    rightType = rightType->PlainType(GetContext());
     if (leftType->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(leftType->BaseType());
@@ -823,7 +847,7 @@ void PointerMinusPointerOperation::CollectViableFunctions(cmajor::symbols::Conta
     cmajor::symbols::FunctionSymbol* function = functionMap[leftType];
     if (!function)
     {
-        function = new PointerMinusPointer(leftType, GetSymbolTable()->GetTypeByName(U"long"), node->GetSpan());
+        function = new PointerMinusPointer(leftType, GetSymbolTable()->GetTypeByName(U"long"), node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[leftType] = function;
@@ -835,29 +859,31 @@ void PointerMinusPointerOperation::CollectViableFunctions(cmajor::symbols::Conta
 class PointerEqual : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerEqual(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_);
+    PointerEqual(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerEqual"; }
 };
 
-PointerEqual::PointerEqual(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_) : 
+PointerEqual::PointerEqual(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator==")
 {
     SetGroupName(U"operator==");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(span_, U"left");
     leftParam->SetType(pointerType_);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(span_, U"right");
     rightParam->SetType(pointerType_);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(boolType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerEqual::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerEqual::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "operator== needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -888,9 +914,9 @@ void PointerEqualOperation::CollectViableFunctions(cmajor::symbols::ContainerSco
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
     if (!leftType->IsPointerType()) return;
-    leftType = leftType->PlainType();
+    leftType = leftType->PlainType(GetContext());
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
-    rightType = rightType->PlainType();
+    rightType = rightType->PlainType(GetContext());
     if (!rightType->IsPointerType()) return;
     if (leftType->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
@@ -900,7 +926,7 @@ void PointerEqualOperation::CollectViableFunctions(cmajor::symbols::ContainerSco
     cmajor::symbols::FunctionSymbol* function = functionMap[leftType];
     if (!function)
     {
-        function = new PointerEqual(leftType, GetSymbolTable()->GetTypeByName(U"bool"), node->GetSpan());
+        function = new PointerEqual(leftType, GetSymbolTable()->GetTypeByName(U"bool"), node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[leftType] = function;
@@ -912,29 +938,31 @@ void PointerEqualOperation::CollectViableFunctions(cmajor::symbols::ContainerSco
 class PointerLess : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerLess(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_);
+    PointerLess(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerLess"; }
 };
 
-PointerLess::PointerLess(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_) : 
+PointerLess::PointerLess(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* boolType_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator<")
 {
     SetGroupName(U"operator<");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(span_, U"left");
     leftParam->SetType(pointerType_);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(span_, U"right");
     rightParam->SetType(pointerType_);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(boolType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "operator< needs two objects"); 
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -965,10 +993,10 @@ void PointerLessOperation::CollectViableFunctions(cmajor::symbols::ContainerScop
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
     if (!leftType->IsPointerType()) return;
-    leftType = leftType->PlainType();
+    leftType = leftType->PlainType(GetContext());
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
     if (!rightType->IsPointerType()) return;
-    rightType = rightType->PlainType();
+    rightType = rightType->PlainType(GetContext());
     if (leftType->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(leftType->BaseType());
@@ -977,7 +1005,7 @@ void PointerLessOperation::CollectViableFunctions(cmajor::symbols::ContainerScop
     cmajor::symbols::FunctionSymbol* function = functionMap[leftType];
     if (!function)
     {
-        function = new PointerLess(leftType, GetSymbolTable()->GetTypeByName(U"bool"), node->GetSpan());
+        function = new PointerLess(leftType, GetSymbolTable()->GetTypeByName(U"bool"), node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[leftType] = function;
@@ -989,28 +1017,30 @@ void PointerLessOperation::CollectViableFunctions(cmajor::symbols::ContainerScop
 class PointerArrow : public cmajor::symbols::FunctionSymbol
 {
 public:
-    PointerArrow(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    PointerArrow(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerArrow"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-PointerArrow::PointerArrow(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+PointerArrow::PointerArrow(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"operator->"), type(type_)
 {
     SetGroupName(U"operator->");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* operandParam = new cmajor::symbols::ParameterSymbol(span_, U"operand");
-    operandParam->SetType(type->AddPointer());
-    AddMember(operandParam);
+    operandParam->SetType(type->AddPointer(context));
+    AddMember(operandParam, context);
     SetReturnType(type);
-    ComputeName();
+    ComputeName(context);
 }
 
-void PointerArrow::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void PointerArrow::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    cmajor::symbols::Context* context) 
 {
     Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1042,11 +1072,11 @@ void PointerArrowOperation::CollectViableFunctions(cmajor::symbols::ContainerSco
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer();
+    cmajor::symbols::TypeSymbol* pointerType = type->RemovePointer(GetContext());
     cmajor::symbols::FunctionSymbol* function = functionMap[pointerType];
     if (!function)
     {
-        function = new PointerArrow(pointerType, node->GetSpan());
+        function = new PointerArrow(pointerType, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[pointerType] = function;
@@ -1058,30 +1088,32 @@ void PointerArrowOperation::CollectViableFunctions(cmajor::symbols::ContainerSco
 class LvalueRefefenceCopyCtor : public cmajor::symbols::FunctionSymbol
 {
 public:
-    LvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    LvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "LvalueRefefenceCopyCtor"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-LvalueRefefenceCopyCtor::LvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+LvalueRefefenceCopyCtor::LvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"@constructor"), type(type_)
 {
     SetGroupName(U"@constructor");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
     thatParam->SetType(type);
-    AddMember(thatParam);
-    ComputeName();
+    AddMember(thatParam, context);
+    ComputeName(context);
 }
 
-void LvalueRefefenceCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void LvalueRefefenceCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "reference copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1114,11 +1146,11 @@ void LvalueReferenceCopyConstructorOperation::CollectViableFunctions(cmajor::sym
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* lvalueRefType = type->RemovePointer();
+    cmajor::symbols::TypeSymbol* lvalueRefType = type->RemovePointer(GetContext());
     cmajor::symbols::FunctionSymbol* function = functionMap[lvalueRefType];
     if (!function)
     {
-        function = new LvalueRefefenceCopyCtor(lvalueRefType, node->GetSpan());
+        function = new LvalueRefefenceCopyCtor(lvalueRefType, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[lvalueRefType] = function;
@@ -1130,9 +1162,10 @@ void LvalueReferenceCopyConstructorOperation::CollectViableFunctions(cmajor::sym
 class LvalueReferenceCopyAssignment : public cmajor::symbols::FunctionSymbol
 {
 public:
-    LvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_);
+    LvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsLvalueReferenceCopyAssignment() const override { return true; }
     const char* ClassName() const override { return "LvalueReferenceCopyAssignment"; }
@@ -1140,22 +1173,24 @@ private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-LvalueReferenceCopyAssignment::LvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_) :
+LvalueReferenceCopyAssignment::LvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_,
+    cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(span_, U"operator="), type(type_)
 {
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
     thatParam->SetType(type);
-    AddMember(thatParam);
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void LvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void LvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1188,15 +1223,16 @@ void LvalueReferenceCopyAssignmentOperation::CollectViableFunctions(cmajor::symb
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* lvalueRefType = type->RemovePointer();
-    if (lvalueRefType->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* lvalueRefType = type->RemovePointer(GetContext());
+    if (lvalueRefType->PlainType(GetContext())->IsClassTypeSymbol()) return;
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none ||
-        !TypesEqual(arguments[1]->GetType()->RemoveConst(), lvalueRefType->PlainType()->AddRvalueReference()) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+        !TypesEqual(arguments[1]->GetType()->RemoveConst(GetContext()), lvalueRefType->PlainType(GetContext())->AddRvalueReference(GetContext())) && 
+        !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[lvalueRefType];
         if (!function)
         {
-            function = new LvalueReferenceCopyAssignment(lvalueRefType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan());
+            function = new LvalueReferenceCopyAssignment(lvalueRefType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan(), GetContext());
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(&GetSymbolTable()->GlobalNs());
             functionMap[lvalueRefType] = function;
@@ -1209,36 +1245,39 @@ void LvalueReferenceCopyAssignmentOperation::CollectViableFunctions(cmajor::symb
 class LvalueReferenceMoveAssignment : public cmajor::symbols::FunctionSymbol
 {
 public:
-    LvalueReferenceMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_);
+    LvalueReferenceMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "LvalueReferenceMoveAssignment"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-LvalueReferenceMoveAssignment::LvalueReferenceMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_) :
+LvalueReferenceMoveAssignment::LvalueReferenceMoveAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_,
+    cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(span_, U"operator="), type(type_)
 {
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
-    thatParam->SetType(type->RemoveReference()->AddRvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(type->RemoveReference(context)->AddRvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void LvalueReferenceMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void LvalueReferenceMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type->PlainType()->IrType(emitter), rvalueRefValue)); // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->PlainType(context)->IrType(emitter, context), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -1269,15 +1308,16 @@ void LvalueReferenceMoveAssignmentOperation::CollectViableFunctions(cmajor::symb
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* lvalueRefType = type->RemovePointer();
-    if (lvalueRefType->PlainType()->IsClassTypeSymbol()) return;
-    if (lvalueRefType->PlainType()->IsArrayType()) return;
-    if (TypesEqual(arguments[1]->GetType()->RemoveConst(), lvalueRefType->PlainType()->AddRvalueReference()) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+    cmajor::symbols::TypeSymbol* lvalueRefType = type->RemovePointer(GetContext());
+    if (lvalueRefType->PlainType(GetContext())->IsClassTypeSymbol()) return;
+    if (lvalueRefType->PlainType(GetContext())->IsArrayType()) return;
+    if (TypesEqual(arguments[1]->GetType()->RemoveConst(GetContext()), lvalueRefType->PlainType(GetContext())->AddRvalueReference(GetContext())) || 
+        arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[lvalueRefType];
         if (!function)
         {
-            function = new LvalueReferenceMoveAssignment(lvalueRefType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan());
+            function = new LvalueReferenceMoveAssignment(lvalueRefType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan(), GetContext());
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(&GetSymbolTable()->GlobalNs());
             functionMap[lvalueRefType] = function;
@@ -1290,28 +1330,30 @@ void LvalueReferenceMoveAssignmentOperation::CollectViableFunctions(cmajor::symb
 class LvalueReferenceReturn : public cmajor::symbols::FunctionSymbol
 {
 public:
-    LvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    LvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "LvalueReferenceReturn"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-LvalueReferenceReturn::LvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+LvalueReferenceReturn::LvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"@return"), type(type_)
 {
     SetGroupName(U"@return");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* valueParam = new cmajor::symbols::ParameterSymbol(span_, U"value");
     valueParam->SetType(type);
-    AddMember(valueParam);
+    AddMember(valueParam, context);
     SetReturnType(type);
-    ComputeName();
+    ComputeName(context);
 }
 
-void LvalueReferenceReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void LvalueReferenceReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1346,7 +1388,7 @@ void LvalueReferenceReturnOperation::CollectViableFunctions(cmajor::symbols::Con
     cmajor::symbols::FunctionSymbol* function = functionMap[type];
     if (!function)
     {
-        function = new LvalueReferenceReturn(type, node->GetSpan());
+        function = new LvalueReferenceReturn(type, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[type] = function;
@@ -1358,30 +1400,32 @@ void LvalueReferenceReturnOperation::CollectViableFunctions(cmajor::symbols::Con
 class RvalueRefefenceCopyCtor : public cmajor::symbols::FunctionSymbol
 {
 public:
-    RvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    RvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "RvalueRefefenceCopyCtor"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-RvalueRefefenceCopyCtor::RvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) : 
+RvalueRefefenceCopyCtor::RvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) : 
     cmajor::symbols::FunctionSymbol(span_, U"@constructor"), type(type_)
 {
     SetGroupName(U"@constructor");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
     thatParam->SetType(type);
-    AddMember(thatParam);
-    ComputeName();
+    AddMember(thatParam, context);
+    ComputeName(context);
 }
 
-void RvalueRefefenceCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void RvalueRefefenceCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "reference copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1414,12 +1458,12 @@ void RvalueReferenceCopyConstructorOperation::CollectViableFunctions(cmajor::sym
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::TypeSymbol* rvalueRefType = type->RemovePointer();
-    if (rvalueRefType->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* rvalueRefType = type->RemovePointer(GetContext());
+    if (rvalueRefType->PlainType(GetContext())->IsClassTypeSymbol()) return;
     cmajor::symbols::FunctionSymbol* function = functionMap[rvalueRefType];
     if (!function)
     {
-        function = new RvalueRefefenceCopyCtor(rvalueRefType, node->GetSpan());
+        function = new RvalueRefefenceCopyCtor(rvalueRefType, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[rvalueRefType] = function;
@@ -1431,36 +1475,39 @@ void RvalueReferenceCopyConstructorOperation::CollectViableFunctions(cmajor::sym
 class RvalueReferenceCopyAssignment : public cmajor::symbols::FunctionSymbol
 {
 public:
-    RvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_);
+    RvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "RvalueReferenceCopyAssignment"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-RvalueReferenceCopyAssignment::RvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_) :
+RvalueReferenceCopyAssignment::RvalueReferenceCopyAssignment(cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* voidType_, const soul::ast::Span& span_,
+    cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(span_, U"operator="), type(type_)
 {
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(span_, U"this");
-    thisParam->SetType(type->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(type->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(span_, U"that");
     thatParam->SetType(type);
-    AddMember(thatParam);
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
 }
 
-void RvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void RvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type->PlainType()->IrType(emitter), rvalueRefValue));  // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->PlainType(context)->IrType(emitter, context), rvalueRefValue));  // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -1485,8 +1532,8 @@ void RvalueReferenceCopyAssignmentOperation::CollectViableFunctions(cmajor::symb
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     if (type->PointerCount() < 1 || !type->IsRvalueReferenceType()) return;
-    cmajor::symbols::TypeSymbol* rvalueRefType = type->RemovePointer();
-    if (rvalueRefType->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* rvalueRefType = type->RemovePointer(GetContext());
+    if (rvalueRefType->PlainType(GetContext())->IsClassTypeSymbol()) return;
     if (rvalueRefType->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(rvalueRefType->BaseType());
@@ -1495,7 +1542,7 @@ void RvalueReferenceCopyAssignmentOperation::CollectViableFunctions(cmajor::symb
     cmajor::symbols::FunctionSymbol* function = functionMap[rvalueRefType];
     if (!function)
     {
-        function = new RvalueReferenceCopyAssignment(rvalueRefType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan());
+        function = new RvalueReferenceCopyAssignment(rvalueRefType, GetSymbolTable()->GetTypeByName(U"void"), node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[rvalueRefType] = function;
@@ -1507,28 +1554,30 @@ void RvalueReferenceCopyAssignmentOperation::CollectViableFunctions(cmajor::symb
 class RvalueReferenceReturn : public cmajor::symbols::FunctionSymbol
 {
 public:
-    RvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_);
+    RvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+        cmajor::symbols::Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "RvalueReferenceReturn"; }
 private:
     cmajor::symbols::TypeSymbol* type;
 };
 
-RvalueReferenceReturn::RvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_) :
+RvalueReferenceReturn::RvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast::Span& span_, cmajor::symbols::Context* context) :
     cmajor::symbols::FunctionSymbol(span_, U"@return"), type(type_)
 {
     SetGroupName(U"@return");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* valueParam = new cmajor::symbols::ParameterSymbol(span_, U"value");
     valueParam->SetType(type);
-    AddMember(valueParam);
+    AddMember(valueParam, context);
     SetReturnType(type);
-    ComputeName();
+    ComputeName(context);
 }
 
-void RvalueReferenceReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void RvalueReferenceReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
+    cmajor::symbols::Context* context)
 {
     Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1563,7 +1612,7 @@ void RvalueReferenceReturnOperation::CollectViableFunctions(cmajor::symbols::Con
     cmajor::symbols::FunctionSymbol* function = functionMap[type];
     if (!function)
     {
-        function = new RvalueReferenceReturn(type, node->GetSpan());
+        function = new RvalueReferenceReturn(type, node->GetSpan(), GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[type] = function;
@@ -1592,26 +1641,28 @@ void ArrayDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols::C
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->IsArrayType()) return;
+    if (type->PointerCount() != 1 || !type->RemovePointer(GetContext())->IsArrayType()) return;
     if (type->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer());
+    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer(GetContext()));
     cmajor::symbols::FunctionSymbol* function = functionMap[arrayType->TypeId()];
     if (!function)
     {
         std::vector<FunctionScopeLookup> elementLookups;
         elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-        elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+        elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
+            arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
         elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         std::vector<std::unique_ptr<BoundExpression>> elementArguments;
-        elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer())));
+        elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(GetContext()))));
         std::unique_ptr<BoundFunctionCall> elementDefaultConstructor = ResolveOverload(U"@constructor", containerScope, elementLookups, elementArguments, GetBoundCompileUnit(), 
             currentFunction, node);
         cmajor::symbols::FunctionSymbol* elementTypeDefaultConstructor = elementDefaultConstructor->GetFunctionSymbol();
-        cmajor::symbols::ArrayTypeDefaultConstructor* arrayTypeDefaultConstructor = new cmajor::symbols::ArrayTypeDefaultConstructor(arrayType, elementTypeDefaultConstructor);
+        cmajor::symbols::ArrayTypeDefaultConstructor* arrayTypeDefaultConstructor = new cmajor::symbols::ArrayTypeDefaultConstructor(arrayType, elementTypeDefaultConstructor,
+            GetContext());
         arrayTypeDefaultConstructor->SetTemporariesForElementTypeDefaultCtor(elementDefaultConstructor->ReleaseTemporaries());
         function = arrayTypeDefaultConstructor;
         function->SetModule(&GetBoundCompileUnit().GetModule());
@@ -1642,32 +1693,34 @@ void ArrayCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->IsArrayType()) return;
+    if (type->PointerCount() != 1 || !type->RemovePointer(GetContext())->IsArrayType()) return;
     if (type->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer());
+    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer(GetContext()));
     if (((flags & CollectFlags::noRvalueRef) != CollectFlags::none ||
-        !TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference()) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference)) &&
-        TypesEqual(arguments[1]->GetType()->PlainType(), arrayType))
+        !TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference(GetContext())) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference)) &&
+        TypesEqual(arguments[1]->GetType()->PlainType(GetContext()), arrayType))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[arrayType->TypeId()];
         if (!function)
         {
             std::vector<FunctionScopeLookup> elementLookups;
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
+                arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> elementArguments;
-            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer())));
+            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(GetContext()))));
             elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                arrayType->ElementType()->AddConst()->AddLvalueReference())));
+                arrayType->ElementType()->AddConst(GetContext())->AddLvalueReference(GetContext()))));
             std::unique_ptr<BoundFunctionCall> elementCopyConstructor = ResolveOverload(U"@constructor", containerScope, elementLookups, elementArguments, 
                 GetBoundCompileUnit(), currentFunction, node);
             cmajor::symbols::FunctionSymbol* elementTypeCopyConstructor = elementCopyConstructor->GetFunctionSymbol();
-            cmajor::symbols::ArrayTypeCopyConstructor* arrayTypeCopyConstructor = new cmajor::symbols::ArrayTypeCopyConstructor(arrayType, elementTypeCopyConstructor);
+            cmajor::symbols::ArrayTypeCopyConstructor* arrayTypeCopyConstructor = new cmajor::symbols::ArrayTypeCopyConstructor(arrayType, elementTypeCopyConstructor,
+                GetContext());
             arrayTypeCopyConstructor->SetTemporariesForElementTypeCopyCtor(elementCopyConstructor->ReleaseTemporaries());
             function = arrayTypeCopyConstructor;
             function->SetModule(&GetBoundCompileUnit().GetModule());
@@ -1700,31 +1753,33 @@ void ArrayMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
 {
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->IsArrayType()) return;
+    if (type->PointerCount() != 1 || !type->RemovePointer(GetContext())->IsArrayType()) return;
     if (type->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer());
-    if (TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference()) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer(GetContext()));
+    if (TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference(GetContext())) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[arrayType->TypeId()];
         if (!function)
         {
             std::vector<FunctionScopeLookup> elementLookups;
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
+                arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> elementArguments;
-            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer())));
+            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(GetContext()))));
             elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                arrayType->ElementType()->AddRvalueReference())));
+                arrayType->ElementType()->AddRvalueReference(GetContext()))));
             elementArguments.back()->SetFlag(BoundExpressionFlags::bindToRvalueReference);
             std::unique_ptr<BoundFunctionCall> elementMoveConstructor = ResolveOverload(U"@constructor", containerScope, elementLookups, elementArguments, 
                 GetBoundCompileUnit(), currentFunction, node);
             cmajor::symbols::FunctionSymbol* elementTypeMoveConstructor = elementMoveConstructor->GetFunctionSymbol();
-            cmajor::symbols::ArrayTypeMoveConstructor* arrayTypeMoveConstructor = new cmajor::symbols::ArrayTypeMoveConstructor(arrayType, elementTypeMoveConstructor);
+            cmajor::symbols::ArrayTypeMoveConstructor* arrayTypeMoveConstructor = new cmajor::symbols::ArrayTypeMoveConstructor(arrayType, elementTypeMoveConstructor,
+                GetContext());
             arrayTypeMoveConstructor->SetTemporariesForElementTypeMoveCtor(elementMoveConstructor->ReleaseTemporaries());
             function = arrayTypeMoveConstructor;
             function->SetModule(&GetBoundCompileUnit().GetModule());
@@ -1756,32 +1811,34 @@ void ArrayCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->IsArrayType()) return;
+    if (type->PointerCount() != 1 || !type->RemovePointer(GetContext())->IsArrayType()) return;
     if (type->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer());
-    if (((flags & CollectFlags::noRvalueRef) != CollectFlags::none && TypesEqual(arguments[1]->GetType()->PlainType(), arrayType) ||
-        !TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference()) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference)) &&
-        TypesEqual(arguments[1]->GetType()->PlainType(), arrayType))
+    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer(GetContext()));
+    if (((flags & CollectFlags::noRvalueRef) != CollectFlags::none && TypesEqual(arguments[1]->GetType()->PlainType(GetContext()), arrayType) ||
+        !TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference(GetContext())) && !arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference)) &&
+        TypesEqual(arguments[1]->GetType()->PlainType(GetContext()), arrayType))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[arrayType->TypeId()];
         if (!function)
         {
             std::vector<FunctionScopeLookup> elementLookups;
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
+                arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> elementArguments;
-            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer())));
+            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(GetContext()))));
             elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                arrayType->ElementType()->AddConst()->AddLvalueReference())));
+                arrayType->ElementType()->AddConst(GetContext())->AddLvalueReference(GetContext()))));
             std::unique_ptr<BoundFunctionCall> elementCopyAssignment = ResolveOverload(U"operator=", containerScope, elementLookups, elementArguments, 
                 GetBoundCompileUnit(), currentFunction, node);
             cmajor::symbols::FunctionSymbol* elementTypeCopyAssignment = elementCopyAssignment->GetFunctionSymbol();
-            cmajor::symbols::ArrayTypeCopyAssignment* arrayTypeCopyAssignment = new cmajor::symbols::ArrayTypeCopyAssignment(arrayType, elementTypeCopyAssignment);
+            cmajor::symbols::ArrayTypeCopyAssignment* arrayTypeCopyAssignment = new cmajor::symbols::ArrayTypeCopyAssignment(arrayType, elementTypeCopyAssignment, 
+                GetContext());
             arrayTypeCopyAssignment->SetTemporariesForElementTypeCopyAssignment(elementCopyAssignment->ReleaseTemporaries());
             function = arrayTypeCopyAssignment;
             function->SetModule(&GetBoundCompileUnit().GetModule());
@@ -1814,30 +1871,32 @@ void ArrayMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
 {
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->IsArrayType()) return;
+    if (type->PointerCount() != 1 || !type->RemovePointer(GetContext())->IsArrayType()) return;
     if (type->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer());
-    if (TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference()) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
+    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(type->RemovePointer(GetContext()));
+    if (TypesEqual(arguments[1]->GetType(), arrayType->AddRvalueReference(GetContext())) || arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference))
     {
         cmajor::symbols::FunctionSymbol* function = functionMap[arrayType->TypeId()];
         if (!function)
         {
             std::vector<FunctionScopeLookup> elementLookups;
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+            elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
+                arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             elementLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> elementArguments;
-            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer())));
-            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddRvalueReference())));
+            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(GetContext()))));
+            elementArguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddRvalueReference(GetContext()))));
             elementArguments.back()->SetFlag(BoundExpressionFlags::bindToRvalueReference);
             std::unique_ptr<BoundFunctionCall> elementMoveAssignment = ResolveOverload(U"operator=", containerScope, elementLookups, elementArguments, 
                 GetBoundCompileUnit(), currentFunction, node);
             cmajor::symbols::FunctionSymbol* elementTypeMoveAssignment = elementMoveAssignment->GetFunctionSymbol();
-            cmajor::symbols::ArrayTypeMoveAssignment* arrayTypeMoveAssignment = new cmajor::symbols::ArrayTypeMoveAssignment(arrayType, elementTypeMoveAssignment);
+            cmajor::symbols::ArrayTypeMoveAssignment* arrayTypeMoveAssignment = new cmajor::symbols::ArrayTypeMoveAssignment(arrayType, elementTypeMoveAssignment,
+                GetContext());
             arrayTypeMoveAssignment->SetTemporariesForElementTypeMoveAssignment(elementMoveAssignment->ReleaseTemporaries());
             function = arrayTypeMoveAssignment;
             function->SetModule(&GetBoundCompileUnit().GetModule());
@@ -1869,15 +1928,15 @@ void ArrayElementAccessOperation::CollectViableFunctions(cmajor::symbols::Contai
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* leftType = arguments[0]->GetType();
-    if (!leftType->PlainType()->IsArrayType()) return;
+    if (!leftType->PlainType(GetContext())->IsArrayType()) return;
     if (leftType->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(leftType->BaseType());
         GetBoundCompileUnit().FinalizeBinding(specialization);
     }
-    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(leftType->PlainType());
+    cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(leftType->PlainType(GetContext()));
     cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType();
-    if (!rightType->PlainType()->IsIntegralType())
+    if (!rightType->PlainType(GetContext())->IsIntegralType())
     {
         ArgumentMatch argumentMatch;
         if (!GetBoundCompileUnit().GetConversion(rightType, GetSymbolTable()->GetTypeByName(U"long"), containerScope, currentFunction, argumentMatch, node))
@@ -1888,7 +1947,7 @@ void ArrayElementAccessOperation::CollectViableFunctions(cmajor::symbols::Contai
     cmajor::symbols::FunctionSymbol* function = functionMap[arrayType->TypeId()];
     if (!function)
     {
-        function = new cmajor::symbols::ArrayTypeElementAccess(arrayType);
+        function = new cmajor::symbols::ArrayTypeElementAccess(arrayType, GetContext());
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(&GetSymbolTable()->GlobalNs());
         functionMap[arrayType->TypeId()] = function;
@@ -1918,8 +1977,8 @@ ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbo
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
-    thisParam->SetType(classType->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(classType->AddPointer(boundCompileUnit->GetContext()));
+    AddMember(thisParam, boundCompileUnit->GetContext());
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
@@ -1932,7 +1991,7 @@ ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbo
             }
         }
     }
-    ComputeName();
+    ComputeName(boundCompileUnit->GetContext());
 }
 
 class ClassDefaultConstructorOperation : public Operation
@@ -1957,7 +2016,7 @@ void ClassDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols::C
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer(GetContext())->PlainType(GetContext());
     if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
@@ -2009,6 +2068,7 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
     BoundFunction* currentFunction, std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node)
 {
     cmajor::symbols::ClassTypeSymbol* classType = defaultConstructor->ClassType();
+    cmajor::symbols::Context* context = GetContext();
     try
     {
         bool nothrow = true;
@@ -2030,7 +2090,7 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
             std::vector<std::unique_ptr<BoundExpression>> baseConstructorCallArguments;
             cmajor::symbols::ParameterSymbol* thisParam = defaultConstructor->Parameters()[0];
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, currentFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -2057,7 +2117,7 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
             else
             {
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToHolderConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(), 
+                cmajor::symbols::FunctionSymbol* thisToHolderConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(context), 
                     containerScope, currentFunction, argumentMatch, node);
                 if (!thisToHolderConversion)
                 {
@@ -2079,13 +2139,13 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
             std::vector<FunctionScopeLookup> memberConstructorCallLookups;
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
-                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> memberConstructorCallArguments;
             BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
             boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), defaultConstructor->GetThisParam())));
             memberConstructorCallArguments.push_back(std::unique_ptr<BoundExpression>(
-                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
             std::unique_ptr<BoundFunctionCall> memberConstructorCall = ResolveOverload(U"@constructor", containerScope, memberConstructorCallLookups, 
                 memberConstructorCallArguments, GetBoundCompileUnit(), boundFunction.get(), node);
             if (!memberConstructorCall->GetFunctionSymbol()->DontThrow()) nothrow = false;
@@ -2130,12 +2190,13 @@ ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* cla
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
+    cmajor::symbols::Context* context = boundCompileUnit->GetContext();
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
-    thisParam->SetType(classType->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(classType->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
-    thatParam->SetType(classType->AddConst()->AddLvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(classType->AddConst(context)->AddLvalueReference(context));
+    AddMember(thatParam, context);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
@@ -2148,7 +2209,7 @@ ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* cla
             }
         }
     }
-    ComputeName();
+    ComputeName(context);
 }
 
 class ClassCopyConstructorOperation : public Operation
@@ -2174,7 +2235,7 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer(GetContext())->PlainType(GetContext());
     if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
@@ -2182,7 +2243,7 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
         exception.reset(new cmajor::symbols::Exception("cannot copy an instance of a static class", node->GetFullSpan(), classType->GetFullSpan()));
         return;
     }
-    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType();
+    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType(GetContext());
     bool typesEqual = TypesEqual(rightType, classType);
     bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference);
     bool conversionFunctionExists = false;
@@ -2201,7 +2262,7 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
     }
     if (typesEqual ||
         (((flags & CollectFlags::noRvalueRef) != CollectFlags::none ||
-            !TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference()) && !bindToRvalueRef) && (typesEqual || conversionFunctionExists)))
+            !TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference(GetContext())) && !bindToRvalueRef) && (typesEqual || conversionFunctionExists)))
     {
         if (classType->CopyConstructor())
         {
@@ -2257,6 +2318,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
     std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node)
 {
     cmajor::symbols::ClassTypeSymbol* classType = copyConstructor->ClassType();
+    cmajor::symbols::Context* context = GetContext();
     try
     {
         bool nothrow = true;
@@ -2278,7 +2340,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
             std::vector<std::unique_ptr<BoundExpression>> baseConstructorCallArguments;
             cmajor::symbols::ParameterSymbol* thisParam = copyConstructor->Parameters()[0];
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context),
                 containerScope, currentFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -2289,7 +2351,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
             baseConstructorCallArguments.push_back(std::unique_ptr<BoundExpression>(baseClassPointerConversion));
             cmajor::symbols::ParameterSymbol* thatParam = copyConstructor->Parameters()[1];
             cmajor::symbols::FunctionSymbol* thatToBaseConversion = GetBoundCompileUnit().GetConversion(thatParam->GetType(), 
-                classType->BaseClass()->AddConst()->AddLvalueReference(), containerScope, currentFunction, argumentMatch, node);
+                classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, currentFunction, argumentMatch, node);
             if (!thatToBaseConversion)
             {
                 throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -2314,7 +2376,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
             else
             {
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToHolderConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(), 
+                cmajor::symbols::FunctionSymbol* thisToHolderConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(context), 
                     containerScope, currentFunction, argumentMatch, node);
                 if (!thisToHolderConversion)
                 {
@@ -2336,18 +2398,18 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
             std::vector<FunctionScopeLookup> memberConstructorCallLookups;
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
-                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> memberConstructorCallArguments;
             BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
             boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), copyConstructor->GetThisParam())));
             memberConstructorCallArguments.push_back(std::unique_ptr<BoundExpression>(
-                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
             cmajor::symbols::ParameterSymbol* thatParam = copyConstructor->Parameters()[1];
             BoundMemberVariable* thatBoundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
             thatBoundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(
                 new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)),
-                    thatParam->GetType()->BaseType()->AddPointer())));
+                    thatParam->GetType()->BaseType()->AddPointer(context))));
             memberConstructorCallArguments.push_back(std::unique_ptr<BoundExpression>(thatBoundMemberVariable));
             std::unique_ptr<BoundFunctionCall> memberConstructorCall = ResolveOverload(U"@constructor", containerScope, memberConstructorCallLookups, memberConstructorCallArguments,
                 GetBoundCompileUnit(), boundFunction.get(), node);
@@ -2393,12 +2455,13 @@ ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* cla
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
+    cmajor::symbols::Context* context = boundCompileUnit->GetContext();
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
-    thisParam->SetType(classType->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(classType->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
-    thatParam->SetType(classType->AddRvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(classType->AddRvalueReference(context));
+    AddMember(thatParam, context);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
@@ -2411,7 +2474,7 @@ ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* cla
             }
         }
     }
-    ComputeName();
+    ComputeName(context);
 }
 
 class ClassMoveConstructorOperation : public Operation
@@ -2437,7 +2500,7 @@ void ClassMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
 {
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer(GetContext())->PlainType(GetContext());
     if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
@@ -2445,9 +2508,9 @@ void ClassMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
         exception.reset(new cmajor::symbols::Exception("cannot move an instance of a static class", node->GetFullSpan(), classType->GetFullSpan()));
         return;
     }
-    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType();
+    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType(GetContext());
     bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference);
-    bool typesEqual = TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference());
+    bool typesEqual = TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference(GetContext()));
     if (!typesEqual)
     {
         ArgumentMatch argumentMatch;
@@ -2511,6 +2574,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
     std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node)
 {
     cmajor::symbols::ClassTypeSymbol* classType = moveConstructor->ClassType();
+    cmajor::symbols::Context* context = GetContext();
     try
     {
         bool nothrow = true;
@@ -2532,7 +2596,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
             std::vector<std::unique_ptr<BoundExpression>> baseConstructorCallArguments;
             cmajor::symbols::ParameterSymbol* thisParam = moveConstructor->Parameters()[0];
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, currentFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -2542,8 +2606,8 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
                 thisToBaseConversion));
             baseConstructorCallArguments.push_back(std::move(baseClassPointerConversion));
             cmajor::symbols::ParameterSymbol* thatParam = moveConstructor->Parameters()[1];
-            cmajor::symbols::FunctionSymbol* thatToBaseConversion = GetBoundCompileUnit().GetConversion(thatParam->GetType(), classType->BaseClass()->AddRvalueReference(), 
-                containerScope, currentFunction, argumentMatch, node);
+            cmajor::symbols::FunctionSymbol* thatToBaseConversion = GetBoundCompileUnit().GetConversion(thatParam->GetType(), 
+                classType->BaseClass()->AddRvalueReference(context), containerScope, currentFunction, argumentMatch, node);
             if (!thatToBaseConversion)
             {
                 throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -2569,7 +2633,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
             else
             {
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToHolderConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(), 
+                cmajor::symbols::FunctionSymbol* thisToHolderConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(context), 
                     containerScope, currentFunction, argumentMatch, node);
                 if (!thisToHolderConversion)
                 {
@@ -2591,18 +2655,18 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
             std::vector<FunctionScopeLookup> memberConstructorCallLookups;
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
-                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             memberConstructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> memberConstructorCallArguments;
             BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
             boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), moveConstructor->GetThisParam())));
             memberConstructorCallArguments.push_back(std::unique_ptr<BoundExpression>(
-                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
             cmajor::symbols::ParameterSymbol* thatParam = moveConstructor->Parameters()[1];
             std::unique_ptr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
             thatBoundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(
                 new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)),
-                    thatParam->GetType()->BaseType()->AddPointer())));
+                    thatParam->GetType()->BaseType()->AddPointer(context))));
             std::vector<FunctionScopeLookup> rvalueLookups;
             rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -2656,12 +2720,13 @@ ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* class
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
+    cmajor::symbols::Context* context = boundCompileUnit->GetContext();
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
-    thisParam->SetType(classType->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(classType->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
-    thatParam->SetType(classType->AddConst()->AddLvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(classType->AddConst(context)->AddLvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
@@ -2675,7 +2740,7 @@ ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* class
             }
         }
     }
-    ComputeName();
+    ComputeName(context);
 }
 
 class ClassCopyAssignmentOperation : public Operation
@@ -2700,7 +2765,7 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer(GetContext())->PlainType(GetContext());
     if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
@@ -2708,7 +2773,7 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
         exception.reset(new cmajor::symbols::Exception("cannot assign an instance of a static class", node->GetFullSpan(), classType->GetFullSpan()));
         return;
     }
-    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType();
+    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType(GetContext());
     bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference);
     bool conversionFunctionExists = false;
     bool typesEqual = TypesEqual(rightType, classType);
@@ -2726,7 +2791,7 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
         }
     }
     if (((flags & CollectFlags::noRvalueRef) != CollectFlags::none ||
-        !TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference()) && !bindToRvalueRef) && (TypesEqual(rightType, classType) || conversionFunctionExists))
+        !TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference(GetContext())) && !bindToRvalueRef) && (TypesEqual(rightType, classType) || conversionFunctionExists))
     {
         if (classType->CopyAssignment())
         {
@@ -2774,6 +2839,7 @@ bool ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
     std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node)
 {
     cmajor::symbols::ClassTypeSymbol* classType = copyAssignment->ClassType();
+    cmajor::symbols::Context* context = GetContext();
     try
     {
         bool nothrow = true;
@@ -2788,7 +2854,7 @@ bool ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
             std::vector<std::unique_ptr<BoundExpression>> baseAssignmentCallArguments;
             cmajor::symbols::ParameterSymbol* thisParam = copyAssignment->Parameters()[0];
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, currentFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -2799,7 +2865,7 @@ bool ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
             baseAssignmentCallArguments.push_back(std::unique_ptr<BoundExpression>(baseClassPointerConversion));
             cmajor::symbols::ParameterSymbol* thatParam = copyAssignment->Parameters()[1];
             cmajor::symbols::FunctionSymbol* thatToBaseConversion = GetBoundCompileUnit().GetConversion(thatParam->GetType(), 
-                classType->BaseClass()->AddConst()->AddLvalueReference(), containerScope, currentFunction, argumentMatch, node);
+                classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, currentFunction, argumentMatch, node);
             if (!thatToBaseConversion)
             {
                 throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -2823,18 +2889,18 @@ bool ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
             std::vector<FunctionScopeLookup> memberAssignmentCallLookups;
             memberAssignmentCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
             memberAssignmentCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
-                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(GetContext())));
             memberAssignmentCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> memberAssignmentCallArguments;
             BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
             boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), copyAssignment->GetThisParam())));
             memberAssignmentCallArguments.push_back(std::unique_ptr<BoundExpression>(
-                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
             cmajor::symbols::ParameterSymbol* thatParam = copyAssignment->Parameters()[1];
             BoundMemberVariable* thatBoundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
             thatBoundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(
                 new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)),
-                    thatParam->GetType()->BaseType()->AddPointer())));
+                    thatParam->GetType()->BaseType()->AddPointer(context))));
             memberAssignmentCallArguments.push_back(std::unique_ptr<BoundExpression>(thatBoundMemberVariable));
             std::unique_ptr<BoundFunctionCall> memberAssignmentCall = ResolveOverload(U"operator=", containerScope, memberAssignmentCallLookups, memberAssignmentCallArguments,
                 GetBoundCompileUnit(), boundFunction.get(), node);
@@ -2881,12 +2947,13 @@ ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* class
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
+    cmajor::symbols::Context* context = boundCompileUnit->GetContext();
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
-    thisParam->SetType(classType->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(classType->AddPointer(context));
+    AddMember(thisParam, context);
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
-    thatParam->SetType(classType->AddRvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(classType->AddRvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
@@ -2900,7 +2967,7 @@ ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* class
             }
         }
     }
-    ComputeName();
+    ComputeName(context);
 }
 
 class ClassMoveAssignmentOperation : public Operation
@@ -2926,7 +2993,7 @@ void ClassMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
 {
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer(GetContext())->PlainType(GetContext());
     if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
@@ -2934,9 +3001,9 @@ void ClassMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
         exception.reset(new cmajor::symbols::Exception("cannot assign an instance of a static class", node->GetFullSpan(), classType->GetFullSpan()));
         return;
     }
-    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType();
+    cmajor::symbols::TypeSymbol* rightType = arguments[1]->GetType()->PlainType(GetContext());
     bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags::bindToRvalueReference);
-    bool typesEqual = TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference());
+    bool typesEqual = TypesEqual(arguments[1]->GetType(), classType->AddRvalueReference(GetContext()));
     if (!typesEqual)
     {
         ArgumentMatch argumentMatch;
@@ -2997,6 +3064,7 @@ bool ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* m
     std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node)
 {
     cmajor::symbols::ClassTypeSymbol* classType = moveAssignment->ClassType();
+    cmajor::symbols::Context* context = GetContext();
     try
     {
         bool nothrow = true;
@@ -3011,7 +3079,7 @@ bool ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* m
             std::vector<std::unique_ptr<BoundExpression>> baseAssignmentCallArguments;
             cmajor::symbols::ParameterSymbol* thisParam = moveAssignment->Parameters()[0];
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = GetBoundCompileUnit().GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, currentFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -3021,8 +3089,8 @@ bool ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* m
                 new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion));
             baseAssignmentCallArguments.push_back(std::move(baseClassPointerConversion));
             cmajor::symbols::ParameterSymbol* thatParam = moveAssignment->Parameters()[1];
-            cmajor::symbols::FunctionSymbol* thatToBaseConversion = GetBoundCompileUnit().GetConversion(thatParam->GetType(), classType->BaseClass()->AddRvalueReference(), 
-                containerScope, currentFunction, argumentMatch, node);
+            cmajor::symbols::FunctionSymbol* thatToBaseConversion = GetBoundCompileUnit().GetConversion(thatParam->GetType(), 
+                classType->BaseClass()->AddRvalueReference(context), containerScope, currentFunction, argumentMatch, node);
             if (!thatToBaseConversion)
             {
                 throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -3050,7 +3118,7 @@ bool ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* m
             std::unique_ptr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
             thatBoundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(
                 new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)),
-                    thatParam->GetType()->BaseType()->AddPointer())));
+                    thatParam->GetType()->BaseType()->AddPointer(context))));
             std::vector<FunctionScopeLookup> swapLookups;
             swapLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             swapLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3084,6 +3152,7 @@ void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::D
     cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     cmajor::symbols::ClassTypeSymbol* classType = boundClass->GetClassTypeSymbol();
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     try
     {
         std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&boundCompileUnit, destructorSymbol));
@@ -3101,7 +3170,7 @@ void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::D
             {
                 ArgumentMatch argumentMatch;
                 cmajor::symbols::FunctionSymbol* thisToHolderConversion = boundCompileUnit.GetConversion(thisParam->GetType(), 
-                    vmtPtrHolderClass->AddPointer(), containerScope, currentFunction, argumentMatch, node);
+                    vmtPtrHolderClass->AddPointer(context), containerScope, currentFunction, argumentMatch, node);
                 if (!thisToHolderConversion)
                 {
                     throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -3118,13 +3187,14 @@ void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::D
             {
                 std::vector<FunctionScopeLookup> memberDestructorCallLookups;
                 memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-                memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, memberVariableSymbol->GetType()->BaseType()->ClassInterfaceOrNsScope()));
+                memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
+                    memberVariableSymbol->GetType()->BaseType()->ClassInterfaceOrNsScope(context)));
                 memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                 std::vector<std::unique_ptr<BoundExpression>> memberDestructorCallArguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), destructorSymbol->GetThisParam())));
                 memberDestructorCallArguments.push_back(std::unique_ptr<BoundExpression>(
-                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                 std::unique_ptr<BoundFunctionCall> memberDestructorCall = ResolveOverload(
                     U"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
                     boundCompileUnit, boundFunction.get(), node);
@@ -3140,7 +3210,7 @@ void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::D
             std::vector<std::unique_ptr<BoundExpression>> baseDestructorCallArguments;
             cmajor::symbols::ParameterSymbol* thisParam = destructorSymbol->Parameters()[0];
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, currentFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -3166,7 +3236,7 @@ void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::D
 
 BoundExpression* MakeExitEntryPtr(BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node)
 {
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(U"System.ExitEntry", cmajor::symbols::ScopeLookup::this_and_base_and_parent);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(U"System.ExitEntry", cmajor::symbols::ScopeLookup::this_and_base_and_parent, boundCompileUnit.GetContext());
     if (symbol)
     {
         if (symbol->IsTypeSymbol())
@@ -3178,7 +3248,7 @@ BoundExpression* MakeExitEntryPtr(BoundCompileUnit& boundCompileUnit, cmajor::sy
             }
             std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
             cmajor::symbols::TypeSymbol* exitEntryType = static_cast<cmajor::symbols::TypeSymbol*>(symbol);
-            cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(boundCompileUnit.GetSymbolTable());
+            cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(boundCompileUnit.GetSymbolTable(), boundCompileUnit.GetContext());
             cmajor::ast::GlobalVariableNode globalVariableNode(node->GetSpan(), cmajor::ast::Specifiers::private_, new cmajor::ast::DotNode(node->GetSpan(),
                 new cmajor::ast::IdentifierNode(node->GetSpan(), U"System"),
                 new cmajor::ast::IdentifierNode(node->GetSpan(), U"ExitEntry")),
@@ -3189,7 +3259,7 @@ BoundExpression* MakeExitEntryPtr(BoundCompileUnit& boundCompileUnit, cmajor::sy
             typeBinder.SetContainerScope(containerScope);
             globalVariableNode.Accept(typeBinder);
             BoundGlobalVariable* exitEntryGlobalVariable = static_cast<BoundGlobalVariable*>(typeBinder.GetBoundGlobalVariable()->Clone());
-            return new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(exitEntryGlobalVariable), exitEntryType->AddPointer());
+            return new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(exitEntryGlobalVariable), exitEntryType->AddPointer(boundCompileUnit.GetContext()));
         }
         else
         {
@@ -3206,6 +3276,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
     BoundCompileUnit& boundCompileUnit, BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, cmajor::symbols::ContainerScope* containerScope, 
     StatementBinder* statementBinder, cmajor::ast::Node* node)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::Symbol* parent = staticConstructorSymbol->Parent();
     Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
         parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
@@ -3226,12 +3297,12 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
             cmajor::symbols::TypeSymbol* staticInitCriticalSectionClassType = ResolveType(&staticInitCriticalSection, boundCompileUnit, containerScope);
             std::vector<FunctionScopeLookup> constructorLookups;
             constructorLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-            constructorLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, staticInitCriticalSectionClassType->ClassInterfaceOrNsScope()));
+            constructorLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, staticInitCriticalSectionClassType->ClassInterfaceOrNsScope(context)));
             constructorLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> constructorArguments;
             constructorArguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
-                new BoundLocalVariable(node->GetSpan(), staticConstructorSymbol->CreateTemporary(staticInitCriticalSectionClassType, node->GetSpan()))),
-                staticInitCriticalSectionClassType->AddPointer())));
+                new BoundLocalVariable(node->GetSpan(), staticConstructorSymbol->CreateTemporary(staticInitCriticalSectionClassType, node->GetSpan(), context))),
+                staticInitCriticalSectionClassType->AddPointer(context))));
             std::unique_ptr<BoundConstructionStatement> constructionStatement(new BoundConstructionStatement(
                 ResolveOverload(U"@constructor", containerScope, constructorLookups, constructorArguments, boundCompileUnit, boundFunction, node), node->GetSpan()));
             boundCompoundStatement->AddStatement(std::move(constructionStatement));
@@ -3245,7 +3316,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
         assignmentLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         std::vector<std::unique_ptr<BoundExpression>> assignmentArguments;
         assignmentArguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundMemberVariable(node->GetSpan(), 
-            classType->InitializedVar())), classType->InitializedVar()->GetType()->AddPointer())));
+            classType->InitializedVar())), classType->InitializedVar()->GetType()->AddPointer(context))));
         assignmentArguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::BoolValue(node->GetSpan(), true)),
             boundCompileUnit.GetSymbolTable().GetTypeByName(U"bool"))));
         std::unique_ptr<BoundAssignmentStatement> assignmentStatement(new BoundAssignmentStatement(
@@ -3301,7 +3372,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 std::vector<std::unique_ptr<BoundExpression>> arguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 std::unique_ptr<BoundExpression> addrOfBoundMemberVariable(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable),
-                    boundMemberVariable->GetType()->AddPointer()));
+                    boundMemberVariable->GetType()->AddPointer(context)));
                 std::unique_ptr<BoundExpression> addrOfBoundMemberVariable2;
                 cmajor::symbols::ClassTypeSymbol* memberVariableClassTypeWithDestructor = nullptr;
                 if (memberVariableSymbol->GetType()->HasNontrivialDestructor())
@@ -3329,10 +3400,10 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                         std::vector<std::unique_ptr<BoundExpression>> enqueueArguments;
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
-                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         const char32_t* enqueueDestructorFunction = U"RtEnqueueDestruction";
                         std::unique_ptr<BoundFunctionCall> enqueueDestructorCall = ResolveOverload(enqueueDestructorFunction, containerScope, enqueueLookups, enqueueArguments, 
                             boundCompileUnit, boundFunction, node);
@@ -3346,10 +3417,10 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                         std::vector<std::unique_ptr<BoundExpression>> atExitArguments;
                         atExitArguments.push_back(std::unique_ptr<BoundExpression>(MakeExitEntryPtr(boundCompileUnit, containerScope, node)));
                         atExitArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
-                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         atExitArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         const char32_t* atExitFunction = U"at_exit";
                         std::unique_ptr<BoundFunctionCall> atExitCall = ResolveOverload(atExitFunction, containerScope, atExitLookups, atExitArguments, boundCompileUnit,
                             boundFunction, node);
@@ -3365,10 +3436,10 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                         std::vector<std::unique_ptr<BoundExpression>> enqueueArguments;
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
-                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         const char32_t* enqueueDestructorFunction = U"RtmEnqueueDestruction";
                         std::unique_ptr<BoundFunctionCall> enqueueDestructorCall = ResolveOverload(enqueueDestructorFunction, containerScope, enqueueLookups, enqueueArguments,
                             boundCompileUnit, boundFunction, node);
@@ -3385,7 +3456,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 std::vector<std::unique_ptr<BoundExpression>> arguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 std::unique_ptr<BoundExpression> addrOfBoundMemberVariable(
-                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer()));
+                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context)));
                 std::unique_ptr<BoundExpression> addrOfBoundMemberVariable2;
                 cmajor::symbols::ClassTypeSymbol* memberVariableClassTypeWithDestructor = nullptr;
                 if (memberVariableSymbol->GetType()->HasNontrivialDestructor())
@@ -3406,10 +3477,10 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                         std::vector<std::unique_ptr<BoundExpression>> enqueueArguments;
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
-                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         const char32_t* enqueueDestructorFunction = U"RtEnqueueDestruction";
                         std::unique_ptr<BoundFunctionCall> enqueueDestructorCall = ResolveOverload(enqueueDestructorFunction, containerScope, enqueueLookups, 
                             enqueueArguments, boundCompileUnit, boundFunction, node);
@@ -3423,10 +3494,10 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                         std::vector<std::unique_ptr<BoundExpression>> atExitArguments;
                         atExitArguments.push_back(std::unique_ptr<BoundExpression>(MakeExitEntryPtr(boundCompileUnit, containerScope, node)));
                         atExitArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
-                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         atExitArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         const char32_t* atExitFunction = U"at_exit";
                         std::unique_ptr<BoundFunctionCall> atExitCall = ResolveOverload(atExitFunction, containerScope, atExitLookups, atExitArguments, boundCompileUnit,
                             boundFunction, node);
@@ -3442,10 +3513,10 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                         std::vector<std::unique_ptr<BoundExpression>> enqueueArguments;
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
-                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
-                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context))));
                         const char32_t* enqueueDestructorFunction = U"RtmEnqueueDestruction";
                         std::unique_ptr<BoundFunctionCall> enqueueDestructorCall = ResolveOverload(enqueueDestructorFunction, containerScope, enqueueLookups, enqueueArguments,
                             boundCompileUnit, boundFunction, node);
@@ -3476,6 +3547,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
     BoundFunction* boundFunction, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, 
     cmajor::ast::Node* node)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::Symbol* parent = constructorSymbol->Parent();
     Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
         parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); 
@@ -3575,7 +3647,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> arguments;
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, boundFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -3606,7 +3678,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> arguments;
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                 containerScope, boundFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
@@ -3615,13 +3687,13 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
             BoundExpression* baseClassPointerConversion = new BoundConversion(std::unique_ptr<BoundExpression>(
                 new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
             arguments.push_back(std::unique_ptr<BoundExpression>(baseClassPointerConversion));
-            bool copyConstructor = constructorSymbol->IsCopyConstructor();
+            bool copyConstructor = constructorSymbol->IsCopyConstructor(context);
             if (copyConstructor)
             {
                 cmajor::symbols::ParameterSymbol* thatParam = constructorSymbol->Parameters()[1];
                 ArgumentMatch argumentMatch;
                 cmajor::symbols::FunctionSymbol* thatToBaseConversion = boundCompileUnit.GetConversion(thatParam->GetType(),
-                    classType->BaseClass()->AddConst()->AddLvalueReference(), containerScope, boundFunction, argumentMatch, node);
+                    classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, boundFunction, argumentMatch, node);
                 if (!thatToBaseConversion)
                 {
                     throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -3648,7 +3720,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
             else
             {
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToHolderConversion = boundCompileUnit.GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(), 
+                cmajor::symbols::FunctionSymbol* thisToHolderConversion = boundCompileUnit.GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(context), 
                     containerScope, boundFunction, argumentMatch, node);
                 if (!thisToHolderConversion)
                 {
@@ -3675,7 +3747,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                 arguments.push_back(std::unique_ptr<BoundExpression>(
-                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                 int n = memberInitializer->Arguments().Count();
                 for (int i = 0; i < n; ++i)
                 {
@@ -3693,7 +3765,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
             }
             else if (!thisInitializer)
             {
-                if (constructorSymbol->IsCopyConstructor())
+                if (constructorSymbol->IsCopyConstructor(context))
                 {
                     std::vector<FunctionScopeLookup> lookups;
                     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3703,7 +3775,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     arguments.push_back(std::unique_ptr<BoundExpression>(
-                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                     cmajor::ast::CloneContext cloneContext;
                     cmajor::ast::DotNode thatMemberVarNode(node->GetSpan(), constructorNode->Parameters()[0]->Clone(cloneContext),
                         new cmajor::ast::IdentifierNode(node->GetSpan(), memberVariableSymbol->Name()));
@@ -3713,7 +3785,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     boundFunction->MoveTemporaryDestructorCallsTo(*constructorCall);
                     boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
                 }
-                else if (constructorSymbol->IsMoveConstructor())
+                else if (constructorSymbol->IsMoveConstructor(context))
                 {
                     std::vector<FunctionScopeLookup> lookups;
                     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3723,12 +3795,12 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     arguments.push_back(std::unique_ptr<BoundExpression>(
-                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                     cmajor::symbols::ParameterSymbol* thatParam = constructorSymbol->Parameters()[1];
                     std::unique_ptr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
                     thatBoundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(
                         new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(
-                            new BoundParameter(node->GetSpan(), thatParam)), thatParam->GetType()->BaseType()->AddPointer())));
+                            new BoundParameter(node->GetSpan(), thatParam)), thatParam->GetType()->BaseType()->AddPointer(context))));
                     std::vector<FunctionScopeLookup> rvalueLookups;
                     rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                     rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3752,7 +3824,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     arguments.push_back(std::unique_ptr<BoundExpression>(
-                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                     std::unique_ptr<cmajor::symbols::Exception> exception;
                     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
                     std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, boundFunction, 
@@ -3783,6 +3855,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
     BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, 
     StatementBinder* statementBinder, bool generateDefault, cmajor::ast::Node* node)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::Symbol* parent = assignmentFunctionSymbol->Parent();
     Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
         parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
@@ -3799,7 +3872,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
     {
         cmajor::symbols::ParameterSymbol* thisParam = assignmentFunctionSymbol->GetThisParam();
         Assert(thisParam, "this parameter expected");
-        if (assignmentFunctionSymbol->IsCopyAssignment())
+        if (assignmentFunctionSymbol->IsCopyAssignment(context))
         {
             if (classType->BaseClass())
             {
@@ -3809,7 +3882,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                 lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                 std::vector<std::unique_ptr<BoundExpression>> arguments;
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), 
+                cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
                     containerScope, boundFunction, argumentMatch, node);
                 if (!thisToBaseConversion)
                 {
@@ -3820,7 +3893,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                 arguments.push_back(std::unique_ptr<BoundExpression>(baseClassPointerConversion));
                 cmajor::symbols::ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
                 cmajor::symbols::FunctionSymbol* thatToBaseConversion = boundCompileUnit.GetConversion(thatParam->GetType(),
-                    classType->BaseClass()->AddConst()->AddLvalueReference(), containerScope, boundFunction, argumentMatch, node);
+                    classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, boundFunction, argumentMatch, node);
                 if (!thatToBaseConversion)
                 {
                     throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -3846,7 +3919,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     arguments.push_back(std::unique_ptr<BoundExpression>(
-                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                        new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                     cmajor::ast::CloneContext cloneContext;
                     cmajor::ast::DotNode thatMemberVarNode(node->GetSpan(), assignmentNode->Parameters()[0]->Clone(cloneContext),
                         new cmajor::ast::IdentifierNode(node->GetSpan(), memberVariableSymbol->Name()));
@@ -3858,7 +3931,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                 }
             }
         }
-        else if (assignmentFunctionSymbol->IsMoveAssignment())
+        else if (assignmentFunctionSymbol->IsMoveAssignment(context))
         {
             if (classType->BaseClass())
             {
@@ -3868,8 +3941,8 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                 lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                 std::vector<std::unique_ptr<BoundExpression>> arguments;
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), containerScope,
-                    boundFunction, argumentMatch, node);
+                cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
+                    containerScope, boundFunction, argumentMatch, node);
                 if (!thisToBaseConversion)
                 {
                     throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -3879,7 +3952,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                 arguments.push_back(std::unique_ptr<BoundExpression>(baseClassPointerConversion));
                 cmajor::symbols::ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
                 cmajor::symbols::FunctionSymbol* thatToBaseConversion = boundCompileUnit.GetConversion(thatParam->GetType(),
-                    classType->BaseClass()->AddRvalueReference(), containerScope, boundFunction, argumentMatch, node);
+                    classType->BaseClass()->AddRvalueReference(context), containerScope, boundFunction, argumentMatch, node);
                 if (!thatToBaseConversion)
                 {
                     throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -3907,7 +3980,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
                     arguments.push_back(std::unique_ptr<BoundExpression>(boundMemberVariable));
                     BoundMemberVariable* thatBoundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     cmajor::symbols::ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
-                    cmajor::symbols::TypeSymbol* thatPtrType = thatParam->GetType()->RemoveReference()->AddPointer();
+                    cmajor::symbols::TypeSymbol* thatPtrType = thatParam->GetType()->RemoveReference(context)->AddPointer(context);
                     thatBoundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(
                         new BoundParameter(node->GetSpan(), thatParam)), thatPtrType)));
                     arguments.push_back(std::unique_ptr<BoundExpression>(thatBoundMemberVariable));
@@ -3930,6 +4003,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
 void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbol, cmajor::ast::DestructorNode* destructorNode, BoundCompoundStatement* boundCompoundStatement, 
     BoundFunction* boundFunction, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, cmajor::ast::Node* node)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::Symbol* parent = destructorSymbol->Parent();
     Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
         parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
@@ -3949,7 +4023,7 @@ void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbo
             else
             {
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisToHolderConversion = boundCompileUnit.GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(), containerScope, 
+                cmajor::symbols::FunctionSymbol* thisToHolderConversion = boundCompileUnit.GetConversion(thisParam->GetType(), vmtPtrHolderClass->AddPointer(context), containerScope, 
                     boundFunction, argumentMatch, node);
                 if (!thisToHolderConversion)
                 {
@@ -3968,13 +4042,13 @@ void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbo
                 std::vector<FunctionScopeLookup> memberDestructorCallLookups;
                 memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
                 memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, 
-                    memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                    memberVariableSymbol->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context)));
                 memberDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                 std::vector<std::unique_ptr<BoundExpression>> memberDestructorCallArguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), destructorSymbol->GetThisParam())));
                 memberDestructorCallArguments.push_back(std::unique_ptr<BoundExpression>(
-                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
+                    new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer(context))));
                 std::unique_ptr<BoundFunctionCall> memberDestructorCall = ResolveOverload(U"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
                     boundCompileUnit, boundFunction, node);
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundExpressionStatement(std::move(memberDestructorCall), node->GetSpan())));
@@ -3988,8 +4062,8 @@ void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbo
             baseDestructorCallLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> baseDestructorCallArguments;
             ArgumentMatch argumentMatch;
-            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(), containerScope, 
-                boundFunction, argumentMatch, node);
+            cmajor::symbols::FunctionSymbol* thisToBaseConversion = boundCompileUnit.GetConversion(thisParam->GetType(), classType->BaseClass()->AddPointer(context), 
+                containerScope, boundFunction, argumentMatch, node);
             if (!thisToBaseConversion)
             {
                 throw cmajor::symbols::Exception("base class conversion not found", node->GetFullSpan(), classType->GetFullSpan());
@@ -4012,7 +4086,8 @@ void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbo
     }
 }
 
-Operation::Operation(const std::u32string& groupName_, int arity_, BoundCompileUnit& boundCompileUnit_) : groupName(groupName_), arity(arity_), boundCompileUnit(boundCompileUnit_)
+Operation::Operation(const std::u32string& groupName_, int arity_, BoundCompileUnit& boundCompileUnit_) : 
+    groupName(groupName_), arity(arity_), boundCompileUnit(boundCompileUnit_), context(boundCompileUnit.GetContext())
 {
 }
 
@@ -4172,10 +4247,10 @@ void OperationRepository::GenerateCopyConstructorFor(cmajor::symbols::ClassTypeS
 }
 
 void OperationRepository::GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, 
-    cmajor::ast::Node* node)
+    cmajor::symbols::Context* context, cmajor::ast::Node* node)
 {
     if (boundCompileUnit.HasCopyConstructorFor(interfaceTypeSymbol->TypeId())) return;
-    std::unique_ptr<cmajor::symbols::InterfaceTypeCopyConstructor> copyConstructor(new cmajor::symbols::InterfaceTypeCopyConstructor(interfaceTypeSymbol));
+    std::unique_ptr<cmajor::symbols::InterfaceTypeCopyConstructor> copyConstructor(new cmajor::symbols::InterfaceTypeCopyConstructor(interfaceTypeSymbol, context));
     boundCompileUnit.GetSymbolTable().SetFunctionIdFor(copyConstructor.get());
     copyConstructor->SetCompileUnit(boundCompileUnit.GetCompileUnitNode());
     copyConstructor->SetModule(&boundCompileUnit.GetModule());

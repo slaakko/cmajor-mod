@@ -99,6 +99,7 @@ private:
     int fileIndex;
     cmajor::ir::Emitter* emitter;
     cmajor::symbols::SymbolTable* symbolTable;
+    cmajor::symbols::Context* context;
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;
     cmajor::masm::ir::CompileUnit* nativeCompileUnit;

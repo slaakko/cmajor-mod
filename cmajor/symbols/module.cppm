@@ -94,6 +94,7 @@ public:
     void AddReferencedModule(Module* referencedModule);
     const std::vector<Module*>& ReferencedModules() const { return referencedModules; }
     void Dump(util::CodeFormatter& formatter);
+    void Check();
 private:
     Module* module;
     std::vector<Module*> referencedModules;
@@ -160,9 +161,9 @@ class Module
 {
 public:
     Module();
-    Module(const std::string& filePath);
-    Module(const std::string& filePath, bool readRoot);
-    Module(const std::u32string& name_, const std::string& filePath_, cmajor::ast::Target target);
+    Module(Context* context_, const std::string& filePath);
+    Module(Context* context_, const std::string& filePath, bool readRoot);
+    Module(Context* context_, const std::u32string& name_, const std::string& filePath_, cmajor::ast::Target target);
     ~Module();
     uint8_t Format() const { return format; }
     ModuleFlags Flags() const { return flags; }
@@ -175,7 +176,7 @@ public:
     void AddResourceFilePath(const std::string& resourceFilePath_);
     const std::vector<Module*>& AllReferencedModules() const { return allRefModules; }
     void PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
-        cmajor::ast::CompileUnitNode* rootCompileUnit);
+        cmajor::ast::CompileUnitNode* rootCompileUnit, Context* context);
     SymbolTable& GetSymbolTable() { return *symbolTable; }
     bool HasSymbolTable() const { return symbolTable != nullptr; }
     void CreateSymbolTable();
@@ -211,7 +212,7 @@ public:
     const std::vector<std::string>& ExportedData() { return exportedData; }
     const std::vector<std::string>& AllExportedFunctions() const { return allExportedFunctions; }
     const std::vector<std::string>& AllExportedData() const { return allExportedData; }
-    void Dump();
+    void Dump(Context* context);
     ModuleDependency& GetModuleDependency() { return moduleDependency; }
     void SetCurrentProjectName(const std::u32string& currentProjectName_);
     std::u32string GetCurrentProjectName();
@@ -229,7 +230,7 @@ public:
     std::vector<Module*>& ReferencedModules() { return referencedModules; }
     void AddReferencedModule(Module* referencedModule);
     const std::vector<std::string>& ReferenceFilePaths() const { return referenceFilePaths; }
-    void ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module* rootModule, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
+    void ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Context* context, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
         std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first);
     int DebugLogIndent() const { return debugLogIndent; }
     void IncDebugLogIndent() { ++debugLogIndent; }
@@ -279,7 +280,9 @@ public:
     void ImportResourceScriptFilePaths(Module* module);
     const std::vector<std::string>& ResourceScriptFilePaths() const { return resourceScriptFilePaths; }
     const std::vector<std::string>& AllResourceScriptFilePaths() const { return allResourceScriptFilePaths; }
+    Context* GetContext() { return context; }
 private:
+    Context* context;
     uint8_t format;
     ModuleFlags flags;
     std::u32string name;
@@ -349,8 +352,8 @@ private:
 std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId);
 int GetLineNumber(const soul::ast::FullSpan& fullSpan);
 soul::ast::LineColLen GetLineColLen(const soul::ast::FullSpan& fullSpan);
-bool HasRootModuleForCurrentThread();
-Module* GetRootModuleForCurrentThread();
-void SetRootModuleForCurrentThread(Module* rootModule_);
+//bool HasRootModuleForCurrentThread();
+//Module* GetRootModuleForCurrentThread();
+//void SetRootModuleForCurrentThread(Module* rootModule_);
 
 } // namespace cmajor::symbols

@@ -10,6 +10,7 @@ module;
 module cmajor.binder.bound.expression;
 
 import cmajor.binder.type.resolver;
+import cmajor.binder.bound.compile.unit;
 import cmajor.binder.bound.node.visitor;
 import util;
 
@@ -54,32 +55,34 @@ BoundExpression* BoundParameter::Clone()
 
 void BoundParameter::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = parameterSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        emitter.Stack().Push(parameterSymbol->IrObject(emitter));
+        emitter.Stack().Push(parameterSymbol->IrObject(emitter, context));
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        void* value = emitter.CreateLoad(type->IrType(emitter), parameterSymbol->IrObject(emitter));
+        void* value = emitter.CreateLoad(type->IrType(emitter, context), parameterSymbol->IrObject(emitter, context));
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePtrOrRef();
-            value = emitter.CreateLoad(type->IrType(emitter), value);
+            type = type->RemovePtrOrRef(context);
+            value = emitter.CreateLoad(type->IrType(emitter, context), value);
         }
         emitter.Stack().Push(value);
     }
     else
     {
-        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), parameterSymbol->IrObject(emitter)));
+        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter, context), parameterSymbol->IrObject(emitter, context)));
     }
     DestroyTemporaries(emitter);
 }
 
 void BoundParameter::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = parameterSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
     void* value = emitter.Stack().Pop();
@@ -89,18 +92,18 @@ void BoundParameter::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFl
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        void* ptr = emitter.CreateLoad(type->IrType(emitter), parameterSymbol->IrObject(emitter));
+        void* ptr = emitter.CreateLoad(type->IrType(emitter, context), parameterSymbol->IrObject(emitter, context));
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 1; i < n; ++i)
         {
-            type = type->RemovePtrOrRef();
-            ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
+            type = type->RemovePtrOrRef(context);
+            ptr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
         }
         emitter.CreateStore(value, ptr);
     }
     else
     {
-        emitter.CreateStore(value, parameterSymbol->IrObject(emitter));
+        emitter.CreateStore(value, parameterSymbol->IrObject(emitter, context));
     }
     DestroyTemporaries(emitter);
 }
@@ -122,20 +125,21 @@ BoundExpression* BoundLocalVariable::Clone()
 
 void BoundLocalVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = localVariableSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        emitter.Stack().Push(localVariableSymbol->IrObject(emitter));
+        emitter.Stack().Push(localVariableSymbol->IrObject(emitter, context));
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        void* value = emitter.CreateLoad(type->IrType(emitter), localVariableSymbol->IrObject(emitter));
+        void* value = emitter.CreateLoad(type->IrType(emitter, context), localVariableSymbol->IrObject(emitter, context));
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePtrOrRef();
-            value = emitter.CreateLoad(type->IrType(emitter), value);
+            type = type->RemovePtrOrRef(context);
+            value = emitter.CreateLoad(type->IrType(emitter, context), value);
         }
         emitter.Stack().Push(value);
     }
@@ -146,13 +150,14 @@ void BoundLocalVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
             throw cmajor::symbols::Exception("tried to load from a class type local variable '" + util::ToUtf8(localVariableSymbol->Name()) + "'", GetFullSpan(),
                 localVariableSymbol->GetFullSpan());
         }
-        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), localVariableSymbol->IrObject(emitter)));
+        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter, context), localVariableSymbol->IrObject(emitter, context)));
     }
     DestroyTemporaries(emitter);
 }
 
 void BoundLocalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = localVariableSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
     void* value = emitter.Stack().Pop();
@@ -162,18 +167,18 @@ void BoundLocalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        void* ptr = emitter.CreateLoad(type->IrType(emitter), localVariableSymbol->IrObject(emitter));
+        void* ptr = emitter.CreateLoad(type->IrType(emitter, context), localVariableSymbol->IrObject(emitter, context));
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 1; i < n; ++i)
         {
-            type = type->RemovePtrOrRef();
-            ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
+            type = type->RemovePtrOrRef(context);
+            ptr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
         }
         emitter.CreateStore(value, ptr);
     }
     else
     {
-        emitter.CreateStore(value, localVariableSymbol->IrObject(emitter));
+        emitter.CreateStore(value, localVariableSymbol->IrObject(emitter, context));
     }
     DestroyTemporaries(emitter);
 }
@@ -205,6 +210,7 @@ BoundExpression* BoundMemberVariable::Clone()
 
 void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = memberVariableSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
     Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); 
@@ -220,8 +226,8 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
                 staticConstructorCall.Load(emitter, cmajor::ir::OperationFlags::none);
             }
         }
-        emitter.Stack().Push(classType->StaticObject(emitter, false));
-        ptrType = classType->StaticObjectType(emitter);
+        emitter.Stack().Push(classType->StaticObject(emitter, false, context));
+        ptrType = classType->StaticObjectType(emitter, context);
     }
     else
     {
@@ -230,7 +236,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
             throw cmajor::symbols::Exception("class pointer of the member variable not set", GetFullSpan(), memberVariableSymbol->GetFullSpan());
         }
         classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
-        ptrType = classType->IrType(emitter);
+        ptrType = classType->IrType(emitter, context);
     }
     void* ptr = emitter.Stack().Pop();
     void* memberVariablePtr = emitter.GetMemberVariablePtr(ptrType, ptr, memberVariableSymbol->LayoutIndex());
@@ -240,24 +246,25 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        void* value = emitter.CreateLoad(type->IrType(emitter), memberVariablePtr);
+        void* value = emitter.CreateLoad(type->IrType(emitter, context), memberVariablePtr);
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePtrOrRef();
-            value = emitter.CreateLoad(type->IrType(emitter), value);
+            type = type->RemovePtrOrRef(context);
+            value = emitter.CreateLoad(type->IrType(emitter, context), value);
         }
         emitter.Stack().Push(value);
     }
     else
     {
-        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), memberVariablePtr));
+        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter, context), memberVariablePtr));
     }
     DestroyTemporaries(emitter);
 }
 
 void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(memberVariableSymbol->Parent());
     cmajor::symbols::TypeSymbol* type = memberVariableSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
@@ -280,24 +287,24 @@ void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
                     staticConstructorCall.Load(emitter, cmajor::ir::OperationFlags::none);
                 }
             }
-            emitter.Stack().Push(classType->StaticObject(emitter, false));
-            ptrType = classType->StaticObjectType(emitter);
+            emitter.Stack().Push(classType->StaticObject(emitter, false, context));
+            ptrType = classType->StaticObjectType(emitter, context);
         }
         else
         {
             classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
-            ptrType = classType->IrType(emitter);
+            ptrType = classType->IrType(emitter, context);
         }
         void* ptr = emitter.Stack().Pop();
         void* memberVariablePtr = emitter.GetMemberVariablePtr(ptrType, ptr, memberVariableSymbol->LayoutIndex());
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
-            void* ptr = emitter.CreateLoad(type->IrType(emitter), memberVariablePtr);
+            void* ptr = emitter.CreateLoad(type->IrType(emitter, context), memberVariablePtr);
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
+                type = type->RemovePtrOrRef(context);
+                ptr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
             }
             emitter.CreateStore(value, ptr);
         }
@@ -331,10 +338,11 @@ BoundExpression* BoundConstant::Clone()
 
 void BoundConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     emitter.SetCurrentDebugLocation(GetSpan());
     if (constantSymbol->GetValue()->GetValueType() == cmajor::symbols::ValueType::arrayValue && (flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        emitter.Stack().Push(constantSymbol->ArrayIrObject(emitter, false));
+        emitter.Stack().Push(constantSymbol->ArrayIrObject(emitter, false, context));
     }
     else
     {
@@ -348,7 +356,7 @@ void BoundConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlag
         }
         else
         {
-            emitter.Stack().Push(constantSymbol->GetValue()->IrValue(emitter));
+            emitter.Stack().Push(constantSymbol->GetValue()->IrValue(emitter, context));
         }
     }
     DestroyTemporaries(emitter);
@@ -376,6 +384,7 @@ BoundExpression* BoundEnumConstant::Clone()
 
 void BoundEnumConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
@@ -387,7 +396,7 @@ void BoundEnumConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
     }
     else
     {
-        emitter.Stack().Push(enumConstantSymbol->GetValue()->IrValue(emitter));
+        emitter.Stack().Push(enumConstantSymbol->GetValue()->IrValue(emitter, context));
     }
     DestroyTemporaries(emitter);
 }
@@ -416,6 +425,7 @@ BoundExpression* BoundLiteral::Clone()
 
 void BoundLiteral::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
@@ -427,7 +437,7 @@ void BoundLiteral::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags
     }
     else
     {
-        emitter.Stack().Push(value->IrValue(emitter));
+        emitter.Stack().Push(value->IrValue(emitter, context));
     }
     DestroyTemporaries(emitter);
 }
@@ -459,33 +469,35 @@ BoundExpression* BoundGlobalVariable::Clone()
 
 void BoundGlobalVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = globalVariableSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
-    void* globalVariablePtr = globalVariableSymbol->IrObject(emitter);
+    void* globalVariablePtr = globalVariableSymbol->IrObject(emitter, context);
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         emitter.Stack().Push(globalVariablePtr);
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        void* value = emitter.CreateLoad(type->IrType(emitter), globalVariablePtr);
+        void* value = emitter.CreateLoad(type->IrType(emitter, context), globalVariablePtr);
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePtrOrRef();
-            value = emitter.CreateLoad(type->IrType(emitter), value);
+            type = type->RemovePtrOrRef(context);
+            value = emitter.CreateLoad(type->IrType(emitter, context), value);
         }
         emitter.Stack().Push(value);
     }
     else
     {
-        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), globalVariablePtr));
+        emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter, context), globalVariablePtr));
     }
     DestroyTemporaries(emitter);
 }
 
 void BoundGlobalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     cmajor::symbols::TypeSymbol* type = globalVariableSymbol->GetType();
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
@@ -495,15 +507,15 @@ void BoundGlobalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
     else
     {
         void* value = emitter.Stack().Pop();
-        void* ptr = globalVariableSymbol->IrObject(emitter);
+        void* ptr = globalVariableSymbol->IrObject(emitter, context);
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
-            void* loadedPtr = emitter.CreateLoad(type->IrType(emitter), ptr);
+            void* loadedPtr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                loadedPtr = emitter.CreateLoad(type->IrType(emitter), loadedPtr);
+                type = type->RemovePtrOrRef(context);
+                loadedPtr = emitter.CreateLoad(type->IrType(emitter, context), loadedPtr);
             }
             emitter.CreateStore(value, loadedPtr);
         }
@@ -607,6 +619,7 @@ BoundExpression* BoundSizeOfExpression::Clone()
 
 void BoundSizeOfExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot take address of a sizeof expression", GetFullSpan());
@@ -617,7 +630,7 @@ void BoundSizeOfExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Opera
     }
     else
     {
-        emitter.Stack().Push(emitter.SizeOf(pointerType->RemovePointer()->IrType(emitter), pointerType->IrType(emitter)));
+        emitter.Stack().Push(emitter.SizeOf(pointerType->RemovePointer(context)->IrType(emitter, context), pointerType->IrType(emitter, context)));
     }
     DestroyTemporaries(emitter);
 }
@@ -877,6 +890,7 @@ std::vector<std::unique_ptr<cmajor::ir::GenObject>> BoundFunctionCall::ReleaseTe
 
 void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         if (functionSymbol->IsArrayElementAccess())
@@ -887,7 +901,7 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
                 genObjects.push_back(argument.get());
                 genObjects.back()->SetType(argument->GetType());
             }
-            functionSymbol->GenerateCall(emitter, genObjects, flags);
+            functionSymbol->GenerateCall(emitter, genObjects, flags, context);
         }
         else
         {
@@ -928,11 +942,11 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         {
             cmajor::symbols::InterfaceTypeSymbol* interfaceType = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(functionSymbol->Parent());
             cmajor::symbols::MemberFunctionSymbol* interfaceMemberFunction = static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol);
-            interfaceType->GenerateCall(emitter, genObjects, callFlags, interfaceMemberFunction);
+            interfaceType->GenerateCall(emitter, genObjects, callFlags, interfaceMemberFunction, context);
         }
         else
         {
-            functionSymbol->GenerateCall(emitter, genObjects, callFlags);
+            functionSymbol->GenerateCall(emitter, genObjects, callFlags, context);
         }
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
@@ -941,8 +955,8 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 0; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                value = emitter.CreateLoad(type->IrType(emitter), value);
+                type = type->RemovePtrOrRef(context);
+                value = emitter.CreateLoad(type->IrType(emitter, context), value);
             }
             emitter.Stack().Push(value);
         }
@@ -952,6 +966,7 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
 
 void BoundFunctionCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot take address of a function call", GetFullSpan(), functionSymbol->GetFullSpan());
@@ -982,13 +997,13 @@ void BoundFunctionCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
         }
         if (functionSymbol->IsArrayElementAccess())
         {
-            functionSymbol->GenerateCall(emitter, genObjects, callFlags | cmajor::ir::OperationFlags::addr);
+            functionSymbol->GenerateCall(emitter, genObjects, callFlags | cmajor::ir::OperationFlags::addr, context);
             void* ptr = emitter.Stack().Pop();
             emitter.CreateStore(value, ptr);
         }
         else
         {
-            functionSymbol->GenerateCall(emitter, genObjects, callFlags);
+            functionSymbol->GenerateCall(emitter, genObjects, callFlags, context);
             cmajor::symbols::TypeSymbol* type = functionSymbol->ReturnType();
             void* ptr = emitter.Stack().Pop();
             if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
@@ -1000,14 +1015,14 @@ void BoundFunctionCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
                 uint8_t n = GetDerefCount(flags);
                 for (uint8_t i = 1; i < n; ++i)
                 {
-                    type = type->RemovePtrOrRef();
-                    ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
+                    type = type->RemovePtrOrRef(context);
+                    ptr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
                 }
                 emitter.CreateStore(value, ptr);
             }
             else
             {
-                emitter.CreateStore(emitter.CreateLoad(type->IrType(emitter), value), ptr);
+                emitter.CreateStore(emitter.CreateLoad(type->IrType(emitter, context), value), ptr);
             }
         }
     }
@@ -1052,6 +1067,7 @@ BoundExpression* BoundDelegateCall::Clone()
 
 void BoundDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot take address of a delegate call", GetFullSpan(), delegateTypeSymbol->GetFullSpan());
@@ -1075,7 +1091,7 @@ void BoundDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         {
             emitter.SetSpan(GetSpan());
         }
-        delegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags);
+        delegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags, context);
         cmajor::symbols::TypeSymbol* type = delegateTypeSymbol->ReturnType();
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
@@ -1083,8 +1099,8 @@ void BoundDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 0; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                value = emitter.CreateLoad(type->IrType(emitter), value);
+                type = type->RemovePtrOrRef(context);
+                value = emitter.CreateLoad(type->IrType(emitter, context), value);
             }
             emitter.Stack().Push(value);
         }
@@ -1094,6 +1110,7 @@ void BoundDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
 
 void BoundDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot take address of a delegate call", GetFullSpan(), delegateTypeSymbol->GetFullSpan());
@@ -1118,7 +1135,7 @@ void BoundDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
         {
             emitter.SetSpan(GetSpan());
         }
-        delegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags);
+        delegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags, context);
         cmajor::symbols::TypeSymbol* type = delegateTypeSymbol->ReturnType();
         void* ptr = emitter.Stack().Pop();
         if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
@@ -1130,15 +1147,15 @@ void BoundDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
+                type = type->RemovePtrOrRef(context);
+                ptr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
             }
             emitter.CreateStore(value, ptr);
         }
         else
         {
 
-            emitter.CreateStore(emitter.CreateLoad(type->IrType(emitter), value), ptr);
+            emitter.CreateStore(emitter.CreateLoad(type->IrType(emitter, context), value), ptr);
         }
     }
     DestroyTemporaries(emitter);
@@ -1198,6 +1215,7 @@ BoundExpression* BoundClassDelegateCall::Clone()
 
 void BoundClassDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot take address of a class delegate call", GetFullSpan(), classDelegateTypeSymbol->GetFullSpan());
@@ -1221,7 +1239,7 @@ void BoundClassDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Oper
         {
             emitter.SetSpan(GetSpan());
         }
-        classDelegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags);
+        classDelegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags, context);
         cmajor::symbols::TypeSymbol* type = classDelegateTypeSymbol->ReturnType();
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
@@ -1229,8 +1247,8 @@ void BoundClassDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Oper
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 0; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                value = emitter.CreateLoad(type->IrType(emitter), value);
+                type = type->RemovePtrOrRef(context);
+                value = emitter.CreateLoad(type->IrType(emitter, context), value);
             }
             emitter.Stack().Push(value);
         }
@@ -1240,6 +1258,7 @@ void BoundClassDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Oper
 
 void BoundClassDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot take address of a clas delegate call", GetFullSpan(), classDelegateTypeSymbol->GetFullSpan());
@@ -1264,7 +1283,7 @@ void BoundClassDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
         {
             emitter.SetSpan(GetSpan());
         }
-        classDelegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags);
+        classDelegateTypeSymbol->GenerateCall(emitter, genObjects, callFlags, context);
         cmajor::symbols::TypeSymbol* type = classDelegateTypeSymbol->ReturnType();
         void* ptr = emitter.Stack().Pop();
         if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
@@ -1276,14 +1295,14 @@ void BoundClassDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePtrOrRef();
-                ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
+                type = type->RemovePtrOrRef(context);
+                ptr = emitter.CreateLoad(type->IrType(emitter, context), ptr);
             }
             emitter.CreateStore(value, ptr);
         }
         else
         {
-            emitter.CreateStore(emitter.CreateLoad(type->IrType(emitter), value), ptr);
+            emitter.CreateStore(emitter.CreateLoad(type->IrType(emitter, context), value), ptr);
         }
     }
     DestroyTemporaries(emitter);
@@ -1516,6 +1535,7 @@ BoundExpression* BoundConversion::Clone()
 
 void BoundConversion::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     sourceExpr->Load(emitter, flags);
     std::vector<cmajor::ir::GenObject*> genObjects;
     for (const std::unique_ptr<BoundLocalVariable>& temporary : temporaries)
@@ -1523,7 +1543,7 @@ void BoundConversion::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFl
         genObjects.push_back(temporary.get());
         genObjects.back()->SetType(temporary->GetType());
     }
-    conversionFun->GenerateCall(emitter, genObjects, cmajor::ir::OperationFlags::none);
+    conversionFun->GenerateCall(emitter, genObjects, cmajor::ir::OperationFlags::none, context);
     DestroyTemporaries(emitter);
 }
 
@@ -1550,7 +1570,7 @@ std::unique_ptr<cmajor::symbols::Value> BoundConversion::ToValue(BoundCompileUni
     std::unique_ptr<cmajor::symbols::Value> sourceValue = sourceExpr->ToValue(boundCompileUnit);
     if (sourceValue)
     {
-        return conversionFun->ConvertValue(sourceValue);
+        return conversionFun->ConvertValue(sourceValue, boundCompileUnit.GetContext());
     }
     return std::unique_ptr<cmajor::symbols::Value>();
 }
@@ -1585,23 +1605,24 @@ BoundExpression* BoundIsExpression::Clone()
 
 void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
         Assert(exprType->IsPointerType(), "pointer type expected"); 
-        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(context);
         Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
         {
-            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
         }
-        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter, context), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
         void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
-        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false, context);
         void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* retType = emitter.GetIrTypeForBool();
         std::vector<void*> paramTypes;
@@ -1621,18 +1642,18 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
         Assert(exprType->IsPointerType(), "pointer type expected"); 
-        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(context);
         Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
         {
-            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
         }
-        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter, context), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
         void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* leftClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), leftClassIdPtr), emitter.GetIrTypeForULong());
-        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false, context);
         void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* rightClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), rightClassIdPtr), emitter.GetIrTypeForULong());
         void* remainder = emitter.CreateURem(leftClassId, rightClassId);
@@ -1649,17 +1670,17 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
         Assert(exprType->IsPointerType(), "pointer type expected");
-        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(context);
         Assert(leftType->IsClassTypeSymbol(), "class type expected");
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
         {
-            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
         }
-        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter, context), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
         void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetTypeIdVmtIndexOffset());
-        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false, context);
         void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetTypeIdVmtIndexOffset());
         void* retType = emitter.GetIrTypeForBool();
         std::vector<void*> paramTypes;
@@ -1695,10 +1716,11 @@ bool BoundIsExpression::ContainsExceptionCapture() const
 }
 
 BoundAsExpression::BoundAsExpression(std::unique_ptr<BoundExpression>&& expr_, cmajor::symbols::ClassTypeSymbol* rightClassType_, std::unique_ptr<BoundLocalVariable>&& variable_,
-    std::unique_ptr<BoundLocalVariable>&& leftClassIdVar_, std::unique_ptr<BoundLocalVariable>&& rightClassIdVar_) :
-    BoundExpression(expr_->GetSpan(), BoundNodeType::boundAsExpression, rightClassType_->AddPointer()),
+    std::unique_ptr<BoundLocalVariable>&& leftClassIdVar_, std::unique_ptr<BoundLocalVariable>&& rightClassIdVar_, cmajor::symbols::Context* context_) :
+    BoundExpression(expr_->GetSpan(), BoundNodeType::boundAsExpression, rightClassType_->AddPointer(context_)),
     expr(std::move(expr_)), rightClassType(rightClassType_), variable(std::move(variable_)),
-    leftClassIdVar(std::move(leftClassIdVar_)), rightClassIdVar(std::move(rightClassIdVar_))
+    leftClassIdVar(std::move(leftClassIdVar_)), rightClassIdVar(std::move(rightClassIdVar_)), 
+    context(context_)
 {
     expr->SetParent(this);
     variable->SetParent(this);
@@ -1714,28 +1736,29 @@ BoundExpression* BoundAsExpression::Clone()
     clonedVariable.reset(static_cast<BoundLocalVariable*>(variable->Clone()));
     return new BoundAsExpression(std::move(clonedExpr), rightClassType, std::move(clonedVariable),
         std::unique_ptr<BoundLocalVariable>(static_cast<BoundLocalVariable*>(leftClassIdVar->Clone())),
-        std::unique_ptr<BoundLocalVariable>(static_cast<BoundLocalVariable*>(rightClassIdVar->Clone())));
+        std::unique_ptr<BoundLocalVariable>(static_cast<BoundLocalVariable*>(rightClassIdVar->Clone())), context);
 }
 
 void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
         Assert(exprType->IsPointerType(), "pointer type expected"); 
-        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(context);
         Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
         {
-            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
         }
-        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter, context), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
         void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
-        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false, context);
         void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
 
         void* retType = emitter.GetIrTypeForBool();
@@ -1754,11 +1777,11 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* continueBlock = emitter.CreateBasicBlock("continue");
         emitter.CreateCondBr(remainderIsZero, trueBlock, falseBlock);
         emitter.SetCurrentBasicBlock(trueBlock);
-        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer()->IrType(emitter)));
+        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer(context)->IrType(emitter, context)));
         variable->Store(emitter, cmajor::ir::OperationFlags::none);
         emitter.CreateBr(continueBlock);
         emitter.SetCurrentBasicBlock(falseBlock);
-        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer()->IrType(emitter)));
+        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer(context)->IrType(emitter, context)));
         variable->Store(emitter, cmajor::ir::OperationFlags::none);
         emitter.CreateBr(continueBlock);
         emitter.SetCurrentBasicBlock(continueBlock);
@@ -1771,18 +1794,18 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
         Assert(exprType->IsPointerType(), "pointer type expected"); 
-        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(context);
         Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
         {
-            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
         }
-        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter, context), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
         void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* leftClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), leftClassIdPtr), emitter.GetIrTypeForULong());
-        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false, context);
         void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* rightClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), rightClassIdPtr), emitter.GetIrTypeForULong());
         void* remainder = emitter.CreateURem(leftClassId, rightClassId);
@@ -1792,11 +1815,11 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* continueBlock = emitter.CreateBasicBlock("continue");
         emitter.CreateCondBr(remainderIsZero, trueBlock, falseBlock);
         emitter.SetCurrentBasicBlock(trueBlock);
-        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer()->IrType(emitter)));
+        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer(context)->IrType(emitter, context)));
         variable->Store(emitter, cmajor::ir::OperationFlags::none);
         emitter.CreateBr(continueBlock);
         emitter.SetCurrentBasicBlock(falseBlock);
-        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer()->IrType(emitter)));
+        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer(context)->IrType(emitter, context)));
         variable->Store(emitter, cmajor::ir::OperationFlags::none);
         emitter.CreateBr(continueBlock);
         emitter.SetCurrentBasicBlock(continueBlock);
@@ -1812,17 +1835,17 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
         Assert(exprType->IsPointerType(), "pointer type expected");
-        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(context);
         Assert(leftType->IsClassTypeSymbol(), "class type expected");
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
         {
-            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
         }
-        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter, context), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
         void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetTypeIdVmtIndexOffset());
-        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false, context);
         void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetTypeIdVmtIndexOffset());
         void* retType = emitter.GetIrTypeForBool();
         std::vector<void*> paramTypes;
@@ -1839,11 +1862,11 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         void* continueBlock = emitter.CreateBasicBlock("continue");
         emitter.CreateCondBr(isResult, trueBlock, falseBlock);
         emitter.SetCurrentBasicBlock(trueBlock);
-        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer()->IrType(emitter)));
+        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer(context)->IrType(emitter, context)));
         variable->Store(emitter, cmajor::ir::OperationFlags::none);
         emitter.CreateBr(continueBlock);
         emitter.SetCurrentBasicBlock(falseBlock);
-        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer()->IrType(emitter)));
+        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer(context)->IrType(emitter, context)));
         variable->Store(emitter, cmajor::ir::OperationFlags::none);
         emitter.CreateBr(continueBlock);
         emitter.SetCurrentBasicBlock(continueBlock);
@@ -1886,6 +1909,7 @@ BoundExpression* BoundTypeNameExpression::Clone()
 
 void BoundTypeNameExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thisPtr = emitter.Stack().Pop();
     cmajor::symbols::TypeSymbol* classPtrType = static_cast<cmajor::symbols::TypeSymbol*>(classPtr->GetType());
@@ -1896,9 +1920,9 @@ void BoundTypeNameExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
     cmajor::symbols::ClassTypeSymbol* vmtPtrHolderClass = classType->VmtPtrHolderClass();
     if (classType != vmtPtrHolderClass)
     {
-        thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer()->IrType(emitter));
+        thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
     }
-    void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
+    void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter, context), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
@@ -1958,6 +1982,7 @@ BoundExpression* BoundTypeIdExpression::Clone()
 
 void BoundTypeIdExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
@@ -1976,9 +2001,9 @@ void BoundTypeIdExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Opera
     cmajor::symbols::ClassTypeSymbol* vmtPtrHolderClass = classType->VmtPtrHolderClass();
     if (classType != vmtPtrHolderClass)
     {
-        thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer()->IrType(emitter));
+        thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
     }
-    void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
+    void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter, context), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
     void* classIdPtr = emitter.GetClassIdPtr(vmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
     void* classId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), classIdPtr), emitter.GetIrTypeForULong());
     emitter.Stack().Push(classId);
@@ -2018,9 +2043,10 @@ BoundExpression* BoundBitCast::Clone()
 
 void BoundBitCast::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
     expr->Load(emitter, cmajor::ir::OperationFlags::none);
     void* value = emitter.Stack().Pop();
-    void* casted = emitter.CreateBitCast(value, GetType()->IrType(emitter));
+    void* casted = emitter.CreateBitCast(value, GetType()->IrType(emitter, context));
     emitter.Stack().Push(casted);
     DestroyTemporaries(emitter);
 }
@@ -2057,7 +2083,8 @@ BoundExpression* BoundFunctionPtr::Clone()
 void BoundFunctionPtr::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
     // MangledName changed to InstantiatedName
-    void* irObject = emitter.GetOrInsertFunction(util::ToUtf8(function->InstantiatedName()), function->IrType(emitter), function->DontThrow());
+    cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
+    void* irObject = emitter.GetOrInsertFunction(util::ToUtf8(function->InstantiatedName()), function->IrType(emitter, context), function->DontThrow());
     emitter.Stack().Push(irObject);
     DestroyTemporaries(emitter);
 }
@@ -2348,18 +2375,19 @@ void BoundFunctionGroupExpression::SetTemplateArgumentTypes(const std::vector<cm
     templateArgumentTypes = templateArgumentTypes_;
 }
 
-cmajor::symbols::TypeSymbol* CreateMemberExpressionTypeSymbol(const soul::ast::Span& span, const std::u32string& name, void* boundMemberExpression)
+cmajor::symbols::TypeSymbol* CreateMemberExpressionTypeSymbol(cmajor::symbols::Context* context, const soul::ast::Span& span, const std::u32string& name, void* boundMemberExpression)
 {
     cmajor::symbols::TypeSymbol* memberExpressionTypeSymbol = new cmajor::symbols::MemberExpressionTypeSymbol(span, name, boundMemberExpression);
-    cmajor::symbols::Module* module = cmajor::symbols::GetRootModuleForCurrentThread();
+    cmajor::symbols::Module* module = context->RootModule();
     memberExpressionTypeSymbol->SetModule(module);
     module->GetSymbolTable().SetTypeIdFor(memberExpressionTypeSymbol);
     return memberExpressionTypeSymbol;
 }
 
-BoundMemberExpression::BoundMemberExpression(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& classPtr_, std::unique_ptr<BoundExpression>&& member_) :
-    BoundExpression(span_, BoundNodeType::boundMemberExpression, CreateMemberExpressionTypeSymbol(span_, member_->GetType()->Name(), this)), 
-    classPtr(std::move(classPtr_)), member(std::move(member_))
+BoundMemberExpression::BoundMemberExpression(cmajor::symbols::Context* context_, const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& classPtr_, 
+    std::unique_ptr<BoundExpression>&& member_) :
+    BoundExpression(span_, BoundNodeType::boundMemberExpression, CreateMemberExpressionTypeSymbol(context_, span_, member_->GetType()->Name(), this)), 
+    context(context_), classPtr(std::move(classPtr_)), member(std::move(member_))
 {
     classPtr->SetParent(this);
     member->SetParent(this);
@@ -2369,7 +2397,7 @@ BoundMemberExpression::BoundMemberExpression(const soul::ast::Span& span_, std::
 
 BoundExpression* BoundMemberExpression::Clone()
 {
-    return new BoundMemberExpression(GetSpan(), std::unique_ptr<BoundExpression>(classPtr->Clone()), std::unique_ptr<BoundExpression>(member->Clone()));
+    return new BoundMemberExpression(context, GetSpan(), std::unique_ptr<BoundExpression>(classPtr->Clone()), std::unique_ptr<BoundExpression>(member->Clone()));
 }
 
 void BoundMemberExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)

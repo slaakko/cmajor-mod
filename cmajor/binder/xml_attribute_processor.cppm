@@ -19,7 +19,7 @@ class XmlAttributeProcessor : public AttributeProcessor
 {
 public:
     XmlAttributeProcessor();
-    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol) override;
+    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context) override;
     void GenerateSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope) override;
     void GenerateImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, StatementBinder* statementBinder) override;

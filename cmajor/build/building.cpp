@@ -217,9 +217,11 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             {
                 cmdoclib::SetEmptyLibraryPrefix(util::ToUtf8(project->Name()));
             }
-            rootModule.reset(new cmajor::symbols::Module(project->Name(), project->ModuleFilePath(), project->GetTarget()));
+            cmajor::symbols::Context context;
+            rootModule.reset(new cmajor::symbols::Module(&context, project->Name(), project->ModuleFilePath(), project->GetTarget()));
             rootModule->SetRootModule();
-            cmajor::symbols::SetRootModuleForCurrentThread(rootModule.get());
+            context.SetRootModule(rootModule.get());
+            //cmajor::symbols::SetRootModuleForCurrentThread(rootModule.get());
             {
                 rootModule->SetLogStreamId(project->LogStreamId());
                 rootModule->SetCurrentProjectName(project->Name());
@@ -242,16 +244,16 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 bool prevPreparing = rootModule->Preparing();
                 rootModule->SetPreparing(true);
-                cmajor::symbols::PrepareModuleForCompilation(rootModule.get(), project->References(), project->GetTarget(), project->RootSpan(), project->RootFileIndex(),
+                cmajor::symbols::PrepareModuleForCompilation(&context, project->References(), project->GetTarget(), project->RootSpan(), project->RootFileIndex(),
                     project->RootCompileUnit());
                 Preprocess(project);
-                CreateSymbols(rootModule->GetSymbolTable(), project, stop);
+                CreateSymbols(&context, context.RootModule()->GetSymbolTable(), project, stop);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), "Binding types...");
                 }
-                cmajor::binder::AttributeBinder attributeBinder(rootModule.get());
-                std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> boundCompileUnits = BindTypes(rootModule.get(), project, &attributeBinder, stop);
+                cmajor::binder::AttributeBinder attributeBinder(&context);
+                std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> boundCompileUnits = BindTypes(&context, project, &attributeBinder, stop);
                 if (stop)
                 {
                     return;
@@ -261,7 +263,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 std::vector<std::string> asmFilePaths;
                 std::vector<std::string> cppFilePaths;
                 std::map<int, cmdoclib::File> docFileMap;
-                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, asmFilePaths, docFileMap, stop);
+                Compile(project, &context, boundCompileUnits, objectFilePaths, asmFilePaths, docFileMap, stop);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
                 {
                     cmdoclib::GenerateSymbolTableXml(rootModule.get(), docFileMap);
@@ -277,13 +279,13 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
                 {
-                    GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
+                    GenerateMainUnit(project, &context, objectFilePaths, cppFilePaths);
                 }
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), "Writing module file...");
                 }
-                cmajor::symbols::SymbolWriter writer(project->ModuleFilePath());
+                cmajor::symbols::SymbolWriter writer(project->ModuleFilePath(), &context);
                 rootModule->Write(writer);
                 rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
                 project->SetModuleFilePath(rootModule->OriginalFilePath());
@@ -361,7 +363,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
-                    GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
+                    GenerateMainUnit(project, &context, objectFilePaths, cppFilePaths);
                 }
                 if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
                 {

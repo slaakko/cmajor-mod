@@ -21,7 +21,7 @@ public:
     AttributeProcessor(const std::u32string& attributeName_);
     virtual ~AttributeProcessor();
     const std::u32string& AttributeName() const { return attributeName; }
-    virtual void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol);
+    virtual void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context);
     virtual void GenerateSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     virtual void GenerateImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, StatementBinder* statementBinder);
@@ -32,7 +32,7 @@ private:
 class AttributeBinder
 {
 public:
-    AttributeBinder(cmajor::symbols::Module* module);
+    AttributeBinder(cmajor::symbols::Context* context);
     AttributeBinder(const AttributeBinder&) = delete;
     AttributeBinder& operator=(const AttributeBinder&) = delete;
     void BindAttributes(cmajor::ast::AttributesNode* attrs, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope);

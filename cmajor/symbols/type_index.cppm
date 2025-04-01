@@ -14,11 +14,12 @@ import util.uuid;
 export namespace cmajor::symbols {
 
 class TypeSymbol;
+class Context;
 
 class TypeIndex
 {
 public:
-    void AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor::ir::Emitter& emitter);
+    void AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor::ir::Emitter& emitter, Context* context);
     void Write(util::BinaryStreamWriter& writer);
 private:
     std::recursive_mutex mtx;

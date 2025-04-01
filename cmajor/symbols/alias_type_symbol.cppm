@@ -23,9 +23,9 @@ public:
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     bool IsExportSymbol() const override;
     void Accept(SymbolCollector* collector) override;
-    void Dump(util::CodeFormatter& formatter) override;
-    std::string TypeString() const override { return "aliasType"; }
-    std::string Syntax() override;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
+    std::string TypeString(Context* context) const override { return "aliasType"; }
+    std::string Syntax(Context* context) override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     const TypeSymbol* GetType() const { return type; }
     TypeSymbol* GetType() { return type; }

@@ -27,6 +27,7 @@ class LLVMCodeGenerator : public cmajor::codegen::CodeGenerator, public cmajor::
 public:
     LLVMCodeGenerator(cmajor::ir::Emitter* emitter_);
     cmajor::ir::Emitter* Emitter() const { return emitter; }
+    cmajor::symbols::Context* GetContext() { return context; }
     void Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit) override;
     void Visit(cmajor::binder::BoundNamespace& boundNamespace) override;
     void Visit(cmajor::binder::BoundClass& boundClass) override;
@@ -121,6 +122,7 @@ protected:
     std::vector<std::unique_ptr<Cleanup>>& Cleanups() { return cleanups; }
     bool generateLineNumbers;
 private:
+    cmajor::symbols::Context* context;
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* symbolsModule;
     cmajor::ir::Emitter* emitter;

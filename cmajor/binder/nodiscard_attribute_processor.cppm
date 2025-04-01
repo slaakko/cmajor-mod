@@ -15,7 +15,7 @@ class NoDiscardAttributeProcessor : public AttributeProcessor
 {
 public:
     NoDiscardAttributeProcessor();
-    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol) override;
+    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context) override;
 };
 
 } // namespace cmajor::binder

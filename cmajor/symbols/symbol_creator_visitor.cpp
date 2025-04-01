@@ -15,8 +15,8 @@ import soul.ast.span;
 
 namespace cmajor::symbols {
 
-SymbolCreatorVisitor::SymbolCreatorVisitor(SymbolTable& symbolTable_) :
-    symbolTable(symbolTable_), classInstanceNode(nullptr), classTemplateSpecialization(nullptr), functionIndex(0), level(0), leaveFunction(false)
+SymbolCreatorVisitor::SymbolCreatorVisitor(SymbolTable& symbolTable_, Context* context_) :
+    symbolTable(symbolTable_), context(context_), classInstanceNode(nullptr), classTemplateSpecialization(nullptr), functionIndex(0), level(0), leaveFunction(false)
 {
     symbolTable.ResetAxiomNumber();
     symbolTable.ResetAliasNodesAndNamespaceImports();
@@ -39,7 +39,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::CompileUnitNode& compileUnitNode)
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::NamespaceNode& namespaceNode)
 {
-    symbolTable.BeginNamespace(namespaceNode);
+    symbolTable.BeginNamespace(namespaceNode, context);
     if (namespaceNode.Id())
     {
         namespaceNode.Id()->Accept(*this);
@@ -58,7 +58,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::AliasNode& aliasNode)
 {
     aliasNode.Id()->Accept(*this);
     aliasNode.TypeExpr()->Accept(*this);
-    AliasTypeSymbol* symbol = symbolTable.AddAliasType(aliasNode);
+    AliasTypeSymbol* symbol = symbolTable.AddAliasType(aliasNode, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::NamespaceImportNode& namespaceImportNode)
@@ -89,7 +89,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::FunctionNode& functionNode)
     int nt = functionNode.TemplateParameters().Count();
     for (int i = 0; i < nt; ++i)
     {
-        symbolTable.AddTemplateParameter(*functionNode.TemplateParameters()[i]);
+        symbolTable.AddTemplateParameter(*functionNode.TemplateParameters()[i], context);
     }
     int n = functionNode.Parameters().Count();
     for (int i = 0; i < n; ++i)
@@ -109,7 +109,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::FunctionNode& functionNode)
         }
     }
     --level;
-    symbolTable.EndFunction(!leaveFunction);
+    symbolTable.EndFunction(!leaveFunction, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ClassNode& classNode)
@@ -127,7 +127,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ClassNode& classNode)
     int nt = classNode.TemplateParameters().Count();
     for (int i = 0; i < nt; ++i)
     {
-        symbolTable.AddTemplateParameter(*classNode.TemplateParameters()[i]);
+        symbolTable.AddTemplateParameter(*classNode.TemplateParameters()[i], context);
     }
     int nb = classNode.BaseClassOrInterfaces().Count();
     for (int i = 0; i < nb; ++i)
@@ -150,7 +150,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ClassNode& classNode)
     }
     else
     {
-        symbolTable.EndClass();
+        symbolTable.EndClass(context);
     }
 }
 
@@ -200,12 +200,12 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::StaticConstructorNode& staticConst
         staticConstructorNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndStaticConstructor(!leaveFunction);
+    symbolTable.EndStaticConstructor(!leaveFunction, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConstructorNode& constructorNode)
 {
-    symbolTable.BeginConstructor(constructorNode, functionIndex++);
+    symbolTable.BeginConstructor(constructorNode, functionIndex++, context);
     ++level;
     int ni = constructorNode.Initializers().Count();
     for (int i = 0; i < ni; ++i)
@@ -227,24 +227,24 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConstructorNode& constructorNode)
         constructorNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndConstructor(!leaveFunction);
+    symbolTable.EndConstructor(!leaveFunction, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::DestructorNode& destructorNode)
 {
-    symbolTable.BeginDestructor(destructorNode, functionIndex++);
+    symbolTable.BeginDestructor(destructorNode, functionIndex++, context);
     ++level;
     if (destructorNode.Body())
     {
         destructorNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndDestructor(!leaveFunction);
+    symbolTable.EndDestructor(!leaveFunction, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
 {
-    symbolTable.BeginMemberFunction(memberFunctionNode, functionIndex++);
+    symbolTable.BeginMemberFunction(memberFunctionNode, functionIndex++, context);
     ++level;
     if (memberFunctionNode.WhereConstraint())
     {
@@ -265,12 +265,12 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::MemberFunctionNode& memberFunction
         memberFunctionNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndMemberFunction(!leaveFunction);
+    symbolTable.EndMemberFunction(!leaveFunction, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNode)
 {
-    symbolTable.BeginConversionFunction(conversionFunctionNode, functionIndex++);
+    symbolTable.BeginConversionFunction(conversionFunctionNode, functionIndex++, context);
     ++level;
     if (conversionFunctionNode.WhereConstraint())
     {
@@ -285,19 +285,19 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConversionFunctionNode& conversion
         conversionFunctionNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndConversionFunction(!leaveFunction);
+    symbolTable.EndConversionFunction(!leaveFunction, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
 {
-    symbolTable.AddMemberVariable(memberVariableNode);
+    symbolTable.AddMemberVariable(memberVariableNode, context);
     memberVariableNode.TypeExpr()->Accept(*this);
     memberVariableNode.Id()->Accept(*this);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::InterfaceNode& interfaceNode)
 {
-    symbolTable.BeginInterface(interfaceNode);
+    symbolTable.BeginInterface(interfaceNode, context);
     ++level;
     interfaceNode.Id()->Accept(*this);
     int n = interfaceNode.Members().Count();
@@ -312,7 +312,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::InterfaceNode& interfaceNode)
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::DelegateNode& delegateNode)
 {
-    symbolTable.BeginDelegate(delegateNode);
+    symbolTable.BeginDelegate(delegateNode, context);
     ++level;
     delegateNode.ReturnTypeExpr()->Accept(*this);
     delegateNode.Id()->Accept(*this);
@@ -328,7 +328,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::DelegateNode& delegateNode)
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
 {
-    symbolTable.BeginClassDelegate(classDelegateNode);
+    symbolTable.BeginClassDelegate(classDelegateNode, context);
     ++level;
     classDelegateNode.ReturnTypeExpr()->Accept(*this);
     classDelegateNode.Id()->Accept(*this);
@@ -450,7 +450,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::AxiomNode& axiomNode)
         axiomNode.Statements()[i]->Accept(*this);
     }
     --level;
-    symbolTable.EndAxiom();
+    symbolTable.EndAxiom(context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConceptIdNode& conceptIdNode)
@@ -472,7 +472,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConceptNode& conceptNode)
     for (int i = 0; i < n; ++i)
     {
         cmajor::ast::IdentifierNode* identifierNode = conceptNode.TypeParameters()[i];
-        symbolTable.AddTemplateParameter(*identifierNode);
+        symbolTable.AddTemplateParameter(*identifierNode, context);
     }
     if (conceptNode.Refinement())
     {
@@ -489,7 +489,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConceptNode& conceptNode)
         conceptNode.Axioms()[i]->Accept(*this);
     }
     --level;
-    symbolTable.EndConcept();
+    symbolTable.EndConcept(context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::LabeledStatementNode& labeledStatementNode)
@@ -500,7 +500,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::LabeledStatementNode& labeledState
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::CompoundStatementNode& compoundStatementNode)
 {
-    symbolTable.BeginDeclarationBlock(compoundStatementNode);
+    symbolTable.BeginDeclarationBlock(compoundStatementNode, context);
     ++level;
     int n = compoundStatementNode.Statements().Count();
     for (int i = 0; i < n; ++i)
@@ -551,7 +551,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::DoStatementNode& doStatementNode)
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ForStatementNode& forStatementNode)
 {
-    symbolTable.BeginDeclarationBlock(forStatementNode);
+    symbolTable.BeginDeclarationBlock(forStatementNode, context);
     ++level;
     forStatementNode.InitS()->Accept(*this);
     if (forStatementNode.Condition())
@@ -584,7 +584,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ForStatementNode& forStatementNode
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConstructionStatementNode& constructionStatementNode)
 {
-    symbolTable.AddLocalVariable(constructionStatementNode);
+    symbolTable.AddLocalVariable(constructionStatementNode, context);
     constructionStatementNode.TypeExpr()->Accept(*this);
     if (constructionStatementNode.Id())
     {
@@ -675,10 +675,10 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::TryStatementNode& tryStatementNode
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::CatchNode& catchNode)
 {
-    symbolTable.BeginDeclarationBlock(catchNode);
+    symbolTable.BeginDeclarationBlock(catchNode, context);
     if (catchNode.Id())
     {
-        symbolTable.AddLocalVariable(*catchNode.Id());
+        symbolTable.AddLocalVariable(*catchNode.Id(), context);
     }
     catchNode.CatchBlock()->Accept(*this);
     symbolTable.EndDeclarationBlock();
@@ -784,17 +784,17 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConditionalCompilationStatementNod
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::TypedefNode& typedefNode)
 {
-    AliasTypeSymbol* symbol = symbolTable.AddAliasType(typedefNode);
+    AliasTypeSymbol* symbol = symbolTable.AddAliasType(typedefNode, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConstantNode& constantNode)
 {
-    ConstantSymbol* symbol = symbolTable.AddConstant(constantNode);
+    ConstantSymbol* symbol = symbolTable.AddConstant(constantNode, context);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
 {
-    symbolTable.BeginEnumType(enumTypeNode);
+    symbolTable.BeginEnumType(enumTypeNode, context);
     ++level;
     enumTypeNode.Id()->Accept(*this);
     if (enumTypeNode.GetUnderlyingType())
@@ -812,7 +812,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::EnumConstantNode& enumConstantNode)
 {
-    symbolTable.AddEnumConstant(enumConstantNode);
+    symbolTable.AddEnumConstant(enumConstantNode, context);
     enumConstantNode.Id()->Accept(*this);
     if (enumConstantNode.GetValue())
     {
@@ -822,7 +822,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::EnumConstantNode& enumConstantNode
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::GlobalVariableNode& globalVariableNode)
 {
-    GlobalVariableSymbol* symbol = symbolTable.AddGlobalVariable(globalVariableNode);
+    GlobalVariableSymbol* symbol = symbolTable.AddGlobalVariable(globalVariableNode, context);
     globalVariableNode.Id()->Accept(*this);
     if (globalVariableNode.Initializer())
     {
@@ -840,7 +840,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ParameterNode& parameterNode)
     case cmajor::ast::NodeType::delegateNode:
     case cmajor::ast::NodeType::classDelegateNode:
     {
-        symbolTable.AddParameter(parameterNode);
+        symbolTable.AddParameter(parameterNode, context);
         break;
     }
     }

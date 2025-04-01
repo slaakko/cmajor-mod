@@ -10,6 +10,7 @@ import cmajor.ast.writer;
 import cmajor.ast.reader;
 import cmajor.ast.specifier;
 import cmajor.ast.attribute;
+import cmajor.symbols.context;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.namespaces;
@@ -278,14 +279,14 @@ std::u32string Symbol::FullNameWithSpecifiers() const
     return fullNameWithSpecifiers;
 }
 
-void* Symbol::IrObject(cmajor::ir::Emitter& emitter)
+void* Symbol::IrObject(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.GetIrObject(this);
 }
 
-void Symbol::ComputeMangledName()
+void Symbol::ComputeMangledName(Context* context)
 {
-    mangledName = util::ToUtf32(TypeString());
+    mangledName = util::ToUtf32(TypeString(context));
     mangledName.append(1, U'_').append(SimpleName());
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(util::ToUtf8(FullNameWithSpecifiers()))));
 }
@@ -295,7 +296,7 @@ std::string Symbol::GetSpecifierStr()
     return SymbolFlagStr(flags);
 }
 
-std::string Symbol::Syntax() 
+std::string Symbol::Syntax(Context* context)
 {
     std::string syntax;
     syntax.append(GetSpecifierStr());
@@ -303,9 +304,9 @@ std::string Symbol::Syntax()
     {
         syntax.append(1, ' ');
     }
-    syntax.append(TypeString());
+    syntax.append(TypeString(context));
     syntax.append(1, ' ');
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     syntax.append(1, ';');
     return syntax;
 }
@@ -421,13 +422,13 @@ bool Symbol::IsSameParentOrAncestorOf(const Symbol* that) const
     }
 }
 
-const NamespaceSymbol* Symbol::Ns() const
+const NamespaceSymbol* Symbol::Ns(Context* context) const
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(const_cast<NamespaceSymbol*>(static_cast<const NamespaceSymbol*>(this)));
             if (mappedNs)
             {
@@ -440,7 +441,7 @@ const NamespaceSymbol* Symbol::Ns() const
     {
         if (parent)
         {
-            return parent->Ns();
+            return parent->Ns(context);
         }
         else
         {
@@ -449,13 +450,13 @@ const NamespaceSymbol* Symbol::Ns() const
     }
 }
 
-NamespaceSymbol* Symbol::Ns()
+NamespaceSymbol* Symbol::Ns(Context* context)
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(static_cast<NamespaceSymbol*>(this));
             if (mappedNs)
             {
@@ -468,7 +469,7 @@ NamespaceSymbol* Symbol::Ns()
     {
         if (parent)
         {
-            return parent->Ns();
+            return parent->Ns(context);
         }
         else
         {
@@ -515,13 +516,13 @@ ClassTypeSymbol* Symbol::ClassNoThrow()
     }
 }
 
-const ContainerSymbol* Symbol::ClassOrNsNoThrow() const
+const ContainerSymbol* Symbol::ClassOrNsNoThrow(Context* context) const
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(const_cast<NamespaceSymbol*>(static_cast<const NamespaceSymbol*>(this)));
             if (mappedNs)
             {
@@ -538,7 +539,7 @@ const ContainerSymbol* Symbol::ClassOrNsNoThrow() const
     {
         if (parent)
         {
-            return parent->ClassOrNsNoThrow();
+            return parent->ClassOrNsNoThrow(context);
         }
         else
         {
@@ -547,13 +548,13 @@ const ContainerSymbol* Symbol::ClassOrNsNoThrow() const
     }
 }
 
-ContainerSymbol* Symbol::ClassOrNsNoThrow()
+ContainerSymbol* Symbol::ClassOrNsNoThrow(Context* context)
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(static_cast<NamespaceSymbol*>(this));
             if (mappedNs)
             {
@@ -570,7 +571,7 @@ ContainerSymbol* Symbol::ClassOrNsNoThrow()
     {
         if (parent)
         {
-            return parent->ClassOrNsNoThrow();
+            return parent->ClassOrNsNoThrow(context);
         }
         else
         {
@@ -579,13 +580,13 @@ ContainerSymbol* Symbol::ClassOrNsNoThrow()
     }
 }
 
-const ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow() const
+const ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow(Context* context) const
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(const_cast<NamespaceSymbol*>(static_cast<const NamespaceSymbol*>(this)));
             if (mappedNs)
             {
@@ -606,7 +607,7 @@ const ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow() const
     {
         if (parent)
         {
-            return parent->ClassInterfaceOrNsNoThrow();
+            return parent->ClassInterfaceOrNsNoThrow(context);
         }
         else
         {
@@ -615,13 +616,13 @@ const ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow() const
     }
 }
 
-ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow()
+ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow(Context* context)
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(static_cast<NamespaceSymbol*>(this));
             if (mappedNs)
             {
@@ -642,7 +643,7 @@ ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow()
     {
         if (parent)
         {
-            return parent->ClassInterfaceOrNsNoThrow();
+            return parent->ClassInterfaceOrNsNoThrow(context);
         }
         else
         {
@@ -651,13 +652,13 @@ ContainerSymbol* Symbol::ClassInterfaceOrNsNoThrow()
     }
 }
 
-const ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow() const
+const ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow(Context* context) const
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(const_cast<NamespaceSymbol*>(static_cast<const NamespaceSymbol*>(this)));
             if (mappedNs)
             {
@@ -694,7 +695,7 @@ const ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow() const
     {
         if (parent)
         {
-            return parent->ClassInterfaceEnumDelegateOrNsNoThrow();
+            return parent->ClassInterfaceEnumDelegateOrNsNoThrow(context);
         }
         else
         {
@@ -703,13 +704,13 @@ const ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow() const
     }
 }
 
-ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow()
+ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow(Context* context)
 {
     if (symbolType == SymbolType::namespaceSymbol)
     {
         if (!GetModule()->IsRootModule())
         {
-            Module* rootModule = GetRootModuleForCurrentThread();
+            Module* rootModule = context->RootModule();
             NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(static_cast<NamespaceSymbol*>(this));
             if (mappedNs)
             {
@@ -746,7 +747,7 @@ ContainerSymbol* Symbol::ClassInterfaceEnumDelegateOrNsNoThrow()
     {
         if (parent)
         {
-            return parent->ClassInterfaceEnumDelegateOrNsNoThrow();
+            return parent->ClassInterfaceEnumDelegateOrNsNoThrow(context);
         }
         else
         {
@@ -955,9 +956,9 @@ FunctionSymbol* Symbol::ContainingFunctionNoThrow()
     }
 }
 
-const ContainerScope* Symbol::ClassOrNsScope() const
+const ContainerScope* Symbol::ClassOrNsScope(Context* context) const
 {
-    const ContainerSymbol* classOrNs = ClassOrNsNoThrow();
+    const ContainerSymbol* classOrNs = ClassOrNsNoThrow(context);
     if (classOrNs)
     {
         return classOrNs->GetContainerScope();
@@ -968,9 +969,9 @@ const ContainerScope* Symbol::ClassOrNsScope() const
     }
 }
 
-ContainerScope* Symbol::ClassOrNsScope()
+ContainerScope* Symbol::ClassOrNsScope(Context* context)
 {
-    ContainerSymbol* classOrNs = ClassOrNsNoThrow();
+    ContainerSymbol* classOrNs = ClassOrNsNoThrow(context);
     if (classOrNs)
     {
         return classOrNs->GetContainerScope();
@@ -981,9 +982,9 @@ ContainerScope* Symbol::ClassOrNsScope()
     }
 }
 
-const ContainerScope* Symbol::ClassInterfaceOrNsScope() const
+const ContainerScope* Symbol::ClassInterfaceOrNsScope(Context* context) const
 {
-    const ContainerSymbol* classInterfaceOrNs = ClassInterfaceOrNsNoThrow();
+    const ContainerSymbol* classInterfaceOrNs = ClassInterfaceOrNsNoThrow(context);
     if (classInterfaceOrNs)
     {
         return classInterfaceOrNs->GetContainerScope();
@@ -994,9 +995,9 @@ const ContainerScope* Symbol::ClassInterfaceOrNsScope() const
     }
 }
 
-ContainerScope* Symbol::ClassInterfaceOrNsScope()
+ContainerScope* Symbol::ClassInterfaceOrNsScope(Context* context)
 {
-    ContainerSymbol* classInterfaceOrNs = ClassInterfaceOrNsNoThrow();
+    ContainerSymbol* classInterfaceOrNs = ClassInterfaceOrNsNoThrow(context);
     if (classInterfaceOrNs)
     {
         return classInterfaceOrNs->GetContainerScope();
@@ -1007,9 +1008,9 @@ ContainerScope* Symbol::ClassInterfaceOrNsScope()
     }
 }
 
-const ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope() const
+const ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope(Context* context) const
 {
-    const ContainerSymbol* classInterfaceEnumDelegateOrNs = ClassInterfaceEnumDelegateOrNsNoThrow();
+    const ContainerSymbol* classInterfaceEnumDelegateOrNs = ClassInterfaceEnumDelegateOrNsNoThrow(context);
     if (classInterfaceEnumDelegateOrNs)
     {
         return classInterfaceEnumDelegateOrNs->GetContainerScope();
@@ -1020,9 +1021,9 @@ const ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope() const
     }
 }
 
-ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope()
+ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope(Context* context)
 {
-    ContainerSymbol* classInterfaceEnumDelegateOrNs = ClassInterfaceEnumDelegateOrNsNoThrow();
+    ContainerSymbol* classInterfaceEnumDelegateOrNs = ClassInterfaceEnumDelegateOrNsNoThrow(context);
     if (classInterfaceEnumDelegateOrNs)
     {
         return classInterfaceEnumDelegateOrNs->GetContainerScope();

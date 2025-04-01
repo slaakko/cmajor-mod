@@ -83,11 +83,11 @@ void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode
 class SymbolTable
 {
 public:
-    SymbolTable(Module* module_);
+    SymbolTable(Module* module_, Context* context);
     ~SymbolTable();
     void Write(SymbolWriter& writer);
     void Read(SymbolReader& reader);
-    void Import(const SymbolTable& symbolTable);
+    void Import(const SymbolTable& symbolTable, Context* context);
     void FinishRead(const std::vector<ArrayTypeSymbol*>& arrayTypes, const std::vector<DerivedTypeSymbol*>& derivedTypes,
         const std::vector<ClassTemplateSpecializationSymbol*>& classTemplateSpecializations,
         const std::vector<TypeOrConceptRequest>& typeAndConceptRequests, const std::vector<FunctionRequest>& functionRequests, std::vector<FunctionSymbol*>& conversions);
@@ -101,53 +101,53 @@ public:
     void EndContainer();
     void MapNs(NamespaceSymbol* fromNs, NamespaceSymbol* toNs);
     NamespaceSymbol* GetMappedNs(NamespaceSymbol* fromNs) const;
-    NamespaceSymbol* BeginNamespace(cmajor::ast::NamespaceNode& namespaceNode);
-    NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex);
+    NamespaceSymbol* BeginNamespace(cmajor::ast::NamespaceNode& namespaceNode, Context* context);
+    NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex, Context* context);
     void EndNamespace();
     void BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t functionIndex);
-    void EndFunction(bool addMember);
-    void AddParameter(cmajor::ast::ParameterNode& parameterNode);
+    void EndFunction(bool addMember, Context* context);
+    void AddParameter(cmajor::ast::ParameterNode& parameterNode, Context* context);
     void BeginClass(cmajor::ast::ClassNode& classNode);
-    void EndClass();
+    void EndClass(Context* context);
     void BeginClassTemplateSpecialization(cmajor::ast::ClassNode& classInstanceNode, ClassTemplateSpecializationSymbol* classTemplateSpecialization);
     void EndClassTemplateSpecialization();
-    void AddTemplateParameter(cmajor::ast::TemplateParameterNode& templateParameterNode);
-    void AddTemplateParameter(cmajor::ast::IdentifierNode& identifierNode);
-    void BeginInterface(cmajor::ast::InterfaceNode& interfaceNode);
+    void AddTemplateParameter(cmajor::ast::TemplateParameterNode& templateParameterNode, Context* context);
+    void AddTemplateParameter(cmajor::ast::IdentifierNode& identifierNode, Context* context);
+    void BeginInterface(cmajor::ast::InterfaceNode& interfaceNode, Context* context);
     void EndInterface();
     void BeginStaticConstructor(cmajor::ast::StaticConstructorNode& staticConstructorNode, int32_t functionIndex);
-    void EndStaticConstructor(bool addMember);
-    void BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex);
-    void EndConstructor(bool addMember);
-    void BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex);
-    void EndDestructor(bool addMember);
-    void BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex);
-    void EndMemberFunction(bool addMember);
-    void BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex);
-    void EndConversionFunction(bool addMember);
-    void AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode);
-    void BeginDelegate(cmajor::ast::DelegateNode& delegateNode);
+    void EndStaticConstructor(bool addMember, Context* context);
+    void BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex, Context* context);
+    void EndConstructor(bool addMember, Context* context);
+    void BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex, Context* context);
+    void EndDestructor(bool addMember, Context* context);
+    void BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex, Context* context);
+    void EndMemberFunction(bool addMember, Context* context);
+    void BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex, Context* context);
+    void EndConversionFunction(bool addMember, Context* context);
+    void AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode, Context* context);
+    void BeginDelegate(cmajor::ast::DelegateNode& delegateNode, Context* context);
     void EndDelegate();
-    void BeginClassDelegate(cmajor::ast::ClassDelegateNode& classDelegateNode);
+    void BeginClassDelegate(cmajor::ast::ClassDelegateNode& classDelegateNode, Context* context);
     void EndClassDelegate();
     void BeginConcept(cmajor::ast::ConceptNode& conceptNode, bool hasSource);
-    void EndConcept();
+    void EndConcept(Context* context);
     void BeginAxiom(cmajor::ast::AxiomNode& axiomNode);
-    void EndAxiom();
-    void BeginDeclarationBlock(cmajor::ast::Node& node);
+    void EndAxiom(Context* context);
+    void BeginDeclarationBlock(cmajor::ast::Node& node, Context* context);
     void EndDeclarationBlock();
-    void AddLocalVariable(cmajor::ast::ConstructionStatementNode& constructionStatementNode);
-    void AddLocalVariable(cmajor::ast::IdentifierNode& identifierNode);
-    AliasTypeSymbol* AddAliasType(cmajor::ast::AliasNode& aliasNode);
-    AliasTypeSymbol* AddAliasType(cmajor::ast::TypedefNode& typedefNode);
-    ConstantSymbol* AddConstant(cmajor::ast::ConstantNode& constantNode);
-    GlobalVariableSymbol* AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode);
-    void BeginEnumType(cmajor::ast::EnumTypeNode& enumTypeNode);
+    void AddLocalVariable(cmajor::ast::ConstructionStatementNode& constructionStatementNode, Context* context);
+    void AddLocalVariable(cmajor::ast::IdentifierNode& identifierNode, Context* context);
+    AliasTypeSymbol* AddAliasType(cmajor::ast::AliasNode& aliasNode, Context* context);
+    AliasTypeSymbol* AddAliasType(cmajor::ast::TypedefNode& typedefNode, Context* context);
+    ConstantSymbol* AddConstant(cmajor::ast::ConstantNode& constantNode, Context* context);
+    GlobalVariableSymbol* AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode, Context* context);
+    void BeginEnumType(cmajor::ast::EnumTypeNode& enumTypeNode, Context* context);
     void EndEnumType();
-    void AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNode);
-    void AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol);
-    void AddTypeSymbol(TypeSymbol* typeSymbol);
-    void AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol);
+    void AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNode, Context* context);
+    void AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol, Context* context);
+    void AddTypeSymbol(TypeSymbol* typeSymbol, Context* context);
+    void AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol, Context* context);
     void MapNode(cmajor::ast::Node* node, Symbol* symbol);
     Symbol* GetSymbolNoThrow(cmajor::ast::Node* node) const;
     Symbol* GetSymbol(cmajor::ast::Node* node) const;
@@ -165,17 +165,17 @@ public:
     void ProcessTypeConceptAndFunctionRequests(const std::vector<TypeOrConceptRequest>& typeAndConceptRequests, const std::vector<FunctionRequest>& functionRequests);
     TypeSymbol* GetTypeByNameNoThrow(const std::u32string& typeName) const;
     TypeSymbol* GetTypeByName(const std::u32string& typeName) const;
-    TypeSymbol* MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec);
+    TypeSymbol* MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec, Context* context);
     ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<TypeSymbol*>& templateArgumentTypes);
     ClassTemplateSpecializationSymbol* CopyClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source);
     ClassTemplateSpecializationSymbol* GetCurrentClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source);
     void AddClassTemplateSpecializationsToClassTemplateSpecializationMap(const std::vector<ClassTemplateSpecializationSymbol*>& classTemplateSpecializations);
-    ArrayTypeSymbol* MakeArrayType(TypeSymbol* elementType, int64_t size);
+    ArrayTypeSymbol* MakeArrayType(TypeSymbol* elementType, int64_t size, Context* context);
     const FunctionSymbol* MainFunctionSymbol() const { return mainFunctionSymbol; }
     FunctionSymbol* MainFunctionSymbol() { return mainFunctionSymbol; }
     void AddConversion(FunctionSymbol* conversion);
     void AddConversion(FunctionSymbol* conversion, Module* module);
-    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const;
+    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, Context* context) const;
     void AddPolymorphicClass(ClassTypeSymbol* polymorphicClass);
     const std::set<ClassTypeSymbol*>& PolymorphicClasses() const { return polymorphicClasses; }
     void AddClassHavingStaticConstructor(ClassTypeSymbol* classHavingStaticConstructor);
@@ -281,7 +281,7 @@ private:
     void ReadSymbolDefinitionMap(SymbolReader& reader);
 };
 
-void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, cmajor::ast::CompileUnitNode* rootCompileUnit);
+void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, cmajor::ast::CompileUnitNode* rootCompileUnit, Context* context);
 
 } // namespace cmajor::symbols
 

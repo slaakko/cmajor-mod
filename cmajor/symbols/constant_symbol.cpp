@@ -110,7 +110,7 @@ void ConstantSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void ConstantSymbol::Dump(util::CodeFormatter& formatter)
+void ConstantSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("full name: " + util::ToUtf8(FullNameWithSpecifiers()));
@@ -189,13 +189,12 @@ void ConstantSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     }
 }
 
-void ConstantSymbol::ComputeMangledName()
+void ConstantSymbol::ComputeMangledName(Context* context)
 {
-    Symbol::ComputeMangledName();
+    Symbol::ComputeMangledName(context);
 }
 
-
-std::string ConstantSymbol::Syntax() 
+std::string ConstantSymbol::Syntax(Context* context)
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
@@ -203,9 +202,9 @@ std::string ConstantSymbol::Syntax()
         syntax.append(1, ' ');
     }
     syntax.append("const ");
-    syntax.append(util::ToUtf8(GetType()->DocName()));
+    syntax.append(util::ToUtf8(GetType()->DocName(context)));
     syntax.append(1, ' ');
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     if (value)
     {
         syntax.append(" = ");
@@ -225,7 +224,7 @@ void ConstantSymbol::SetValue(Value* value_)
     value.reset(value_);
 }
 
-void* ConstantSymbol::ArrayIrObject(cmajor::ir::Emitter& emitter, bool create)
+void* ConstantSymbol::ArrayIrObject(cmajor::ir::Emitter& emitter, bool create, Context* context)
 {
     if (!type->IsArrayType())
     {
@@ -240,17 +239,17 @@ void* ConstantSymbol::ArrayIrObject(cmajor::ir::Emitter& emitter, bool create)
         throw Exception("internal error: array value expected", GetFullSpan());
     }
     ArrayValue* arrayValue = static_cast<ArrayValue*>(value.get());
-    void* irArrayType = type->IrType(emitter);
+    void* irArrayType = type->IrType(emitter, context);
     void* irArrayObject = emitter.GetOrInsertGlobal(util::ToUtf8(MangledName()), irArrayType);
     if (create)
     {
         void* arrayObjectGlobal = irArrayObject;
-        emitter.SetInitializer(arrayObjectGlobal, arrayValue->IrValue(emitter));
+        emitter.SetInitializer(arrayObjectGlobal, arrayValue->IrValue(emitter, context));
     }
     return irArrayObject;
 }
 
-void* ConstantSymbol::StructureIrObject(cmajor::ir::Emitter& emitter, bool create)
+void* ConstantSymbol::StructureIrObject(cmajor::ir::Emitter& emitter, bool create, Context* context)
 {
     if (!type->IsClassTypeSymbol())
     {
@@ -265,12 +264,12 @@ void* ConstantSymbol::StructureIrObject(cmajor::ir::Emitter& emitter, bool creat
         throw Exception("internal error: structured value expected", GetFullSpan());
     }
     StructuredValue* structuredValue = static_cast<StructuredValue*>(value.get());
-    void* irStructureType = type->IrType(emitter);
+    void* irStructureType = type->IrType(emitter, context);
     void* irStructureObject = emitter.GetOrInsertGlobal(util::ToUtf8(MangledName()), irStructureType);
     if (create)
     {
         void* structureObjectGlobal = irStructureObject;
-        emitter.SetInitializer(structureObjectGlobal, structuredValue->IrValue(emitter));
+        emitter.SetInitializer(structureObjectGlobal, structuredValue->IrValue(emitter, context));
     }
     return irStructureObject;
 }

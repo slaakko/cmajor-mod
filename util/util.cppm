@@ -52,3 +52,4 @@ export import util.uri;
 export import util.std.io.stream;
 export import util.execute_win;
 export import util.crc32;
+export import util.debug;

@@ -46,7 +46,7 @@ public:
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    std::string TypeString() const override { return "parameter"; }
+    std::string TypeString(Context* context) const override { return "parameter"; }
     std::unique_ptr<soul::xml::Element> CreateDomElement(TypeMap& typeMap) override;
     const char* ClassName() const override { return "ParameterSymbol"; }
     bool ArtificialName() const { return artificialName; }
@@ -85,13 +85,13 @@ public:
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;
     void Accept(SymbolCollector* collector) override;
-    void Dump(util::CodeFormatter& formatter) override;
-    std::string TypeString() const override { return "member_variable"; }
-    std::string Syntax() override;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
+    std::string TypeString(Context* context) const override { return "member_variable"; }
+    std::string Syntax(Context* context) override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     int32_t LayoutIndex() const { return layoutIndex; }
     void SetLayoutIndex(int32_t layoutIndex_) { layoutIndex = layoutIndex_; }
-    void* GetDIMemberType(cmajor::ir::Emitter& emitter, uint64_t offsetInBits);
+    void* GetDIMemberType(cmajor::ir::Emitter& emitter, uint64_t offsetInBits, Context* context);
     std::unique_ptr<soul::xml::Element> CreateDomElement(TypeMap& typeMap) override;
     const char* ClassName() const override { return "MemberVariableSymbol"; }
     void Check() override;
@@ -108,8 +108,8 @@ class GlobalVariableGroupSymbol : public Symbol
 public:
     GlobalVariableGroupSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
-    std::string TypeString() const override { return "global_variable_group"; }
-    void ComputeMangledName() override;
+    std::string TypeString(Context* context) const override { return "global_variable_group"; }
+    void ComputeMangledName(Context* context) override;
     void AddGlobalVariable(GlobalVariableSymbol* globalVariableSymbol);
     void RemoveGlobalVariable(GlobalVariableSymbol* globalVariableSymbol);
     bool IsEmpty() const;
@@ -136,16 +136,16 @@ public:
     bool IsExportSymbol() const override;
     bool IsGlobalVariableSymbol() const override { return true; }
     void Accept(SymbolCollector* collector) override;
-    void Dump(util::CodeFormatter& formatter) override;
-    std::string TypeString() const override { return "global_variable"; }
-    void ComputeMangledName() override;
-    std::string Syntax() override;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
+    std::string TypeString(Context* context) const override { return "global_variable"; }
+    void ComputeMangledName(Context* context) override;
+    std::string Syntax(Context* context) override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     const char* ClassName() const override { return "GlobalVariableSymbol"; }
     void SetInitializer(std::unique_ptr<Value>&& initializer_);
     Value* Initializer() const { return initializer.get(); }
-    void* IrObject(cmajor::ir::Emitter& emitter) override;
-    void CreateIrObject(cmajor::ir::Emitter& emitter);
+    void* IrObject(cmajor::ir::Emitter& emitter, Context* context) override;
+    void CreateIrObject(cmajor::ir::Emitter& emitter, Context* context);
     const std::u32string& GroupName() const { return groupName; }
     const std::string& CompileUnitFilePath() const { return compileUnitFilePath; }
     void SetGlobalVariableGroup(GlobalVariableGroupSymbol* globalVariableGroup_) { globalVariableGroup = globalVariableGroup_; }

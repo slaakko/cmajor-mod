@@ -10,6 +10,7 @@ import std.core;
 
 export namespace cmajor::symbols {
 
+class Context;
 class SymbolTable;
 class ClassTemplateSpecializationSymbol;
 class Source;
@@ -17,7 +18,7 @@ class Source;
 class SymbolCreatorVisitor : public cmajor::ast::Visitor
 {
 public:
-    SymbolCreatorVisitor(SymbolTable& symbolTable_);
+    SymbolCreatorVisitor(SymbolTable& symbolTable_, Context* context_);
     void SetClassInstanceNode(cmajor::ast::ClassNode* classInstanceNode_);
     void SetClassTemplateSpecialization(ClassTemplateSpecializationSymbol* classTemplateSpecialization_);
     void Visit(cmajor::ast::CompileUnitNode& compileUnitNode) override;
@@ -137,6 +138,7 @@ public:
     void SetLeaveFunction() { leaveFunction = true; }
 private:
     SymbolTable& symbolTable;
+    Context* context;
     cmajor::ast::ClassNode* classInstanceNode;
     ClassTemplateSpecializationSymbol* classTemplateSpecialization;
     std::stack<bool> conditionalCompilationStack;

@@ -11,13 +11,13 @@ import cmajor.binder.type.binder;
 
 namespace cmajor::binder{
 
-std::vector<std::string> BindTypes(cmajor::symbols::Module* module, cmajor::ast::CompileUnitNode* compileUnit)
+std::vector<std::string> BindTypes(cmajor::symbols::Context* context, cmajor::ast::CompileUnitNode* compileUnit)
 {
     std::vector<std::string> errors;
     try
     {
-        AttributeBinder attributeBinder(module);
-        std::unique_ptr<BoundCompileUnit> boundCompileUnit(new BoundCompileUnit(*module, compileUnit, &attributeBinder));
+        AttributeBinder attributeBinder(context);
+        std::unique_ptr<BoundCompileUnit> boundCompileUnit(new BoundCompileUnit(context, compileUnit, &attributeBinder));
         boundCompileUnit->PushBindingTypes();
         TypeBinder typeBinder(*boundCompileUnit);
         compileUnit->Accept(typeBinder);

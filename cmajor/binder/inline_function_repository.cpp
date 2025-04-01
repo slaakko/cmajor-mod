@@ -42,6 +42,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     {
         return GetCopy(it->second);
     }
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::ast::Node* inlineFunctionNode = symbolTable.GetNodeNoThrow(inlineFunction);
     if (!inlineFunctionNode)
@@ -59,19 +60,19 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     cloneContext.SetInstantiateFunctionNode();
     bool fileScopeAdded = false;
     int n = inlineFunction->UsingNodes().Count();
-    if (!inlineFunction->Ns()->IsGlobalNamespace() || n > 0)
+    if (!inlineFunction->Ns(boundCompileUnit.GetContext())->IsGlobalNamespace() || n > 0)
     {
         cmajor::symbols::FileScope* primaryFileScope = new cmajor::symbols::FileScope();
-        if (!inlineFunction->Ns()->IsGlobalNamespace())
+        if (!inlineFunction->Ns(boundCompileUnit.GetContext())->IsGlobalNamespace())
         {
-            primaryFileScope->AddContainerScope(inlineFunction->Ns()->GetContainerScope());
+            primaryFileScope->AddContainerScope(inlineFunction->Ns(boundCompileUnit.GetContext())->GetContainerScope());
         }
         for (int i = 0; i < n; ++i)
         {
             cmajor::ast::Node* usingNode = inlineFunction->UsingNodes()[i];
             if (usingNode->GetNodeType() == cmajor::ast::NodeType::namespaceImportNode)
             {
-                primaryFileScope->InstallNamespaceImport(containerScope, static_cast<cmajor::ast::NamespaceImportNode*>(usingNode));
+                primaryFileScope->InstallNamespaceImport(containerScope, static_cast<cmajor::ast::NamespaceImportNode*>(usingNode), context);
             }
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
@@ -82,7 +83,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         }
         boundCompileUnit.AddFileScope(primaryFileScope);
         fileScopeAdded = true;
-        std::u32string fullNsName = inlineFunction->Ns()->FullName();
+        std::u32string fullNsName = inlineFunction->Ns(boundCompileUnit.GetContext())->FullName();
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
@@ -105,7 +106,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     InstantiationGuard instantiationGuard(symbolTable, inlineFunction->FileIndex(), inlineFunction->ModuleId());
     if (!inlineFunction->Parent()->IsClassTypeSymbol())
     {
-        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
         symbolCreatorVisitor.SetLeaveFunction();
         globalNs->Accept(symbolCreatorVisitor);
         std::unique_ptr<cmajor::symbols::FunctionSymbol> functionSymbol(symbolTable.GetCreatedFunctionSymbol());
@@ -148,7 +149,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
             {
                 result->SetCompileUnitId(compileUnitNode->Id());
                 result->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
-                result->ComputeMangledName();
+                result->ComputeMangledName(boundCompileUnit.GetContext());
                 master->SetInstantiatedName(result->MangledName());
                 boundCompileUnit.SetCanReuse(result);
             }
@@ -164,7 +165,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     {
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<cmajor::symbols::ClassTypeSymbol*>(inlineFunction->Parent());
         symbolTable.SetCurrentClass(classTypeSymbol);
-        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
         symbolCreatorVisitor.SetLeaveFunction();
         globalNs->Accept(symbolCreatorVisitor);
         std::unique_ptr<cmajor::symbols::FunctionSymbol> functionSymbol(symbolTable.GetCreatedFunctionSymbol());
@@ -236,7 +237,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
             {
                 result->SetCompileUnitId(compileUnitNode->Id());
                 result->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
-                result->ComputeMangledName();
+                result->ComputeMangledName(boundCompileUnit.GetContext());
                 master->SetInstantiatedName(result->MangledName());
                 boundCompileUnit.SetCanReuse(result);
             }

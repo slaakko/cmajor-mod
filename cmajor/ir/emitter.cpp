@@ -8,7 +8,7 @@ import util;
 
 namespace cmajor::ir {
 
-Emitter::Emitter() : stack(nullptr), generateLocationInfo(false)
+Emitter::Emitter() : stack(nullptr), generateLocationInfo(false), context(nullptr)
 {
 }
 

@@ -18,7 +18,6 @@ private:
     OpCodes();
     void MakeNames();
     void MakeCodes();
-    static std::unique_ptr<OpCodes> instance;
     std::vector<std::string> names;
     std::map<std::string, std::uint8_t> codes;
     int maxOpCodeNameLength;

@@ -21,9 +21,9 @@ public:
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void* IrType(cmajor::ir::Emitter& emitter) override;
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
     bool IsArrayType() const override { return true; }
     TypeSymbol* ElementType() const { return elementType; }
     int64_t Size() const { return size; }
@@ -42,11 +42,11 @@ class ArrayLengthFunction : public FunctionSymbol
 {
 public:
     ArrayLengthFunction(const soul::ast::Span& span_, const std::u32string& name_);
-    ArrayLengthFunction(ArrayTypeSymbol* arrayType_);
+    ArrayLengthFunction(ArrayTypeSymbol* arrayType_, Context* context);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     std::unique_ptr<Value> ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::Span& span, Value* receiver) const override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsCompileTimePrimitiveFunction() const override { return true; }
@@ -60,11 +60,11 @@ class ArrayBeginFunction : public FunctionSymbol
 {
 public:
     ArrayBeginFunction(const soul::ast::Span& span_, const std::u32string& name_);
-    ArrayBeginFunction(ArrayTypeSymbol* arrayType_);
+    ArrayBeginFunction(ArrayTypeSymbol* arrayType_, Context* context);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayBeginFunction"; }
     void Check() override;
@@ -76,11 +76,11 @@ class ArrayEndFunction : public FunctionSymbol
 {
 public:
     ArrayEndFunction(const soul::ast::Span& span_, const std::u32string& name_);
-    ArrayEndFunction(ArrayTypeSymbol* arrayType_);
+    ArrayEndFunction(ArrayTypeSymbol* arrayType_, Context* context);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayEndFunction"; }
     void Check() override;
@@ -92,11 +92,11 @@ class ArrayCBeginFunction : public FunctionSymbol
 {
 public:
     ArrayCBeginFunction(const soul::ast::Span& span_, const std::u32string& name_);
-    ArrayCBeginFunction(ArrayTypeSymbol* arrayType_);
+    ArrayCBeginFunction(ArrayTypeSymbol* arrayType_, Context* context);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayCBeginFunction"; }
     void Check() override;
@@ -108,11 +108,11 @@ class ArrayCEndFunction : public FunctionSymbol
 {
 public:
     ArrayCEndFunction(const soul::ast::Span& span_, const std::u32string& name_);
-    ArrayCEndFunction(ArrayTypeSymbol* arrayType_);
+    ArrayCEndFunction(ArrayTypeSymbol* arrayType_, Context* context);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayCEndFunction"; }
     void Check() override;
@@ -123,10 +123,10 @@ private:
 class ArrayTypeDefaultConstructor : public FunctionSymbol
 {
 public:
-    ArrayTypeDefaultConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeDefaultConstructor_);
-    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
+    ArrayTypeDefaultConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeDefaultConstructor_, Context* context);
+    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context) override;
     void SetTemporariesForElementTypeDefaultCtor(std::vector<std::unique_ptr<cmajor::ir::GenObject>>&& temporaries);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flag) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flag, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayTypeDefaultConstructor"; }
     void Check() override;
@@ -139,10 +139,10 @@ private:
 class ArrayTypeCopyConstructor : public FunctionSymbol
 {
 public:
-    ArrayTypeCopyConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyConstructor_);
-    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
+    ArrayTypeCopyConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyConstructor_, Context* context);
+    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context) override;
     void SetTemporariesForElementTypeCopyCtor(std::vector<std::unique_ptr<cmajor::ir::GenObject>>&& temporaries);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayTypeCopyConstructor"; }
     void Check() override;
@@ -155,10 +155,10 @@ private:
 class ArrayTypeMoveConstructor : public FunctionSymbol
 {
 public:
-    ArrayTypeMoveConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveConstructor_);
-    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
+    ArrayTypeMoveConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveConstructor_, Context* context);
+    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context) override;
     void SetTemporariesForElementTypeMoveCtor(std::vector<std::unique_ptr<cmajor::ir::GenObject>>&& temporaries);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayTypeMoveConstructor"; }
     void Check() override;
@@ -171,10 +171,10 @@ private:
 class ArrayTypeCopyAssignment : public FunctionSymbol
 {
 public:
-    ArrayTypeCopyAssignment(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyAssignment_);
-    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
+    ArrayTypeCopyAssignment(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyAssignment_, Context* context);
+    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context) override;
     void SetTemporariesForElementTypeCopyAssignment(std::vector<std::unique_ptr<cmajor::ir::GenObject>>&& temporaries);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayTypeCopyAssignment"; }
     void Check() override;
@@ -187,10 +187,10 @@ private:
 class ArrayTypeMoveAssignment : public FunctionSymbol
 {
 public:
-    ArrayTypeMoveAssignment(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveAssignment_);
-    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
+    ArrayTypeMoveAssignment(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveAssignment_, Context* context);
+    std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context) override;
     void SetTemporariesForElementTypeMoveAssignment(std::vector<std::unique_ptr<cmajor::ir::GenObject>>&& temporaries);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "ArrayTypeMoveAssignment"; }
     void Check() override;
@@ -203,8 +203,8 @@ private:
 class ArrayTypeElementAccess : public FunctionSymbol
 {
 public:
-    ArrayTypeElementAccess(ArrayTypeSymbol* arrayType_);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
+    ArrayTypeElementAccess(ArrayTypeSymbol* arrayType_, Context* context);
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsArrayElementAccess() const override { return true; }
     const char* ClassName() const override { return "ArrayTypeElementAccess"; }

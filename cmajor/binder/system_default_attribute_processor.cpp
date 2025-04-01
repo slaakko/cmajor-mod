@@ -13,7 +13,7 @@ SystemDefaultAttributeProcessor::SystemDefaultAttributeProcessor() : AttributePr
 {
 }
 
-void SystemDefaultAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol)
+void SystemDefaultAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context)
 {
     if (symbol->IsFunctionSymbol())
     {
@@ -30,7 +30,7 @@ void SystemDefaultAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attr
     }
     else
     {
-        AttributeProcessor::TypeCheck(attribute, symbol);
+        AttributeProcessor::TypeCheck(attribute, symbol, context);
     }
 }
 

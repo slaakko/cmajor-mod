@@ -205,7 +205,8 @@ void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, c
 }
 
 StatementBinder::StatementBinder(BoundCompileUnit& boundCompileUnit_) :
-    boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()), containerScope(nullptr), statement(), compoundLevel(0), insideCatch(false),
+    boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), context(boundCompileUnit.GetContext()), module(&boundCompileUnit.GetModule()), 
+    containerScope(nullptr), statement(), compoundLevel(0), insideCatch(false),
     currentClass(nullptr), currentFunction(nullptr), currentStaticConstructorSymbol(nullptr), currentStaticConstructorNode(nullptr), currentConstructorSymbol(nullptr),
     currentConstructorNode(nullptr), currentDestructorSymbol(nullptr), currentDestructorNode(nullptr), currentMemberFunctionSymbol(nullptr), currentMemberFunctionNode(nullptr),
     switchConditionType(nullptr), currentCaseValueMap(nullptr), currentGotoCaseStatements(nullptr), currentGotoDefaultStatements(nullptr), postfix(false), compilingThrow(false),
@@ -221,7 +222,7 @@ void StatementBinder::Visit(cmajor::ast::CompileUnitNode& compileUnitNode)
     }
     compileUnitNode.GlobalNs()->Accept(*this);
     dontCheckDuplicateFunctionSymbols = false;
-    cmajor::symbols::Symbol* symbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.AddCompileUnitFunction");
+    cmajor::symbols::Symbol* symbol = symbolTable.GlobalNs().GetContainerScope()->Lookup(U"System.Runtime.AddCompileUnitFunction", context);
     if (symbol)
     {
         if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupSymbol)
@@ -317,7 +318,7 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
                 if (compileUnitNode)
                 {
                     copy->SetCompileUnitId(compileUnitNode->Id());
-                    copy->ComputeMangledName();
+                    copy->ComputeMangledName(context);
                 }
                 destructorSymbol->SetInstantiatedName(copy->MangledName());
                 destructorSymbol = copy;
@@ -354,7 +355,7 @@ void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
                     if (compileUnitNode)
                     {
                         copy->SetCompileUnitId(compileUnitNode->Id());
-                        copy->ComputeMangledName();
+                        copy->ComputeMangledName(context);
                     }
                     destructorSymbol->SetInstantiatedName(copy->MangledName());
                     destructorSymbol = copy;
@@ -543,7 +544,7 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructTraceEntry(new cmajor::ast::ConstructionStatementNode(span,
             new cmajor::ast::IdentifierNode(span, U"System.Runtime.TraceEntry"), static_cast<cmajor::ast::IdentifierNode*>(traceEntryNode->Clone(cloneContext))));
         symbolTable.BeginContainer(boundFunction->GetFunctionSymbol());
-        symbolTable.AddLocalVariable(*constructTraceEntry);
+        symbolTable.AddLocalVariable(*constructTraceEntry, context);
         symbolTable.EndContainer();
         cmajor::symbols::Symbol* traceEntrySymbol = symbolTable.GetSymbol(constructTraceEntry.get());
         if (traceEntrySymbol && traceEntrySymbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol)
@@ -572,7 +573,7 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructTraceGuard(new cmajor::ast::ConstructionStatementNode(span,
             new cmajor::ast::IdentifierNode(span, U"System.Runtime.TraceGuard"), static_cast<cmajor::ast::IdentifierNode*>(traceGuardNode->Clone(cloneContext))));
         symbolTable.BeginContainer(boundFunction->GetFunctionSymbol());
-        symbolTable.AddLocalVariable(*constructTraceGuard);
+        symbolTable.AddLocalVariable(*constructTraceGuard, context);
         symbolTable.EndContainer();
         cmajor::symbols::Symbol* traceGuardSymbol = symbolTable.GetSymbol(constructTraceGuard.get());
         if (traceGuardSymbol && traceGuardSymbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol)
@@ -608,7 +609,7 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         }
         cmajor::symbols::LocalVariableSymbol* prevUnwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@prevUnwindInfo");
         containerScope->Install(prevUnwindInfoVariableSymbol);
-        prevUnwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol->AddPointer());
+        prevUnwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol->AddPointer(context));
         boundFunction->GetFunctionSymbol()->SetPrevUnwindInfoVar(prevUnwindInfoVariableSymbol);
         cmajor::ast::IdentifierNode* prevUnwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
         symbolTable.MapSymbol(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
@@ -643,8 +644,10 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         symbolTable.MapSymbol(unwindInfoNode3, unwindInfoVariableSymbol);
         symbolTable.MapNode(unwindInfoNode3, unwindInfoVariableSymbol);
         cmajor::ast::FunctionPtrNode* functionPtrNode = new cmajor::ast::FunctionPtrNode(span);
-        BoundFunctionPtr* boundFunctionPtr = new BoundFunctionPtr(span, boundFunction->GetFunctionSymbol(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
-        BoundBitCast* boundBitCast = new BoundBitCast(std::unique_ptr<BoundExpression>(boundFunctionPtr), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
+        BoundFunctionPtr* boundFunctionPtr = new BoundFunctionPtr(span, boundFunction->GetFunctionSymbol(), 
+            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context));
+        BoundBitCast* boundBitCast = new BoundBitCast(std::unique_ptr<BoundExpression>(boundFunctionPtr), 
+            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(context));
         std::unique_ptr<BoundExpression> boundFunctionPtrAsVoidPtr(boundBitCast);
         functionPtrNode->SetBoundExpression(boundFunctionPtrAsVoidPtr.get());
         cmajor::ast::AssignmentStatementNode assignFunctionPtr(span, new cmajor::ast::DotNode(span, unwindInfoNode3, new cmajor::ast::IdentifierNode(span, U"function")),
@@ -909,7 +912,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
                 std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
                 symbolTable.SetCurrentFunctionSymbol(currentFunction->GetFunctionSymbol());
                 symbolTable.BeginContainer(containerScope->Container());
-                cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+                cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
                 constructFunctionProfiler.Accept(symbolCreatorVisitor);
                 symbolTable.EndContainer();
                 TypeBinder typeBinder(boundCompileUnit);
@@ -976,7 +979,8 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
         {
             std::vector<FunctionScopeLookup> classReturnLookups;
             classReturnLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-            classReturnLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, currentFunction->GetFunctionSymbol()->ReturnType()->ClassInterfaceEnumDelegateOrNsScope()));
+            classReturnLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, 
+                currentFunction->GetFunctionSymbol()->ReturnType()->ClassInterfaceEnumDelegateOrNsScope(context)));
             classReturnLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> classReturnArgs;
             classReturnArgs.push_back(std::unique_ptr<BoundExpression>(new BoundParameter(returnStatementNode.GetSpan(), currentFunction->GetFunctionSymbol()->ReturnParam())));
@@ -1046,7 +1050,7 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                 std::vector<FunctionScopeLookup> functionScopeLookups;
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, 
-                    returnType->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                    returnType->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context)));
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
                 std::unique_ptr<BoundFunctionCall> returnFunctionCall = ResolveOverload(U"@return", containerScope, functionScopeLookups, returnTypeArgs, boundCompileUnit, 
                     currentFunction, &returnStatementNode);
@@ -1069,13 +1073,13 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     {
                         if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::addr)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference();
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference(context);
                             BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(addressOfExpression);
                         }
                         else if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference();
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference(context);
                             BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(dereferenceExpression);
                         }
@@ -1087,10 +1091,10 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                         {
                             BoundFunctionCall* constructorCall = new BoundFunctionCall(returnStatementNode.GetSpan(), conversionFun);
                             cmajor::symbols::LocalVariableSymbol* temporary = currentFunction->GetFunctionSymbol()->CreateTemporary(conversionFun->ConversionTargetType(),
-                                returnStatementNode.GetSpan());
+                                returnStatementNode.GetSpan(), context);
                             constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                                 new BoundLocalVariable(returnStatementNode.GetSpan(), temporary)),
-                                conversionFun->ConversionTargetType()->AddPointer())));
+                                conversionFun->ConversionTargetType()->AddPointer(context))));
                             constructorCall->AddArgument(std::move(returnValueArguments[0]));
                             BoundConstructAndReturnTemporaryExpression* conversion = new BoundConstructAndReturnTemporaryExpression(std::unique_ptr<BoundExpression>(constructorCall),
                                 std::unique_ptr<BoundExpression>(new BoundLocalVariable(returnStatementNode.GetSpan(), temporary)));
@@ -1106,13 +1110,13 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     {
                         if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::addr)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference();
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference(context);
                             BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(addressOfExpression);
                         }
                         else if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference();
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference(context);
                             BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(dereferenceExpression);
                         }
@@ -1125,7 +1129,7 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                         util::ToUtf8(returnType->FullName()) + "' exists",
                         returnStatementNode.GetFullSpan(), currentFunction->GetFunctionSymbol()->GetFullSpan());
                 }
-                CheckAccess(currentFunction->GetFunctionSymbol(), returnFunctionCall->GetFunctionSymbol());
+                CheckAccess(currentFunction->GetFunctionSymbol(), returnFunctionCall->GetFunctionSymbol(), context);
                 if (exceptionCapture)
                 {
                     AddReleaseExceptionStatement(&returnStatementNode);
@@ -1171,7 +1175,7 @@ void StatementBinder::Visit(cmajor::ast::IfStatementNode& ifStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(context)))
     {
         throw cmajor::symbols::Exception("condition of an if statement must be a Boolean expression", ifStatementNode.Condition()->GetFullSpan());
     }
@@ -1212,7 +1216,7 @@ void StatementBinder::Visit(cmajor::ast::WhileStatementNode& whileStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(context)))
     {
         throw cmajor::symbols::Exception("condition of a while statement must be a Boolean expression", whileStatementNode.Condition()->GetFullSpan());
     }
@@ -1247,7 +1251,7 @@ void StatementBinder::Visit(cmajor::ast::DoStatementNode& doStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(context)))
     {
         throw cmajor::symbols::Exception("condition of a do statement must be a Boolean expression", doStatementNode.Condition()->GetFullSpan());
     }
@@ -1298,7 +1302,7 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(context)))
     {
         throw cmajor::symbols::Exception("condition of a for statement must be a Boolean expression", forStatementNode.Condition()->GetFullSpan());
     }
@@ -1420,7 +1424,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
         }
         else
         {
-            initializerType = boundCompileUnit.GetSymbolTable().MakeDerivedType(initializerType->BaseType(), derivations);
+            initializerType = boundCompileUnit.GetSymbolTable().MakeDerivedType(initializerType->BaseType(), derivations, context);
             localVariableSymbol->SetType(initializerType);
         }
         firstArg = std::move(argument);
@@ -1428,9 +1432,9 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSpan(), localVariableSymbol);
     arguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(localVariable),
-        localVariable->GetType()->AddPointer())));
+        localVariable->GetType()->AddPointer(context))));
     std::vector<FunctionScopeLookup> functionScopeLookups;
-    functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, localVariableSymbol->GetType()->ClassInterfaceEnumDelegateOrNsScope()));
+    functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, localVariableSymbol->GetType()->ClassInterfaceEnumDelegateOrNsScope(context)));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
     bool exceptionCapture = false;
@@ -1454,7 +1458,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
     std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction,
         &constructionStatementNode);
     cmajor::symbols::FunctionSymbol* functionSymbol = constructorCall->GetFunctionSymbol();
-    CheckAccess(currentFunction->GetFunctionSymbol(), functionSymbol);
+    CheckAccess(currentFunction->GetFunctionSymbol(), functionSymbol, context);
     if (exceptionCapture)
     {
         AddReleaseExceptionStatement(&constructionStatementNode);
@@ -1478,7 +1482,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
                     if (compileUnitNode)
                     {
                         copy->SetCompileUnitId(compileUnitNode->Id());
-                        copy->ComputeMangledName();
+                        copy->ComputeMangledName(context);
                     }
                     destructorSymbol->SetInstantiatedName(copy->MangledName());
                     destructorSymbol = copy;
@@ -1517,7 +1521,7 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
             std::vector<std::unique_ptr<BoundExpression>> arguments;
             arguments.push_back(std::move(std::unique_ptr<BoundExpression>(ptr->Clone())));
             std::unique_ptr<BoundFunctionCall> disposeCall = ResolveOverload(U"RtDispose", containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
-            CheckAccess(currentFunction->GetFunctionSymbol(), disposeCall->GetFunctionSymbol());
+            CheckAccess(currentFunction->GetFunctionSymbol(), disposeCall->GetFunctionSymbol(), context);
             AddStatement(new BoundExpressionStatement(std::move(disposeCall), span));
         }
     }
@@ -1530,12 +1534,12 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(baseType);
         std::vector<FunctionScopeLookup> lookups;
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-        lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, classType->ClassInterfaceOrNsScope()));
+        lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, classType->ClassInterfaceOrNsScope(context)));
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         std::vector<std::unique_ptr<BoundExpression>> arguments;
         arguments.push_back(std::move(ptr));
         std::unique_ptr<BoundFunctionCall> destructorCall = ResolveOverload(U"@destructor", containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
-        CheckAccess(currentFunction->GetFunctionSymbol(), destructorCall->GetFunctionSymbol());
+        CheckAccess(currentFunction->GetFunctionSymbol(), destructorCall->GetFunctionSymbol(), context);
         if (destructorCall->GetFunctionSymbol()->IsVirtualAbstractOrOverride())
         {
             destructorCall->SetFlag(BoundExpressionFlags::virtualCall);
@@ -1573,7 +1577,7 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
         memFreeFunctionName = U"RtmMemFree";
     }
     std::unique_ptr<BoundFunctionCall> memFreeCall = ResolveOverload(memFreeFunctionName, containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
-    CheckAccess(currentFunction->GetFunctionSymbol(), memFreeCall->GetFunctionSymbol());
+    CheckAccess(currentFunction->GetFunctionSymbol(), memFreeCall->GetFunctionSymbol(), context);
     if (exceptionCapture)
     {
         AddReleaseExceptionStatement(&deleteStatementNode);
@@ -1593,7 +1597,7 @@ void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementN
     {
         throw cmajor::symbols::Exception("destroy statement needs pointer type operand", destroyStatementNode.GetFullSpan());
     }
-    cmajor::symbols::TypeSymbol* pointeeType = ptr->GetType()->RemovePointer();
+    cmajor::symbols::TypeSymbol* pointeeType = ptr->GetType()->RemovePointer(context);
     if (pointeeType->HasNontrivialDestructor())
     {
         Assert(pointeeType->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
@@ -1601,13 +1605,13 @@ void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementN
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(pointeeType);
         std::vector<FunctionScopeLookup> lookups;
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-        lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, classType->ClassInterfaceOrNsScope()));
+        lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, classType->ClassInterfaceOrNsScope(context)));
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         std::vector<std::unique_ptr<BoundExpression>> arguments;
         arguments.push_back(std::move(ptr));
         std::unique_ptr<BoundFunctionCall> destructorCall = ResolveOverload(U"@destructor", containerScope, lookups, arguments, boundCompileUnit, currentFunction,
             &destroyStatementNode);
-        CheckAccess(currentFunction->GetFunctionSymbol(), destructorCall->GetFunctionSymbol());
+        CheckAccess(currentFunction->GetFunctionSymbol(), destructorCall->GetFunctionSymbol(), context);
         if (destructorCall->GetFunctionSymbol()->IsVirtualAbstractOrOverride())
         {
             destructorCall->SetFlag(BoundExpressionFlags::virtualCall);
@@ -1632,22 +1636,22 @@ void StatementBinder::Visit(cmajor::ast::AssignmentStatementNode& assignmentStat
     {
         exceptionCapture = true;
     }
-    cmajor::symbols::TypeSymbol* targetPlainType = target->GetType()->PlainType();
+    cmajor::symbols::TypeSymbol* targetPlainType = target->GetType()->PlainType(context);
     if ((targetPlainType->IsClassTypeSymbol() || targetPlainType->IsArrayType()) && target->GetType()->IsReferenceType())
     {
-        cmajor::symbols::TypeSymbol* type = target->GetType()->RemoveReference()->AddPointer();
+        cmajor::symbols::TypeSymbol* type = target->GetType()->RemoveReference(context)->AddPointer(context);
         target.reset(new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(target.release()), type));
     }
     else if (targetPlainType->IsPointerType() && target->GetType()->IsReferenceType())
     {
-        cmajor::symbols::TypeSymbol* derefType = target->GetType()->RemoveReference();
-        cmajor::symbols::TypeSymbol* addrOfType = derefType->AddPointer();
+        cmajor::symbols::TypeSymbol* derefType = target->GetType()->RemoveReference(context);
+        cmajor::symbols::TypeSymbol* addrOfType = derefType->AddPointer(context);
         target.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundDereferenceExpression(std::unique_ptr<BoundExpression>(target.release()), derefType)), addrOfType));
     }
     else
     {
-        target.reset(new BoundAddressOfExpression(std::move(target), target->GetType()->AddPointer()));
+        target.reset(new BoundAddressOfExpression(std::move(target), target->GetType()->AddPointer(context)));
     }
     cmajor::symbols::TypeSymbol* targetType = target->GetType()->BaseType();
     bool assignDelegateOrClassDelegateType = targetType->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol || 
@@ -1662,12 +1666,12 @@ void StatementBinder::Visit(cmajor::ast::AssignmentStatementNode& assignmentStat
     arguments.push_back(std::move(target));
     arguments.push_back(std::move(source));
     std::vector<FunctionScopeLookup> functionScopeLookups;
-    functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, targetType->ClassInterfaceEnumDelegateOrNsScope()));
+    functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, targetType->ClassInterfaceEnumDelegateOrNsScope(context)));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
     std::unique_ptr<BoundFunctionCall> assignmentCall = ResolveOverload(U"operator=", containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction,
         &assignmentStatementNode);
-    CheckAccess(currentFunction->GetFunctionSymbol(), assignmentCall->GetFunctionSymbol());
+    CheckAccess(currentFunction->GetFunctionSymbol(), assignmentCall->GetFunctionSymbol(), context);
     currentFunction->MoveTemporaryDestructorCallsTo(*assignmentCall);
     if (exceptionCapture)
     {
@@ -1733,7 +1737,7 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
     soul::ast::Span initSpan = rangeForStatementNode.TypeExpr()->GetSpan();
     soul::ast::Span containerSpan = rangeForStatementNode.Container()->GetSpan();
     std::unique_ptr<BoundExpression> container = BindExpression(rangeForStatementNode.Container(), boundCompileUnit, currentFunction, containerScope, this);
-    cmajor::symbols::TypeSymbol* plainContainerType = container->GetType()->PlainType();
+    cmajor::symbols::TypeSymbol* plainContainerType = container->GetType()->PlainType(context);
     std::u32string plainContainerTypeFullName = plainContainerType->FullName();
     cmajor::parser::context::Context parsingContext;
     parsingContext.SetModuleId(module->Id());
@@ -1799,7 +1803,7 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
 
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.BeginContainer(containerScope->Container());
-    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
     compoundStatementNode->Accept(symbolCreatorVisitor);
     symbolTable.EndContainer();
     TypeBinder typeBinder(boundCompileUnit);
@@ -1998,9 +2002,9 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
     if (exceptionExprNode)
     {
         std::unique_ptr<BoundExpression> boundExceptionExpr = BindExpression(exceptionExprNode, boundCompileUnit, currentFunction, containerScope, this);
-        if (boundExceptionExpr->GetType()->PlainType()->IsClassTypeSymbol())
+        if (boundExceptionExpr->GetType()->PlainType(context)->IsClassTypeSymbol())
         {
-            cmajor::symbols::ClassTypeSymbol* exceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(boundExceptionExpr->GetType()->PlainType());
+            cmajor::symbols::ClassTypeSymbol* exceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(boundExceptionExpr->GetType()->PlainType(context));
             cmajor::ast::IdentifierNode systemExceptionNode(span, U"System.Exception");
             cmajor::symbols::TypeSymbol* systemExceptionType = ResolveType(&systemExceptionNode, boundCompileUnit, containerScope);
             Assert(systemExceptionType->IsClassTypeSymbol(), "System.Exception not of class type");
@@ -2148,7 +2152,7 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
     handlerBlock.AddStatement(static_cast<cmajor::ast::StatementNode*>(catchNode.CatchBlock()->Clone(cloneContext)));
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.BeginContainer(containerScope->Container());
-    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
     handlerBlock.Accept(symbolCreatorVisitor);
     symbolTable.EndContainer();
     TypeBinder typeBinder(boundCompileUnit);
@@ -2207,7 +2211,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
         cmajor::ast::ExpressionStatementNode setUnitTestAssertionResult(assertStatementNode.GetSpan(), invokeSetUnitTestAssertionResult);
         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
         symbolTable.BeginContainer(containerScope->Container());
-        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+        cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
         setUnitTestAssertionResult.Accept(symbolCreatorVisitor);
         symbolTable.EndContainer();
         TypeBinder typeBinder(boundCompileUnit);
@@ -2230,7 +2234,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             std::vector<FunctionScopeLookup> lookups;
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, symbolTable.GlobalNs().GetContainerScope()));
             std::vector<std::unique_ptr<BoundExpression>> arguments;
-            cmajor::symbols::TypeSymbol* constCharPtrType = symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer();
+            cmajor::symbols::TypeSymbol* constCharPtrType = symbolTable.GetTypeByName(U"char")->AddConst(context)->AddPointer(context);
             arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(
                 new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
                 boundCompileUnit.Install(assertStatementNode.AssertExpr()->ToString()), assertStatementNode.AssertExpr()->ToString())), constCharPtrType)));

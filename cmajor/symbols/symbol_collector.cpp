@@ -11,7 +11,7 @@ import cmajor.symbols.concepts;
 
 namespace cmajor::symbols {
 
-SymbolCollector::SymbolCollector()
+SymbolCollector::SymbolCollector(Context* context_) : context(context_)
 {
 }
 
@@ -103,23 +103,23 @@ void SymbolCollector::SortByFullName()
 
 bool ByDocName::operator()(Symbol* left, Symbol* right) const
 {
-    return left->DocName() < right->DocName();
+    return left->DocName(context) < right->DocName(context);
 }
 
 void SymbolCollector::SortByDocName()
 {
-    std::sort(basicTypes.begin(), basicTypes.end(), ByDocName());
-    std::sort(classes.begin(), classes.end(), ByDocName());
-    std::sort(interfaces.begin(), interfaces.end(), ByDocName());
-    std::sort(functions.begin(), functions.end(), ByDocName());
-    std::sort(aliasTypes.begin(), aliasTypes.end(), ByDocName());
-    std::sort(concepts.begin(), concepts.end(), ByDocName());
-    std::sort(delegates.begin(), delegates.end(), ByDocName());
-    std::sort(classDelegates.begin(), classDelegates.end(), ByDocName());
-    std::sort(constants.begin(), constants.end(), ByDocName());
-    std::sort(enumeratedTypes.begin(), enumeratedTypes.end(), ByDocName());
-    std::sort(memberVariables.begin(), memberVariables.end(), ByDocName());
-    std::sort(globalVariables.begin(), globalVariables.end(), ByDocName());
+    std::sort(basicTypes.begin(), basicTypes.end(), ByDocName(context));
+    std::sort(classes.begin(), classes.end(), ByDocName(context));
+    std::sort(interfaces.begin(), interfaces.end(), ByDocName(context));
+    std::sort(functions.begin(), functions.end(), ByDocName(context));
+    std::sort(aliasTypes.begin(), aliasTypes.end(), ByDocName(context));
+    std::sort(concepts.begin(), concepts.end(), ByDocName(context));
+    std::sort(delegates.begin(), delegates.end(), ByDocName(context));
+    std::sort(classDelegates.begin(), classDelegates.end(), ByDocName(context));
+    std::sort(constants.begin(), constants.end(), ByDocName(context));
+    std::sort(enumeratedTypes.begin(), enumeratedTypes.end(), ByDocName(context));
+    std::sort(memberVariables.begin(), memberVariables.end(), ByDocName(context));
+    std::sort(globalVariables.begin(), globalVariables.end(), ByDocName(context));
 }
 
 bool SymbolCollector::IsEmpty() const

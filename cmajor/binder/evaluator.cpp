@@ -51,12 +51,12 @@ public:
         Assert(false, "scoped value cannot be converted");
         return nullptr; 
     }
-    void* IrValue(cmajor::ir::Emitter& emitter) override 
+    void* IrValue(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override 
     { 
         Assert(false, "scoped value does not have ir value");
         return nullptr; 
     }
-    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return type; }
+    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable, cmajor::symbols::Context* context) override { return type; }
     void SetType(cmajor::symbols::TypeSymbol* type_) override { type = type_; }
     cmajor::symbols::Value* GetSubject() override { return subject.get(); }
     void SetSubject(cmajor::symbols::Value* subject_) { subject.reset(subject_); }
@@ -89,14 +89,14 @@ public:
         Assert(false, "function group value cannot be converted"); 
         return nullptr; 
     }
-    void* IrValue(cmajor::ir::Emitter& emitter) override 
+    void* IrValue(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override 
     { 
         Assert(false, "function group value does not have ir value");  
         return nullptr; 
     }
     cmajor::symbols::FunctionGroupSymbol* FunctionGroup() { return functionGroup; }
     cmajor::symbols::ContainerScope* QualifiedScope() { return qualifiedScope; }
-    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return nullptr; }
+    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable, cmajor::symbols::Context* context) override { return nullptr; }
     void SetTemplateTypeArguments(std::vector<cmajor::symbols::TypeSymbol*>&& templateTypeArguments_) { templateTypeArguments = std::move(templateTypeArguments_); }
     std::vector<cmajor::symbols::TypeSymbol*> TemplateTypeArguments() { return std::move(templateTypeArguments); }
     void SetReceiver(std::unique_ptr<cmajor::symbols::Value>&& receiver_) { receiver = std::move(receiver_); }
@@ -126,12 +126,15 @@ public:
         Assert(false, "array reference value cannot be converted");
         return nullptr; 
     }
-    void* IrValue(cmajor::ir::Emitter& emitter) override 
+    void* IrValue(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override
     { 
         Assert(false, "array reference does not have ir value");
         return nullptr; 
     }
-    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return arrayValue->GetType(symbolTable); }
+    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable, cmajor::symbols::Context* context) override 
+    { 
+        return arrayValue->GetType(symbolTable, context); 
+    }
     cmajor::symbols::ArrayValue* GetArrayValue() const { return arrayValue; }
 private:
     cmajor::symbols::ArrayValue* arrayValue;
@@ -155,12 +158,15 @@ public:
         Assert(false, "structured reference value cannot be converted");
         return nullptr; 
     }
-    void* IrValue(cmajor::ir::Emitter& emitter) override 
+    void* IrValue(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override
     { 
         Assert(false, "structured reference does not have ir value");
         return nullptr; 
     }
-    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return structuredValue->GetType(symbolTable); }
+    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable, cmajor::symbols::Context* context) override 
+    { 
+        return structuredValue->GetType(symbolTable, context); 
+    }
     cmajor::symbols::StructuredValue* GetStructuredValue() const { return structuredValue; }
 private:
     cmajor::symbols::StructuredValue* structuredValue;
@@ -184,8 +190,11 @@ public:
         Assert(false, "string reference value cannot be converted");
         return nullptr; 
     }
-    void* IrValue(cmajor::ir::Emitter& emitter) override { return stringValue->IrValue(emitter); }
-    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return stringValue->GetType(symbolTable); }
+    void* IrValue(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override { return stringValue->IrValue(emitter, context); }
+    cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable, cmajor::symbols::Context* context) override 
+    { 
+        return stringValue->GetType(symbolTable, context); 
+    }
     cmajor::symbols::Value* GetSubject() override { return stringValue; }
 private:
     cmajor::symbols::Value* stringValue;
@@ -212,13 +221,14 @@ VariableValueSymbol::VariableValueSymbol(const soul::ast::Span& span_, const std
 {
 }
 
-std::vector<std::unique_ptr<BoundExpression>> ValuesToLiterals(std::vector<std::unique_ptr<cmajor::symbols::Value>>& values, cmajor::symbols::SymbolTable* symbolTable, bool& error)
+std::vector<std::unique_ptr<BoundExpression>> ValuesToLiterals(std::vector<std::unique_ptr<cmajor::symbols::Value>>& values, 
+    cmajor::symbols::SymbolTable* symbolTable, cmajor::symbols::Context* context, bool& error)
 {
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     for (std::unique_ptr<cmajor::symbols::Value>& value : values)
     {
         cmajor::symbols::ValueType valueType = value->GetValueType();
-        cmajor::symbols::TypeSymbol* type = value->GetType(symbolTable);
+        cmajor::symbols::TypeSymbol* type = value->GetType(symbolTable, context);
         BoundLiteral* literal = new BoundLiteral(std::move(value), type);
         arguments.push_back(std::unique_ptr<BoundExpression>(literal));
     }
@@ -771,6 +781,7 @@ public:
 private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable* symbolTable;
+    cmajor::symbols::Context* context;
     cmajor::symbols::Module* module;
     cmajor::symbols::ContainerScope* containerScope;
     cmajor::symbols::ContainerScope* qualifiedScope;
@@ -803,7 +814,7 @@ private:
 
 Evaluator::Evaluator(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, cmajor::symbols::TypeSymbol* targetType_, 
     cmajor::symbols::ValueType targetValueType_, bool cast_, bool dontThrow_, BoundFunction* currentFunction_) :
-    boundCompileUnit(boundCompileUnit_), symbolTable(&boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()),
+    boundCompileUnit(boundCompileUnit_), symbolTable(&boundCompileUnit.GetSymbolTable()), context(boundCompileUnit.GetContext()), module(&boundCompileUnit.GetModule()),
     containerScope(containerScope_), qualifiedScope(nullptr), cast(cast_), dontThrow(dontThrow_), error(false),
     returned(false), broke(false), continued(false), lvalue(false), currentFunction(currentFunction_), currentDeclarationBlock(nullptr), 
     currentFileScope(nullptr), currentClassType(nullptr),
@@ -863,7 +874,7 @@ void Evaluator::EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* 
     {
         cmajor::symbols::PointerValue* leftPtr = static_cast<cmajor::symbols::PointerValue*>(left.get());
         cmajor::symbols::PointerValue* rightPtr = static_cast<cmajor::symbols::PointerValue*>(right.get());
-        if (leftPtr->GetValue() != nullptr && rightPtr->GetValue() != nullptr && leftPtr->PointeeType() != rightPtr->PointeeType())
+        if (leftPtr->GetValue() != nullptr && rightPtr->GetValue() != nullptr && leftPtr->PointeeType(context) != rightPtr->PointeeType(context))
         {
             if (dontThrow)
             {
@@ -928,7 +939,7 @@ void Evaluator::EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, 
             }
             int64_t offset = static_cast<cmajor::symbols::LongValue*>(rightConverted.get())->GetValue();
             cmajor::symbols::PointerValue* leftPointerValue = static_cast<cmajor::symbols::PointerValue*>(left.get());
-            value.reset(leftPointerValue->Add(offset));
+            value.reset(leftPointerValue->Add(offset, context));
             if (!value)
             {
                 if (dontThrow)
@@ -955,7 +966,7 @@ void Evaluator::EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, 
             }
             int64_t offset = static_cast<cmajor::symbols::LongValue*>(leftConverted.get())->GetValue();
             cmajor::symbols::PointerValue* rightPointerValue = static_cast<cmajor::symbols::PointerValue*>(right.get());
-            value.reset(rightPointerValue->Add(offset));
+            value.reset(rightPointerValue->Add(offset, context));
             if (!value)
             {
                 if (dontThrow)
@@ -997,7 +1008,7 @@ void Evaluator::EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, 
             }
             int64_t offset = static_cast<cmajor::symbols::LongValue*>(rightConverted.get())->GetValue();
             cmajor::symbols::PointerValue* leftPointerValue = static_cast<cmajor::symbols::PointerValue*>(left.get());
-            value.reset(leftPointerValue->Sub(offset));
+            value.reset(leftPointerValue->Sub(offset, context));
             if (!value)
             {
                 if (dontThrow)
@@ -1015,7 +1026,7 @@ void Evaluator::EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, 
         {
             cmajor::symbols::PointerValue* leftPointerValue = static_cast<cmajor::symbols::PointerValue*>(left.get());
             cmajor::symbols::PointerValue* rightPointerValue = static_cast<cmajor::symbols::PointerValue*>(right.get());
-            if (leftPointerValue->PointeeType() != rightPointerValue->PointeeType())
+            if (leftPointerValue->PointeeType(context) != rightPointerValue->PointeeType(context))
             {
                 if (dontThrow)
                 {
@@ -1027,7 +1038,7 @@ void Evaluator::EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, 
                     throw cmajor::symbols::Exception("incompatible pointer operands", node->GetFullSpan());
                 }
             }
-            value.reset(leftPointerValue->Sub(rightPointerValue->GetValue()));
+            value.reset(leftPointerValue->Sub(rightPointerValue->GetValue(), context));
             if (!value)
             {
                 if (dontThrow)
@@ -1171,7 +1182,7 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
         cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(
             templateParameterNode->GetSpan(), templateParameterNode->Id()->Str());
         boundTemplateParameter->SetType(templateTypeArgument);
-        declarationBlock.AddMember(boundTemplateParameter);
+        declarationBlock.AddMember(boundTemplateParameter, context);
     }
     int n = functionNode.Parameters().Count();
     if (n != argumentValues.size())
@@ -1192,7 +1203,7 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
     for (int i = 0; i < n; ++i)
     {
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
-        cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
+        cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable, context);
         cmajor::ast::ParameterNode* parameterNode = functionNode.Parameters()[i];
         std::u32string parameterName = U"@p" + util::ToUtf32(std::to_string(i));
         if (parameterNode->Id())
@@ -1201,7 +1212,7 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
         }
         VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterName, std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
-        declarationBlock.AddMember(variableValueSymbol);
+        declarationBlock.AddMember(variableValueSymbol, context);
     }
     functionNode.Body()->Accept(*this);
     containerScope = prevContainerScope;
@@ -1267,11 +1278,11 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
     for (int i = 0; i < n; ++i)
     {
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
-        cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
+        cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable, context);
         cmajor::ast::ParameterNode* parameterNode = constructorNode.Parameters()[i];
         VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
-        declarationBlock.AddMember(variableValueSymbol);
+        declarationBlock.AddMember(variableValueSymbol, context);
     }
     std::unordered_map<std::u32string, cmajor::ast::MemberInitializerNode*> memberInitializerMap;
     int ni = constructorNode.Initializers().Count();
@@ -1359,7 +1370,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, memberVariableSymbol->GetType()->BaseType()->GetContainerScope()));
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
-        std::vector<std::unique_ptr<BoundExpression>> initializerArguments = ValuesToLiterals(initializerArgumentValues, symbolTable, error);
+        std::vector<std::unique_ptr<BoundExpression>> initializerArguments = ValuesToLiterals(initializerArgumentValues, symbolTable, context, error);
         if (error)
         {
             if (dontThrow)
@@ -1376,7 +1387,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
         }
         initializerArguments.insert(initializerArguments.begin(), std::unique_ptr<BoundExpression>(
-            new BoundTypeExpression(constructorNode.GetSpan(), memberVariableSymbol->GetType()->AddPointer())));
+            new BoundTypeExpression(constructorNode.GetSpan(), memberVariableSymbol->GetType()->AddPointer(context))));
         OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
         if (dontThrow)
         {
@@ -1536,11 +1547,11 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
     for (int i = 0; i < n; ++i)
     {
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
-        cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
+        cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable, context);
         cmajor::ast::ParameterNode* parameterNode = memberFunctionNode.Parameters()[i];
         VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
-        declarationBlock.AddMember(variableValueSymbol);
+        declarationBlock.AddMember(variableValueSymbol, context);
     }
     if (currentClassType && structureReferenceValue)
     {
@@ -1599,7 +1610,7 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
             {
                 constantSymbol->SetValue(memberValue->Clone());
             }
-            declarationBlock.AddMember(constantSymbol);
+            declarationBlock.AddMember(constantSymbol, context);
         }
     }
     memberFunctionNode.Body()->Accept(*this);
@@ -1629,7 +1640,7 @@ void Evaluator::Visit(cmajor::ast::NamespaceImportNode& namespaceImportNode)
 {
     if (currentFileScope)
     {
-        currentFileScope->InstallNamespaceImport(containerScope, &namespaceImportNode);
+        currentFileScope->InstallNamespaceImport(containerScope, &namespaceImportNode, context);
     }
 }
 
@@ -2096,7 +2107,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         }
         values.push_back(std::move(value));
     }
-    std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(values, symbolTable, error);
+    std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(values, symbolTable, context, error);
     if (error)
     {
         if (dontThrow)
@@ -2108,7 +2119,8 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
             ThrowCannotEvaluateStatically(&constructionStatementNode);
         }
     }
-    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(constructionStatementNode.GetSpan(), type->AddPointer())));
+    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(constructionStatementNode.GetSpan(), 
+        type->AddPointer(context))));
     std::vector<FunctionScopeLookup> scopeLookups;
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
@@ -2193,7 +2205,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
     }
     VariableValueSymbol* variableValue = new VariableValueSymbol(constructionStatementNode.GetSpan(), constructionStatementNode.Id()->Str(), std::move(value));
     variableValue->SetType(type);
-    currentDeclarationBlock->AddMember(variableValue);
+    currentDeclarationBlock->AddMember(variableValue, context);
 }
 
 void Evaluator::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNode)
@@ -2234,7 +2246,7 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
     assignmentStatementNode.SourceExpr()->Accept(*this);
     std::vector<std::unique_ptr<cmajor::symbols::Value>> values;
     values.push_back(std::move(value));
-    std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(values, symbolTable, error);
+    std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(values, symbolTable, context, error);
     if (error)
     {
         if (dontThrow)
@@ -2246,7 +2258,8 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
             ThrowCannotEvaluateStatically(&assignmentStatementNode);
         }
     }
-    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(assignmentStatementNode.GetSpan(), target->GetType()->AddPointer())));
+    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(assignmentStatementNode.GetSpan(), 
+        target->GetType()->AddPointer(context))));
     std::vector<FunctionScopeLookup> scopeLookups;
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
@@ -2871,7 +2884,7 @@ void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
     }
     if (arrayType->Size() == -1)
     {
-        arrayType = symbolTable->MakeArrayType(arrayType->ElementType(), n);
+        arrayType = symbolTable->MakeArrayType(arrayType->ElementType(), n, boundCompileUnit.GetContext());
     }
     value.reset(new cmajor::symbols::ArrayValue(arrayLiteralNode.GetSpan(), arrayType, std::move(elementValues)));
 }
@@ -2950,7 +2963,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             }
             memberValues.push_back(std::move(value));
         }
-        std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(memberValues, symbolTable, error);
+        std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(memberValues, symbolTable, context, error);
         if (error)
         {
             if (dontThrow)
@@ -2962,9 +2975,10 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
                 ThrowCannotEvaluateStatically(&structuredLiteralNode);
             }
         }
-        arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(structuredLiteralNode.GetSpan(), classType->AddPointer())));
+        arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(structuredLiteralNode.GetSpan(), 
+            classType->AddPointer(context))));
         std::vector<FunctionScopeLookup> scopeLookups;
-        scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, classType->ClassOrNsScope()));
+        scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, classType->ClassOrNsScope(context)));
         scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
         scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         std::unique_ptr<cmajor::symbols::Exception> exception;
@@ -3036,12 +3050,12 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
 void Evaluator::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
     std::u32string name = identifierNode.Str();
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent, context);
     if (!symbol)
     {
         for (const std::unique_ptr<cmajor::symbols::FileScope>& fileScope : boundCompileUnit.FileScopes())
         {
-            symbol = fileScope->Lookup(name);
+            symbol = fileScope->Lookup(name, context);
             if (symbol) break;
         }
     }
@@ -3264,16 +3278,16 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
     {
         if (value->IsArrayReferenceValue())
         {
-            cmajor::symbols::TypeSymbol* type = static_cast<ArrayReferenceValue*>(value.get())->GetArrayValue()->GetType(symbolTable);
+            cmajor::symbols::TypeSymbol* type = static_cast<ArrayReferenceValue*>(value.get())->GetArrayValue()->GetType(symbolTable, context);
             ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
             scopedValue->SetType(type);
             value.reset(scopedValue);
         }
         else if (value->IsStructuredReferenceValue())
         {
-            cmajor::symbols::TypeSymbol* type = static_cast<StructuredReferenceValue*>(value.get())->GetStructuredValue()->GetType(symbolTable);
+            cmajor::symbols::TypeSymbol* type = static_cast<StructuredReferenceValue*>(value.get())->GetStructuredValue()->GetType(symbolTable, context);
             ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
-            scopedValue->SetType(type->AddPointer());
+            scopedValue->SetType(type->AddPointer(context));
             scopedValue->SetSubject(value.release());
             value.reset(scopedValue);
         }
@@ -3287,7 +3301,7 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
         }
         else if (value->GetValueType() == cmajor::symbols::ValueType::structuredValue)
         {
-            cmajor::symbols::TypeSymbol* type = static_cast<cmajor::symbols::StructuredValue*>(value.get())->GetType(symbolTable);
+            cmajor::symbols::TypeSymbol* type = static_cast<cmajor::symbols::StructuredValue*>(value.get())->GetType(symbolTable, context);
             ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
             scopedValue->SetType(type);
             value.reset(scopedValue);
@@ -3305,11 +3319,11 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
         cmajor::symbols::ContainerScope* scope = containerSymbol->GetContainerScope();
         qualifiedScope = scope;
         std::u32string memberName = dotNode.MemberId()->Str();
-        cmajor::symbols::Symbol* symbol = scope->Lookup(memberName);
+        cmajor::symbols::Symbol* symbol = scope->Lookup(memberName, context);
         if (symbol)
         {
             std::unique_ptr<cmajor::symbols::Value> receiver;
-            cmajor::symbols::TypeSymbol* type = scopedValue->GetType(symbolTable);
+            cmajor::symbols::TypeSymbol* type = scopedValue->GetType(symbolTable, context);
             if (type && (type->IsArrayType() || type->BaseType()->IsClassTypeSymbol() || type->IsStringFunctionContainer()))
             {
                 receiver = std::move(value);
@@ -3510,7 +3524,7 @@ void Evaluator::Visit(cmajor::ast::PrefixIncrementNode& prefixIncrementNode)
             ThrowCannotEvaluateStatically(&prefixIncrementNode);
         }
     }
-    bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
+    bool unsignedType = value->GetType(symbolTable, context)->IsUnsignedType();
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
     {
@@ -3564,7 +3578,7 @@ void Evaluator::Visit(cmajor::ast::PrefixDecrementNode& prefixDecrementNode)
             ThrowCannotEvaluateStatically(&prefixDecrementNode);
         }
     }
-    bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
+    bool unsignedType = value->GetType(symbolTable, context)->IsUnsignedType();
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
     {
@@ -3601,7 +3615,7 @@ void Evaluator::Visit(cmajor::ast::DerefNode& derefNode)
     if (value && value->GetValueType() == cmajor::symbols::ValueType::pointerValue)
     {
         cmajor::symbols::PointerValue* pointerValue = static_cast<cmajor::symbols::PointerValue*>(value.get());
-        value.reset(pointerValue->Deref());
+        value.reset(pointerValue->Deref(context));
         if (!value)
         {
             if (dontThrow)
@@ -3775,7 +3789,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
             functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
             functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         }
-        std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(values, symbolTable, error);
+        std::vector<std::unique_ptr<BoundExpression>> arguments = ValuesToLiterals(values, symbolTable, context, error);
         if (error)
         {
             if (dontThrow)
@@ -3789,7 +3803,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
         }
         if (functionGroupValue->Receiver() && functionGroupValue->Receiver()->IsScopedValue())
         {
-            cmajor::symbols::TypeSymbol* type = static_cast<ScopedValue*>(functionGroupValue->Receiver())->GetType(symbolTable);
+            cmajor::symbols::TypeSymbol* type = static_cast<ScopedValue*>(functionGroupValue->Receiver())->GetType(symbolTable, context);
             if (type)
             {
                 arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), type)));
@@ -3806,7 +3820,8 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
         {
             if (currentClassType)
             {
-                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), currentClassType->AddPointer())));
+                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), 
+                    currentClassType->AddPointer(context))));
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, currentClassType->GetContainerScope()));
                 OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
                 if (dontThrow)
@@ -3886,9 +3901,9 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
             if (functionGroupValue->Receiver() && functionGroupValue->Receiver()->IsScopedValue())
             {
                 ScopedValue* receiver = static_cast<ScopedValue*>(functionGroupValue->Receiver());
-                if (receiver->GetSubject() && receiver->GetSubject()->GetType(symbolTable)->IsClassTypeSymbol())
+                if (receiver->GetSubject() && receiver->GetSubject()->GetType(symbolTable, context)->IsClassTypeSymbol())
                 {
-                    currentClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(receiver->GetSubject()->GetType(symbolTable));
+                    currentClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(receiver->GetSubject()->GetType(symbolTable, context));
                     structureReferenceValue = std::unique_ptr<cmajor::symbols::Value>(receiver->GetSubject()->Clone());
                 }
             }
@@ -3969,7 +3984,7 @@ void Evaluator::Visit(cmajor::ast::PostfixIncrementNode& postfixIncrementNode)
             ThrowCannotEvaluateStatically(&postfixIncrementNode);
         }
     }
-    bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
+    bool unsignedType = value->GetType(symbolTable, context)->IsUnsignedType();
     std::unique_ptr<cmajor::symbols::Value> result = std::move(value);
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
@@ -4005,7 +4020,7 @@ void Evaluator::Visit(cmajor::ast::PostfixDecrementNode& postfixDecrementNode)
             ThrowCannotEvaluateStatically(&postfixDecrementNode);
         }
     }
-    bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
+    bool unsignedType = value->GetType(symbolTable, context)->IsUnsignedType();
     std::unique_ptr<cmajor::symbols::Value> result = std::move(value);
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
@@ -4137,8 +4152,8 @@ void Evaluator::Visit(cmajor::ast::ParenthesizedExpressionNode& parenthesizedExp
     parenthesizedExpressionNode.Subject()->Accept(*this);
 }
 
-std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit, bool dontThrow, 
-    BoundFunction* currentFunction)
+std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ContainerScope* containerScope, 
+    BoundCompileUnit& boundCompileUnit, bool dontThrow, BoundFunction* currentFunction)
 {
     cmajor::symbols::ValueType targetValueType = targetType->GetValueType();
     Evaluator evaluator(boundCompileUnit, containerScope, targetType, targetValueType, false, dontThrow, currentFunction);
@@ -4152,7 +4167,7 @@ std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor
         std::unique_ptr<cmajor::symbols::Value> value = evaluator.GetValue();
         if (value && value->IsComplete())
         {
-            if (!TypesEqual(targetType->PlainType(), value->GetType(&boundCompileUnit.GetSymbolTable())))
+            if (!TypesEqual(targetType->PlainType(boundCompileUnit.GetContext()), value->GetType(&boundCompileUnit.GetSymbolTable(), boundCompileUnit.GetContext())))
             {
                 if (targetType->IsArrayType() && static_cast<cmajor::symbols::ArrayTypeSymbol*>(targetType)->Size() == -1)
                 {
@@ -4162,7 +4177,7 @@ std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor
                 {
                     return std::move(value);
                 }
-                value.reset(value->As(targetType->PlainType(), false, node, dontThrow));
+                value.reset(value->As(targetType->PlainType(boundCompileUnit.GetContext()), false, node, dontThrow));
             }
             return std::move(value);
         }

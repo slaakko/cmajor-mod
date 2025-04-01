@@ -20,6 +20,7 @@ import util;
 
 export namespace cmajor::symbols {
 
+class Context;
 class SymbolWriter;
 class SymbolReader;
 class ContainerScope;
@@ -154,16 +155,16 @@ public:
     virtual std::u32string FullName() const;
     virtual std::u32string FullNameWithSpecifiers() const;
     virtual std::u32string SimpleName() const { return Name(); }
-    virtual std::u32string DocName() const { return Name(); }
+    virtual std::u32string DocName(Context* context) const { return Name(); }
     virtual std::u32string CodeName() const { return Name(); }
     virtual std::u32string Id() const { return mangledName; }
     virtual SymbolAccess DeclaredAccess() const { return Access(); }
-    virtual std::string TypeString() const { return "symbol"; }
-    virtual void* IrObject(cmajor::ir::Emitter& emitter);
-    virtual void ComputeMangledName();
-    virtual void Dump(util::CodeFormatter& formatter) {}
+    virtual std::string TypeString(Context* context) const { return "symbol"; }
+    virtual void* IrObject(cmajor::ir::Emitter& emitter, Context* context);
+    virtual void ComputeMangledName(Context* context);
+    virtual void Dump(util::CodeFormatter& formatter, Context* context) {}
     virtual std::string GetSpecifierStr();
-    virtual std::string Syntax();
+    virtual std::string Syntax(Context* context);
     virtual void CopyFrom(const Symbol* that);
     virtual void Check();
     bool IsAliasTypeSymbol() const { return symbolType == SymbolType::aliasTypeSymbol; }
@@ -199,16 +200,16 @@ public:
     const Symbol* Parent() const { return parent; }
     Symbol* Parent() { return parent; }
     void SetParent(Symbol* parent_) { parent = parent_; }
-    const NamespaceSymbol* Ns() const;
-    NamespaceSymbol* Ns();
+    const NamespaceSymbol* Ns(Context* context) const;
+    NamespaceSymbol* Ns(Context* context);
     const ClassTypeSymbol* ClassNoThrow() const;
     ClassTypeSymbol* ClassNoThrow();
-    const ContainerSymbol* ClassOrNsNoThrow() const;
-    ContainerSymbol* ClassOrNsNoThrow();
-    const ContainerSymbol* ClassInterfaceOrNsNoThrow() const;
-    ContainerSymbol* ClassInterfaceOrNsNoThrow();
-    const ContainerSymbol* ClassInterfaceEnumDelegateOrNsNoThrow() const;
-    ContainerSymbol* ClassInterfaceEnumDelegateOrNsNoThrow();
+    const ContainerSymbol* ClassOrNsNoThrow(Context* context) const;
+    ContainerSymbol* ClassOrNsNoThrow(Context* context);
+    const ContainerSymbol* ClassInterfaceOrNsNoThrow(Context* context) const;
+    ContainerSymbol* ClassInterfaceOrNsNoThrow(Context* context);
+    const ContainerSymbol* ClassInterfaceEnumDelegateOrNsNoThrow(Context* context) const;
+    ContainerSymbol* ClassInterfaceEnumDelegateOrNsNoThrow(Context* context);
     const ClassTypeSymbol* Class() const;
     ClassTypeSymbol* Class();
     const ClassTypeSymbol* ContainingClassNoThrow() const;
@@ -223,12 +224,12 @@ public:
     FunctionSymbol* Function();
     const FunctionSymbol* ContainingFunctionNoThrow() const;
     FunctionSymbol* ContainingFunctionNoThrow();
-    const ContainerScope* ClassOrNsScope() const;
-    ContainerScope* ClassOrNsScope();
-    const ContainerScope* ClassInterfaceOrNsScope() const;
-    ContainerScope* ClassInterfaceOrNsScope();
-    const ContainerScope* ClassInterfaceEnumDelegateOrNsScope() const;
-    ContainerScope* ClassInterfaceEnumDelegateOrNsScope();
+    const ContainerScope* ClassOrNsScope(Context* context) const;
+    ContainerScope* ClassOrNsScope(Context* context);
+    const ContainerScope* ClassInterfaceOrNsScope(Context* context) const;
+    ContainerScope* ClassInterfaceOrNsScope(Context* context);
+    const ContainerScope* ClassInterfaceEnumDelegateOrNsScope(Context* context) const;
+    ContainerScope* ClassInterfaceEnumDelegateOrNsScope(Context* context);
     ClassTypeFlagMap& GetClassTypeFlagMap();
     Module* GetModule() const { return module; }
     Module* GetModule() { return module; }

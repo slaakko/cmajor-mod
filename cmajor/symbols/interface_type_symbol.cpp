@@ -8,6 +8,7 @@ module;
 
 module cmajor.symbols.interfaces;
 
+import cmajor.symbols.context;
 import cmajor.symbols.symbol.collector;
 import cmajor.symbols.exception;
 import cmajor.symbols.global.flags;
@@ -25,9 +26,9 @@ InterfaceTypeSymbol::InterfaceTypeSymbol(const soul::ast::Span& span_, const std
 {
 }
 
-void InterfaceTypeSymbol::AddMember(Symbol* member)
+void InterfaceTypeSymbol::AddMember(Symbol* member, Context* context)
 {
-    TypeSymbol::AddMember(member);
+    TypeSymbol::AddMember(member, context);
     switch (member->GetSymbolType())
     {
         case SymbolType::interfaceTypeDefaultCtor:
@@ -143,7 +144,7 @@ void InterfaceTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     }
 }
 
-void* InterfaceTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* InterfaceTypeSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* localIrType = emitter.GetIrTypeByTypeId(TypeId());
     if (!localIrType)
@@ -157,9 +158,9 @@ void* InterfaceTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
     return localIrType;
 }
 
-void* InterfaceTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+void* InterfaceTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
-    void* irType = IrType(emitter);
+    void* irType = IrType(emitter, context);
     std::vector<void*> arrayOfDefaults;
     arrayOfDefaults.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
     arrayOfDefaults.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
@@ -167,7 +168,7 @@ void* InterfaceTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
 }
 
 void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    MemberFunctionSymbol* interfaceMemberFunction)
+    MemberFunctionSymbol* interfaceMemberFunction, Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -179,9 +180,9 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* interfaceTypePtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectFromInterface(IrType(emitter), interfaceTypePtr);
-    void* imtPtr = emitter.GetImtPtrFromInterface(IrType(emitter), interfaceTypePtr);
-    void* callee = emitter.GetInterfaceMethod(IrType(emitter), imtPtr, interfaceMemberFunction->ImtIndex(), interfaceMemberFunction->IrType(emitter));
+    void* objectPtr = emitter.GetObjectFromInterface(IrType(emitter, context), interfaceTypePtr);
+    void* imtPtr = emitter.GetImtPtrFromInterface(IrType(emitter, context), interfaceTypePtr);
+    void* callee = emitter.GetInterfaceMethod(IrType(emitter, context), imtPtr, interfaceMemberFunction->ImtIndex(), interfaceMemberFunction->IrType(emitter, context));
     int na = genObjects.size();
     for (int i = 1; i < na; ++i)
     {
@@ -216,12 +217,12 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         {
             if (currentPad == nullptr)
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 emitter.Stack().Push(emitter.CreateCall(functionType, callee, args));
             }
             else
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen));
@@ -247,12 +248,12 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             if (currentPad == nullptr)
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen));
@@ -269,12 +270,12 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         {
             if (currentPad == nullptr)
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 emitter.CreateCall(functionType, callee, args);
             }
             else
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
@@ -296,12 +297,12 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             if (currentPad == nullptr)
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                void* functionType = interfaceMemberFunction->IrType(emitter);
+                void* functionType = interfaceMemberFunction->IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
@@ -328,15 +329,15 @@ InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(const soul::ast
 {
 }
 
-InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(InterfaceTypeSymbol* interfaceType_) :
+InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(InterfaceTypeSymbol* interfaceType_, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, interfaceType_->GetSpan(), U"@constructor"), interfaceType(interfaceType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->GetSpan(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer());
-    AddMember(thisParam);
-    ComputeName();
+    thisParam->SetType(interfaceType_->AddPointer(context));
+    AddMember(thisParam, context);
+    ComputeName(context);
 }
 
 void InterfaceTypeDefaultConstructor::Write(SymbolWriter& writer)
@@ -366,7 +367,8 @@ void InterfaceTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int in
     }
 }
 
-void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -378,10 +380,10 @@ void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter,
         genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* interfaceTypePtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
     emitter.CreateStore(emitter.CreateDefaultIrValueForVoidPtrType(), objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
     emitter.CreateStore(emitter.CreateDefaultIrValueForVoidPtrType(), interfacePtrPtr);
 }
 
@@ -390,18 +392,18 @@ InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(const soul::ast::Span
 {
 }
 
-InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(InterfaceTypeSymbol* interfaceType_) :
+InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(InterfaceTypeSymbol* interfaceType_, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeCopyCtor, interfaceType_->GetSpan(), U"@interfaceCopyCtor"), interfaceType(interfaceType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(interfaceType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
-    thatParam->SetType(interfaceType_->AddConst()->AddLvalueReference());
-    AddMember(thatParam);
-    ComputeName();
+    thatParam->SetType(interfaceType_->AddConst(context)->AddLvalueReference(context));
+    AddMember(thatParam, context);
+    ComputeName(context);
 }
 
 void InterfaceTypeCopyConstructor::Write(SymbolWriter& writer)
@@ -431,7 +433,8 @@ void InterfaceTypeCopyConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
     }
 }
 
-void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -445,13 +448,13 @@ void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
@@ -461,18 +464,18 @@ InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(const soul::ast::Span
 {
 }
 
-InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(InterfaceTypeSymbol* interfaceType_) :
+InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(InterfaceTypeSymbol* interfaceType_, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeMoveCtor, interfaceType_->GetSpan(), U"@interfaceMoveCtor"), interfaceType(interfaceType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(interfaceType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
-    thatParam->SetType(interfaceType_->AddConst()->AddRvalueReference());
-    AddMember(thatParam);
-    ComputeName();
+    thatParam->SetType(interfaceType_->AddConst(context)->AddRvalueReference(context));
+    AddMember(thatParam, context);
+    ComputeName(context);
 }
 
 void InterfaceTypeMoveConstructor::Write(SymbolWriter& writer)
@@ -502,7 +505,8 @@ void InterfaceTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
     }
 }
 
-void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -516,13 +520,13 @@ void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
@@ -532,19 +536,19 @@ InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(const soul::ast::Span& 
 {
 }
 
-InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(InterfaceTypeSymbol* interfaceType_, TypeSymbol* voidType) :
+InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(InterfaceTypeSymbol* interfaceType_, TypeSymbol* voidType, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, interfaceType_->GetSpan(), U"@interfaceCopyAssignment"), interfaceType(interfaceType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(interfaceType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
-    thatParam->SetType(interfaceType_->AddConst()->AddLvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(interfaceType_->AddConst(context)->AddLvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType);
-    ComputeName();
+    ComputeName(context);
 }
 
 void InterfaceTypeCopyAssignment::Write(SymbolWriter& writer)
@@ -574,7 +578,8 @@ void InterfaceTypeCopyAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -588,13 +593,13 @@ void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
@@ -604,20 +609,20 @@ InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(const soul::ast::Span& 
 {
 }
 
-InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(InterfaceTypeSymbol* interfaceType_, TypeSymbol* voidType) :
+InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(InterfaceTypeSymbol* interfaceType_, TypeSymbol* voidType, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, interfaceType_->GetSpan(), U"@interfaceMoveAssignment"), 
     interfaceType(interfaceType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(interfaceType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
-    thatParam->SetType(interfaceType_->AddRvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(interfaceType_->AddRvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType);
-    ComputeName();
+    ComputeName(context);
 }
 
 void InterfaceTypeMoveAssignment::Write(SymbolWriter& writer)
@@ -647,7 +652,8 @@ void InterfaceTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -661,13 +667,13 @@ void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), thatPtr);
     void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
@@ -677,20 +683,20 @@ InterfaceTypeEqual::InterfaceTypeEqual(const soul::ast::Span& span_, const std::
 {
 }
 
-InterfaceTypeEqual::InterfaceTypeEqual(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType) :
+InterfaceTypeEqual::InterfaceTypeEqual(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeEqual, interfaceType_->GetSpan(), U"@interfaceEqual"),
     interfaceType(interfaceType_)
 {
     SetGroupName(U"operator==");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* leftParam = new ParameterSymbol(interfaceType->GetSpan(), U"left");
-    leftParam->SetType(interfaceType->AddConst()->AddLvalueReference());
-    AddMember(leftParam);
+    leftParam->SetType(interfaceType->AddConst(context)->AddLvalueReference(context));
+    AddMember(leftParam, context);
     ParameterSymbol* rightParam = new ParameterSymbol(interfaceType->GetSpan(), U"right");
-    rightParam->SetType(interfaceType->AddConst()->AddLvalueReference());
-    AddMember(rightParam);
+    rightParam->SetType(interfaceType->AddConst(context)->AddLvalueReference(context));
+    AddMember(rightParam, context);
     SetReturnType(boolType);
-    ComputeName();
+    ComputeName(context);
 }
 
 void InterfaceTypeEqual::Write(SymbolWriter& writer)
@@ -720,21 +726,21 @@ void InterfaceTypeEqual::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void InterfaceTypeEqual::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeEqual::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* leftPtr = emitter.Stack().Pop();
-    void* leftObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), leftPtr);
+    void* leftObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), leftPtr);
     void* leftObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), leftObjectPtr); // TODO
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rightPtr = emitter.Stack().Pop();
-    void* rightObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), rightPtr);
+    void* rightObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), rightPtr);
     void* rightObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), rightObjectPtr); // TODO
     void* objectsEqual = emitter.CreateICmpEQ(leftObjectValue, rightObjectValue);
-    void* interfaceIrType = interfaceType->IrType(emitter);
-    void* leftInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), leftPtr);
+    void* interfaceIrType = interfaceType->IrType(emitter, context);
+    void* leftInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), leftPtr);
     void* leftInterfaceValue = emitter.CreateLoad(interfaceIrType, leftInterfacePtr); // TODO
-    void* rightInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), rightPtr);
+    void* rightInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), rightPtr);
     void* rightIntefaceValue = emitter.CreateLoad(interfaceIrType, rightInterfacePtr); // TODO
     void* interfacesEqual = emitter.CreateICmpEQ(leftInterfaceValue, rightIntefaceValue);
     void* equal = emitter.CreateAnd(objectsEqual, interfacesEqual);
@@ -746,20 +752,20 @@ InterfaceTypeLess::InterfaceTypeLess(const soul::ast::Span& span_, const std::u3
 {
 }
 
-InterfaceTypeLess::InterfaceTypeLess(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType) :
+InterfaceTypeLess::InterfaceTypeLess(InterfaceTypeSymbol* interfaceType_, TypeSymbol* boolType, Context* context) :
     FunctionSymbol(SymbolType::interfaceTypeLess, interfaceType_->GetSpan(), U"@interfaceTypeLess"),
     interfaceType(interfaceType_)
 {
     SetGroupName(U"operator<");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* leftParam = new ParameterSymbol(interfaceType->GetSpan(), U"left");
-    leftParam->SetType(interfaceType->AddConst()->AddLvalueReference());
-    AddMember(leftParam);
+    leftParam->SetType(interfaceType->AddConst(context)->AddLvalueReference(context));
+    AddMember(leftParam, context);
     ParameterSymbol* rightParam = new ParameterSymbol(interfaceType->GetSpan(), U"right");
-    rightParam->SetType(interfaceType->AddConst()->AddLvalueReference());
-    AddMember(rightParam);
+    rightParam->SetType(interfaceType->AddConst(context)->AddLvalueReference(context));
+    AddMember(rightParam, context);
     SetReturnType(boolType);
-    ComputeName();
+    ComputeName(context);
 }
 
 void InterfaceTypeLess::Write(SymbolWriter& writer)
@@ -789,17 +795,17 @@ void InterfaceTypeLess::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void InterfaceTypeLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void InterfaceTypeLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     void* retVal = emitter.CreateAlloca(emitter.GetIrTypeForBool());
     void* retBlock = emitter.CreateBasicBlock("ret");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* leftPtr = emitter.Stack().Pop();
-    void* leftObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), leftPtr);
+    void* leftObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), leftPtr);
     void* leftObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), leftObjectPtr); // TODO
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rightPtr = emitter.Stack().Pop();
-    void* rightObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), rightPtr);
+    void* rightObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), rightPtr);
     void* rightObjectValue = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), rightObjectPtr); // TODO
     void* leftObjectLessThanRightObject = emitter.CreateICmpULT(leftObjectValue, rightObjectValue);
     void* leftLessBlock = emitter.CreateBasicBlock("leftLess");
@@ -817,10 +823,10 @@ void InterfaceTypeLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<c
     emitter.CreateStore(emitter.CreateFalse(), retVal);
     emitter.CreateBr(retBlock);
     emitter.SetCurrentBasicBlock(rightNotLessBlock);
-    void* interfaceIrType = interfaceType->IrType(emitter);
-    void* leftInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), leftPtr);
+    void* interfaceIrType = interfaceType->IrType(emitter, context);
+    void* leftInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), leftPtr);
     void* leftInterfaceValue = emitter.CreateLoad(interfaceIrType, leftInterfacePtr); // TODO
-    void* rightInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), rightPtr);
+    void* rightInterfacePtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter, context), rightPtr);
     void* rightIntefaceValue = emitter.CreateLoad(interfaceIrType, rightInterfacePtr); // TODO
     void* interfaceLess = emitter.CreateICmpULT(leftInterfaceValue, rightIntefaceValue);
     emitter.CreateStore(interfaceLess, retVal);
@@ -836,13 +842,13 @@ ClassToInterfaceConversion::ClassToInterfaceConversion(const soul::ast::Span& sp
 }
 
 ClassToInterfaceConversion::ClassToInterfaceConversion(ClassTypeSymbol* sourceClassType_, InterfaceTypeSymbol* targetInterfaceType_, int32_t interfaceIndex_,
-    const soul::ast::Span& span_) :
+    const soul::ast::Span& span_, Context* context) :
     FunctionSymbol(SymbolType::classToInterfaceConversion, span_, U"@classToInterfaceConversion"), sourceClassType(sourceClassType_),
     targetInterfaceType(targetInterfaceType_), interfaceIndex(interfaceIndex_)
 {
     SetConversion();
-    SetConversionSourceType(sourceClassType->PlainType());
-    SetConversionTargetType(targetInterfaceType->PlainType());
+    SetConversionSourceType(sourceClassType->PlainType(context));
+    SetConversionTargetType(targetInterfaceType->PlainType(context));
 }
 
 void ClassToInterfaceConversion::Write(SymbolWriter& writer)
@@ -881,30 +887,30 @@ void ClassToInterfaceConversion::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-std::vector<LocalVariableSymbol*> ClassToInterfaceConversion::CreateTemporariesTo(FunctionSymbol* currentFunction)
+std::vector<LocalVariableSymbol*> ClassToInterfaceConversion::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(targetInterfaceType, GetSpan()));
+    temporaries.push_back(currentFunction->CreateTemporary(targetInterfaceType, GetSpan(), context));
     return temporaries;
 }
 
-void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     void* classPtr = emitter.Stack().Pop();
     void* classPtrAsVoidPtr = emitter.CreateBitCast(classPtr, emitter.GetIrTypeForVoidPtrType());
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* temporaryInterfaceObjectVar = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(targetInterfaceType->IrType(emitter), temporaryInterfaceObjectVar);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(targetInterfaceType->IrType(emitter, context), temporaryInterfaceObjectVar);
     emitter.CreateStore(classPtrAsVoidPtr, objectPtr);
     ClassTypeSymbol* vmtPtrHolderClass = sourceClassType->VmtPtrHolderClass();
     if (sourceClassType != vmtPtrHolderClass)
     {
-        classPtr = emitter.CreateBitCast(classPtr, vmtPtrHolderClass->AddPointer()->IrType(emitter));
+        classPtr = emitter.CreateBitCast(classPtr, vmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
     }
-    void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), classPtr, vmtPtrHolderClass->VmtPtrIndex(), sourceClassType->VmtPtrType(emitter));
+    void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter, context), classPtr, vmtPtrHolderClass->VmtPtrIndex(), sourceClassType->VmtPtrType(emitter));
     void* imtsPtr = emitter.GetImtsArrayPtrFromVmt(vmtPtr, sourceClassType->VmtArrayType(emitter), GetImtsVmtIndexOffset());
     void* imtPtr = emitter.GetImtPtrFromImtsPtr(imtsPtr, interfaceIndex, sourceClassType->ImplementedInterfaces().size());
-    void* imtPtrPtr = emitter.GetImtPtrPtrFromInterface(targetInterfaceType->IrType(emitter), temporaryInterfaceObjectVar);
+    void* imtPtrPtr = emitter.GetImtPtrPtrFromInterface(targetInterfaceType->IrType(emitter, context), temporaryInterfaceObjectVar);
     emitter.CreateStore(imtPtr, imtPtrPtr);
     emitter.Stack().Push(temporaryInterfaceObjectVar);
     /*
@@ -943,17 +949,17 @@ GetObjectPtrFromInterface::GetObjectPtrFromInterface(const soul::ast::Span& span
 {
 }
 
-GetObjectPtrFromInterface::GetObjectPtrFromInterface(InterfaceTypeSymbol* interfaceType_) :
+GetObjectPtrFromInterface::GetObjectPtrFromInterface(InterfaceTypeSymbol* interfaceType_, Context* context) :
     FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, interfaceType_->GetSpan(), U"GetObjectPtrFromInterface"), interfaceType(interfaceType_)
 {
     SetGroupName(U"GetObjectPtrFromInterface");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(soul::ast::Span(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer());
-    AddMember(thisParam);
-    TypeSymbol* voidPtrType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void")->AddPointer();
+    thisParam->SetType(interfaceType_->AddPointer(context));
+    AddMember(thisParam, context);
+    TypeSymbol* voidPtrType = context->RootModule()->GetSymbolTable().GetTypeByName(U"void")->AddPointer(context);
     SetReturnType(voidPtrType);
-    ComputeName();
+    ComputeName(context);
 }
 
 void GetObjectPtrFromInterface::Write(SymbolWriter& writer)
@@ -983,7 +989,7 @@ void GetObjectPtrFromInterface::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -995,7 +1001,7 @@ void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::
         genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* interfaceTypePtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter, context), interfaceTypePtr);
     void* object = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), objectPtr); // TODO
     emitter.Stack().Push(object);
 }

@@ -42,16 +42,17 @@ public:
     {
         compileUnit, symbolTable
     };
-    ConversionTable(Owner owner_, Module* module_);
+    ConversionTable(Owner owner_, Context* context_, Module* module_);
     ConversionTable(const ConversionTable&) = delete;
     ConversionTable& operator=(const ConversionTable&) = delete;
     void AddConversion(FunctionSymbol* conversion);
-    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const;
+    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, Context* context) const;
     void AddGeneratedConversion(std::unique_ptr<FunctionSymbol>&& generatedConversion);
     void Add(const ConversionTable& that);
     void Check();
 private:
     Owner owner;
+    Context* context;
     Module* module;
     std::unordered_map<ConversionTableEntry, FunctionSymbol*, ConversionTableEntryHash> conversionMap;
     std::vector<std::unique_ptr<FunctionSymbol>> generatedConversions;

@@ -23,13 +23,15 @@ struct ByFullName
 
 struct ByDocName
 {
+    ByDocName(Context* context_) : context(context_) {}
     bool operator()(Symbol* left, Symbol* right) const;
+    Context* context;
 };
 
 class SymbolCollector
 {
 public:
-    SymbolCollector();
+    SymbolCollector(Context* context_);
     void AddBasicType(BasicTypeSymbol* basicType);
     void AddClass(ClassTypeSymbol* class_);
     void AddConcept(ConceptSymbol* conceptSymbol);
@@ -58,7 +60,9 @@ public:
     const std::vector<EnumConstantSymbol*>& EnumerationConstants() const { return enumerationConstants; }
     const std::vector<MemberVariableSymbol*>& MemberVariables() const { return memberVariables; }
     bool IsEmpty() const;
+    Context* GetContext() { return context; }
 private:
+    Context* context;
     std::vector<BasicTypeSymbol*> basicTypes;
     std::vector<ClassTypeSymbol*> classes;
     std::vector<InterfaceTypeSymbol*> interfaces;

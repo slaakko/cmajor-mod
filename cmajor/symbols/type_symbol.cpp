@@ -8,6 +8,7 @@ module;
 
 module cmajor.symbols.type.symbol;
 
+import cmajor.symbols.context;
 import cmajor.symbols.classes;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
@@ -41,35 +42,35 @@ void TypeSymbol::Read(SymbolReader& reader)
     reader.GetSymbolTable()->AddTypeOrConceptSymbolToTypeIdMap(this);
 }
 
-TypeSymbol* TypeSymbol::AddConst()
+TypeSymbol* TypeSymbol::AddConst(Context* context)
 {
     TypeDerivationRec typeDerivationRec;
     typeDerivationRec.derivations.push_back(Derivation::constDerivation);
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec);
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec, context);
 }
 
-TypeSymbol* TypeSymbol::AddLvalueReference()
+TypeSymbol* TypeSymbol::AddLvalueReference(Context* context)
 {
     TypeDerivationRec typeDerivationRec;
     typeDerivationRec.derivations.push_back(Derivation::lvalueRefDerivation);
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec);
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec, context);
 }
 
-TypeSymbol* TypeSymbol::AddRvalueReference()
+TypeSymbol* TypeSymbol::AddRvalueReference(Context* context)
 {
     TypeDerivationRec typeDerivationRec;
     typeDerivationRec.derivations.push_back(Derivation::rvalueRefDerivation);
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec);
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec, context);
 }
 
-TypeSymbol* TypeSymbol::AddPointer()
+TypeSymbol* TypeSymbol::AddPointer(Context* context)
 {
     TypeDerivationRec typeDerivationRec;
     typeDerivationRec.derivations.push_back(Derivation::pointerDerivation);
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec);
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(this, typeDerivationRec, context);
 }
 
-void* TypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* TypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateUnspecifiedDIType(util::ToUtf8(Name()));
 }
@@ -80,7 +81,7 @@ const TypeDerivationRec& TypeSymbol::DerivationRec() const
     return emptyDerivationRec;
 }
 
-TypeSymbol* TypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivationRec)
+TypeSymbol* TypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, Context* context)
 {
     if (HasPointerDerivation(sourceDerivationRec.derivations)) return nullptr;
     return this;
@@ -103,7 +104,7 @@ std::u32string TypeSymbol::Id() const
     return util::ToUtf32(util::ToString(TypeId()));
 }
 
-void* TypeSymbol::GetDIType(cmajor::ir::Emitter& emitter)
+void* TypeSymbol::GetDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* localDiType = emitter.GetDITypeByTypeId(TypeId());
     if (!localDiType)
@@ -112,24 +113,24 @@ void* TypeSymbol::GetDIType(cmajor::ir::Emitter& emitter)
         {
             ClassTypeSymbol* classTypeSymbol = static_cast<ClassTypeSymbol*>(this);
             emitter.MapClassPtr(classTypeSymbol->TypeId(), classTypeSymbol, util::ToUtf8(classTypeSymbol->FullName()));
-            localDiType = classTypeSymbol->CreateDIForwardDeclaration(emitter);
+            localDiType = classTypeSymbol->CreateDIForwardDeclaration(emitter, context);
             emitter.MapFwdDeclaration(localDiType, classTypeSymbol->TypeId());
             emitter.SetDITypeByTypeId(classTypeSymbol->TypeId(), localDiType, util::ToUtf8(classTypeSymbol->FullName()));
         }
-        localDiType = CreateDIType(emitter);
+        localDiType = CreateDIType(emitter, context);
         emitter.SetDITypeByTypeId(TypeId(), localDiType, util::ToUtf8(FullName()));
     }
     return localDiType;
 }
 
-uint64_t TypeSymbol::SizeInBits(cmajor::ir::Emitter& emitter)
+uint64_t TypeSymbol::SizeInBits(cmajor::ir::Emitter& emitter, Context* context)
 {
-    return emitter.GetSizeInBits(IrType(emitter));
+    return emitter.GetSizeInBits(IrType(emitter, context));
 }
 
-uint32_t TypeSymbol::AlignmentInBits(cmajor::ir::Emitter& emitter)
+uint32_t TypeSymbol::AlignmentInBits(cmajor::ir::Emitter& emitter, Context* context)
 {
-    return emitter.GetAlignmentInBits(IrType(emitter));
+    return emitter.GetAlignmentInBits(IrType(emitter, context));
 }
 
 void TypeSymbol::Check()

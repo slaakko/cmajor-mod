@@ -47,7 +47,7 @@ cmajor::debug::DIPrimitiveType::Kind ToPrimitiveTypeKind(SymbolType symbolType)
     }
 }
 
-void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor::ir::Emitter& emitter)
+void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor::ir::Emitter& emitter, Context* context)
 {
     std::lock_guard<std::recursive_mutex> lock(mtx);
     auto it = typeMap.find(typeId);
@@ -59,7 +59,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
             type->SetPrimitiveTypeKind(ToPrimitiveTypeKind(typeSymbol->GetSymbolType()));
             type->SetId(typeSymbol->TypeId());
             type->SetName(util::ToUtf8(typeSymbol->Name()));
-            type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+            type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
             typeMap[type->Id()] = type;
             diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
         }
@@ -73,12 +73,12 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 cmajor::debug::DIEnumType* type = new cmajor::debug::DIEnumType();
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 type->SetUnderlyingTypeId(enumType->UnderlyingType()->TypeId());
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
-                AddType(enumType->UnderlyingType()->TypeId(), enumType->UnderlyingType(), emitter);
-                std::vector<EnumConstantSymbol*> enumConstants = enumType->GetEnumConstants();
+                AddType(enumType->UnderlyingType()->TypeId(), enumType->UnderlyingType(), emitter, context);
+                std::vector<EnumConstantSymbol*> enumConstants = enumType->GetEnumConstants(context);
                 for (EnumConstantSymbol* enumConstant : enumConstants)
                 {
                     cmajor::debug::DIEnumConstant ec;
@@ -95,7 +95,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 cmajor::debug::DIClassType* type = new cmajor::debug::DIClassType();
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
                 if (classType->IsPolymorphic())
@@ -107,7 +107,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 if (classType->BaseClass())
                 {
                     type->SetBaseClassId(classType->BaseClass()->TypeId());
-                    AddType(classType->BaseClass()->TypeId(), classType->BaseClass(), emitter);
+                    AddType(classType->BaseClass()->TypeId(), classType->BaseClass(), emitter, context);
                 }
                 for (TemplateParameterSymbol* templateParameter : classType->TemplateParameters())
                 {
@@ -123,7 +123,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                     variable->SetName(util::ToUtf8(memberVariable->Name()));
                     variable->SetIrName("m" + std::to_string(memberVariable->LayoutIndex()));
                     variable->SetTypeId(memberVariable->GetType()->TypeId());
-                    AddType(memberVariable->GetType()->TypeId(), memberVariable->GetType(), emitter);
+                    AddType(memberVariable->GetType()->TypeId(), memberVariable->GetType(), emitter, context);
                     type->AddMemberVariable(variable);
                 }
                 break;
@@ -133,42 +133,42 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(typeSymbol);
                 cmajor::debug::DIClassTemplateSpecializationType* type = new cmajor::debug::DIClassTemplateSpecializationType();
                 ClassTypeSymbol* classTemplateType = specialization->GetClassTemplate();
-                AddType(classTemplateType->TypeId(), classTemplateType, emitter);
+                AddType(classTemplateType->TypeId(), classTemplateType, emitter, context);
                 type->SetPrimaryTypeId(classTemplateType->TypeId());
                 for (TypeSymbol* templateArgumentType : specialization->TemplateArgumentTypes())
                 {
                     type->AddTemplateArgumentTypeId(templateArgumentType->TypeId());
-                    AddType(templateArgumentType->TypeId(), templateArgumentType, emitter);
+                    AddType(templateArgumentType->TypeId(), templateArgumentType, emitter, context);
                 }
                 cmajor::debug::ContainerClassTemplateKind containerKind = GetContainerClassTemplateKind(classTemplateType->FullName());
                 type->SetContainerClassTemplateKind(containerKind);
                 if (containerKind != cmajor::debug::ContainerClassTemplateKind::notContainerClassTemplate)
                 {
-                    Symbol* valueTypeSymbol = specialization->GetContainerScope()->Lookup(U"ValueType", ScopeLookup::this_and_base_and_parent);
+                    Symbol* valueTypeSymbol = specialization->GetContainerScope()->Lookup(U"ValueType", ScopeLookup::this_and_base_and_parent, context);
                     if (valueTypeSymbol && valueTypeSymbol->GetSymbolType() == SymbolType::aliasTypeSymbol)
                     {
                         AliasTypeSymbol* aliasTypeSymbol = static_cast<AliasTypeSymbol*>(valueTypeSymbol);
                         TypeSymbol* valueType = aliasTypeSymbol->GetType();
                         type->SetValueTypeId(valueType->TypeId());
-                        AddType(valueType->TypeId(), valueType, emitter);
+                        AddType(valueType->TypeId(), valueType, emitter, context);
                     }
                 }
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
                 if (specialization->IsPolymorphic())
                 {
                     type->SetPolymorphic();
                     type->SetVmtPtrIndex(specialization->VmtPtrIndex());
-                    type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                    type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                     type->SetVmtVariableName(emitter.MakeVmtVariableName(specialization->VmtObjectName(emitter)));
                 }
                 if (specialization->BaseClass())
                 {
                     type->SetBaseClassId(specialization->BaseClass()->TypeId());
-                    AddType(specialization->BaseClass()->TypeId(), specialization->BaseClass(), emitter);
+                    AddType(specialization->BaseClass()->TypeId(), specialization->BaseClass(), emitter, context);
                 }
                 for (MemberVariableSymbol* memberVariable : specialization->MemberVariables())
                 {
@@ -176,7 +176,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                     variable->SetName(util::ToUtf8(memberVariable->Name()));
                     variable->SetIrName("m" + std::to_string(memberVariable->LayoutIndex()));
                     variable->SetTypeId(memberVariable->GetType()->TypeId());
-                    AddType(memberVariable->GetType()->TypeId(), memberVariable->GetType(), emitter);
+                    AddType(memberVariable->GetType()->TypeId(), memberVariable->GetType(), emitter, context);
                     type->AddMemberVariable(variable);
                 }
                 break;
@@ -187,7 +187,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 cmajor::debug::DIDelegateType* type = new cmajor::debug::DIDelegateType();
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
                 break;
@@ -199,10 +199,10 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 cmajor::debug::DIClassDelegateType* type = new cmajor::debug::DIClassDelegateType();
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
-                AddType(classType->TypeId(), classType, emitter);
+                AddType(classType->TypeId(), classType, emitter, context);
                 type->SetClassTypeId(classType->TypeId());
                 break;
             }
@@ -212,7 +212,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 cmajor::debug::DIInterfaceType* type = new cmajor::debug::DIInterfaceType();
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
                 break;
@@ -222,39 +222,39 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 DerivedTypeSymbol* derivedType = static_cast<DerivedTypeSymbol*>(typeSymbol);
                 if (derivedType->IsConstType())
                 {
-                    TypeSymbol* nonConstType = derivedType->RemoveConst();
+                    TypeSymbol* nonConstType = derivedType->RemoveConst(context);
                     cmajor::debug::DIConstType* type = new cmajor::debug::DIConstType();
                     type->SetId(typeSymbol->TypeId());
                     type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                    type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                    type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                     type->SetBaseTypeId(nonConstType->TypeId());
                     typeMap[type->Id()] = type;
                     diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
-                    AddType(nonConstType->TypeId(), nonConstType, emitter);
+                    AddType(nonConstType->TypeId(), nonConstType, emitter, context);
                 }
                 else if (derivedType->IsReferenceType())
                 {
-                    TypeSymbol* nonReferenceType = derivedType->RemoveReference();
+                    TypeSymbol* nonReferenceType = derivedType->RemoveReference(context);
                     cmajor::debug::DIReferenceType* type = new cmajor::debug::DIReferenceType();
                     type->SetId(typeSymbol->TypeId());
                     type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                    type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                    type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                     type->SetBaseTypeId(nonReferenceType->TypeId());
                     typeMap[type->Id()] = type;
                     diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
-                    AddType(nonReferenceType->TypeId(), nonReferenceType, emitter);
+                    AddType(nonReferenceType->TypeId(), nonReferenceType, emitter, context);
                 }
                 else if (derivedType->IsPointerType())
                 {
-                    TypeSymbol* pointedToType = derivedType->RemovePointer();
+                    TypeSymbol* pointedToType = derivedType->RemovePointer(context);
                     cmajor::debug::DIPointerType* pointerType = new cmajor::debug::DIPointerType();
                     pointerType->SetPointedTypeId(pointedToType->TypeId());
                     pointerType->SetId(typeSymbol->TypeId());
                     pointerType->SetName(util::ToUtf8(pointedToType->FullName() + U"*"));
-                    pointerType->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                    pointerType->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                     typeMap[pointerType->Id()] = pointerType;
                     diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(pointerType));
-                    AddType(pointedToType->TypeId(), pointedToType, emitter);
+                    AddType(pointedToType->TypeId(), pointedToType, emitter, context);
                 }
                 break;
             }
@@ -264,13 +264,13 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 cmajor::debug::DIArrayType* type = new cmajor::debug::DIArrayType();
                 type->SetId(typeSymbol->TypeId());
                 type->SetName(util::ToUtf8(typeSymbol->FullName()));
-                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter)));
+                type->SetIrName(emitter.GetIrTypeName(typeSymbol->IrType(emitter, context)));
                 typeMap[type->Id()] = type;
                 TypeSymbol* elementType = arrayTypeSymbol->ElementType();
                 type->SetElementTypeId(elementType->TypeId());
                 type->SetSize(arrayTypeSymbol->Size());
                 diTypes.push_back(std::unique_ptr<cmajor::debug::DIType>(type));
-                AddType(elementType->TypeId(), elementType, emitter);
+                AddType(elementType->TypeId(), elementType, emitter, context);
                 break;
             }
             }

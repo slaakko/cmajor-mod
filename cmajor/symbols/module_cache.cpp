@@ -5,10 +5,12 @@
 
 module cmajor.symbols.module_cache;
 
+import cmajor.symbols.context;
 import cmajor.symbols.modules;
 import cmajor.symbols.meta;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.trap;
+import util;
 
 namespace cmajor::symbols {
 
@@ -331,16 +333,16 @@ void ModuleCache::MoveNonSystemModulesTo(ModuleCache* cache)
 
 std::recursive_mutex mtx;
 
-void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, 
+void PrepareModuleForCompilation(Context* context, const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, 
     int32_t rootFileIndex, cmajor::ast::CompileUnitNode* rootCompileUnit)
 {
     std::lock_guard<std::recursive_mutex> lock(mtx);
-    rootModule->PrepareForCompilation(references, target, rootSpan, rootFileIndex, rootCompileUnit);
-    cmajor::symbols::MetaInit(rootModule->GetSymbolTable(), rootSpan);
+    context->RootModule()->PrepareForCompilation(references, target, rootSpan, rootFileIndex, rootCompileUnit, context);
+    cmajor::symbols::MetaInit(context->RootModule()->GetSymbolTable(), rootSpan, context);
 #ifdef _WIN32
-    if (GetBackEnd() == BackEnd::systemx && rootModule->Name() == U"System.Core")
+    if (GetBackEnd() == BackEnd::systemx && context->RootModule()->Name() == U"System.Core")
     {
-        cmajor::symbols::InitTrap(rootModule->GetSymbolTable());
+        cmajor::symbols::InitTrap(context->RootModule()->GetSymbolTable(), context);
     }
 #endif
 }
@@ -349,6 +351,10 @@ Module* GetModuleFromModuleCache(const std::string& moduleFilePath)
 {
     std::lock_guard<std::recursive_mutex> lock(mtx);
     Module* module = ModuleCache::Instance().GetModule(moduleFilePath);
+    if (module->Name().empty())
+    {
+        util::DebugBreak();
+    }
     return module;
 }
 

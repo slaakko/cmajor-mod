@@ -161,12 +161,12 @@ void ConstraintBinderVisitor::Visit(cmajor::ast::IdentifierNode& identifierNode)
     conceptGroup = nullptr;
     boundCompileUnit.SetLatestIdentifier(&identifierNode);
     const std::u32string& name = identifierNode.Str();
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent, boundCompileUnit.GetContext());
     if (!symbol)
     {
         for (const std::unique_ptr<cmajor::symbols::FileScope>& fileScope : boundCompileUnit.FileScopes())
         {
-            symbol = fileScope->Lookup(name);
+            symbol = fileScope->Lookup(name, boundCompileUnit.GetContext());
             if (symbol)
             {
                 break;
@@ -200,7 +200,7 @@ void ConstraintBinderVisitor::Visit(cmajor::ast::DotNode& dotNode)
     boundCompileUnit.SetLatestIdentifier(dotNode.MemberId());
     if (ns)
     {
-        cmajor::symbols::Symbol* symbol = ns->GetContainerScope()->Lookup(dotNode.MemberId()->Str());
+        cmajor::symbols::Symbol* symbol = ns->GetContainerScope()->Lookup(dotNode.MemberId()->Str(), boundCompileUnit.GetContext());
         if (symbol)
         {
             if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::conceptGroupSymbol)

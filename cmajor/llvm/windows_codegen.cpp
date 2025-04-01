@@ -307,7 +307,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
         void* handleExceptionFunctionType = Emitter()->GetIrTypeForFunction(Emitter()->GetIrTypeForBool(), handleExceptionParamTypes);
         std::vector<void*> handleExceptionArgs;
         cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSpan(), boundCatchStatement->CatchTypeUuidId());
-        void* catchTypeIdValue = uuidValue.IrValue(*Emitter());
+        void* catchTypeIdValue = uuidValue.IrValue(*Emitter(), GetContext());
         handleExceptionArgs.push_back(catchTypeIdValue);
         void* handleException = Emitter()->GetOrInsertFunction("RtmHandleException", handleExceptionFunctionType, true);
         void* handleThisEx = nullptr;

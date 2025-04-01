@@ -441,7 +441,7 @@ class BoundAsExpression : public BoundExpression
 {
 public:
     BoundAsExpression(std::unique_ptr<BoundExpression>&& expr_, cmajor::symbols::ClassTypeSymbol* rightClassType_, std::unique_ptr<BoundLocalVariable>&& variable_,
-        std::unique_ptr<BoundLocalVariable>&& leftClassIdVar_, std::unique_ptr<BoundLocalVariable>&& rightClassIdVar_);
+        std::unique_ptr<BoundLocalVariable>&& leftClassIdVar_, std::unique_ptr<BoundLocalVariable>&& rightClassIdVar_, cmajor::symbols::Context* context_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -458,6 +458,7 @@ private:
     std::unique_ptr<BoundLocalVariable> variable;
     std::unique_ptr<BoundLocalVariable> leftClassIdVar;
     std::unique_ptr<BoundLocalVariable> rightClassIdVar;
+    cmajor::symbols::Context* context;
 };
 
 class BoundTypeNameExpression : public BoundExpression
@@ -618,7 +619,8 @@ private:
 class BoundMemberExpression : public BoundExpression
 {
 public:
-    BoundMemberExpression(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& classPtr_, std::unique_ptr<BoundExpression>&& member_);
+    BoundMemberExpression(cmajor::symbols::Context* context_, const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& classPtr_, 
+        std::unique_ptr<BoundExpression>&& member_);
     BoundExpression* Clone() override;
     bool IsComplete() const override { return false; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -632,6 +634,7 @@ public:
     const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const override { return member->GetFunctionSymbol(); }
     cmajor::symbols::FunctionSymbol* GetFunctionSymbol() override { return member->GetFunctionSymbol(); }
 private:
+    cmajor::symbols::Context* context;
     std::unique_ptr<BoundExpression> classPtr;
     std::unique_ptr<BoundExpression> member;
     std::unique_ptr<cmajor::symbols::TypeSymbol> memberExpressionType;

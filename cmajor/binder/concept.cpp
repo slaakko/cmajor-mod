@@ -64,12 +64,12 @@ void ConceptIdResolver::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
     idNode = &identifierNode;
     const std::u32string& name = identifierNode.Str();
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent, boundCompileUnit.GetContext());
     if (!symbol)
     {
         for (const std::unique_ptr<cmajor::symbols::FileScope>& fileScope : boundCompileUnit.FileScopes())
         {
-            symbol = fileScope->Lookup(name);
+            symbol = fileScope->Lookup(name, boundCompileUnit.GetContext());
             if (symbol)
             {
                 break;
@@ -106,7 +106,7 @@ void ConceptIdResolver::Visit(cmajor::ast::DotNode& dotNode)
     }
     cmajor::symbols::ContainerScope* containerScope = ns->GetContainerScope();
     const std::u32string& name = dotNode.MemberId()->Str();
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_, boundCompileUnit.GetContext());
     if (symbol)
     {
         if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::conceptGroupSymbol)
@@ -208,6 +208,7 @@ private:
     cmajor::symbols::TypeSymbol* secondTypeArgument;
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
+    cmajor::symbols::Context* context;
     cmajor::symbols::ContainerScope* containerScope;
     BoundFunction* currentFunction;
     cmajor::ast::Node* node;
@@ -229,8 +230,8 @@ ConstraintChecker::ConstraintChecker(cmajor::symbols::TypeSymbol* firstTypeArgum
     cmajor::symbols::ContainerScope* containerScope_,
     BoundFunction* currentFunction_, cmajor::ast::Node* node_, std::unique_ptr<cmajor::symbols::Exception>& exception_) :
     firstTypeArgument(firstTypeArgument_), secondTypeArgument(secondTypeArgument_), boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()),
-    containerScope(containerScope_), currentFunction(currentFunction_), node(node_), type(nullptr), derivationRec(), conceptGroup(nullptr),
-    result(false), boundConstraint(), fileScopesAdded(0), exception(exception_), idNode(nullptr)
+    context(boundCompileUnit.GetContext()), containerScope(containerScope_), currentFunction(currentFunction_), node(node_), type(nullptr), derivationRec(), 
+    conceptGroup(nullptr), result(false), boundConstraint(), fileScopesAdded(0), exception(exception_), idNode(nullptr)
 {
 }
 
@@ -261,7 +262,7 @@ cmajor::symbols::TypeSymbol* ConstraintChecker::GetType()
         cmajor::symbols::TypeDerivationRec unifiedDerivationRec = UnifyDerivations(derivationRec, type->DerivationRec());
         if (!unifiedDerivationRec.derivations.empty())
         {
-            type = boundCompileUnit.GetSymbolTable().MakeDerivedType(type->BaseType(), unifiedDerivationRec);
+            type = boundCompileUnit.GetSymbolTable().MakeDerivedType(type->BaseType(), unifiedDerivationRec, boundCompileUnit.GetContext());
         }
     }
     return type;
@@ -398,12 +399,12 @@ void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
     idNode = &identifierNode;
     Reset();
     const std::u32string& name = identifierNode.Str();
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent, context);
     if (!symbol)
     {
         for (const std::unique_ptr<cmajor::symbols::FileScope>& fileScope : boundCompileUnit.FileScopes())
         {
-            symbol = fileScope->Lookup(name);
+            symbol = fileScope->Lookup(name, context);
             if (symbol)
             {
                 break;
@@ -469,7 +470,7 @@ void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
                 type = namespaceTypeSymbol;
                 cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
                 cmajor::ast::NamespaceImportNode importNode(node->GetSpan(), new cmajor::ast::IdentifierNode(node->GetSpan(), ns->FullName()));
-                fileScope->InstallNamespaceImport(containerScope, &importNode);
+                fileScope->InstallNamespaceImport(containerScope, &importNode, context);
                 boundCompileUnit.AddFileScope(fileScope);
                 ++fileScopesAdded;
                 break;
@@ -518,7 +519,7 @@ void ConstraintChecker::Visit(cmajor::ast::DotNode& dotNode)
     }
     Reset();
     const std::u32string& name = dotNode.MemberId()->Str();
-    cmajor::symbols::Symbol* symbol = typeContainerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base);
+    cmajor::symbols::Symbol* symbol = typeContainerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base, context);
     if (symbol)
     {
         switch (symbol->GetSymbolType())
@@ -571,7 +572,7 @@ void ConstraintChecker::Visit(cmajor::ast::DotNode& dotNode)
             type = namespaceTypeSymbol;
             cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
             cmajor::ast::NamespaceImportNode importNode(node->GetSpan(), new cmajor::ast::IdentifierNode(node->GetSpan(), ns->FullName()));
-            fileScope->InstallNamespaceImport(containerScope, &importNode);
+            fileScope->InstallNamespaceImport(containerScope, &importNode, context);
             boundCompileUnit.AddFileScope(fileScope);
             ++fileScopesAdded;
             break;
@@ -733,8 +734,8 @@ void ConstraintChecker::Visit(cmajor::ast::IsConstraintNode& isConstraintNode)
     cmajor::symbols::TypeSymbol* rightType = GetType();
     if (rightType)
     {
-        cmajor::symbols::TypeSymbol* leftPlainType = leftType->PlainType();
-        cmajor::symbols::TypeSymbol* rightPlainType = rightType->PlainType();
+        cmajor::symbols::TypeSymbol* leftPlainType = leftType->PlainType(context);
+        cmajor::symbols::TypeSymbol* rightPlainType = rightType->PlainType(context);
         if (TypesEqual(leftPlainType, rightPlainType))
         {
             result = true;
@@ -871,7 +872,7 @@ void ConstraintChecker::Visit(cmajor::ast::TypeNameConstraintNode& typeNameConst
 void ConstraintChecker::Visit(cmajor::ast::ConstructorConstraintNode& constructorConstraintNode)
 {
     std::vector<std::unique_ptr<BoundExpression>> arguments;
-    arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(constructorConstraintNode.GetSpan(), firstTypeArgument->AddPointer())));
+    arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(constructorConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
     std::vector<cmajor::symbols::TypeSymbol*> parameterTypes;
     int n = constructorConstraintNode.Parameters().Count();
     for (int i = 0; i < n; ++i)
@@ -883,7 +884,7 @@ void ConstraintChecker::Visit(cmajor::ast::ConstructorConstraintNode& constructo
     }
     std::vector<FunctionScopeLookup> lookups;
     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context)));
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
     std::unique_ptr<cmajor::symbols::Exception> exception;
     std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, currentFunction, 
@@ -935,7 +936,7 @@ void ConstraintChecker::Visit(cmajor::ast::MemberFunctionConstraintNode& memberF
     memberFunctionConstraintNode.TypeParamId()->Accept(*this);
     cmajor::symbols::TypeSymbol* firstType = GetType();
     std::vector<std::unique_ptr<BoundExpression>> arguments;
-    arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(memberFunctionConstraintNode.GetSpan(), firstType->AddPointer())));
+    arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(memberFunctionConstraintNode.GetSpan(), firstType->AddPointer(context))));
     std::vector<cmajor::symbols::TypeSymbol*> parameterTypes;
     int n = memberFunctionConstraintNode.Parameters().Count();
     for (int i = 0; i < n; ++i)
@@ -947,7 +948,7 @@ void ConstraintChecker::Visit(cmajor::ast::MemberFunctionConstraintNode& memberF
     }
     std::vector<FunctionScopeLookup> lookups;
     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstType->BaseType()->ClassInterfaceOrNsScope()));
+    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstType->BaseType()->ClassInterfaceOrNsScope(context)));
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
     std::unique_ptr<cmajor::symbols::Exception> exception;
     std::unique_ptr<BoundFunctionCall> memberFunctionCall = ResolveOverload(memberFunctionConstraintNode.GroupId(), containerScope, lookups, arguments, boundCompileUnit, 
@@ -991,12 +992,12 @@ void ConstraintChecker::Visit(cmajor::ast::MemberFunctionConstraintNode& memberF
 void ConstraintChecker::Visit(cmajor::ast::FunctionConstraintNode& functionConstraintNode)
 {
     std::vector<std::unique_ptr<BoundExpression>> arguments;
-    arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer())));
+    arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
     std::vector<cmajor::symbols::TypeSymbol*> parameterTypes;
     std::vector<FunctionScopeLookup> lookups;
     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes));
-    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context)));
     int n = functionConstraintNode.Parameters().Count();
     if (firstTypeArgument->IsPointerType() &&
         ((n == 0 &&
@@ -1025,7 +1026,7 @@ void ConstraintChecker::Visit(cmajor::ast::FunctionConstraintNode& functionConst
     {
         arguments.clear();
         parameterTypes.clear();
-        arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer())));
+        arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
         std::vector<cmajor::symbols::TypeSymbol*> parameterTypes;
         int n = functionConstraintNode.Parameters().Count();
         for (int i = 1; i < n; ++i)
@@ -1051,7 +1052,8 @@ void ConstraintChecker::Visit(cmajor::ast::FunctionConstraintNode& functionConst
             {
                 cmajor::ast::ParameterNode* parameterNode = functionConstraintNode.Parameters()[i];
                 cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
-                lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, parameterType->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, 
+                    parameterType->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context)));
                 parameterTypes.push_back(parameterType);
                 arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), parameterType)));
             }
@@ -1375,6 +1377,7 @@ std::unique_ptr<BoundConcept> Instantiate(cmajor::symbols::ConceptSymbol* concep
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, std::unique_ptr<BoundConstraint>& boundConstraint, 
     cmajor::ast::Node* node, std::unique_ptr<cmajor::symbols::Exception>& exception)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::ast::ConceptNode* conceptNode = conceptSymbol->GetConceptNode();
     if (!conceptNode)
     {
@@ -1396,9 +1399,9 @@ std::unique_ptr<BoundConcept> Instantiate(cmajor::symbols::ConceptSymbol* concep
     {
         cmajor::symbols::TemplateParameterSymbol* templateParameterSymbol = conceptSymbol->TemplateParameters()[i];
         cmajor::symbols::TypeSymbol* typeArgument = typeArguments[i];
-        if (typeArgument->RemoveConst()->IsBasicTypeSymbol())
+        if (typeArgument->RemoveConst(context)->IsBasicTypeSymbol())
         {
-            typeArgument = typeArgument->RemoveConst();
+            typeArgument = typeArgument->RemoveConst(context);
         }
         if (i == 0)
         {
@@ -1424,7 +1427,7 @@ std::unique_ptr<BoundConcept> Instantiate(cmajor::symbols::ConceptSymbol* concep
         {
             BoundConcept* boundConcept = new BoundConcept(conceptSymbol, typeArguments, node->GetSpan());
             boundConcept->SetBoundConstraint(std::unique_ptr<BoundConstraint>(boundConstraint->Clone()));
-            cmajor::symbols::Symbol* commonTypeSymbol = instantiationScope.Lookup(U"CommonType");
+            cmajor::symbols::Symbol* commonTypeSymbol = instantiationScope.Lookup(U"CommonType", context);
             if (commonTypeSymbol)
             {
                 if (commonTypeSymbol->GetSymbolType() != cmajor::symbols::SymbolType::boundTemplateParameterSymbol)
@@ -1508,7 +1511,7 @@ bool CheckConstraint(cmajor::ast::ConstraintNode* constraint, const cmajor::ast:
             case cmajor::ast::NodeType::namespaceImportNode:
             {
                 cmajor::ast::NamespaceImportNode* importNode = static_cast<cmajor::ast::NamespaceImportNode*>(usingNode);
-                fileScope->InstallNamespaceImport(containerScope, importNode);
+                fileScope->InstallNamespaceImport(containerScope, importNode, boundCompileUnit.GetContext());
                 break;
             }
             default:

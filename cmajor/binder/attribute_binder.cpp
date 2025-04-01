@@ -5,6 +5,7 @@
 
 module cmajor.binder.attribute.binder;
 
+import cmajor.binder.bound.compile.unit;
 import cmajor.binder.json.attribute.processor;
 import cmajor.binder.xml.attribute.processor;
 import cmajor.binder.system_default.attribute.processor;
@@ -22,9 +23,9 @@ AttributeProcessor::~AttributeProcessor()
 {
 }
 
-void AttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol)
+void AttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context)
 {
-    throw cmajor::symbols::Exception("attribute '" + util::ToUtf8(attribute->Name()) + "' for symbol type '" + symbol->TypeString() + "' not supported", 
+    throw cmajor::symbols::Exception("attribute '" + util::ToUtf8(attribute->Name()) + "' for symbol type '" + symbol->TypeString(context) + "' not supported", 
         attribute->GetFullSpan(), symbol->GetFullSpan());
 }
 
@@ -37,9 +38,9 @@ void AttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* attr
 {
 }
 
-AttributeBinder::AttributeBinder(cmajor::symbols::Module* module)
+AttributeBinder::AttributeBinder(cmajor::symbols::Context* context)
 {
-    AttributeProcessor* jsonAttributeProcessor = new JsonAttributeProcessor(module);
+    AttributeProcessor* jsonAttributeProcessor = new JsonAttributeProcessor(context);
     attributeProcessors.push_back(std::unique_ptr<AttributeProcessor>(jsonAttributeProcessor));
     JsonFieldNameAttributeProcessor* jsonFieldNameAttributeProcessor = new JsonFieldNameAttributeProcessor();
     attributeProcessors.push_back(std::unique_ptr<AttributeProcessor>(jsonFieldNameAttributeProcessor));
@@ -67,7 +68,7 @@ void AttributeBinder::BindAttributes(cmajor::ast::AttributesNode* attrs, cmajor:
         if (it != attributeProcessorMap.cend())
         {
             AttributeProcessor* processor = it->second;
-            processor->TypeCheck(attribute.get(), symbol);
+            processor->TypeCheck(attribute.get(), symbol, boundCompileUnit.GetContext());
             processor->GenerateSymbols(attribute.get(), symbol, boundCompileUnit, containerScope);
         }
         else

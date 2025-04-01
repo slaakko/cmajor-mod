@@ -24,12 +24,12 @@ public:
     bool IsInComplete() const override { return true; }
     const cmajor::symbols::NamespaceSymbol* Ns() const { return ns; }
     cmajor::symbols::NamespaceSymbol* Ns() { return ns; }
-    void* IrType(cmajor::ir::Emitter& emitter) override 
+    void* IrType(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override 
     { 
         Assert(false, "tried to get ir type of namespace type");  
         return nullptr; 
     }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override 
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, cmajor::symbols::Context* context) override
     { 
         Assert(false, "tried to create default ir value of namespace type");
         return nullptr; 

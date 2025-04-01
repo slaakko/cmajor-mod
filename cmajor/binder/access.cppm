@@ -10,7 +10,7 @@ import cmajor.symbols;
 
 export namespace cmajor::binder {
 
-void CheckAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols::Symbol* toSymbol);
+void CheckAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols::Symbol* toSymbol, cmajor::symbols::Context* context);
 bool HasAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols::Symbol* toSymbol);
 
 } // namespace cmajor::binder

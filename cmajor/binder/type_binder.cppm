@@ -88,6 +88,7 @@ private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
     cmajor::symbols::Module* module;
+    cmajor::symbols::Context* context;
     cmajor::symbols::ContainerScope* containerScope;
     std::vector<cmajor::ast::Node*> usingNodes;
     cmajor::symbols::EnumTypeSymbol* enumType;

@@ -31,7 +31,7 @@ struct NativeModule
 };
 
 SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) : 
-    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fullSpan(),
+    emitter(emitter_), symbolTable(nullptr), context(nullptr), module(nullptr), compileUnit(nullptr), fullSpan(),
     nativeCompileUnit(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false), destructorCallGenerated(false), genJumpingBoolCode(false),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
@@ -43,6 +43,8 @@ SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) :
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    context = boundCompileUnit.GetContext();
+    emitter->SetContext(context);
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
     std::string optimizedIntermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".opt.i");
     NativeModule nativeModule(emitter, intermediateFilePath);
@@ -58,12 +60,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileU
     cmajor::binder::ConstantArrayRepository& constantArrayRepository = boundCompileUnit.GetConstantArrayRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantArrayRepository.ConstantArrays())
     {
-        constantSymbol->ArrayIrObject(*emitter, true);
+        constantSymbol->ArrayIrObject(*emitter, true, context);
     }
     cmajor::binder::ConstantStructureRepository& constantStructureRepository = boundCompileUnit.GetConstantStructureRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantStructureRepository.ConstantStructures())
     {
-        constantSymbol->StructureIrObject(*emitter, true);
+        constantSymbol->StructureIrObject(*emitter, true, context);
     }
     int n = boundCompileUnit.BoundNodes().size();
     for (int i = 0; i < n; ++i)
@@ -148,7 +150,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
-    void* functionType = functionSymbol->IrType(*emitter);
+    void* functionType = functionSymbol->IrType(*emitter, context);
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -215,25 +217,25 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = currentClass->GetClassTypeSymbol();
         if (!emitter->IsVmtObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->VmtObject(*emitter, true);
+            classTypeSymbol->VmtObject(*emitter, true, context);
         }
         if (!emitter->IsStaticObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->StaticObject(*emitter, true);
+            classTypeSymbol->StaticObject(*emitter, true, context);
         }
     }
     int np = functionSymbol->Parameters().size();
     for (int i = 0; i < np; ++i)
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->Parameters()[i];
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
     }
     if (functionSymbol->ReturnParam())
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->ReturnParam();
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -241,7 +243,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     for (int i = 0; i < nlv; ++i)
     {
         cmajor::symbols::LocalVariableSymbol* localVariable = functionSymbol->LocalVariables()[i];
-        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(localVariable, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -257,10 +259,10 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             {
                 copyConstructor = compileUnit->GetCopyConstructorFor(classType->TypeId());
             }
-            void* copyCtorType = copyConstructor->IrType(*emitter);
+            void* copyCtorType = copyConstructor->IrType(*emitter, context);
             void* callee = emitter->GetOrInsertFunction(util::ToUtf8(copyConstructor->MangledName()), copyCtorType, copyConstructor->DontThrow());
             std::vector<void*> args;
-            args.push_back(parameter->IrObject(*emitter));
+            args.push_back(parameter->IrObject(*emitter, context));
             args.push_back(arg);
             emitter->CreateCall(copyCtorType, callee, args);
         }
@@ -273,11 +275,11 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 throw std::runtime_error("internal error: class delegate type has no copy constructor");
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, context);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -288,23 +290,23 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 copyConstructor = compileUnit->GetCopyConstructorFor(interfaceType->TypeId());
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
-            paramValue.SetType(interfaceType->AddPointer());
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
+            paramValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
-            argumentValue.SetType(interfaceType->AddPointer());
+            argumentValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, context);
         }
         else
         {
-            emitter->CreateStore(arg, parameter->IrObject(*emitter));
+            emitter->CreateStore(arg, parameter->IrObject(*emitter, context));
         }
     }
     if (functionSymbol->ReturnParam())
     {
         void* arg = emitter->GetFunctionArgument(function, np);
-        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter));
+        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter, context));
     }
     for (cmajor::binder::BoundStatement* labeledStatement : boundFunction.LabeledStatements())
     {
@@ -323,7 +325,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
-            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
+            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter, context);
             emitter->CreateRet(defaultValue);
             lastInstructionWasRet = true;
         }
@@ -751,7 +753,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwit
         {
             cmajor::symbols::IntegralValue integralCaseValue(caseValue.get());
             caseMap[integralCaseValue] = caseDest;
-            emitter->AddCase(switchInst, caseValue->IrValue(*emitter), caseDest);
+            emitter->AddCase(switchInst, caseValue->IrValue(*emitter, context), caseDest);
         }
     }
     for (unsigned i = 0; i < n; ++i)
@@ -860,7 +862,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& bou
             cmajor::symbols::TypeSymbol* firstArgumentBaseType = firstArgument->GetType()->BaseType();
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
-                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
+                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer(context)->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
@@ -961,8 +963,8 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundS
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
-    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter, context), classPtrValue, vmtPtrIndex);
+    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false, context), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }
 
@@ -1074,7 +1076,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRet
     if (currentFunction->GetFunctionSymbol()->ReturnType() && currentFunction->GetFunctionSymbol()->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol &&
         !currentFunction->GetFunctionSymbol()->ReturnsClassInterfaceOrClassDelegateByValue())
     {
-        void* defaultValue = currentFunction->GetFunctionSymbol()->ReturnType()->CreateDefaultIrValue(*emitter);
+        void* defaultValue = currentFunction->GetFunctionSymbol()->ReturnType()->CreateDefaultIrValue(*emitter, context);
         emitter->CreateRet(defaultValue);
         lastInstructionWasRet = true;
     }
@@ -1253,7 +1255,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunct
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable)
 {
     cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
-    globalVariableSymbol->CreateIrObject(*emitter);
+    globalVariableSymbol->CreateIrObject(*emitter, context);
 }
 
 void SystemXCodeGenerator::GenJumpingBoolCode()
@@ -1544,7 +1546,7 @@ void SystemXCodeGenerator::GenerateCodeForCleanups()
         if (currentFunction->GetFunctionSymbol()->ReturnType() && currentFunction->GetFunctionSymbol()->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol &&
             !currentFunction->GetFunctionSymbol()->ReturnsClassInterfaceOrClassDelegateByValue())
         {
-            void* defaultValue = currentFunction->GetFunctionSymbol()->ReturnType()->CreateDefaultIrValue(*emitter);
+            void* defaultValue = currentFunction->GetFunctionSymbol()->ReturnType()->CreateDefaultIrValue(*emitter, context);
             emitter->CreateRet(defaultValue);
             lastInstructionWasRet = true;
         }

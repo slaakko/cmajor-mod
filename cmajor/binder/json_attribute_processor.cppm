@@ -14,12 +14,12 @@ export namespace cmajor::binder {
 class JsonAttributeProcessor : public AttributeProcessor
 {
 public:
-    JsonAttributeProcessor(cmajor::symbols::Module* module_);
-    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol) override;
+    JsonAttributeProcessor(cmajor::symbols::Context* context_);
+    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context) override;
     void GenerateSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope) override;
     void GenerateImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, StatementBinder* statementBinder) override;
 private:
-    cmajor::symbols::Module* module;
+    cmajor::symbols::Context* context;
     std::unordered_map<cmajor::symbols::Symbol*, cmajor::symbols::MemberFunctionSymbol*> jsonCreatorMap;
     std::unordered_map<cmajor::symbols::Symbol*, cmajor::symbols::ConstructorSymbol*> jsonConstructorMap;
     std::unordered_map<cmajor::symbols::Symbol*, cmajor::symbols::MemberFunctionSymbol*> toJsonJsonObjectMemberFunctionSymbolMap;
@@ -45,7 +45,7 @@ class JsonFieldNameAttributeProcessor : public AttributeProcessor
 {
 public:
     JsonFieldNameAttributeProcessor();
-    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol) override;
+    void TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context) override;
 };
 
 } // namespace cmajor::binder

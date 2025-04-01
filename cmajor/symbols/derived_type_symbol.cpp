@@ -10,6 +10,7 @@ module cmajor.symbols.derived.type.symbol;
 
 import soul.ast.span;
 import cmajor.ir.emitter;
+import cmajor.symbols.context;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.modules;
@@ -470,30 +471,30 @@ ContainerScope* DerivedTypeSymbol::GetArrowScope()
     return baseType->GetContainerScope();
 }
 
-TypeSymbol* DerivedTypeSymbol::PlainType()
+TypeSymbol* DerivedTypeSymbol::PlainType(Context* context)
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, MakePlainDerivationRec(derivationRec));
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, MakePlainDerivationRec(derivationRec), context);
 }
 
-TypeSymbol* DerivedTypeSymbol::RemoveReference()
+TypeSymbol* DerivedTypeSymbol::RemoveReference(Context* context)
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveReferenceDerivation(derivationRec));
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, RemoveReferenceDerivation(derivationRec), context);
 }
 
-TypeSymbol* DerivedTypeSymbol::RemovePointer()
+TypeSymbol* DerivedTypeSymbol::RemovePointer(Context* context)
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemovePointerDerivation(derivationRec));
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, RemovePointerDerivation(derivationRec), context);
 }
 
-TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef()
+TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef(Context* context)
 {
     if (IsReferenceType())
     {
-        return RemoveReference();
+        return RemoveReference(context);
     }
     else if (IsPointerType())
     {
-        return RemovePointer();
+        return RemovePointer(context);
     }
     else
     {
@@ -501,12 +502,12 @@ TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef()
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::RemoveConst()
+TypeSymbol* DerivedTypeSymbol::RemoveConst(Context* context)
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveConstDerivation(derivationRec));
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, RemoveConstDerivation(derivationRec), context);
 }
 
-TypeSymbol* DerivedTypeSymbol::AddConst()
+TypeSymbol* DerivedTypeSymbol::AddConst(Context* context)
 {
     if (IsConstType())
     {
@@ -514,11 +515,11 @@ TypeSymbol* DerivedTypeSymbol::AddConst()
     }
     else
     {
-        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddConstDerivation(derivationRec));
+        return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, AddConstDerivation(derivationRec), context);
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::AddLvalueReference()
+TypeSymbol* DerivedTypeSymbol::AddLvalueReference(Context* context)
 {
     if (IsLvalueReferenceType())
     {
@@ -526,11 +527,11 @@ TypeSymbol* DerivedTypeSymbol::AddLvalueReference()
     }
     else
     {
-        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddLvalueReferenceDerivation(derivationRec));
+        return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, AddLvalueReferenceDerivation(derivationRec), context);
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::AddRvalueReference()
+TypeSymbol* DerivedTypeSymbol::AddRvalueReference(Context* context)
 {
     if (IsRvalueReferenceType())
     {
@@ -538,16 +539,16 @@ TypeSymbol* DerivedTypeSymbol::AddRvalueReference()
     }
     else
     {
-        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddRvalueReferenceDerivation(derivationRec));
+        return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, AddRvalueReferenceDerivation(derivationRec), context);
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::AddPointer()
+TypeSymbol* DerivedTypeSymbol::AddPointer(Context* context)
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddPointerDerivation(derivationRec));
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, AddPointerDerivation(derivationRec), context);
 }
 
-TypeSymbol* DerivedTypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivationRec)
+TypeSymbol* DerivedTypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, Context* context)
 {
     TypeDerivationRec result;
     const std::vector<Derivation>& sourceDerivations = sourceDerivationRec.derivations;
@@ -571,13 +572,13 @@ TypeSymbol* DerivedTypeSymbol::RemoveDerivations(const TypeDerivationRec& source
     {
         result.derivations.push_back(Derivation::rvalueRefDerivation);
     }
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, result);
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(baseType, result, context);
 }
 
-TypeSymbol* DerivedTypeSymbol::Unify(TypeSymbol* sourceType)
+TypeSymbol* DerivedTypeSymbol::Unify(TypeSymbol* sourceType, Context* context)
 {
-    TypeSymbol* newBaseType = baseType->Unify(sourceType->BaseType());
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(newBaseType, UnifyDerivations(derivationRec, sourceType->DerivationRec()));
+    TypeSymbol* newBaseType = baseType->Unify(sourceType->BaseType(), context);
+    return context->RootModule()->GetSymbolTable().MakeDerivedType(newBaseType, UnifyDerivations(derivationRec, sourceType->DerivationRec()), context);
 }
 
 bool DerivedTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested)
@@ -587,7 +588,7 @@ bool DerivedTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::u
     return TypeSymbol::IsRecursive(type, tested) || baseType->IsRecursive(type, tested);
 }
 
-void* DerivedTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* DerivedTypeSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* localIrType = emitter.GetIrTypeByTypeId(TypeId());
     if (!localIrType)
@@ -598,7 +599,7 @@ void* DerivedTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
         }
         else
         {
-            localIrType = baseType->IrType(emitter);
+            localIrType = baseType->IrType(emitter, context);
         }
         for (Derivation derivation : derivationRec.derivations)
         {
@@ -623,21 +624,21 @@ void* DerivedTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
     return localIrType;
 }
 
-void* DerivedTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+void* DerivedTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (HasFrontConstDerivation(derivationRec.derivations) && !HasPointerDerivation(derivationRec.derivations) && !HasReferenceDerivation(derivationRec.derivations))
     {
-        return baseType->CreateDefaultIrValue(emitter);
+        return baseType->CreateDefaultIrValue(emitter, context);
     }
     else
     {
-        return emitter.CreateDefaultIrValueForDerivedType(IrType(emitter));
+        return emitter.CreateDefaultIrValueForDerivedType(IrType(emitter, context));
     }
 }
 
-void* DerivedTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* DerivedTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
-    void* diType = baseType->GetDIType(emitter);
+    void* diType = baseType->GetDIType(emitter, context);
     for (Derivation derivation : derivationRec.derivations)
     {
         switch (derivation)
@@ -736,14 +737,14 @@ NullPtrType::NullPtrType(const soul::ast::Span& span_, const std::u32string& nam
 {
 }
 
-void* NullPtrType::IrType(cmajor::ir::Emitter& emitter)
+void* NullPtrType::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.GetIrTypeForVoidPtrType();
 }
 
-void* NullPtrType::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+void* NullPtrType::CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
-    return emitter.CreateDefaultIrValueForPtrType(IrType(emitter));
+    return emitter.CreateDefaultIrValueForPtrType(IrType(emitter, context));
 }
 
 ValueType NullPtrType::GetValueType() const

@@ -407,9 +407,12 @@ public:
     virtual void* GetBoundCompileUnit() const = 0;
     virtual void PrintModule() = 0;
     virtual void SetCurrentFunctionMain() = 0;
+    void* Context() { return context; }
+    void SetContext(void* context_) { context = context_; }
 private:
     ValueStack* stack;
     bool generateLocationInfo;
+    void* context;
 };
 
 } // namespace cmajor::ir

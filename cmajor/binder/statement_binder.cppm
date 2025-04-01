@@ -96,6 +96,7 @@ public:
 private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
+    cmajor::symbols::Context* context;
     cmajor::symbols::Module* module;
     cmajor::symbols::ContainerScope* containerScope;
     std::unique_ptr<BoundStatement> statement;

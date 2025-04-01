@@ -8,24 +8,25 @@ module;
 
 module cmajor.symbols.string.functions;
 
+import cmajor.symbols.context;
 import cmajor.symbols.modules;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.value;
 
 namespace cmajor::symbols {
 
-StringFunctionContainerSymbol::StringFunctionContainerSymbol(const soul::ast::Span& span_) : 
+StringFunctionContainerSymbol::StringFunctionContainerSymbol(const soul::ast::Span& span_, Context* context) : 
     TypeSymbol(SymbolType::stringFunctionContainerSymbol, span_, U"@string_functions")
 {
-    AddMember(new StringLengthFunction(this));
+    AddMember(new StringLengthFunction(this, context), context);
 }
 
-void* StringFunctionContainerSymbol::IrType(Emitter& emitter)
+void* StringFunctionContainerSymbol::IrType(Emitter& emitter, Context* context)
 {
     throw std::runtime_error("string function container symbol has no IR type");
 }
 
-void* StringFunctionContainerSymbol::CreateDefaultIrValue(Emitter& emitter)
+void* StringFunctionContainerSymbol::CreateDefaultIrValue(Emitter& emitter, Context* context)
 {
     throw std::runtime_error("string function container symbol has no IR value");
 }
@@ -45,17 +46,17 @@ void StringFunctionContainerSymbol::Read(SymbolReader& reader)
     TypeSymbol::Read(reader);
 }
 
-StringLengthFunction::StringLengthFunction(TypeSymbol* parentType) : FunctionSymbol(SymbolType::stringLengthFunctionSymbol, soul::ast::Span(), U"Length")
+StringLengthFunction::StringLengthFunction(TypeSymbol* parentType, Context* context) : FunctionSymbol(SymbolType::stringLengthFunctionSymbol, soul::ast::Span(), U"Length")
 {
     SetGroupName(U"Length");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* stringValueParam = new ParameterSymbol(soul::ast::Span(), U"stringValue");
     stringValueParam->SetType(parentType);
-    AddMember(stringValueParam);
-    TypeSymbol* longType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"long");
+    AddMember(stringValueParam, context);
+    TypeSymbol* longType = context->RootModule()->GetSymbolTable().GetTypeByName(U"long");
     SetReturnType(longType);
-    ComputeName();
-    GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(this);
+    ComputeName(context);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(this);
 }
 
 StringLengthFunction::StringLengthFunction(const soul::ast::Span& span_, const std::u32string& name_) : 
@@ -73,7 +74,7 @@ void StringLengthFunction::Read(SymbolReader& reader)
     FunctionSymbol::Read(reader);
 }
 
-void StringLengthFunction::GenerateCall(Emitter& emitter, std::vector<GenObject*>& genObjects, OperationFlags flags)
+void StringLengthFunction::GenerateCall(Emitter& emitter, std::vector<GenObject*>& genObjects, OperationFlags flags, Context* context)
 {
     Assert(false, "string length is compile time function only");
 }

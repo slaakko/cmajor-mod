@@ -182,6 +182,8 @@
     <ClCompile Include="container.cppm" />
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="crc32.cppm" />
+    <ClCompile Include="debug.cpp" />
+    <ClCompile Include="debug.cppm" />
     <ClCompile Include="deflate_stream.cpp" />
     <ClCompile Include="deflate_stream.cppm" />
     <ClCompile Include="error.cpp" />

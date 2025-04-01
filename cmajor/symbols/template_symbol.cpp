@@ -57,7 +57,7 @@ void TemplateParameterSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
     defaultType = typeSymbol;
 }
 
-TypeSymbol* TemplateParameterSymbol::Unify(TypeSymbol* type)
+TypeSymbol* TemplateParameterSymbol::Unify(TypeSymbol* type, Context* context)
 {
     return type;
 }

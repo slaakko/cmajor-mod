@@ -53,7 +53,7 @@ public:
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     bool IsPrototypeTemplateSpecialization() const override;
-    void* IrType(cmajor::ir::Emitter& emitter) override;
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override;
     ClassTypeSymbol* GetClassTemplate() { return classTemplate; }
     const ContainerScope* GetArrowScope() const override;
     ContainerScope* GetArrowScope() override;
@@ -82,7 +82,7 @@ public:
     void Check() override;
     std::string GetSymbolCategoryStr() const override { return "CL"; }
     std::string GetSymbolCategoryDescription() const override { return "class"; }
-    void ComputeMangledName() override;
+    void ComputeMangledName(Context* context) override;
 private:
     ClassTypeSymbol* classTemplate;
     std::vector<TypeSymbol*> templateArgumentTypes;

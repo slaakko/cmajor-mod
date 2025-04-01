@@ -72,11 +72,11 @@ void UsingNodeAdder::Visit(cmajor::ast::AliasNode& aliasNode)
 
 void UsingNodeAdder::Visit(cmajor::ast::NamespaceImportNode& namespaceImportNode)
 {
-    boundCompileUnit.FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode);
+    boundCompileUnit.FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode, boundCompileUnit.GetContext());
 }
 
 TypeBinder::TypeBinder(BoundCompileUnit& boundCompileUnit_) :
-    boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()),
+    boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()), context(boundCompileUnit.GetContext()),
     containerScope(), enumType(nullptr), currentFunctionSymbol(nullptr), currentClassTypeSymbol(nullptr), typeResolverFlags(TypeResolverFlags::none), boundGlobalVariable(nullptr)
     
 {
@@ -116,7 +116,7 @@ void TypeBinder::Visit(cmajor::ast::NamespaceNode& namespaceNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&namespaceNode);
-    symbol->ComputeMangledName();
+    symbol->ComputeMangledName(context);
     containerScope = symbol->GetContainerScope();
     int n = namespaceNode.Members().Count();
     for (int i = 0; i < n; ++i)
@@ -139,7 +139,7 @@ void TypeBinder::Visit(cmajor::ast::AliasNode& aliasNode)
 
 void TypeBinder::Visit(cmajor::ast::NamespaceImportNode& namespaceImportNode)
 {
-    boundCompileUnit.FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode);
+    boundCompileUnit.FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode, context);
     usingNodes.push_back(&namespaceImportNode);
 }
 
@@ -220,7 +220,7 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
         cmajor::ast::CloneContext cloneContext;
         functionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(functionNode.WhereConstraint()->Clone(cloneContext)));
     }
-    functionSymbol->ComputeName();
+    functionSymbol->ComputeName(context);
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {
@@ -228,13 +228,13 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
     }
     for (cmajor::symbols::ParameterSymbol* parameterSymbol : functionSymbol->Parameters())
     {
-        parameterSymbol->ComputeMangledName();
+        parameterSymbol->ComputeMangledName(context);
     }
     if (functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
     {
         cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(functionNode.ReturnTypeExpr()->GetSpan(), U"@return");
         returnParam->SetParent(functionSymbol);
-        returnParam->SetType(returnType->AddPointer());
+        returnParam->SetType(returnType->AddPointer(context));
         functionSymbol->SetReturnParam(returnParam);
     }
     if (functionNode.Body() && !functionSymbol->IsFunctionTemplate())
@@ -275,7 +275,7 @@ void TypeBinder::BindClassTemplate(cmajor::symbols::ClassTypeSymbol* classTempla
         }
     }
     classTemplate->SetAccess(classNode->GetSpecifiers() & cmajor::ast::Specifiers::access_);
-    classTemplate->ComputeName();
+    classTemplate->ComputeName(context);
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
     for (cmajor::symbols::TemplateParameterSymbol* templateParam : classTemplate->TemplateParameters())
     {
@@ -324,7 +324,7 @@ void TypeBinder::BindClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cm
             constraintSymbolBinder->BindConstraintSymbols(classNode->WhereConstraint(), containerScope, boundCompileUnit);
         }
     }
-    classTypeSymbol->ComputeName();
+    classTypeSymbol->ComputeName(context);
     int nb = classNode->BaseClassOrInterfaces().Count();
     for (int i = 0; i < nb; ++i)
     {
@@ -378,9 +378,9 @@ void TypeBinder::BindClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cm
         member->Accept(*this);
     }
     boundCompileUnit.GetAttributeBinder()->BindAttributes(classNode->GetAttributes(), classTypeSymbol, boundCompileUnit, containerScope);
-    classTypeSymbol->InitVmt();
-    classTypeSymbol->InitImts();
-    classTypeSymbol->CreateLayouts();
+    classTypeSymbol->InitVmt(context);
+    classTypeSymbol->InitImts(context);
+    classTypeSymbol->CreateLayouts(context);
     if (classTypeSymbol->IsPolymorphic() && !classTypeSymbol->IsPrototypeTemplateSpecialization())
     {
         symbolTable.AddPolymorphicClass(classTypeSymbol);
@@ -391,7 +391,7 @@ void TypeBinder::BindClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cm
     }
     if (classTypeSymbol->HasNontrivialDestructor())
     {
-        classTypeSymbol->CreateDestructorSymbol();
+        classTypeSymbol->CreateDestructorSymbol(context);
     }
     containerScope = prevContainerScope;
     currentClassTypeSymbol = prevClassTypeSymbol;
@@ -423,7 +423,7 @@ void TypeBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructorNode
         cmajor::ast::CloneContext cloneContext;
         staticConstructorSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(staticConstructorNode.WhereConstraint()->Clone(cloneContext)));
     }
-    staticConstructorSymbol->ComputeName();
+    staticConstructorSymbol->ComputeName(context);
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {
@@ -511,7 +511,7 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
         cmajor::ast::CloneContext cloneContext;
         constructorSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(constructorNode.WhereConstraint()->Clone(cloneContext)));
     }
-    constructorSymbol->ComputeName();
+    constructorSymbol->ComputeName(context);
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {
@@ -527,25 +527,25 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
     }
     for (cmajor::symbols::ParameterSymbol* parameterSymbol : constructorSymbol->Parameters())
     {
-        parameterSymbol->ComputeMangledName();
+        parameterSymbol->ComputeMangledName(context);
     }
-    if (constructorSymbol->IsDefaultConstructor())
+    if (constructorSymbol->IsDefaultConstructor(context))
     {
         classType->SetDefaultConstructor(constructorSymbol);
     }
-    else if (constructorSymbol->IsCopyConstructor())
+    else if (constructorSymbol->IsCopyConstructor(context))
     {
         classType->SetCopyConstructor(constructorSymbol);
     }
-    else if (constructorSymbol->IsMoveConstructor())
+    else if (constructorSymbol->IsMoveConstructor(context))
     {
         classType->SetMoveConstructor(constructorSymbol);
     }
     else if (constructorSymbol->Arity() == 2 && !constructorSymbol->IsExplicit() && !constructorSymbol->IsGeneratedFunction())
     {
         constructorSymbol->SetConversion();
-        constructorSymbol->SetConversionSourceType(constructorSymbol->Parameters()[1]->GetType()->PlainType());
-        constructorSymbol->SetConversionTargetType(constructorSymbol->Parameters()[0]->GetType()->RemovePointer()->PlainType());
+        constructorSymbol->SetConversionSourceType(constructorSymbol->Parameters()[1]->GetType()->PlainType(context));
+        constructorSymbol->SetConversionTargetType(constructorSymbol->Parameters()[0]->GetType()->RemovePointer(context)->PlainType(context));
         symbolTable.AddConversion(constructorSymbol);
     }
     if (constructorNode.Body())
@@ -602,7 +602,7 @@ void TypeBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
         cmajor::ast::CloneContext cloneContext;
         destructorSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(destructorNode.WhereConstraint()->Clone(cloneContext)));
     }
-    destructorSymbol->ComputeName();
+    destructorSymbol->ComputeName(context);
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {
@@ -705,7 +705,7 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         cmajor::ast::CloneContext cloneContext;
         memberFunctionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(memberFunctionNode.WhereConstraint()->Clone(cloneContext)));
     }
-    memberFunctionSymbol->ComputeName();
+    memberFunctionSymbol->ComputeName(context);
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {
@@ -721,23 +721,23 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
     }
     for (cmajor::symbols::ParameterSymbol* parameterSymbol : memberFunctionSymbol->Parameters())
     {
-        parameterSymbol->ComputeMangledName();
+        parameterSymbol->ComputeMangledName(context);
     }
     if (memberFunctionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
     {
         cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(memberFunctionNode.ReturnTypeExpr()->GetSpan(), U"@return");
         returnParam->SetParent(memberFunctionSymbol);
-        returnParam->SetType(returnType->AddPointer());
+        returnParam->SetType(returnType->AddPointer(context));
         memberFunctionSymbol->SetReturnParam(returnParam);
     }
     if (parent->IsClassTypeSymbol())
     {
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
-        if (memberFunctionSymbol->IsCopyAssignment())
+        if (memberFunctionSymbol->IsCopyAssignment(context))
         {
             classType->SetCopyAssignment(memberFunctionSymbol);
         }
-        else if (memberFunctionSymbol->IsMoveAssignment())
+        else if (memberFunctionSymbol->IsMoveAssignment(context))
         {
             classType->SetMoveAssignment(memberFunctionSymbol);
         }
@@ -797,14 +797,14 @@ void TypeBinder::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNo
     cmajor::symbols::TypeSymbol* returnType = ResolveType(conversionFunctionNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
     conversionFunctionSymbol->SetReturnType(returnType);
     cmajor::symbols::TypeSymbol* parentTypeSymbol = const_cast<cmajor::symbols::TypeSymbol*>(static_cast<const cmajor::symbols::TypeSymbol*>(parent));
-    conversionFunctionSymbol->SetConversionSourceType(parentTypeSymbol->PlainType());
-    conversionFunctionSymbol->SetConversionTargetType(returnType->PlainType());
+    conversionFunctionSymbol->SetConversionSourceType(parentTypeSymbol->PlainType(context));
+    conversionFunctionSymbol->SetConversionTargetType(returnType->PlainType(context));
     if (!conversionFunctionSymbol->Constraint() && conversionFunctionNode.WhereConstraint())
     {
         cmajor::ast::CloneContext cloneContext;
         conversionFunctionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(conversionFunctionNode.WhereConstraint()->Clone(cloneContext)));
     }
-    conversionFunctionSymbol->ComputeName();
+    conversionFunctionSymbol->ComputeName(context);
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {
@@ -822,7 +822,7 @@ void TypeBinder::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNo
     {
         cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(conversionFunctionNode.ReturnTypeExpr()->GetSpan(), U"@return");
         returnParam->SetParent(conversionFunctionSymbol);
-        returnParam->SetType(returnType->AddPointer());
+        returnParam->SetType(returnType->AddPointer(context));
         conversionFunctionSymbol->SetReturnParam(returnParam);
     }
     symbolTable.AddConversion(conversionFunctionSymbol);
@@ -850,7 +850,7 @@ void TypeBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
     if (memberVariableSymbol->IsBound()) return;
     memberVariableSymbol->SetBound();
     memberVariableSymbol->SetSpecifiers(memberVariableNode.GetSpecifiers());
-    memberVariableSymbol->ComputeMangledName();
+    memberVariableSymbol->ComputeMangledName(context);
     const cmajor::symbols::Symbol* parent = memberVariableSymbol->Parent();
     if (parent->IsStatic() && !memberVariableSymbol->IsStatic())
     {
@@ -903,30 +903,34 @@ void TypeBinder::BindInterface(cmajor::symbols::InterfaceTypeSymbol* interfaceTy
         cmajor::ast::Node* member = interfaceNode->Members()[i];
         member->Accept(*this);
     }
-    cmajor::symbols::GetObjectPtrFromInterface* getObjectPtrFromInterface = new cmajor::symbols::GetObjectPtrFromInterface(interfaceTypeSymbol);
+    cmajor::symbols::GetObjectPtrFromInterface* getObjectPtrFromInterface = new cmajor::symbols::GetObjectPtrFromInterface(interfaceTypeSymbol, context);
     symbolTable.SetFunctionIdFor(getObjectPtrFromInterface);
-    interfaceTypeSymbol->AddMember(getObjectPtrFromInterface);
-    cmajor::symbols::InterfaceTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::InterfaceTypeDefaultConstructor(interfaceTypeSymbol);
+    interfaceTypeSymbol->AddMember(getObjectPtrFromInterface, context);
+    cmajor::symbols::InterfaceTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::InterfaceTypeDefaultConstructor(interfaceTypeSymbol, context);
     symbolTable.SetFunctionIdFor(defaultConstructor);
-    interfaceTypeSymbol->AddMember(defaultConstructor);
-    cmajor::symbols::InterfaceTypeCopyConstructor* copyConstructor = new cmajor::symbols::InterfaceTypeCopyConstructor(interfaceTypeSymbol);
+    interfaceTypeSymbol->AddMember(defaultConstructor, context);
+    cmajor::symbols::InterfaceTypeCopyConstructor* copyConstructor = new cmajor::symbols::InterfaceTypeCopyConstructor(interfaceTypeSymbol, context);
     symbolTable.SetFunctionIdFor(copyConstructor);
-    interfaceTypeSymbol->AddMember(copyConstructor);
-    cmajor::symbols::InterfaceTypeMoveConstructor* moveConstructor = new cmajor::symbols::InterfaceTypeMoveConstructor(interfaceTypeSymbol);
+    interfaceTypeSymbol->AddMember(copyConstructor, context);
+    cmajor::symbols::InterfaceTypeMoveConstructor* moveConstructor = new cmajor::symbols::InterfaceTypeMoveConstructor(interfaceTypeSymbol, context);
     symbolTable.SetFunctionIdFor(moveConstructor);
-    interfaceTypeSymbol->AddMember(moveConstructor);
-    cmajor::symbols::InterfaceTypeCopyAssignment* copyAssignment = new cmajor::symbols::InterfaceTypeCopyAssignment(interfaceTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    interfaceTypeSymbol->AddMember(moveConstructor, context);
+    cmajor::symbols::InterfaceTypeCopyAssignment* copyAssignment = new cmajor::symbols::InterfaceTypeCopyAssignment(interfaceTypeSymbol, 
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(copyAssignment);
-    interfaceTypeSymbol->AddMember(copyAssignment);
-    cmajor::symbols::InterfaceTypeMoveAssignment* moveAssignment = new cmajor::symbols::InterfaceTypeMoveAssignment(interfaceTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    interfaceTypeSymbol->AddMember(copyAssignment, context);
+    cmajor::symbols::InterfaceTypeMoveAssignment* moveAssignment = new cmajor::symbols::InterfaceTypeMoveAssignment(interfaceTypeSymbol, 
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(moveAssignment);
-    interfaceTypeSymbol->AddMember(moveAssignment);
-    cmajor::symbols::InterfaceTypeEqual* equality = new cmajor::symbols::InterfaceTypeEqual(interfaceTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    interfaceTypeSymbol->AddMember(moveAssignment, context);
+    cmajor::symbols::InterfaceTypeEqual* equality = new cmajor::symbols::InterfaceTypeEqual(interfaceTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(equality);
-    interfaceTypeSymbol->Ns()->AddMember(equality);
-    cmajor::symbols::InterfaceTypeLess* less = new cmajor::symbols::InterfaceTypeLess(interfaceTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    interfaceTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(equality, context);
+    cmajor::symbols::InterfaceTypeLess* less = new cmajor::symbols::InterfaceTypeLess(interfaceTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(less);
-    interfaceTypeSymbol->Ns()->AddMember(less);
+    interfaceTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(less, context);
     boundCompileUnit.GetAttributeBinder()->BindAttributes(interfaceNode->GetAttributes(), interfaceTypeSymbol, boundCompileUnit, containerScope);
     containerScope = prevContainerScope;
 }
@@ -941,7 +945,7 @@ void TypeBinder::Visit(cmajor::ast::DelegateNode& delegateNode)
         symbolTable.MapSymbol(delegateNode.Id(), delegateTypeSymbol);
     }
     delegateTypeSymbol->SetSpecifiers(delegateNode.GetSpecifiers());
-    delegateTypeSymbol->ComputeMangledName();
+    delegateTypeSymbol->ComputeMangledName(context);
     int n = delegateNode.Parameters().Count();
     for (int i = 0; i < n; ++i)
     {
@@ -958,37 +962,41 @@ void TypeBinder::Visit(cmajor::ast::DelegateNode& delegateNode)
     {
         cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(delegateNode.ReturnTypeExpr()->GetSpan(), U"@return");
         returnParam->SetParent(delegateTypeSymbol);
-        returnParam->SetType(returnType->AddPointer());
+        returnParam->SetType(returnType->AddPointer(context));
         delegateTypeSymbol->SetReturnParam(returnParam);
     }
     for (cmajor::symbols::ParameterSymbol* parameterSymbol : delegateTypeSymbol->Parameters())
     {
-        parameterSymbol->ComputeMangledName();
+        parameterSymbol->ComputeMangledName(context);
     }
-    cmajor::symbols::DelegateTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::DelegateTypeDefaultConstructor(delegateTypeSymbol);
+    cmajor::symbols::DelegateTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::DelegateTypeDefaultConstructor(delegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(defaultConstructor);
-    delegateTypeSymbol->AddMember(defaultConstructor);
-    cmajor::symbols::DelegateTypeCopyConstructor* copyConstructor = new cmajor::symbols::DelegateTypeCopyConstructor(delegateTypeSymbol);
+    delegateTypeSymbol->AddMember(defaultConstructor, context);
+    cmajor::symbols::DelegateTypeCopyConstructor* copyConstructor = new cmajor::symbols::DelegateTypeCopyConstructor(delegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(copyConstructor);
-    delegateTypeSymbol->AddMember(copyConstructor);
-    cmajor::symbols::DelegateTypeMoveConstructor* moveConstructor = new cmajor::symbols::DelegateTypeMoveConstructor(delegateTypeSymbol);
+    delegateTypeSymbol->AddMember(copyConstructor, context);
+    cmajor::symbols::DelegateTypeMoveConstructor* moveConstructor = new cmajor::symbols::DelegateTypeMoveConstructor(delegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(moveConstructor);
-    delegateTypeSymbol->AddMember(moveConstructor);
-    cmajor::symbols::DelegateTypeCopyAssignment* copyAssignment = new cmajor::symbols::DelegateTypeCopyAssignment(delegateTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    delegateTypeSymbol->AddMember(moveConstructor, context);
+    cmajor::symbols::DelegateTypeCopyAssignment* copyAssignment = new cmajor::symbols::DelegateTypeCopyAssignment(delegateTypeSymbol, 
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(copyAssignment);
-    delegateTypeSymbol->AddMember(copyAssignment);
-    cmajor::symbols::DelegateTypeMoveAssignment* moveAssignment = new cmajor::symbols::DelegateTypeMoveAssignment(delegateTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    delegateTypeSymbol->AddMember(copyAssignment, context);
+    cmajor::symbols::DelegateTypeMoveAssignment* moveAssignment = new cmajor::symbols::DelegateTypeMoveAssignment(delegateTypeSymbol, 
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(moveAssignment);
-    delegateTypeSymbol->AddMember(moveAssignment);
-    cmajor::symbols::DelegateTypeReturn* returnFun = new cmajor::symbols::DelegateTypeReturn(delegateTypeSymbol);
+    delegateTypeSymbol->AddMember(moveAssignment, context);
+    cmajor::symbols::DelegateTypeReturn* returnFun = new cmajor::symbols::DelegateTypeReturn(delegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(returnFun);
-    delegateTypeSymbol->AddMember(returnFun);
-    cmajor::symbols::DelegateTypeEquality* equality = new cmajor::symbols::DelegateTypeEquality(delegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    delegateTypeSymbol->AddMember(returnFun, context);
+    cmajor::symbols::DelegateTypeEquality* equality = new cmajor::symbols::DelegateTypeEquality(delegateTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(equality);
-    delegateTypeSymbol->Ns()->AddMember(equality);
-    cmajor::symbols::DelegateTypeLess* less = new cmajor::symbols::DelegateTypeLess(delegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    delegateTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(equality, context);
+    cmajor::symbols::DelegateTypeLess* less = new cmajor::symbols::DelegateTypeLess(delegateTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(less);
-    delegateTypeSymbol->Ns()->AddMember(less);
+    delegateTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(less, context);
 }
 
 void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
@@ -1001,14 +1009,14 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
         symbolTable.MapSymbol(classDelegateNode.Id(), classDelegateTypeSymbol);
     }
     classDelegateTypeSymbol->SetSpecifiers(classDelegateNode.GetSpecifiers());
-    classDelegateTypeSymbol->ComputeMangledName();
+    classDelegateTypeSymbol->ComputeMangledName(context);
     cmajor::symbols::DelegateTypeSymbol* memberDelegateType = new cmajor::symbols::DelegateTypeSymbol(classDelegateNode.GetSpan(), U"delegate_type");
     memberDelegateType->SetModule(module);
     symbolTable.SetTypeIdFor(memberDelegateType);
     cmajor::symbols::ParameterSymbol* objectParam = new cmajor::symbols::ParameterSymbol(classDelegateNode.GetSpan(), U"@obj");
-    cmajor::symbols::TypeSymbol* voidPtrType = symbolTable.GetTypeByName(U"void")->AddPointer();
+    cmajor::symbols::TypeSymbol* voidPtrType = symbolTable.GetTypeByName(U"void")->AddPointer(context);
     objectParam->SetType(voidPtrType);
-    memberDelegateType->AddMember(objectParam);
+    memberDelegateType->AddMember(objectParam, context);
     int n = classDelegateNode.Parameters().Count();
     for (int i = 0; i < n; ++i)
     {
@@ -1020,7 +1028,7 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
         parameterSymbol->SetType(parameterType);
         cmajor::symbols::ParameterSymbol* memberParam = new cmajor::symbols::ParameterSymbol(classDelegateNode.GetSpan(), util::ToUtf32("@p" + std::to_string(i)));
         memberParam->SetType(parameterType);
-        memberDelegateType->AddMember(memberParam);
+        memberDelegateType->AddMember(memberParam, context);
     }
     cmajor::symbols::TypeSymbol* returnType = ResolveType(classDelegateNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
     classDelegateTypeSymbol->SetReturnType(returnType);
@@ -1028,19 +1036,19 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
     {
         cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), U"@return");
         returnParam->SetParent(classDelegateTypeSymbol);
-        returnParam->SetType(returnType->AddPointer());
+        returnParam->SetType(returnType->AddPointer(context));
         classDelegateTypeSymbol->SetReturnParam(returnParam);
         cmajor::symbols::ParameterSymbol* memberReturnParam = new cmajor::symbols::ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), U"@return");
         memberReturnParam->SetParent(memberDelegateType);
-        memberReturnParam->SetType(returnType->AddPointer());
+        memberReturnParam->SetType(returnType->AddPointer(context));
         memberDelegateType->SetReturnParam(memberReturnParam);
     }
     memberDelegateType->SetReturnType(returnType);
     for (cmajor::symbols::ParameterSymbol* parameterSymbol : classDelegateTypeSymbol->Parameters())
     {
-        parameterSymbol->ComputeMangledName();
+        parameterSymbol->ComputeMangledName(context);
     }
-    classDelegateTypeSymbol->AddMember(memberDelegateType);
+    classDelegateTypeSymbol->AddMember(memberDelegateType, context);
     cmajor::symbols::ClassTypeSymbol* objectDelegatePairType = new cmajor::symbols::ClassTypeSymbol(classDelegateNode.GetSpan(), U"@objectDelegatePairType");
     objectDelegatePairType->SetAccess(cmajor::symbols::SymbolAccess::public_);
     objectDelegatePairType->SetGroupName(U"@objectDelegatePairType");
@@ -1050,37 +1058,39 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
     cmajor::symbols::MemberVariableSymbol* dlgVar = new cmajor::symbols::MemberVariableSymbol(classDelegateNode.GetSpan(), U"dlg");
     dlgVar->SetAccess(cmajor::symbols::SymbolAccess::public_);
     dlgVar->SetType(memberDelegateType);
-    objectDelegatePairType->AddMember(objVar);
-    objectDelegatePairType->AddMember(dlgVar);
+    objectDelegatePairType->AddMember(objVar, context);
+    objectDelegatePairType->AddMember(dlgVar, context);
     symbolTable.SetTypeIdFor(objectDelegatePairType);
-    objectDelegatePairType->InitVmt();
-    objectDelegatePairType->InitImts();
-    objectDelegatePairType->CreateLayouts();
+    objectDelegatePairType->InitVmt(context);
+    objectDelegatePairType->InitImts(context);
+    objectDelegatePairType->CreateLayouts(context);
     objectDelegatePairType->SetBound();
-    classDelegateTypeSymbol->AddMember(objectDelegatePairType);
-    cmajor::symbols::ClassDelegateTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::ClassDelegateTypeDefaultConstructor(classDelegateTypeSymbol);
+    classDelegateTypeSymbol->AddMember(objectDelegatePairType, context);
+    cmajor::symbols::ClassDelegateTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::ClassDelegateTypeDefaultConstructor(classDelegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(defaultConstructor);
-    classDelegateTypeSymbol->AddMember(defaultConstructor);
-    cmajor::symbols::ClassDelegateTypeCopyConstructor* copyConstructor = new cmajor::symbols::ClassDelegateTypeCopyConstructor(classDelegateTypeSymbol);
+    classDelegateTypeSymbol->AddMember(defaultConstructor, context);
+    cmajor::symbols::ClassDelegateTypeCopyConstructor* copyConstructor = new cmajor::symbols::ClassDelegateTypeCopyConstructor(classDelegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(copyConstructor);
-    classDelegateTypeSymbol->AddMember(copyConstructor);
-    cmajor::symbols::ClassDelegateTypeMoveConstructor* moveConstructor = new cmajor::symbols::ClassDelegateTypeMoveConstructor(classDelegateTypeSymbol);
+    classDelegateTypeSymbol->AddMember(copyConstructor, context);
+    cmajor::symbols::ClassDelegateTypeMoveConstructor* moveConstructor = new cmajor::symbols::ClassDelegateTypeMoveConstructor(classDelegateTypeSymbol, context);
     symbolTable.SetFunctionIdFor(moveConstructor);
-    classDelegateTypeSymbol->AddMember(moveConstructor);
+    classDelegateTypeSymbol->AddMember(moveConstructor, context);
     cmajor::symbols::ClassDelegateTypeCopyAssignment* copyAssignment = new cmajor::symbols::ClassDelegateTypeCopyAssignment(classDelegateTypeSymbol, 
-        symbolTable.GetTypeByName(U"void"));
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(copyAssignment);
-    classDelegateTypeSymbol->AddMember(copyAssignment);
+    classDelegateTypeSymbol->AddMember(copyAssignment, context);
     cmajor::symbols::ClassDelegateTypeMoveAssignment* moveAssignment = new cmajor::symbols::ClassDelegateTypeMoveAssignment(classDelegateTypeSymbol, 
-        symbolTable.GetTypeByName(U"void"));
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(moveAssignment);
-    classDelegateTypeSymbol->AddMember(moveAssignment);
-    cmajor::symbols::ClassDelegateTypeEquality* equality = new cmajor::symbols::ClassDelegateTypeEquality(classDelegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    classDelegateTypeSymbol->AddMember(moveAssignment, context);
+    cmajor::symbols::ClassDelegateTypeEquality* equality = new cmajor::symbols::ClassDelegateTypeEquality(classDelegateTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(equality);
-    classDelegateTypeSymbol->Ns()->AddMember(equality);
-    cmajor::symbols::ClassDelegateTypeLess* less = new cmajor::symbols::ClassDelegateTypeLess(classDelegateTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    classDelegateTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(equality, context);
+    cmajor::symbols::ClassDelegateTypeLess* less = new cmajor::symbols::ClassDelegateTypeLess(classDelegateTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(less);
-    classDelegateTypeSymbol->Ns()->AddMember(less);
+    classDelegateTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(less, context);
 }
 
 void TypeBinder::Visit(cmajor::ast::ConceptNode& conceptNode)
@@ -1108,7 +1118,7 @@ void TypeBinder::BindConcept(cmajor::symbols::ConceptSymbol* conceptSymbol, cmaj
         constraintSymbolBinder->BindConstraintSymbols(conceptNode, containerScope, boundCompileUnit);
     }
     conceptSymbol->SetSpecifiers(conceptNode->GetSpecifiers());
-    conceptSymbol->ComputeName();
+    conceptSymbol->ComputeName(context);
     if (conceptNode->Refinement())
     {
         cmajor::ast::ConceptIdNode* refinedConceptIdNode = conceptNode->Refinement();
@@ -1180,10 +1190,6 @@ void TypeBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
 void TypeBinder::Visit(cmajor::ast::ConstructionStatementNode& constructionStatementNode)
 {
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&constructionStatementNode);
-    if (symbol->Name() == U"codeGenerator")
-    {
-        int x = 0;
-    }
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); 
     cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
     cmajor::symbols::TypeSymbol* type = ResolveType(constructionStatementNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
@@ -1421,7 +1427,7 @@ void TypeBinder::BindTypedef(cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol, 
         symbolTable.MapSymbol(typedefNode->Id(), aliasTypeSymbol);
     }
     aliasTypeSymbol->SetSpecifiers(typedefNode->GetSpecifiers());
-    aliasTypeSymbol->ComputeMangledName();
+    aliasTypeSymbol->ComputeMangledName(context);
     if (!fromOwnCompileUnit)
     {
         AddUsingNodesToCurrentCompileUnit(typedefNode);
@@ -1439,7 +1445,7 @@ void TypeBinder::BindAlias(cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol, cm
         symbolTable.MapSymbol(aliasNode->Id(), aliasTypeSymbol);
     }
     aliasTypeSymbol->SetSpecifiers(aliasNode->GetSpecifiers());
-    aliasTypeSymbol->ComputeMangledName();
+    aliasTypeSymbol->ComputeMangledName(context);
     cmajor::symbols::TypeSymbol* typeSymbol = ResolveType(aliasNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
     aliasTypeSymbol->SetType(typeSymbol);
     if (!fromOwnCompileUnit)
@@ -1458,7 +1464,7 @@ void TypeBinder::Visit(cmajor::ast::ConstantNode& constantNode)
         symbolTable.MapSymbol(constantNode.Id(), constantSymbol);
     }
     constantSymbol->SetSpecifiers(constantNode.GetSpecifiers());
-    constantSymbol->ComputeMangledName();
+    constantSymbol->ComputeMangledName(context);
     cmajor::symbols::TypeSymbol* typeSymbol = ResolveType(constantNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
     constantSymbol->SetType(typeSymbol);
     constantSymbol->SetEvaluating();
@@ -1467,7 +1473,7 @@ void TypeBinder::Visit(cmajor::ast::ConstantNode& constantNode)
     cmajor::symbols::Value* val = value.get();
     if (val)
     {
-        constantSymbol->SetType(value->GetType(&symbolTable));
+        constantSymbol->SetType(value->GetType(&symbolTable, context));
         constantSymbol->SetValue(value.release());
     }
     constantSymbol->ResetEvaluating();
@@ -1498,7 +1504,7 @@ void TypeBinder::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
     cmajor::symbols::EnumTypeSymbol* prevEnumType = enumType;
     enumType = enumTypeSymbol;
     enumTypeSymbol->SetSpecifiers(enumTypeNode.GetSpecifiers());
-    enumTypeSymbol->ComputeMangledName();
+    enumTypeSymbol->ComputeMangledName(context);
     cmajor::symbols::TypeSymbol* underlyingType = symbolTable.GetTypeByName(U"int");
     if (enumTypeNode.GetUnderlyingType())
     {
@@ -1518,40 +1524,43 @@ void TypeBinder::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
     underlyingAliasType->SetAccess(cmajor::symbols::SymbolAccess::public_);
     underlyingAliasType->SetType(underlyingType);
     underlyingAliasType->SetBound();
-    enumTypeSymbol->AddMember(underlyingAliasType);
-    cmajor::symbols::EnumTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::EnumTypeDefaultConstructor(enumTypeSymbol);
+    enumTypeSymbol->AddMember(underlyingAliasType, context);
+    cmajor::symbols::EnumTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::EnumTypeDefaultConstructor(enumTypeSymbol, context);
     symbolTable.SetFunctionIdFor(defaultConstructor);
-    enumTypeSymbol->AddMember(defaultConstructor);
-    cmajor::symbols::EnumTypeCopyConstructor* copyConstructor = new cmajor::symbols::EnumTypeCopyConstructor(enumTypeSymbol);
+    enumTypeSymbol->AddMember(defaultConstructor, context);
+    cmajor::symbols::EnumTypeCopyConstructor* copyConstructor = new cmajor::symbols::EnumTypeCopyConstructor(enumTypeSymbol, context);
     symbolTable.SetFunctionIdFor(copyConstructor);
-    enumTypeSymbol->AddMember(copyConstructor);
-    cmajor::symbols::EnumTypeMoveConstructor* moveConstructor = new cmajor::symbols::EnumTypeMoveConstructor(enumTypeSymbol);
+    enumTypeSymbol->AddMember(copyConstructor, context);
+    cmajor::symbols::EnumTypeMoveConstructor* moveConstructor = new cmajor::symbols::EnumTypeMoveConstructor(enumTypeSymbol, context);
     symbolTable.SetFunctionIdFor(moveConstructor);
-    enumTypeSymbol->AddMember(moveConstructor);
-    cmajor::symbols::EnumTypeCopyAssignment* copyAssignment = new cmajor::symbols::EnumTypeCopyAssignment(enumTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    enumTypeSymbol->AddMember(moveConstructor, context);
+    cmajor::symbols::EnumTypeCopyAssignment* copyAssignment = new cmajor::symbols::EnumTypeCopyAssignment(enumTypeSymbol, 
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(copyAssignment);
-    enumTypeSymbol->AddMember(copyAssignment);
-    cmajor::symbols::EnumTypeMoveAssignment* moveAssignment = new cmajor::symbols::EnumTypeMoveAssignment(enumTypeSymbol, symbolTable.GetTypeByName(U"void"));
+    enumTypeSymbol->AddMember(copyAssignment, context);
+    cmajor::symbols::EnumTypeMoveAssignment* moveAssignment = new cmajor::symbols::EnumTypeMoveAssignment(enumTypeSymbol, 
+        symbolTable.GetTypeByName(U"void"), context);
     symbolTable.SetFunctionIdFor(moveAssignment);
-    enumTypeSymbol->AddMember(moveAssignment);
-    cmajor::symbols::EnumTypeReturn* returnFun = new cmajor::symbols::EnumTypeReturn(enumTypeSymbol);
+    enumTypeSymbol->AddMember(moveAssignment, context);
+    cmajor::symbols::EnumTypeReturn* returnFun = new cmajor::symbols::EnumTypeReturn(enumTypeSymbol, context);
     symbolTable.SetFunctionIdFor(returnFun);
-    enumTypeSymbol->AddMember(returnFun);
-    cmajor::symbols::EnumTypeEqualityOp* equality = new cmajor::symbols::EnumTypeEqualityOp(enumTypeSymbol, symbolTable.GetTypeByName(U"bool"));
+    enumTypeSymbol->AddMember(returnFun, context);
+    cmajor::symbols::EnumTypeEqualityOp* equality = new cmajor::symbols::EnumTypeEqualityOp(enumTypeSymbol, 
+        symbolTable.GetTypeByName(U"bool"), context);
     symbolTable.SetFunctionIdFor(equality);
-    enumTypeSymbol->Ns()->AddMember(equality);
-    cmajor::symbols::EnumTypeToUnderlyingTypeConversion* enum2underlying = new cmajor::symbols::EnumTypeToUnderlyingTypeConversion(enumTypeNode.GetSpan(), U"enum2underlying", 
-        enumTypeSymbol, underlyingType);
+    enumTypeSymbol->Ns(boundCompileUnit.GetContext())->AddMember(equality, context);
+    cmajor::symbols::EnumTypeToUnderlyingTypeConversion* enum2underlying = new cmajor::symbols::EnumTypeToUnderlyingTypeConversion(
+        enumTypeNode.GetSpan(), U"enum2underlying", enumTypeSymbol, underlyingType, context);
     symbolTable.SetFunctionIdFor(enum2underlying);
     enum2underlying->SetParent(enumTypeSymbol);
     symbolTable.AddConversion(enum2underlying);
-    enumTypeSymbol->AddMember(enum2underlying);
-    cmajor::symbols::UnderlyingTypeToEnumTypeConversion* underlying2enum = new cmajor::symbols::UnderlyingTypeToEnumTypeConversion(enumTypeNode.GetSpan(), U"underlying2enum", 
-        underlyingType, enumTypeSymbol);
+    enumTypeSymbol->AddMember(enum2underlying, context);
+    cmajor::symbols::UnderlyingTypeToEnumTypeConversion* underlying2enum = new cmajor::symbols::UnderlyingTypeToEnumTypeConversion(
+        enumTypeNode.GetSpan(), U"underlying2enum", underlyingType, enumTypeSymbol, context);
     symbolTable.SetFunctionIdFor(underlying2enum);
     underlying2enum->SetParent(enumTypeSymbol);
     symbolTable.AddConversion(underlying2enum);
-    enumTypeSymbol->AddMember(underlying2enum);
+    enumTypeSymbol->AddMember(underlying2enum, context);
     containerScope = prevContainerScope;
     enumType = prevEnumType;
 }
@@ -1563,7 +1572,7 @@ void TypeBinder::Visit(cmajor::ast::EnumConstantNode& enumConstantNode)
     cmajor::symbols::EnumConstantSymbol* enumConstantSymbol = static_cast<cmajor::symbols::EnumConstantSymbol*>(symbol);
     if (enumConstantSymbol->IsBound()) return;
     enumConstantSymbol->SetBound();
-    enumConstantSymbol->ComputeMangledName();
+    enumConstantSymbol->ComputeMangledName(context);
     enumConstantSymbol->SetEvaluating();
     std::unique_ptr<cmajor::symbols::Value> value = Evaluate(enumConstantNode.GetValue(), enumType->UnderlyingType(), containerScope, boundCompileUnit, false, nullptr);
     enumConstantSymbol->SetValue(value.release());
@@ -1590,7 +1599,7 @@ void TypeBinder::Visit(cmajor::ast::GlobalVariableNode& globalVariableNode)
     if (globalVariableSymbol->IsBound()) return;
     globalVariableSymbol->SetBound();
     globalVariableSymbol->SetSpecifiers(globalVariableNode.GetSpecifiers());
-    globalVariableSymbol->ComputeMangledName();
+    globalVariableSymbol->ComputeMangledName(context);
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     containerScope = globalVariableSymbol->GetContainerScope();
     cmajor::symbols::TypeSymbol* typeSymbol = ResolveType(globalVariableNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
@@ -1602,7 +1611,7 @@ void TypeBinder::Visit(cmajor::ast::GlobalVariableNode& globalVariableNode)
         cmajor::symbols::Value* val = value.get();
         if (val)
         {
-            globalVariableSymbol->SetType(value->GetType(&symbolTable));
+            globalVariableSymbol->SetType(value->GetType(&symbolTable, context));
             globalVariableSymbol->SetInitializer(std::move(value));
         }
     }

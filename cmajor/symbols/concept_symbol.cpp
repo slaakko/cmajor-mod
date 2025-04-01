@@ -8,6 +8,7 @@ module;
 
 module cmajor.symbols.concepts;
 
+import cmajor.symbols.context;
 import cmajor.symbols.type.map;
 import cmajor.symbols.exception;
 import cmajor.symbols.symbol.writer;
@@ -149,7 +150,7 @@ void ConceptSymbol::Write(SymbolWriter& writer)
         Assert(!templateParameter->TypeId().is_nil(), "type id not initialized"); 
         writer.GetBinaryStreamWriter().Write(templateParameter->TypeId());
     }
-    cmajor::ast::Node* node = GetRootModuleForCurrentThread()->GetSymbolTable().GetNode(this);
+    cmajor::ast::Node* node = writer.GetContext()->RootModule()->GetSymbolTable().GetNode(this);
     Assert(node->IsConceptNode(), "concept node expected"); 
     writer.GetAstWriter().Write(node);
     writer.GetBinaryStreamWriter().Write(hasSource);
@@ -212,7 +213,7 @@ void ConceptSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void ConceptSymbol::Dump(util::CodeFormatter& formatter)
+void ConceptSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("group name: " + util::ToUtf8(groupName));
@@ -225,16 +226,16 @@ void ConceptSymbol::Dump(util::CodeFormatter& formatter)
     }
 }
 
-void ConceptSymbol::AddMember(Symbol* member)
+void ConceptSymbol::AddMember(Symbol* member, Context* context)
 {
-    ContainerSymbol::AddMember(member);
+    ContainerSymbol::AddMember(member, context);
     if (member->GetSymbolType() == SymbolType::templateParameterSymbol)
     {
         templateParameters.push_back(static_cast<TemplateParameterSymbol*>(member));
     }
 }
 
-void ConceptSymbol::ComputeName()
+void ConceptSymbol::ComputeName(Context* context)
 {
     std::u32string name = groupName;
     bool first = true;
@@ -253,7 +254,7 @@ void ConceptSymbol::ComputeName()
     }
     name.append(1, '>');
     SetName(name);
-    ComputeMangledName();
+    ComputeMangledName(context);
 }
 
 void ConceptSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)

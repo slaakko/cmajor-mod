@@ -13,7 +13,7 @@ NoDiscardAttributeProcessor::NoDiscardAttributeProcessor() : AttributeProcessor(
 {
 }
 
-void NoDiscardAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol)
+void NoDiscardAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context)
 {
     if (symbol->IsFunctionSymbol())
     {
@@ -36,7 +36,7 @@ void NoDiscardAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribut
     {
         throw cmajor::symbols::Exception("[nodiscard] attribute may be applied only to functions", attribute->GetFullSpan());
     }
-    AttributeProcessor::TypeCheck(attribute, symbol);
+    AttributeProcessor::TypeCheck(attribute, symbol, context);
 }
 
 } // namespace cmajor::binder

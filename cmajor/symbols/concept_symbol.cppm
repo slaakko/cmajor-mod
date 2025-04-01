@@ -24,7 +24,7 @@ class ConceptGroupSymbol : public Symbol
 {
 public:
     ConceptGroupSymbol(const soul::ast::Span& span_, const std::u32string& name_);
-    std::string TypeString() const override { return "concept_group"; }
+    std::string TypeString(Context* context) const override { return "concept_group"; }
     bool IsExportSymbol() const override { return false; }
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void AddConcept(ConceptSymbol* conceptSymbol);
@@ -54,11 +54,11 @@ public:
     void EmplaceConcept(ConceptSymbol* conceptSymbol) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void Accept(SymbolCollector* collector) override;
-    void Dump(util::CodeFormatter& formatter) override;
-    void AddMember(Symbol* member) override;
-    std::string TypeString() const override { return "concept"; }
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
+    void AddMember(Symbol* member, Context* context) override;
+    std::string TypeString(Context* context) const override { return "concept"; }
     std::u32string SimpleName() const override { return groupName; }
-    void ComputeName();
+    void ComputeName(Context* context);
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     void SetTypeId(const util::uuid& typeId_) { typeId = typeId_; }
     const util::uuid& TypeId() const { return typeId; }

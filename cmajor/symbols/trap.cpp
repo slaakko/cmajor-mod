@@ -10,7 +10,7 @@ import cmajor.symbols.symbol.table;
 
 namespace cmajor::symbols {
 
-TrapFunction::TrapFunction(SymbolTable& symbolTable) : FunctionSymbol(SymbolType::trap, soul::ast::Span(), U"trap")
+TrapFunction::TrapFunction(SymbolTable& symbolTable, Context* context) : FunctionSymbol(SymbolType::trap, soul::ast::Span(), U"trap")
 {
     SetGroupName(U"trap");
     SetCDecl();
@@ -19,13 +19,13 @@ TrapFunction::TrapFunction(SymbolTable& symbolTable) : FunctionSymbol(SymbolType
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* b0Param = new ParameterSymbol(soul::ast::Span(), U"b0");
     b0Param->SetType(symbolTable.GetTypeByName(U"byte"));
-    AddMember(b0Param);
+    AddMember(b0Param, context);
     ParameterSymbol* b1Param = new ParameterSymbol(soul::ast::Span(), U"b1");
     b1Param->SetType(symbolTable.GetTypeByName(U"byte"));
-    AddMember(b1Param);
+    AddMember(b1Param, context);
     ParameterSymbol* b2Param = new ParameterSymbol(soul::ast::Span(), U"b2");
     b2Param->SetType(symbolTable.GetTypeByName(U"byte"));
-    AddMember(b2Param);
+    AddMember(b2Param, context);
     SetReturnType(symbolTable.GetTypeByName(U"long"));
 }
 
@@ -33,7 +33,7 @@ TrapFunction::TrapFunction(const soul::ast::Span& span_, const std::u32string& n
 {
 }
 
-void TrapFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void TrapFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     int na = genObjects.size();
     for (int i = 0; i < na; ++i)
@@ -51,9 +51,9 @@ void TrapFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor
     emitter.Stack().Push(emitter.GenerateTrap(args));
 }
 
-void InitTrap(SymbolTable& symbolTable)
+void InitTrap(SymbolTable& symbolTable, Context* context)
 {
-    symbolTable.AddFunctionSymbolToGlobalScope(new TrapFunction(symbolTable));
+    symbolTable.AddFunctionSymbolToGlobalScope(new TrapFunction(symbolTable, context), context);
 }
 
 } // namespace cmajor::symbols

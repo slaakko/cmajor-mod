@@ -11,6 +11,7 @@ import std.core;
 
 export namespace cmajor::symbols {
 
+class Context;
 class Symbol;
 class ArrayTypeSymbol;
 class DerivedTypeSymbol;
@@ -38,6 +39,8 @@ public:
     SymbolTable* GetSymbolTable() const { return symbolTable; }
     void SetModule(Module* module_) { module = module_; }
     Module* GetModule() const { return module; }
+    void SetContext(Context* context_) { context = context_; }
+    Context* GetContext() { return context; }
     void SetConversionsTarget(std::vector<FunctionSymbol*>* conversionsTarget) { conversions = conversionsTarget; }
     void SetArrayTypesTarget(std::vector<ArrayTypeSymbol*>* arrayTypesTarget) { arrayTypes = arrayTypesTarget; }
     void SetDerivedTypesTarget(std::vector<DerivedTypeSymbol*>* derivedTypesTarget) { derivedTypes = derivedTypesTarget; }
@@ -57,6 +60,7 @@ public:
 private:
     cmajor::ast::AstReader astReader;
     SymbolTable* symbolTable;
+    Context* context;
     Module* module;
     Module* rootModule;
     std::vector<FunctionSymbol*>* conversions;

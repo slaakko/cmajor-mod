@@ -34,7 +34,7 @@ class BoundNamespace;
 class BoundCompileUnit : public BoundNode
 {
 public:
-    BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast::CompileUnitNode* compileUnitNode_, AttributeBinder* attributeBinder_);
+    BoundCompileUnit(cmajor::symbols::Context* context__, cmajor::ast::CompileUnitNode* compileUnitNode_, AttributeBinder* attributeBinder_);
     BoundCompileUnit(const BoundCompileUnit&) = delete;
     BoundCompileUnit& operator=(const BoundCompileUnit&) = delete;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -42,7 +42,8 @@ public:
     void Accept(BoundNodeVisitor& visitor) override;
     const util::uuid& ModuleId() const override { return moduleId; }
     int32_t FileIndex() const override { return fileIndex; }
-    cmajor::symbols::Module& GetModule() { return module; }
+    cmajor::symbols::Context* GetContext() { return context; }
+    cmajor::symbols::Module& GetModule() { return *context->RootModule(); }
     cmajor::symbols::SymbolTable& GetSymbolTable() { return symbolTable; }
     cmajor::ast::CompileUnitNode* GetCompileUnitNode() const { return compileUnitNode; }
     void AddFileScope(cmajor::symbols::FileScope* fileScope);
@@ -152,7 +153,7 @@ public:
     void SetTotal(int n) { totalFunctions = n; }
     void SetInlined(int n) { functionsInlined = n; }
 private:
-    cmajor::symbols::Module& module;
+    cmajor::symbols::Context* context;
     util::uuid moduleId;
     int fileIndex;
     cmajor::symbols::SymbolTable& symbolTable;

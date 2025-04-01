@@ -14,6 +14,7 @@ module cmajor.symbols.classes;
 import soul.ast.span;
 import cmajor.symbols.global.flags;
 import cmajor.ir.emitter;
+import cmajor.symbols.context;
 import cmajor.symbols.exception;
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.symbol.writer;
@@ -199,13 +200,13 @@ ClassGroupTypeSymbol::ClassGroupTypeSymbol(const soul::ast::Span& span_, const s
 {
 }
 
-void* ClassGroupTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* ClassGroupTypeSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     Assert(false, "tried to get ir type of class group");
     return nullptr;
 }
 
-void* ClassGroupTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+void* ClassGroupTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     Assert(false, "tried to create default ir value of class group");
     return nullptr;
@@ -408,7 +409,7 @@ void ClassTypeSymbol::Write(SymbolWriter& writer)
     if (IsClassTemplate())
     {
         usingNodes.Write(writer.GetAstWriter());
-        cmajor::ast::Node* node = GetRootModuleForCurrentThread()->GetSymbolTable().GetNode(this);
+        cmajor::ast::Node* node = writer.GetContext()->RootModule()->GetSymbolTable().GetNode(this);
         writer.GetAstWriter().Write(node);
         bool hasPrototype = prototype != nullptr;
         writer.GetBinaryStreamWriter().Write(hasPrototype);
@@ -666,9 +667,9 @@ void ClassTypeSymbol::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
     }
 }
 
-void ClassTypeSymbol::AddMember(Symbol* member)
+void ClassTypeSymbol::AddMember(Symbol* member, Context* context)
 {
-    TypeSymbol::AddMember(member);
+    TypeSymbol::AddMember(member, context);
     switch (member->GetSymbolType())
     {
     case SymbolType::templateParameterSymbol:
@@ -771,7 +772,7 @@ void ClassTypeSymbol::Accept(SymbolCollector* collector)
     {
         if (prototype)
         {
-            prototype->SetParent(Ns());
+            prototype->SetParent(Ns(collector->GetContext()));
             if (Constraint())
             {
                 cmajor::ast::CloneContext cloneContext;
@@ -804,7 +805,7 @@ void ClassTypeSymbol::CollectMembers(SymbolCollector* collector)
     TypeSymbol::Accept(collector);
 }
 
-void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
+void ClassTypeSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("group name: " + util::ToUtf8(groupName));
@@ -841,7 +842,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         }
     */
     formatter.IncIndent();
-    SymbolCollector collector;
+    SymbolCollector collector(context);
     TypeSymbol::Accept(&collector);
     if (!collector.Functions().empty())
     {
@@ -850,7 +851,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (FunctionSymbol* function : collector.Functions())
         {
             formatter.WriteLine();
-            function->Dump(formatter);
+            function->Dump(formatter, context);
         }
     }
     if (!collector.Classes().empty())
@@ -860,7 +861,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (ClassTypeSymbol* class_ : collector.Classes())
         {
             formatter.WriteLine();
-            class_->Dump(formatter);
+            class_->Dump(formatter, context);
         }
     }
     if (!collector.Interfaces().empty())
@@ -870,7 +871,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (InterfaceTypeSymbol* interface : collector.Interfaces())
         {
             formatter.WriteLine();
-            interface->Dump(formatter);
+            interface->Dump(formatter, context);
         }
     }
     if (!collector.AliasTypes().empty())
@@ -880,7 +881,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (AliasTypeSymbol* aliasType : collector.AliasTypes())
         {
             formatter.WriteLine();
-            aliasType->Dump(formatter);
+            aliasType->Dump(formatter, context);
         }
     }
     if (!collector.Concepts().empty())
@@ -890,7 +891,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (ConceptSymbol* concept_ : collector.Concepts())
         {
             formatter.WriteLine();
-            concept_->Dump(formatter);
+            concept_->Dump(formatter, context);
         }
     }
     if (!collector.Constants().empty())
@@ -900,7 +901,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (ConstantSymbol* constant : collector.Constants())
         {
             formatter.WriteLine();
-            constant->Dump(formatter);
+            constant->Dump(formatter, context);
         }
     }
     if (!collector.Delegates().empty())
@@ -910,7 +911,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (DelegateTypeSymbol* delegate_ : collector.Delegates())
         {
             formatter.WriteLine();
-            delegate_->Dump(formatter);
+            delegate_->Dump(formatter, context);
         }
     }
     if (!collector.ClassDelegates().empty())
@@ -920,7 +921,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (ClassDelegateTypeSymbol* classDelegate : collector.ClassDelegates())
         {
             formatter.WriteLine();
-            classDelegate->Dump(formatter);
+            classDelegate->Dump(formatter, context);
         }
     }
     if (!collector.EnumeratedTypes().empty())
@@ -930,7 +931,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (EnumTypeSymbol* enumeratedType : collector.EnumeratedTypes())
         {
             formatter.WriteLine();
-            enumeratedType->Dump(formatter);
+            enumeratedType->Dump(formatter, context);
         }
     }
     if (!collector.MemberVariables().empty())
@@ -940,7 +941,7 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
         for (MemberVariableSymbol* memberVariable : collector.MemberVariables())
         {
             formatter.WriteLine();
-            memberVariable->Dump(formatter);
+            memberVariable->Dump(formatter, context);
         }
     }
     formatter.DecIndent();
@@ -972,7 +973,7 @@ bool ClassTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uui
     return false;
 }
 
-void ClassTypeSymbol::CreateDestructorSymbol()
+void ClassTypeSymbol::CreateDestructorSymbol(Context* context)
 {
     if (!destructor)
     {
@@ -982,12 +983,12 @@ void ClassTypeSymbol::CreateDestructorSymbol()
         destructorSymbol->SetGenerated();
         destructorSymbol->SetLinkOnceOdrLinkage();
         ParameterSymbol* thisParam = new ParameterSymbol(GetSpan(), U"this");
-        thisParam->SetType(AddPointer());
+        thisParam->SetType(AddPointer(context));
         destructorSymbol->SetAccess(SymbolAccess::public_);
-        destructorSymbol->AddMember(thisParam);
-        AddMember(destructorSymbol);
+        destructorSymbol->AddMember(thisParam, context);
+        AddMember(destructorSymbol, context);
         Assert(destructor, "destructor expected");
-        destructor->ComputeName();
+        destructor->ComputeName(context);
     }
 }
 
@@ -1124,7 +1125,7 @@ void ClassTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     }
 }
 
-void ClassTypeSymbol::ComputeName()
+void ClassTypeSymbol::ComputeName(Context* context)
 {
     std::u32string name = Name();
     if (IsClassTemplate())
@@ -1146,12 +1147,12 @@ void ClassTypeSymbol::ComputeName()
         name.append(1, '>');
     }
     SetName(name);
-    ComputeMangledName();
+    ComputeMangledName(context);
 }
 
-void ClassTypeSymbol::ComputeMangledName()
+void ClassTypeSymbol::ComputeMangledName(Context* context)
 {
-    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::u32string mangledName = util::ToUtf32(TypeString(context));
     mangledName.append(1, U'_').append(SimpleName());
     std::string constraintStr;
     if (constraint)
@@ -1162,21 +1163,21 @@ void ClassTypeSymbol::ComputeMangledName()
     SetMangledName(mangledName);
 }
 
-void ClassTypeSymbol::SetSpecialMemberFunctions()
+void ClassTypeSymbol::SetSpecialMemberFunctions(Context* context)
 {
     int nc = constructors.size();
     for (int i = 0; i < nc; ++i)
     {
         ConstructorSymbol* constructor = constructors[i];
-        if (constructor->IsDefaultConstructor())
+        if (constructor->IsDefaultConstructor(context))
         {
             defaultConstructor = constructor;
         }
-        else if (constructor->IsCopyConstructor())
+        else if (constructor->IsCopyConstructor(context))
         {
             copyConstructor = constructor;
         }
-        else if (constructor->IsMoveConstructor())
+        else if (constructor->IsMoveConstructor(context))
         {
             moveConstructor = constructor;
         }
@@ -1185,11 +1186,11 @@ void ClassTypeSymbol::SetSpecialMemberFunctions()
     for (int i = 0; i < nm; ++i)
     {
         MemberFunctionSymbol* memberFunction = memberFunctions[i];
-        if (memberFunction->IsCopyAssignment())
+        if (memberFunction->IsCopyAssignment(context))
         {
             copyAssignment = memberFunction;
         }
-        else if (memberFunction->IsMoveAssignment())
+        else if (memberFunction->IsMoveAssignment(context))
         {
             moveAssignment = memberFunction;
         }
@@ -1210,13 +1211,13 @@ void ClassTypeSymbol::SetInitializedVar(MemberVariableSymbol* initializedVar_)
     initializedVar.reset(initializedVar_);
 }
 
-void ClassTypeSymbol::InitVmt()
+void ClassTypeSymbol::InitVmt(Context* context)
 {
     if (IsVmtInitialized()) return;
     SetVmtInitialized();
     if (baseClass)
     {
-        baseClass->InitVmt();
+        baseClass->InitVmt(context);
         if (baseClass->IsPolymorphic())
         {
             SetPolymorphic();
@@ -1240,7 +1241,7 @@ void ClassTypeSymbol::InitVmt()
     }
     if (IsPolymorphic())
     {
-        CreateDestructorSymbol();
+        CreateDestructorSymbol(context);
         if (baseClass && baseClass->IsPolymorphic())
         {
             destructor->SetOverride();
@@ -1376,7 +1377,7 @@ bool Implements(MemberFunctionSymbol* classMemFun, MemberFunctionSymbol* intfMem
     return true;
 }
 
-void ClassTypeSymbol::InitImts()
+void ClassTypeSymbol::InitImts(Context* context)
 {
     if (IsImtsInitialized()) return;
     SetImtsInitialized();
@@ -1428,7 +1429,7 @@ void ClassTypeSymbol::InitImts()
     }
 }
 
-void ClassTypeSymbol::CreateLayouts()
+void ClassTypeSymbol::CreateLayouts(Context* context)
 {
     if (IsLayoutsComputed()) return;
     SetLayoutsComputed();
@@ -1441,11 +1442,11 @@ void ClassTypeSymbol::CreateLayouts()
         if (IsPolymorphic())
         {
             vmtPtrIndex = objectLayout.size();
-            objectLayout.push_back(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void")->AddPointer());
+            objectLayout.push_back(context->RootModule()->GetSymbolTable().GetTypeByName(U"void")->AddPointer(context));
         }
         else if (memberVariables.empty())
         {
-            objectLayout.push_back(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"byte"));
+            objectLayout.push_back(context->RootModule()->GetSymbolTable().GetTypeByName(U"byte"));
         }
     }
     int n = memberVariables.size();
@@ -1460,10 +1461,10 @@ void ClassTypeSymbol::CreateLayouts()
         MemberVariableSymbol* initVar = new MemberVariableSymbol(GetSpan(), U"@initialized");
         initVar->SetParent(this);
         initVar->SetStatic();
-        initVar->SetType(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"bool"));
+        initVar->SetType(context->RootModule()->GetSymbolTable().GetTypeByName(U"bool"));
         initVar->SetLayoutIndex(0);
         SetInitializedVar(initVar);
-        staticLayout.push_back(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"bool"));
+        staticLayout.push_back(context->RootModule()->GetSymbolTable().GetTypeByName(U"bool"));
         int ns = staticMemberVariables.size();
         for (int i = 0; i < ns; ++i)
         {
@@ -1499,7 +1500,7 @@ bool ClassTypeSymbol::IsRecursive()
     }
 }
 
-void* ClassTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (!IsBound())
     {
@@ -1515,7 +1516,7 @@ void* ClassTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
             for (int i = 0; i < n; ++i)
             {
                 TypeSymbol* elementType = objectLayout[i];
-                elementTypes.push_back(elementType->IrType(emitter));
+                elementTypes.push_back(elementType->IrType(emitter, context));
             }
             localIrType = emitter.GetIrTypeForClassType(elementTypes);
             emitter.SetIrTypeByTypeId(TypeId(), localIrType);
@@ -1528,7 +1529,7 @@ void* ClassTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
             for (int i = 0; i < n; ++i)
             {
                 TypeSymbol* elementType = objectLayout[i];
-                elementTypes.push_back(elementType->IrType(emitter));
+                elementTypes.push_back(elementType->IrType(emitter, context));
             }
             emitter.SetFwdIrTypeBody(forwardDeclaredType, elementTypes);
         }
@@ -1536,47 +1537,47 @@ void* ClassTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
     return localIrType;
 }
 
-void* ClassTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
-    void* irType = IrType(emitter);
+    void* irType = IrType(emitter, context);
     std::vector<void*> arrayOfDefaults;
     for (TypeSymbol* type : objectLayout)
     {
-        arrayOfDefaults.push_back(type->CreateDefaultIrValue(emitter));
+        arrayOfDefaults.push_back(type->CreateDefaultIrValue(emitter, context));
     }
     return emitter.CreateDefaultIrValueForStruct(irType, arrayOfDefaults);
 }
 
-void* ClassTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* baseClassDIType = nullptr;
     if (baseClass)
     {
-        baseClassDIType = baseClass->GetDIType(emitter);
+        baseClassDIType = baseClass->GetDIType(emitter, context);
     }
     void* vtableHolderClass = nullptr;
     if (IsPolymorphic() && VmtPtrHolderClass())
     {
-        vtableHolderClass = VmtPtrHolderClass()->CreateDIForwardDeclaration(emitter);
+        vtableHolderClass = VmtPtrHolderClass()->CreateDIForwardDeclaration(emitter, context);
         emitter.MapFwdDeclaration(vtableHolderClass, VmtPtrHolderClass()->TypeId());
     }
     std::vector<void*> elements;
     for (MemberVariableSymbol* memberVariable : memberVariables)
     {
-        uint64_t offsetInBits = emitter.GetOffsetInBits(IrType(emitter), memberVariable->LayoutIndex());
-        elements.push_back(memberVariable->GetDIMemberType(emitter, offsetInBits));
+        uint64_t offsetInBits = emitter.GetOffsetInBits(IrType(emitter, context), memberVariable->LayoutIndex());
+        elements.push_back(memberVariable->GetDIMemberType(emitter, offsetInBits, context));
     }
     soul::ast::FullSpan fullSpan = GetFullSpan();
     soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
-    return emitter.CreateDITypeForClassType(IrType(emitter), elements, fullSpan, lineColLen, util::ToUtf8(Name()), vtableHolderClass, util::ToUtf8(MangledName()), 
+    return emitter.CreateDITypeForClassType(IrType(emitter, context), elements, fullSpan, lineColLen, util::ToUtf8(Name()), vtableHolderClass, util::ToUtf8(MangledName()),
         baseClassDIType);
 }
 
-void* ClassTypeSymbol::CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter, Context* context)
 {
     soul::ast::FullSpan fullSpan = GetFullSpan();
     soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
-    return emitter.CreateIrDIForwardDeclaration(IrType(emitter), util::ToUtf8(Name()), util::ToUtf8(MangledName()), fullSpan, lineColLen); 
+    return emitter.CreateIrDIForwardDeclaration(IrType(emitter, context), util::ToUtf8(Name()), util::ToUtf8(MangledName()), fullSpan, lineColLen);
 }
 
 std::string ClassTypeSymbol::VmtObjectNameStr(cmajor::ir::Emitter& emitter)
@@ -1668,7 +1669,7 @@ void* ClassTypeSymbol::VmtPtrType(cmajor::ir::Emitter& emitter)
     return vmtPtrType;
 }
 
-void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
+void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index, Context* context)
 {
     std::vector<FunctionSymbol*>& imt = imts[index];
     std::string imtObjectName = ImtObjectName(index, emitter);
@@ -1683,7 +1684,7 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
     for (int i = 0; i < n; ++i)
     {
         FunctionSymbol* memFun = imt[i];
-        void* interfaceFun = emitter.GetOrInsertFunction(util::ToUtf8(memFun->MangledName()), memFun->IrType(emitter), memFun->DontThrow());
+        void* interfaceFun = emitter.GetOrInsertFunction(util::ToUtf8(memFun->MangledName()), memFun->IrType(emitter, context), memFun->DontThrow());
         if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin)
         {
             irImt.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), interfaceFun));
@@ -1697,7 +1698,7 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
     return imtObject;
 }
 
-void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter, Context* context)
 {
     std::string imtArrayObjectName = ImtArrayObjectName(emitter);
     void* imtsArrayType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), implementedInterfaces.size());
@@ -1710,7 +1711,7 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
     int n = imts.size();
     for (int i = 0; i < n; ++i)
     {
-        void* irImt = CreateImt(emitter, i);
+        void* irImt = CreateImt(emitter, i, context);
         if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin)
         {
             imtsArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), irImt));
@@ -1724,7 +1725,7 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
     return imtsArrayObject;
 }
 
-void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
+void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create, Context* context)
 {
     if (!IsPolymorphic()) return nullptr;
     void* localVmtObjectType = emitter.GetVmtObjectType(this);
@@ -1763,7 +1764,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
             vmtArray.push_back(emitter.CreateIntToPtr(emitter.CreateIrValueForULong(typeId2), emitter.GetIrTypeForVoidPtrType()));
             if (!implementedInterfaces.empty())
             {
-                void* itabsArrayObject = CreateImts(emitter);
+                void* itabsArrayObject = CreateImts(emitter, context);
                 vmtArray.push_back(emitter.CreateBitCast(itabsArrayObject, emitter.GetIrTypeForVoidPtrType())); // interface method table pointer
             }
             else
@@ -1781,7 +1782,8 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter), virtualFunction->DontThrow());
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter, context), 
+                        virtualFunction->DontThrow());
                     vmtArray.push_back(emitter.CreateBitCast(functionObject, emitter.GetIrTypeForVoidPtrType()));
                 }
             }
@@ -1796,7 +1798,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
             vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), emitter.CreateIrValueForULong(typeId2)));
             if (!implementedInterfaces.empty())
             {
-                void* itabsArrayObject = CreateImts(emitter);
+                void* itabsArrayObject = CreateImts(emitter, context);
                 vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), itabsArrayObject)); // interface method table pointer
             }
             else
@@ -1814,7 +1816,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->InstantiatedName()), virtualFunction->IrType(emitter), 
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->InstantiatedName()), virtualFunction->IrType(emitter, context), 
                         virtualFunction->DontThrow());
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
@@ -1827,7 +1829,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
             vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), className)); // class name pointer
             if (!implementedInterfaces.empty())
             {
-                void* itabsArrayObject = CreateImts(emitter);
+                void* itabsArrayObject = CreateImts(emitter, context);
                 vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), itabsArrayObject)); // interface method table pointer
             }
             else
@@ -1845,7 +1847,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter), 
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter, context), 
                         virtualFunction->DontThrow());
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
@@ -1861,7 +1863,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
             vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), emitter.CreateIrValueForULong(typeId2)));
             if (!implementedInterfaces.empty())
             {
-                void* itabsArrayObject = CreateImts(emitter);
+                void* itabsArrayObject = CreateImts(emitter, context);
                 vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), itabsArrayObject)); // interface method table pointer
             }
             else
@@ -1879,7 +1881,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->InstantiatedName()), virtualFunction->IrType(emitter), 
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->InstantiatedName()), virtualFunction->IrType(emitter, context), 
                         virtualFunction->DontThrow());
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
@@ -1891,10 +1893,10 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
     return vmtObject;
 }
 
-void* ClassTypeSymbol::StaticObject(cmajor::ir::Emitter& emitter, bool create)
+void* ClassTypeSymbol::StaticObject(cmajor::ir::Emitter& emitter, bool create, Context* context)
 {
     if (staticLayout.empty()) return nullptr;
-    void* staticObject = emitter.GetOrInsertGlobal(StaticObjectName(emitter), StaticObjectType(emitter));
+    void* staticObject = emitter.GetOrInsertGlobal(StaticObjectName(emitter), StaticObjectType(emitter, context));
     if (!emitter.IsStaticObjectCreated(this) && create)
     {
         emitter.SetStaticObjectCreated(this);
@@ -1907,14 +1909,14 @@ void* ClassTypeSymbol::StaticObject(cmajor::ir::Emitter& emitter, bool create)
         std::vector<void*> arrayOfStatics;
         for (TypeSymbol* type : staticLayout)
         {
-            arrayOfStatics.push_back(type->CreateDefaultIrValue(emitter));
+            arrayOfStatics.push_back(type->CreateDefaultIrValue(emitter, context));
         }
-        emitter.SetInitializer(staticObjectGlobal, emitter.CreateIrValueForConstantStruct(StaticObjectType(emitter), arrayOfStatics));
+        emitter.SetInitializer(staticObjectGlobal, emitter.CreateIrValueForConstantStruct(StaticObjectType(emitter, context), arrayOfStatics));
     }
     return staticObject;
 }
 
-void* ClassTypeSymbol::StaticObjectType(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::StaticObjectType(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* localStaticObjectType = emitter.GetStaticObjectType(this);
     if (!localStaticObjectType)
@@ -1923,7 +1925,7 @@ void* ClassTypeSymbol::StaticObjectType(cmajor::ir::Emitter& emitter)
         int n = staticLayout.size();
         for (int i = 0; i < n; ++i)
         {
-            void* elementType = staticLayout[i]->IrType(emitter);
+            void* elementType = staticLayout[i]->IrType(emitter, context);
             elementTypes.push_back(elementType);
         }
         localStaticObjectType = emitter.GetIrTypeForStructType(elementTypes);

@@ -35,10 +35,10 @@ class ClassGroupTypeSymbol : public TypeSymbol
 public:
     ClassGroupTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
-    std::string TypeString() const override { return "class_group"; }
+    std::string TypeString(Context* context) const override { return "class_group"; }
     bool IsInComplete() const override { return true; }
-    void* IrType(cmajor::ir::Emitter& emitter) override;
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override;
     void AddClass(ClassTypeSymbol* classTypeSymbol);
     void RemoveClass(ClassTypeSymbol* classTypeSymbol);
     const ContainerScope* GetTypeScope() const override;
@@ -132,10 +132,10 @@ public:
     cmajor::ast::ClassNode* GetClassNode() { return classNode.get(); }
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void AddMember(Symbol* member) override;
+    void AddMember(Symbol* member, Context* context) override;
     bool IsClassTypeSymbol() const override { return true; }
     bool IsParentSymbol() const override { return true; }
-    std::string TypeString() const override { return "class"; }
+    std::string TypeString(Context* context) const override { return "class"; }
     std::u32string SimpleName() const override { return groupName; }
     std::string GetSpecifierStr() override;
     bool HasNontrivialDestructor() override;
@@ -143,12 +143,12 @@ public:
     const ContainerScope* GetArrowScope() const override;
     ContainerScope* GetArrowScope() override;
     void CollectMembers(SymbolCollector* collector);
-    void Dump(util::CodeFormatter& formatter) override;
+    void Dump(util::CodeFormatter& formatter, Context* context) override;
     // TODO
     bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested) override;
     virtual bool IsPrototypeTemplateSpecialization() const { return false; }
     bool CompletelyBound() override { return IsBound() && !StatementsNotBound(); }
-    void CreateDestructorSymbol();
+    void CreateDestructorSymbol(Context* context);
     const std::u32string& GroupName() const { return groupName; }
     void SetGroupName(const std::u32string& groupName_);
     std::u32string CodeName() const override { return groupName; }
@@ -166,8 +166,8 @@ public:
     bool IsClassTemplate() const { return !templateParameters.empty(); }
     void CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usingNodes_);
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
-    void ComputeName();
-    void ComputeMangledName() override;
+    void ComputeName(Context* context);
+    void ComputeMangledName(Context* context) override;
     bool IsPolymorphicType() override { return IsPolymorphic(); }
     void SetConstraint(cmajor::ast::ConstraintNode* constraint_) { constraint.reset(constraint_); }
     cmajor::ast::ConstraintNode* Constraint() { return constraint.get(); }
@@ -185,7 +185,7 @@ public:
     void SetCopyAssignment(MemberFunctionSymbol* copyAssignment_) { copyAssignment = copyAssignment_; }
     MemberFunctionSymbol* MoveAssignment() { return moveAssignment; }
     void SetMoveAssignment(MemberFunctionSymbol* moveAssignment_) { moveAssignment = moveAssignment_; }
-    void SetSpecialMemberFunctions();
+    void SetSpecialMemberFunctions(Context* context);
     const std::vector<MemberVariableSymbol*>& MemberVariables() const { return memberVariables; }
     const std::vector<MemberVariableSymbol*>& StaticMemberVariables() const { return staticMemberVariables; }
     const std::vector<MemberFunctionSymbol*>& MemberFunctions() const { return memberFunctions; }
@@ -220,16 +220,16 @@ public:
     bool GetFlag(ClassTypeSymbolFlags flag);
     void SetFlag(ClassTypeSymbolFlags flag);
     void ResetFlag(ClassTypeSymbolFlags flag);
-    void InitVmt();
-    void InitImts();
-    void CreateLayouts();
+    void InitVmt(Context* context);
+    void InitImts(Context* context);
+    void CreateLayouts(Context* context);
     const std::vector<TypeSymbol*>& ObjectLayout() const { return objectLayout; }
     const std::vector<FunctionSymbol*>& Vmt() const { return vmt; }
-    void* IrType(cmajor::ir::Emitter& emitter) override;
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
-    void* CreateDIType(cmajor::ir::Emitter& emitter) override;
-    void* CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter);
-    void* VmtObject(cmajor::ir::Emitter& emitter, bool create);
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDIType(cmajor::ir::Emitter& emitter, Context* context) override;
+    void* CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter, Context* context);
+    void* VmtObject(cmajor::ir::Emitter& emitter, bool create, Context* context);
     void* VmtArrayType(cmajor::ir::Emitter& emitter);
     void* VmtPtrType(cmajor::ir::Emitter& emitter);
     std::string VmtObjectName(cmajor::ir::Emitter& emitter);
@@ -238,8 +238,8 @@ public:
     std::string ImtObjectName(int index, cmajor::ir::Emitter& emitter);
     int32_t VmtPtrIndex() const { return vmtPtrIndex; }
     ClassTypeSymbol* VmtPtrHolderClass();
-    void* StaticObject(cmajor::ir::Emitter& emitter, bool create);
-    void* StaticObjectType(cmajor::ir::Emitter& emitter);
+    void* StaticObject(cmajor::ir::Emitter& emitter, bool create, Context* context);
+    void* StaticObjectType(cmajor::ir::Emitter& emitter, Context* context);
     std::string StaticObjectName(cmajor::ir::Emitter& emitter);
     void SetPrototype(ClassTemplateSpecializationSymbol* prototype_) { prototype = prototype_; }
     ClassTemplateSpecializationSymbol* Prototype() const { return prototype; }
@@ -284,8 +284,8 @@ private:
     ClassTemplateSpecializationSymbol* prototype;
     ClassGroupTypeSymbol* classGroup;
     void InitVmt(std::vector<FunctionSymbol*>& vmtToInit);
-    void* CreateImt(cmajor::ir::Emitter& emitter, int index);
-    void* CreateImts(cmajor::ir::Emitter& emitter);
+    void* CreateImt(cmajor::ir::Emitter& emitter, int index, Context* context);
+    void* CreateImts(cmajor::ir::Emitter& emitter, Context* context);
 };
 
 cmajor::ast::ConstantNode* MakePolymorphicClassArray(const std::set<ClassTypeSymbol*>& polymorphicClasses, const std::u32string& arrayName);

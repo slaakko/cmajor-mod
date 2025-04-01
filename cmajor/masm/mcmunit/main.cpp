@@ -230,7 +230,8 @@ void MakeUnitTestProject(cmajor::ast::Solution* solution, const std::string& pro
     {
         throw std::runtime_error("project '" + projectFilePath + "' is not a unit test project; please add 'target=unitTest;' project declaration");
     }
-    cmajor::symbols::Module module(project->Name(), project->ModuleFilePath(), project->GetTarget());
+    cmajor::symbols::Context context;
+    cmajor::symbols::Module module(&context, project->Name(), project->ModuleFilePath(), project->GetTarget());
     int32_t fileIndex = 0;
     for (const auto& sourceFilePath : project->SourceFilePaths())
     {

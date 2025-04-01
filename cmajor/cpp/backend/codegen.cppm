@@ -122,6 +122,7 @@ public:
 private:
     cmajor::ir::Emitter* emitter;
     cmajor::ir::EmittingContext* emittingContext;
+    cmajor::symbols::Context* context;
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;

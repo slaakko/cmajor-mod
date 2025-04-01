@@ -9,6 +9,7 @@ module;
 module cmajor.symbols.enumerations;
 
 import soul.ast.span;
+import cmajor.symbols.context;
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.symbol.collector;
 import cmajor.symbols.symbol.writer;
@@ -49,7 +50,7 @@ void EnumTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
     underlyingType = typeSymbol;
 }
 
-std::string EnumTypeSymbol::Syntax() 
+std::string EnumTypeSymbol::Syntax(Context* context)
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
@@ -57,7 +58,7 @@ std::string EnumTypeSymbol::Syntax()
         syntax.append(1, ' ');
     }
     syntax.append("enum ");
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     syntax.append(1, ';');
     return syntax;
 }
@@ -75,7 +76,7 @@ void EnumTypeSymbol::CollectMembers(SymbolCollector* collector)
     TypeSymbol::Accept(collector);
 }
 
-void EnumTypeSymbol::Dump(util::CodeFormatter& formatter)
+void EnumTypeSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("full name: " + util::ToUtf8(FullNameWithSpecifiers()));
@@ -83,12 +84,12 @@ void EnumTypeSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("typeid: " + util::ToString(TypeId()));
     formatter.WriteLine("enumeration constants:");
     formatter.IncIndent();
-    SymbolCollector collector;
+    SymbolCollector collector(context);
     TypeSymbol::Accept(&collector);
     for (EnumConstantSymbol* enumConstant : collector.EnumerationConstants())
     {
         formatter.WriteLine();
-        enumConstant->Dump(formatter);
+        enumConstant->Dump(formatter, context);
     }
     formatter.DecIndent();
 }
@@ -163,9 +164,9 @@ void EnumTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     }
 }
 
-std::vector<EnumConstantSymbol*> EnumTypeSymbol::GetEnumConstants()
+std::vector<EnumConstantSymbol*> EnumTypeSymbol::GetEnumConstants(Context* context)
 {
-    SymbolCollector collector;
+    SymbolCollector collector(context);
     TypeSymbol::Accept(&collector);
     return collector.EnumerationConstants();
 }
@@ -185,18 +186,18 @@ std::u32string EnumTypeSymbol::Id() const
     return MangledName();
 }
 
-void* EnumTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
+void* EnumTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter, Context* context)
 {
-    uint64_t sizeInBits = SizeInBits(emitter);
-    uint32_t alignInBits = AlignmentInBits(emitter);
+    uint64_t sizeInBits = SizeInBits(emitter, context);
+    uint32_t alignInBits = AlignmentInBits(emitter, context);
     std::vector<void*> elements;
-    std::vector<EnumConstantSymbol*> enumConstants = GetEnumConstants();
+    std::vector<EnumConstantSymbol*> enumConstants = GetEnumConstants(context);
     for (EnumConstantSymbol* enumConstant : enumConstants)
     {
         int64_t value = 0;
         if (underlyingType->IsUnsignedType())
         {
-            Value* val = enumConstant->GetValue()->As(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"ulong"), false, nullptr, true);
+            Value* val = enumConstant->GetValue()->As(context->RootModule()->GetSymbolTable().GetTypeByName(U"ulong"), false, nullptr, true);
             if (val)
             {
                 ULongValue* ulongValue = static_cast<ULongValue*>(val);
@@ -205,7 +206,7 @@ void* EnumTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
         }
         else
         {
-            Value* val = enumConstant->GetValue()->As(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"long"), false, nullptr, true);
+            Value* val = enumConstant->GetValue()->As(context->RootModule()->GetSymbolTable().GetTypeByName(U"long"), false, nullptr, true);
             if (val)
             {
                 LongValue* longValue = static_cast<LongValue*>(val);
@@ -216,7 +217,7 @@ void* EnumTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     }
     soul::ast::FullSpan fullSpan = GetFullSpan();
     return emitter.CreateDITypeForEnumType(util::ToUtf8(Name()), util::ToUtf8(MangledName()), fullSpan, GetLineColLen(fullSpan),
-        elements, sizeInBits, alignInBits, underlyingType->GetDIType(emitter));
+        elements, sizeInBits, alignInBits, underlyingType->GetDIType(emitter, context));
 }
 
 void EnumTypeSymbol::Check()
@@ -246,7 +247,7 @@ void EnumConstantSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void EnumConstantSymbol::Dump(util::CodeFormatter& formatter)
+void EnumConstantSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("value: " + value->ToString());
@@ -271,15 +272,15 @@ EnumTypeDefaultConstructor::EnumTypeDefaultConstructor(const soul::ast::Span& sp
 {
 }
 
-EnumTypeDefaultConstructor::EnumTypeDefaultConstructor(EnumTypeSymbol* enumType_) :
+EnumTypeDefaultConstructor::EnumTypeDefaultConstructor(EnumTypeSymbol* enumType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeDefaultConstructor, enumType_->GetSpan(), U"enumTypeDefaultConstructor"), underlyingTypeDefaultConstructor(nullptr)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(enumType_->GetSpan(), U"this");
-    thisParam->SetType(enumType_->AddPointer());
-    AddMember(thisParam);
-    ComputeName();
+    thisParam->SetType(enumType_->AddPointer(context));
+    AddMember(thisParam, context);
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -314,10 +315,10 @@ void EnumTypeDefaultConstructor::EmplaceFunction(FunctionSymbol* functionSymbol,
     }
 }
 
-void EnumTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeDefaultConstructor, "underlying default constructor not set");
-    underlyingTypeDefaultConstructor->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeDefaultConstructor->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeDefaultConstructor::Check()
@@ -334,18 +335,18 @@ EnumTypeCopyConstructor::EnumTypeCopyConstructor(const soul::ast::Span& span_, c
 {
 }
 
-EnumTypeCopyConstructor::EnumTypeCopyConstructor(EnumTypeSymbol* enumType_) :
+EnumTypeCopyConstructor::EnumTypeCopyConstructor(EnumTypeSymbol* enumType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeCopyConstructor, enumType_->GetSpan(), U"enumTypeCopyConstructor"), underlyingTypeCopyConstructor(nullptr)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(enumType_->GetSpan(), U"this");
-    thisParam->SetType(enumType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(enumType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(enumType_->GetSpan(), U"that");
     thatParam->SetType(enumType_);
-    AddMember(thatParam);
-    ComputeName();
+    AddMember(thatParam, context);
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -380,10 +381,10 @@ void EnumTypeCopyConstructor::EmplaceFunction(FunctionSymbol* functionSymbol, in
     }
 }
 
-void EnumTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeCopyConstructor, "underlying copy constructor not set");
-    underlyingTypeCopyConstructor->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeCopyConstructor->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeCopyConstructor::Check()
@@ -400,18 +401,18 @@ EnumTypeMoveConstructor::EnumTypeMoveConstructor(const soul::ast::Span& span_, c
 {
 }
 
-EnumTypeMoveConstructor::EnumTypeMoveConstructor(EnumTypeSymbol* enumType_) :
+EnumTypeMoveConstructor::EnumTypeMoveConstructor(EnumTypeSymbol* enumType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeMoveConstructor, enumType_->GetSpan(), U"enumTypeMoveConstructor"), underlyingTypeMoveConstructor(nullptr)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(enumType_->GetSpan(), U"this");
-    thisParam->SetType(enumType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(enumType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(enumType_->GetSpan(), U"that");
-    thatParam->SetType(enumType_->AddRvalueReference());
-    AddMember(thatParam);
-    ComputeName();
+    thatParam->SetType(enumType_->AddRvalueReference(context));
+    AddMember(thatParam, context);
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -446,10 +447,10 @@ void EnumTypeMoveConstructor::EmplaceFunction(FunctionSymbol* functionSymbol, in
     }
 }
 
-void EnumTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeMoveConstructor, "underlying move constructor not set");
-    underlyingTypeMoveConstructor->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeMoveConstructor->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeMoveConstructor::Check()
@@ -466,19 +467,19 @@ EnumTypeCopyAssignment::EnumTypeCopyAssignment(const soul::ast::Span& span_, con
 {
 }
 
-EnumTypeCopyAssignment::EnumTypeCopyAssignment(EnumTypeSymbol* enumType_, TypeSymbol* voidType_) :
+EnumTypeCopyAssignment::EnumTypeCopyAssignment(EnumTypeSymbol* enumType_, TypeSymbol* voidType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeCopyAssignment, enumType_->GetSpan(), U"enumTypeCopyAssignment"), underlyingTypeCopyAssignment(nullptr)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(enumType_->GetSpan(), U"this");
-    thisParam->SetType(enumType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(enumType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(enumType_->GetSpan(), U"that");
     thatParam->SetType(enumType_);
-    AddMember(thatParam);
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -513,10 +514,10 @@ void EnumTypeCopyAssignment::EmplaceFunction(FunctionSymbol* functionSymbol, int
     }
 }
 
-void EnumTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeCopyAssignment, "underlying copy assignment not set");
-    underlyingTypeCopyAssignment->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeCopyAssignment->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeCopyAssignment::Check()
@@ -533,19 +534,19 @@ EnumTypeMoveAssignment::EnumTypeMoveAssignment(const soul::ast::Span& span_, con
 {
 }
 
-EnumTypeMoveAssignment::EnumTypeMoveAssignment(EnumTypeSymbol* enumType_, TypeSymbol* voidType_) :
+EnumTypeMoveAssignment::EnumTypeMoveAssignment(EnumTypeSymbol* enumType_, TypeSymbol* voidType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeMoveAssignment, enumType_->GetSpan(), U"enumTypeMoveAssignment"), underlyingTypeMoveAssignment(nullptr)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* thisParam = new ParameterSymbol(enumType_->GetSpan(), U"this");
-    thisParam->SetType(enumType_->AddPointer());
-    AddMember(thisParam);
+    thisParam->SetType(enumType_->AddPointer(context));
+    AddMember(thisParam, context);
     ParameterSymbol* thatParam = new ParameterSymbol(enumType_->GetSpan(), U"that");
-    thatParam->SetType(enumType_->AddRvalueReference());
-    AddMember(thatParam);
+    thatParam->SetType(enumType_->AddRvalueReference(context));
+    AddMember(thatParam, context);
     SetReturnType(voidType_);
-    ComputeName();
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -580,10 +581,10 @@ void EnumTypeMoveAssignment::EmplaceFunction(FunctionSymbol* functionSymbol, int
     }
 }
 
-void EnumTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeMoveAssignment, "underlying move assignment not set");
-    underlyingTypeMoveAssignment->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeMoveAssignment->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeMoveAssignment::Check()
@@ -600,16 +601,16 @@ EnumTypeReturn::EnumTypeReturn(const soul::ast::Span& span_, const std::u32strin
 {
 }
 
-EnumTypeReturn::EnumTypeReturn(EnumTypeSymbol* enumType_) :
+EnumTypeReturn::EnumTypeReturn(EnumTypeSymbol* enumType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeReturn, enumType_->GetSpan(), U"enumTypeReturn"), underlyingTypeReturn(nullptr)
 {
     SetGroupName(U"@return");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* valueParam = new ParameterSymbol(enumType_->GetSpan(), U"value");
     valueParam->SetType(enumType_);
-    AddMember(valueParam);
+    AddMember(valueParam, context);
     SetReturnType(enumType_);
-    ComputeName();
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -644,10 +645,10 @@ void EnumTypeReturn::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
     }
 }
 
-void EnumTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeReturn, "underlying return not set");
-    underlyingTypeReturn->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeReturn->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeReturn::Check()
@@ -664,19 +665,19 @@ EnumTypeEqualityOp::EnumTypeEqualityOp(const soul::ast::Span& span_, const std::
 {
 }
 
-EnumTypeEqualityOp::EnumTypeEqualityOp(EnumTypeSymbol* enumType_, TypeSymbol* boolType_) :
+EnumTypeEqualityOp::EnumTypeEqualityOp(EnumTypeSymbol* enumType_, TypeSymbol* boolType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeEquality, enumType_->GetSpan(), U"enumTypeEquality"), underlyingTypeEquality(nullptr)
 {
     SetGroupName(U"operator==");
     SetAccess(SymbolAccess::public_);
     ParameterSymbol* leftParam = new ParameterSymbol(enumType_->GetSpan(), U"left");
     leftParam->SetType(enumType_);
-    AddMember(leftParam);
+    AddMember(leftParam, context);
     ParameterSymbol* rightParam = new ParameterSymbol(enumType_->GetSpan(), U"right");
     rightParam->SetType(enumType_);
-    AddMember(rightParam);
+    AddMember(rightParam, context);
     SetReturnType(boolType_);
-    ComputeName();
+    ComputeName(context);
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
     Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
@@ -711,10 +712,10 @@ void EnumTypeEqualityOp::EmplaceFunction(FunctionSymbol* functionSymbol, int ind
     }
 }
 
-void EnumTypeEqualityOp::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeEqualityOp::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     Assert(underlyingTypeEquality, "underlying equality not set");
-    underlyingTypeEquality->GenerateCall(emitter, genObjects, flags);
+    underlyingTypeEquality->GenerateCall(emitter, genObjects, flags, context);
 }
 
 void EnumTypeEqualityOp::Check()
@@ -732,13 +733,14 @@ EnumTypeToUnderlyingTypeConversion::EnumTypeToUnderlyingTypeConversion(const sou
     SetGroupName(U"@conversion");
 }
 
-EnumTypeToUnderlyingTypeConversion::EnumTypeToUnderlyingTypeConversion(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_) :
+EnumTypeToUnderlyingTypeConversion::EnumTypeToUnderlyingTypeConversion(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* sourceType_, 
+    TypeSymbol* targetType_, Context* context) :
     FunctionSymbol(SymbolType::enumTypeToUnderlyingType, span_, name_), sourceType(sourceType_), targetType(targetType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
-    SetConversionSourceType(sourceType->PlainType());
-    SetConversionTargetType(targetType->PlainType());
+    SetConversionSourceType(sourceType->PlainType(context));
+    SetConversionTargetType(targetType->PlainType(context));
 }
 
 void EnumTypeToUnderlyingTypeConversion::Write(SymbolWriter& writer)
@@ -775,7 +777,8 @@ void EnumTypeToUnderlyingTypeConversion::EmplaceType(TypeSymbol* typeSymbol, int
     }
 }
 
-void EnumTypeToUnderlyingTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void EnumTypeToUnderlyingTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
 }
 
@@ -798,13 +801,14 @@ UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(const sou
     SetGroupName(U"@conversion");
 }
 
-UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_)
+UnderlyingTypeToEnumTypeConversion::UnderlyingTypeToEnumTypeConversion(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* sourceType_, 
+    TypeSymbol* targetType_, Context* context)
     : FunctionSymbol(SymbolType::underlyingToEnumType, span_, name_), sourceType(sourceType_), targetType(targetType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
-    SetConversionSourceType(sourceType->PlainType());
-    SetConversionTargetType(targetType->PlainType());
+    SetConversionSourceType(sourceType->PlainType(context));
+    SetConversionTargetType(targetType->PlainType(context));
 }
 
 void UnderlyingTypeToEnumTypeConversion::Write(SymbolWriter& writer)
@@ -841,7 +845,8 @@ void UnderlyingTypeToEnumTypeConversion::EmplaceType(TypeSymbol* typeSymbol, int
     }
 }
 
-void UnderlyingTypeToEnumTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void UnderlyingTypeToEnumTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    Context* context)
 {
 }
 

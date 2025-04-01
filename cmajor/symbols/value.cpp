@@ -264,7 +264,7 @@ BoolValue::BoolValue(const soul::ast::Span& span_, bool value_) : Value(span_, V
 {
 }
 
-void* BoolValue::IrValue(cmajor::ir::Emitter& emitter)
+void* BoolValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForBool(value);
 }
@@ -605,7 +605,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* BoolValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* BoolValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"bool");
 }
@@ -614,7 +614,7 @@ SByteValue::SByteValue(const soul::ast::Span& span_, int8_t value_) : Value(span
 {
 }
 
-void* SByteValue::IrValue(cmajor::ir::Emitter& emitter)
+void* SByteValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForSByte(value);
 }
@@ -860,7 +860,7 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
 }
 
-TypeSymbol* SByteValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* SByteValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"sbyte");
 }
@@ -869,7 +869,7 @@ ByteValue::ByteValue(const soul::ast::Span& span_, uint8_t value_) : Value(span_
 {
 }
 
-void* ByteValue::IrValue(cmajor::ir::Emitter& emitter)
+void* ByteValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForByte(value);
 }
@@ -1058,7 +1058,7 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* ByteValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* ByteValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"byte");
 }
@@ -1067,7 +1067,7 @@ ShortValue::ShortValue(const soul::ast::Span& span_, int16_t value_) : Value(spa
 {
 }
 
-void* ShortValue::IrValue(cmajor::ir::Emitter& emitter)
+void* ShortValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForShort(value);
 }
@@ -1332,7 +1332,7 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
 }
 
-TypeSymbol* ShortValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* ShortValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"short");
 }
@@ -1341,7 +1341,7 @@ UShortValue::UShortValue(const soul::ast::Span& span_, uint16_t value_) : Value(
 {
 }
 
-void* UShortValue::IrValue(cmajor::ir::Emitter& emitter)
+void* UShortValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForUShort(value);
 }
@@ -1568,7 +1568,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* nod
     }
 }
 
-TypeSymbol* UShortValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* UShortValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"ushort");
 }
@@ -1577,7 +1577,7 @@ IntValue::IntValue(const soul::ast::Span& span_, int32_t value_) : Value(span_, 
 {
 }
 
-void* IntValue::IrValue(cmajor::ir::Emitter& emitter)
+void* IntValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForInt(value);
 }
@@ -1861,7 +1861,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, 
     }
 }
 
-TypeSymbol* IntValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* IntValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"int");
 }
@@ -1870,7 +1870,7 @@ UIntValue::UIntValue(const soul::ast::Span& span_, uint32_t value_) : Value(span
 {
 }
 
-void* UIntValue::IrValue(cmajor::ir::Emitter& emitter)
+void* UIntValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForUInt(value);
 }
@@ -2135,7 +2135,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* UIntValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* UIntValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"uint");
 }
@@ -2144,7 +2144,7 @@ LongValue::LongValue(const soul::ast::Span& span_, int64_t value_) : Value(span_
 {
 }
 
-void* LongValue::IrValue(cmajor::ir::Emitter& emitter)
+void* LongValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForLong(value);
 }
@@ -2447,7 +2447,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* LongValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* LongValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"long");
 }
@@ -2456,7 +2456,7 @@ ULongValue::ULongValue(const soul::ast::Span& span_, uint64_t value_) : Value(sp
 {
 }
 
-void* ULongValue::IrValue(cmajor::ir::Emitter& emitter)
+void* ULongValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForULong(value);
 }
@@ -2759,7 +2759,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
 }
 
-TypeSymbol* ULongValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* ULongValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"ulong");
 }
@@ -2768,7 +2768,7 @@ FloatValue::FloatValue(const soul::ast::Span& span_, float value_) : Value(span_
 {
 }
 
-void* FloatValue::IrValue(cmajor::ir::Emitter& emitter)
+void* FloatValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForFloat(value);
 }
@@ -3090,7 +3090,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
 }
 
-TypeSymbol* FloatValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* FloatValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"float");
 }
@@ -3099,7 +3099,7 @@ DoubleValue::DoubleValue(const soul::ast::Span& span_, double value_) : Value(sp
 {
 }
 
-void* DoubleValue::IrValue(cmajor::ir::Emitter& emitter)
+void* DoubleValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForDouble(value);
 }
@@ -3440,7 +3440,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* nod
     }
 }
 
-TypeSymbol* DoubleValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* DoubleValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"double");
 }
@@ -3449,7 +3449,7 @@ CharValue::CharValue(const soul::ast::Span& span_, unsigned char value_) : Value
 {
 }
 
-void* CharValue::IrValue(cmajor::ir::Emitter& emitter)
+void* CharValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForChar(static_cast<uint8_t>(value));
 }
@@ -3752,7 +3752,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* CharValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* CharValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"char");
 }
@@ -3761,7 +3761,7 @@ WCharValue::WCharValue(const soul::ast::Span& span_, char16_t value_) : Value(sp
 {
 }
 
-void* WCharValue::IrValue(cmajor::ir::Emitter& emitter)
+void* WCharValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForWChar(static_cast<uint16_t>(value));
 }
@@ -4083,7 +4083,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
 }
 
-TypeSymbol* WCharValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* WCharValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"wchar");
 }
@@ -4092,7 +4092,7 @@ UCharValue::UCharValue(const soul::ast::Span& span_, char32_t value_) : Value(sp
 {
 }
 
-void* UCharValue::IrValue(cmajor::ir::Emitter& emitter)
+void* UCharValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     return emitter.CreateIrValueForUChar(static_cast<uint32_t>(value));
 }
@@ -4433,7 +4433,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
 }
 
-TypeSymbol* UCharValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* UCharValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return symbolTable->GetTypeByName(U"uchar");
 }
@@ -4442,7 +4442,7 @@ StringValue::StringValue(const soul::ast::Span& span_, int stringId_, const std:
 {
 }
 
-void* StringValue::IrValue(cmajor::ir::Emitter& emitter)
+void* StringValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (stringId == -1)
     {
@@ -4488,9 +4488,9 @@ Value* StringValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* nod
     }
 }
 
-TypeSymbol* StringValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* StringValue::GetType(SymbolTable* symbolTable, Context* context)
 {
-    return symbolTable->GetTypeByName(U"char")->AddConst()->AddPointer();
+    return symbolTable->GetTypeByName(U"char")->AddConst(context)->AddPointer(context);
 }
 
 WStringValue::WStringValue(const soul::ast::Span& span_, int stringId_, const std::u16string& str_) : 
@@ -4498,7 +4498,7 @@ WStringValue::WStringValue(const soul::ast::Span& span_, int stringId_, const st
 {
 }
 
-void* WStringValue::IrValue(cmajor::ir::Emitter& emitter)
+void* WStringValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (stringId == -1)
     {
@@ -4544,9 +4544,9 @@ Value* WStringValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* no
     }
 }
 
-TypeSymbol* WStringValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* WStringValue::GetType(SymbolTable* symbolTable, Context* context)
 {
-    return symbolTable->GetTypeByName(U"wchar")->AddConst()->AddPointer();
+    return symbolTable->GetTypeByName(U"wchar")->AddConst(context)->AddPointer(context);
 }
 
 UStringValue::UStringValue(const soul::ast::Span& span_, int stringId_, const std::u32string& str_) : 
@@ -4554,7 +4554,7 @@ UStringValue::UStringValue(const soul::ast::Span& span_, int stringId_, const st
 {
 }
 
-void* UStringValue::IrValue(cmajor::ir::Emitter& emitter)
+void* UStringValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (stringId == -1)
     {
@@ -4600,18 +4600,18 @@ Value* UStringValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* no
     }
 }
 
-TypeSymbol* UStringValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* UStringValue::GetType(SymbolTable* symbolTable, Context* context)
 {
-    return symbolTable->GetTypeByName(U"uchar")->AddConst()->AddPointer();
+    return symbolTable->GetTypeByName(U"uchar")->AddConst(context)->AddPointer(context);
 }
 
 NullValue::NullValue(const soul::ast::Span& span_, TypeSymbol* nullPtrType_) : Value(span_, ValueType::nullValue), nullPtrType(nullPtrType_)
 {
 }
 
-void* NullValue::IrValue(cmajor::ir::Emitter& emitter)
+void* NullValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
-    return emitter.CreateDefaultIrValueForPtrType(nullPtrType->IrType(emitter));
+    return emitter.CreateDefaultIrValueForPtrType(nullPtrType->IrType(emitter, context));
 }
 
 void NullValue::Write(util::BinaryStreamWriter& writer)
@@ -4672,7 +4672,7 @@ Value* NullValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* NullValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* NullValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return nullPtrType;
 }
@@ -4681,7 +4681,7 @@ PointerValue::PointerValue(const soul::ast::Span& span_, TypeSymbol* type_, cons
 {
 }
 
-void* PointerValue::IrValue(cmajor::ir::Emitter& emitter)
+void* PointerValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (ptr)
     {
@@ -4689,7 +4689,7 @@ void* PointerValue::IrValue(cmajor::ir::Emitter& emitter)
     }
     else
     {
-        return emitter.CreateDefaultIrValueForPtrType(type->IrType(emitter));
+        return emitter.CreateDefaultIrValueForPtrType(type->IrType(emitter, context));
     }
 }
 
@@ -4748,19 +4748,19 @@ Value* PointerValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* no
     }
 }
 
-TypeSymbol* PointerValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* PointerValue::GetType(SymbolTable* symbolTable, Context* context)
 {
     return type;
 }
 
-TypeSymbol* PointerValue::PointeeType() const
+TypeSymbol* PointerValue::PointeeType(Context* context) const
 {
-    return type->RemovePointer();
+    return type->RemovePointer(context);
 }
 
-Value* PointerValue::Add(int64_t offset) const
+Value* PointerValue::Add(int64_t offset, Context* context) const
 {
-    ValueType pointeeValueType = PointeeType()->GetValueType();
+    ValueType pointeeValueType = PointeeType(context)->GetValueType();
     switch (pointeeValueType)
     {
     case ValueType::boolValue: return new PointerValue(GetSpan(), type, static_cast<const BoolValue::OperandType*>(ptr) + offset);
@@ -4782,9 +4782,9 @@ Value* PointerValue::Add(int64_t offset) const
     return nullptr;
 }
 
-Value* PointerValue::Sub(int64_t offset) const
+Value* PointerValue::Sub(int64_t offset, Context* context) const
 {
-    ValueType pointeeValueType = PointeeType()->GetValueType();
+    ValueType pointeeValueType = PointeeType(context)->GetValueType();
     switch (pointeeValueType)
     {
     case ValueType::boolValue: return new PointerValue(GetSpan(), type, static_cast<const BoolValue::OperandType*>(ptr) - offset);
@@ -4806,9 +4806,9 @@ Value* PointerValue::Sub(int64_t offset) const
     return nullptr;
 }
 
-Value* PointerValue::Sub(const void* thatPtr) const
+Value* PointerValue::Sub(const void* thatPtr, Context* context) const
 {
-    ValueType pointeeValueType = PointeeType()->GetValueType();
+    ValueType pointeeValueType = PointeeType(context)->GetValueType();
     switch (pointeeValueType)
     {
     case ValueType::boolValue: return new LongValue(GetSpan(), static_cast<const BoolValue::OperandType*>(ptr) - static_cast<const BoolValue::OperandType*>(thatPtr));
@@ -4829,9 +4829,9 @@ Value* PointerValue::Sub(const void* thatPtr) const
     return nullptr;
 }
 
-Value* PointerValue::Deref() const
+Value* PointerValue::Deref(Context* context) const
 {
-    ValueType pointeeValueType = PointeeType()->GetValueType();
+    ValueType pointeeValueType = PointeeType(context)->GetValueType();
     switch (pointeeValueType)
     {
     case ValueType::boolValue: return new BoolValue(GetSpan(), *static_cast<const BoolValue::OperandType*>(ptr));
@@ -4868,15 +4868,15 @@ Value* ArrayValue::Clone() const
     return new ArrayValue(GetSpan(), type, std::move(clonedElementValues));
 }
 
-void* ArrayValue::IrValue(cmajor::ir::Emitter& emitter)
+void* ArrayValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     std::vector<void*> elementConstants;
     int64_t n = elementValues.size();
     for (int64_t i = 0; i < n; ++i)
     {
-        elementConstants.push_back(elementValues[i]->IrValue(emitter));
+        elementConstants.push_back(elementValues[i]->IrValue(emitter, context));
     }
-    return emitter.CreateIrValueForConstantArray(type->IrType(emitter), elementConstants, std::string());
+    return emitter.CreateIrValueForConstantArray(type->IrType(emitter, context), elementConstants, std::string());
 }
 
 void ArrayValue::Write(util::BinaryStreamWriter& writer)
@@ -4942,7 +4942,7 @@ Value* StructuredValue::Clone() const
     return new StructuredValue(GetSpan(), type, std::move(clonedMemberValues));
 }
 
-void* StructuredValue::IrValue(cmajor::ir::Emitter& emitter)
+void* StructuredValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     std::vector<void*> memberConstants;
     int64_t n = memberValues.size();
@@ -4954,17 +4954,17 @@ void* StructuredValue::IrValue(cmajor::ir::Emitter& emitter)
         for (int64_t i = 0; i < n; ++i)
         {
             TypeSymbol* type = objectLayout[i];
-            memberConstants.push_back(type->CreateDefaultIrValue(emitter));
+            memberConstants.push_back(type->CreateDefaultIrValue(emitter, context));
         }
     }
     else
     {
         for (int64_t i = 0; i < n; ++i)
         {
-            memberConstants.push_back(memberValues[i]->IrValue(emitter));
+            memberConstants.push_back(memberValues[i]->IrValue(emitter, context));
         }
     }
-    return emitter.CreateIrValueForConstantStruct(type->IrType(emitter), memberConstants);
+    return emitter.CreateIrValueForConstantStruct(type->IrType(emitter, context), memberConstants);
 }
 
 void StructuredValue::Write(util::BinaryStreamWriter& writer)
@@ -5013,7 +5013,7 @@ UuidValue::UuidValue(const soul::ast::Span& span_, int uuidId_) : Value(span_, V
 {
 }
 
-void* UuidValue::IrValue(cmajor::ir::Emitter& emitter)
+void* UuidValue::IrValue(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* uuidConstant = emitter.GetGlobalUuidConstant(uuidId);
     void* type = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForByte(), 16);
@@ -5057,9 +5057,9 @@ Value* UuidValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node,
     }
 }
 
-TypeSymbol* UuidValue::GetType(SymbolTable* symbolTable)
+TypeSymbol* UuidValue::GetType(SymbolTable* symbolTable, Context* context)
 {
-    return symbolTable->GetTypeByName(U"void")->AddPointer();
+    return symbolTable->GetTypeByName(U"void")->AddPointer(context);
 }
 
 bool operator==(IntegralValue left, IntegralValue right)

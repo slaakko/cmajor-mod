@@ -57,7 +57,7 @@ XmlAttributeProcessor::XmlAttributeProcessor() : AttributeProcessor(U"xml")
     //reservedMemberVariableNames.insert(U"isOwned");
 }
 
-void XmlAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol)
+void XmlAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, cmajor::symbols::Context* context)
 {
     switch (symbol->GetSymbolType())
     {
@@ -82,7 +82,7 @@ void XmlAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cma
             break;
         }
     }
-    AttributeProcessor::TypeCheck(attribute, symbol);
+    AttributeProcessor::TypeCheck(attribute, symbol, context);
 }
 
 void XmlAttributeProcessor::TypeCheckClass(cmajor::symbols::ClassTypeSymbol* classType)
@@ -304,7 +304,7 @@ void XmlAttributeProcessor::GenerateMemberVariableSymbols(cmajor::ast::Attribute
     classIdSymbol->SetStatic();
     classIdSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     classIdSymbol->SetType(symbolTable.GetTypeByName(U"int"));
-    classType->AddMember(classIdSymbol);
+    classType->AddMember(classIdSymbol, boundCompileUnit.GetContext());
 }
 
 void XmlAttributeProcessor::GenerateStaticClassNameSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
@@ -312,6 +312,7 @@ void XmlAttributeProcessor::GenerateStaticClassNameSymbol(cmajor::ast::Attribute
 {
     try
     {
+        cmajor::symbols::Context* context = boundCompileUnit.GetContext();
         cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
         cmajor::symbols::MemberFunctionSymbol* staticClassNameSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"StaticClassName");
         staticClassNameSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -319,16 +320,16 @@ void XmlAttributeProcessor::GenerateStaticClassNameSymbol(cmajor::ast::Attribute
         staticClassNameSymbol->SetStatic();
         staticClassNameSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
 
-        cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(staticClassNameSymbol);
+        context->RootModule()->GetSymbolTable().SetFunctionIdFor(staticClassNameSymbol);
         cmajor::symbols::TypeSymbol* stringTypeSymbol = symbolTable.GetTypeByName(U"String<char>");
         staticClassNameSymbol->SetReturnType(stringTypeSymbol);
 
         cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
         returnParam->SetParent(staticClassNameSymbol);
-        returnParam->SetType(stringTypeSymbol->AddPointer());
+        returnParam->SetType(stringTypeSymbol->AddPointer(context));
         staticClassNameSymbol->SetReturnParam(returnParam);
-        classTypeSymbol->AddMember(staticClassNameSymbol);
-        staticClassNameSymbol->ComputeName();
+        classTypeSymbol->AddMember(staticClassNameSymbol, context);
+        staticClassNameSymbol->ComputeName(context);
 
         auto& m = functionSymbolMap[classTypeSymbol];
         m.push_back(std::make_pair(staticClassNameSymbol, staticClassNameId));
@@ -372,6 +373,7 @@ void XmlAttributeProcessor::GenerateStaticClassNameImplementation(cmajor::ast::A
 void XmlAttributeProcessor::GenerateCreateFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::MemberFunctionSymbol* createSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"Create");
     createSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -379,13 +381,13 @@ void XmlAttributeProcessor::GenerateCreateFunctionSymbol(cmajor::ast::AttributeN
     createSymbol->SetStatic();
     createSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
 
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(createSymbol);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(createSymbol);
 
-    cmajor::symbols::TypeSymbol* serializablePtrTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializable")->AddPointer();
+    cmajor::symbols::TypeSymbol* serializablePtrTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializable")->AddPointer(context);
     createSymbol->SetReturnType(serializablePtrTypeSymbol);
 
-    classTypeSymbol->AddMember(createSymbol);
-    createSymbol->ComputeName();
+    classTypeSymbol->AddMember(createSymbol, context);
+    createSymbol->ComputeName(context);
 
     auto& m = functionSymbolMap[classTypeSymbol];
     m.push_back(std::make_pair(createSymbol, createId));
@@ -424,6 +426,7 @@ void XmlAttributeProcessor::GenerateCreateImplementation(cmajor::ast::AttributeN
 void XmlAttributeProcessor::GenerateRegisterFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::MemberFunctionSymbol* registerSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"Register");
     registerSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -431,7 +434,7 @@ void XmlAttributeProcessor::GenerateRegisterFunctionSymbol(cmajor::ast::Attribut
     registerSymbol->SetStatic();
     registerSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
 
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(registerSymbol);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(registerSymbol);
 
     cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
         new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
@@ -443,11 +446,11 @@ void XmlAttributeProcessor::GenerateRegisterFunctionSymbol(cmajor::ast::Attribut
 
     cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
     returnParam->SetParent(registerSymbol);
-    returnParam->SetType(returnType->AddPointer());
+    returnParam->SetType(returnType->AddPointer(context));
     registerSymbol->SetReturnParam(returnParam);
 
-    classTypeSymbol->AddMember(registerSymbol);
-    registerSymbol->ComputeName();
+    classTypeSymbol->AddMember(registerSymbol, context);
+    registerSymbol->ComputeName(context);
 
     auto& m = functionSymbolMap[classTypeSymbol];
     m.push_back(std::make_pair(registerSymbol, registerId));
@@ -506,6 +509,7 @@ bool XmlAttributeProcessor::HasXmlBaseClass(cmajor::symbols::ClassTypeSymbol* cl
 void XmlAttributeProcessor::GenerateClassIdFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::MemberFunctionSymbol* classIdSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ClassId");
     classIdSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -523,15 +527,15 @@ void XmlAttributeProcessor::GenerateClassIdFunctionSymbol(cmajor::ast::Attribute
     }
 
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    classIdSymbol->AddMember(thisParam);
+    thisParam->SetType(classTypeSymbol->AddPointer(context));
+    classIdSymbol->AddMember(thisParam, context);
 
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(classIdSymbol);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(classIdSymbol);
 
     classIdSymbol->SetReturnType(symbolTable.GetTypeByName(U"int"));
 
-    classTypeSymbol->AddMember(classIdSymbol);
-    classIdSymbol->ComputeName();
+    classTypeSymbol->AddMember(classIdSymbol, context);
+    classIdSymbol->ComputeName(context);
 
     auto& m = functionSymbolMap[classTypeSymbol];
     m.push_back(std::make_pair(classIdSymbol, classIdId));
@@ -569,6 +573,7 @@ void XmlAttributeProcessor::GenerateClassIdImplementation(cmajor::ast::Attribute
 void XmlAttributeProcessor::GenerateSetObjectXmlAttributesSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::MemberFunctionSymbol* setObjectXmlAttributesSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"SetObjectXmlAttributes");
     setObjectXmlAttributesSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -583,15 +588,15 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesSymbol(cmajor::ast::At
         setObjectXmlAttributesSymbol->SetOverride();
     }
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    setObjectXmlAttributesSymbol->AddMember(thisParam);
+    thisParam->SetType(classTypeSymbol->AddPointer(context));
+    setObjectXmlAttributesSymbol->AddMember(thisParam, context);
 
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(setObjectXmlAttributesSymbol);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(setObjectXmlAttributesSymbol);
 
     cmajor::symbols::TypeSymbol* xmlElementTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Element");
     cmajor::symbols::ParameterSymbol* elementParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"element");
-    elementParam->SetType(xmlElementTypeSymbol->AddPointer());
-    setObjectXmlAttributesSymbol->AddMember(elementParam);
+    elementParam->SetType(xmlElementTypeSymbol->AddPointer(context));
+    setObjectXmlAttributesSymbol->AddMember(elementParam, context);
 
     cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
         new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
@@ -603,11 +608,11 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesSymbol(cmajor::ast::At
 
     cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
     returnParam->SetParent(setObjectXmlAttributesSymbol);
-    returnParam->SetType(returnType->AddPointer());
+    returnParam->SetType(returnType->AddPointer(context));
     setObjectXmlAttributesSymbol->SetReturnParam(returnParam);
 
-    classTypeSymbol->AddMember(setObjectXmlAttributesSymbol);
-    setObjectXmlAttributesSymbol->ComputeName();
+    classTypeSymbol->AddMember(setObjectXmlAttributesSymbol, context);
+    setObjectXmlAttributesSymbol->ComputeName(context);
 
     auto& m = functionSymbolMap[classTypeSymbol];
     m.push_back(std::make_pair(setObjectXmlAttributesSymbol, setObjectXmlAttributesId));
@@ -714,6 +719,7 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesImplementation(cmajor:
 void XmlAttributeProcessor::GenerateToXmlSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::MemberFunctionSymbol* toXmlSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ToXml");
     toXmlSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -728,18 +734,18 @@ void XmlAttributeProcessor::GenerateToXmlSymbol(cmajor::ast::AttributeNode* attr
         toXmlSymbol->SetOverride();
     }
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    toXmlSymbol->AddMember(thisParam);
+    thisParam->SetType(classTypeSymbol->AddPointer(context));
+    toXmlSymbol->AddMember(thisParam, context);
 
     cmajor::symbols::ParameterSymbol* elementNameParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"elementName");
-    elementNameParam->SetType(symbolTable.GetTypeByName(U"String<char>")->AddConst()->AddLvalueReference());
-    toXmlSymbol->AddMember(elementNameParam);
+    elementNameParam->SetType(symbolTable.GetTypeByName(U"String<char>")->AddConst(context)->AddLvalueReference(context));
+    toXmlSymbol->AddMember(elementNameParam, context);
 
     cmajor::symbols::ParameterSymbol* ctxParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"ctx");
-    ctxParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializationContext")->AddLvalueReference());
-    toXmlSymbol->AddMember(ctxParam);
+    ctxParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializationContext")->AddLvalueReference(context));
+    toXmlSymbol->AddMember(ctxParam, context);
 
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(toXmlSymbol);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(toXmlSymbol);
 
     cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
         new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
@@ -751,11 +757,11 @@ void XmlAttributeProcessor::GenerateToXmlSymbol(cmajor::ast::AttributeNode* attr
 
     cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
     returnParam->SetParent(toXmlSymbol);
-    returnParam->SetType(returnType->AddPointer());
+    returnParam->SetType(returnType->AddPointer(context));
     toXmlSymbol->SetReturnParam(returnParam);
 
-    classTypeSymbol->AddMember(toXmlSymbol);
-    toXmlSymbol->ComputeName();
+    classTypeSymbol->AddMember(toXmlSymbol, context);
+    toXmlSymbol->ComputeName(context);
 
     auto& m = functionSymbolMap[classTypeSymbol];
     m.push_back(std::make_pair(toXmlSymbol, toXmlId));
@@ -955,6 +961,7 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
 void XmlAttributeProcessor::GenerateFromXmlSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
+    cmajor::symbols::Context* context = boundCompileUnit.GetContext();
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::MemberFunctionSymbol* fromXmlSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"FromXml");
     fromXmlSymbol->SetModule(&boundCompileUnit.GetModule());
@@ -969,18 +976,18 @@ void XmlAttributeProcessor::GenerateFromXmlSymbol(cmajor::ast::AttributeNode* at
         fromXmlSymbol->SetOverride();
     }
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    fromXmlSymbol->AddMember(thisParam);
+    thisParam->SetType(classTypeSymbol->AddPointer(context));
+    fromXmlSymbol->AddMember(thisParam, context);
 
     cmajor::symbols::ParameterSymbol* elementParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"element");
-    elementParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Element")->AddPointer());
-    fromXmlSymbol->AddMember(elementParam);
+    elementParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Element")->AddPointer(context));
+    fromXmlSymbol->AddMember(elementParam, context);
 
     cmajor::symbols::ParameterSymbol* ctxParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"ctx");
-    ctxParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializationContext")->AddLvalueReference());
-    fromXmlSymbol->AddMember(ctxParam);
+    ctxParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializationContext")->AddLvalueReference(context));
+    fromXmlSymbol->AddMember(ctxParam, context);
 
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(fromXmlSymbol);
+    context->RootModule()->GetSymbolTable().SetFunctionIdFor(fromXmlSymbol);
 
     cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
         new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
@@ -992,11 +999,11 @@ void XmlAttributeProcessor::GenerateFromXmlSymbol(cmajor::ast::AttributeNode* at
 
     cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
     returnParam->SetParent(fromXmlSymbol);
-    returnParam->SetType(returnType->AddPointer());
+    returnParam->SetType(returnType->AddPointer(context));
     fromXmlSymbol->SetReturnParam(returnParam);
 
-    classTypeSymbol->AddMember(fromXmlSymbol);
-    fromXmlSymbol->ComputeName();
+    classTypeSymbol->AddMember(fromXmlSymbol, context);
+    fromXmlSymbol->ComputeName(context);
 
     auto& m = functionSymbolMap[classTypeSymbol];
     m.push_back(std::make_pair(fromXmlSymbol, fromXmlId));
@@ -1193,7 +1200,7 @@ void XmlAttributeProcessor::CompileMemberFunction(cmajor::symbols::MemberFunctio
 {
     cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
     symbolTable.BeginContainer(memberFunctionSymbol);
-    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, statementBinder->GetBoundCompileUnit().GetContext());
     compoundStatementNode.Accept(symbolCreatorVisitor);
     symbolTable.EndContainer();
     TypeBinder typeBinder(statementBinder->GetBoundCompileUnit());

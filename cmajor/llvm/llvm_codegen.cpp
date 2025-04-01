@@ -27,7 +27,8 @@ struct NativeModule
     void* module;
 };
 
-LLVMCodeGenerator::LLVMCodeGenerator(cmajor::ir::Emitter* emitter_) : symbolTable(nullptr), symbolsModule(nullptr), emitter(emitter_), module(nullptr), debugInfo(false),
+LLVMCodeGenerator::LLVMCodeGenerator(cmajor::ir::Emitter* emitter_) : symbolTable(nullptr), context(nullptr), symbolsModule(nullptr), emitter(emitter_), 
+    module(nullptr), debugInfo(false),
     compileUnit(nullptr), currentClass(nullptr), currentFunction(nullptr), classStack(), utf8stringMap(), utf16stringMap(), utf32stringMap(), uuidMap(),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), entryBasicBlock(nullptr),
     newCleanupNeeded(false), currentPad(nullptr), prevLineNumber(0), destructorCallGenerated(false), lastInstructionWasRet(false), basicBlockOpen(false),
@@ -40,6 +41,8 @@ LLVMCodeGenerator::LLVMCodeGenerator(cmajor::ir::Emitter* emitter_) : symbolTabl
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    context = boundCompileUnit.GetContext();
+    emitter->SetContext(context);
     fileIndex = boundCompileUnit.FileIndex();
     symbolTable = &boundCompileUnit.GetSymbolTable();
     symbolsModule = &boundCompileUnit.GetModule();
@@ -71,12 +74,12 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     cmajor::binder::ConstantArrayRepository& constantArrayRepository = boundCompileUnit.GetConstantArrayRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantArrayRepository.ConstantArrays())
     {
-        constantSymbol->ArrayIrObject(*emitter, true);
+        constantSymbol->ArrayIrObject(*emitter, true, context);
     }
     cmajor::binder::ConstantStructureRepository& constantStructureRepository = boundCompileUnit.GetConstantStructureRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantStructureRepository.ConstantStructures())
     {
-        constantSymbol->StructureIrObject(*emitter, true);
+        constantSymbol->StructureIrObject(*emitter, true, context);
     }
     int n = boundCompileUnit.BoundNodes().size();
     for (int i = 0; i < n; ++i)
@@ -167,15 +170,15 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
             void* baseClassDIType = nullptr;
             if (currentClass->GetClassTypeSymbol()->BaseClass())
             {
-                baseClassDIType = currentClass->GetClassTypeSymbol()->BaseClass()->GetDIType(*emitter);
+                baseClassDIType = currentClass->GetClassTypeSymbol()->BaseClass()->GetDIType(*emitter, context);
             }
             void* vtableHolderClassDIType = nullptr;
             if (currentClass->GetClassTypeSymbol()->IsPolymorphic() && currentClass->GetClassTypeSymbol()->VmtPtrHolderClass())
             {
-                vtableHolderClassDIType = currentClass->GetClassTypeSymbol()->VmtPtrHolderClass()->CreateDIForwardDeclaration(*emitter);
+                vtableHolderClassDIType = currentClass->GetClassTypeSymbol()->VmtPtrHolderClass()->CreateDIForwardDeclaration(*emitter, context);
                 emitter->MapFwdDeclaration(vtableHolderClassDIType, currentClass->GetClassTypeSymbol()->VmtPtrHolderClass()->TypeId());
             }
-            void* classIrType = currentClass->GetClassTypeSymbol()->IrType(*emitter);
+            void* classIrType = currentClass->GetClassTypeSymbol()->IrType(*emitter, context);
             soul::ast::FullSpan classFullSpan = currentClass->GetClassTypeSymbol()->GetFullSpan();
             soul::ast::LineColLen classLineColLen = cmajor::symbols::GetLineColLen(classFullSpan);
             if (currentClass->GetClassTypeSymbol()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
@@ -193,7 +196,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
             {
                 int memberVariableLayoutIndex = memberVariable->LayoutIndex();
                 uint64_t offsetInBits = emitter->GetOffsetInBits(classIrType, memberVariableLayoutIndex);
-                memberVariableElements.push_back(memberVariable->GetDIMemberType(*emitter, offsetInBits));
+                memberVariableElements.push_back(memberVariable->GetDIMemberType(*emitter, offsetInBits, context));
             }
             void* clsDIType = emitter->CreateDITypeForClassType(classIrType, memberVariableElements, classFullSpan, classLineColLen,
                 util::ToUtf8(currentClass->GetClassTypeSymbol()->Name()), vtableHolderClassDIType,
@@ -224,10 +227,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnum
     if (debugInfo)
     {
         cmajor::symbols::EnumTypeSymbol* enumTypeSymbol = boundEnumTypeDefinition.GetEnumTypeSymbol();
-        uint64_t sizeInBits = enumTypeSymbol->SizeInBits(*emitter);
-        uint32_t alignInBits = enumTypeSymbol->AlignmentInBits(*emitter);
+        uint64_t sizeInBits = enumTypeSymbol->SizeInBits(*emitter, context);
+        uint32_t alignInBits = enumTypeSymbol->AlignmentInBits(*emitter, context);
         std::vector<void*> elements;
-        std::vector<cmajor::symbols::EnumConstantSymbol*> enumConstants = enumTypeSymbol->GetEnumConstants();
+        std::vector<cmajor::symbols::EnumConstantSymbol*> enumConstants = enumTypeSymbol->GetEnumConstants(context);
         for (cmajor::symbols::EnumConstantSymbol* enumConstant : enumConstants)
         {
             int64_t value = 0;
@@ -254,7 +257,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnum
         soul::ast::FullSpan fullSpan = enumTypeSymbol->GetFullSpan();
         soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
         void* enumTypeDI = emitter->CreateDITypeForEnumType(util::ToUtf8(enumTypeSymbol->Name()), util::ToUtf8(enumTypeSymbol->MangledName()), 
-            fullSpan, lineColLen, elements, sizeInBits, alignInBits, enumTypeSymbol->UnderlyingType()->GetDIType(*emitter));
+            fullSpan, lineColLen, elements, sizeInBits, alignInBits, enumTypeSymbol->UnderlyingType()->GetDIType(*emitter, context));
         emitter->SetDITypeByTypeId(enumTypeSymbol->TypeId(), enumTypeDI, util::ToUtf8(enumTypeSymbol->FullName()));
     }
 }
@@ -279,7 +282,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
-    void* functionType = functionSymbol->IrType(*emitter);
+    void* functionType = functionSymbol->IrType(*emitter, context);
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
     bool setInline = false;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && functionSymbol->IsInline())
@@ -330,16 +333,16 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         std::vector<void*> elementTypes;
         if (functionSymbol->ReturnType())
         {
-            elementTypes.push_back(functionSymbol->ReturnType()->GetDIType(*emitter)); // 0'th entry is return type
+            elementTypes.push_back(functionSymbol->ReturnType()->GetDIType(*emitter, context)); // 0'th entry is return type
         }
         else
         {
-            elementTypes.push_back(symbolTable->GetTypeByName(U"void")->GetDIType(*emitter));
+            elementTypes.push_back(symbolTable->GetTypeByName(U"void")->GetDIType(*emitter, context));
         }
         for (cmajor::symbols::ParameterSymbol* parameter : functionSymbol->Parameters())
         {
             cmajor::symbols::TypeSymbol* parameterType = parameter->GetType();
-            elementTypes.push_back(parameterType->GetDIType(*emitter));
+            elementTypes.push_back(parameterType->GetDIType(*emitter, context));
         }
         void* subroutineType = emitter->CreateSubroutineType(elementTypes);
         void* subprogram = nullptr;
@@ -364,7 +367,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 cmajor::symbols::ClassTypeSymbol* cls = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
                 if (cls->IsPolymorphic() && cls->VmtPtrHolderClass())
                 {
-                    vtableHolder = cls->VmtPtrHolderClass()->GetDIType(*emitter);
+                    vtableHolder = cls->VmtPtrHolderClass()->GetDIType(*emitter, context);
                 }
             }
             unsigned flags = emitter->GetFunctionFlags(functionSymbol->IsStatic(), cmajor::symbols::AccessFlag(*emitter, functionSymbol->Access()), functionSymbol->IsExplicit());
@@ -400,19 +403,19 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             if (classTypeSymbol->GetCompileUnit() == compileUnit->GetCompileUnitNode() || 
                 classTypeSymbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
             {
-                classTypeSymbol->VmtObject(*emitter, true);
+                classTypeSymbol->VmtObject(*emitter, true, context);
             }
         }
         if (!emitter->IsStaticObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->StaticObject(*emitter, true);
+            classTypeSymbol->StaticObject(*emitter, true, context);
         }
     }
     int np = functionSymbol->Parameters().size();
     for (int i = 0; i < np; ++i)
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->Parameters()[i];
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
         if (debugInfo)
@@ -420,13 +423,13 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             soul::ast::FullSpan fullSpan = parameter->GetFullSpan();
             soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
             void* paramVar = emitter->CreateDIParameterVariable(util::ToUtf8(parameter->Name()), i + 1, fullSpan, lineColLen, 
-                parameter->GetType()->GetDIType(*emitter), allocaInst);
+                parameter->GetType()->GetDIType(*emitter, context), allocaInst);
         }
     }
     if (functionSymbol->ReturnParam())
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->ReturnParam();
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -434,7 +437,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     for (int i = 0; i < nlv; ++i)
     {
         cmajor::symbols::LocalVariableSymbol* localVariable = functionSymbol->LocalVariables()[i];
-        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(localVariable, allocaInst);
         lastAlloca = allocaInst;
         if (debugInfo && localVariable->GetSpan().IsValid())
@@ -442,7 +445,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             soul::ast::FullSpan fullSpan = localVariable->GetFullSpan();
             soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
             void* localVar = emitter->CreateDIAutoVariable(util::ToUtf8(localVariable->Name()), fullSpan, lineColLen,
-                localVariable->GetType()->GetDIType(*emitter), allocaInst);
+                localVariable->GetType()->GetDIType(*emitter, context), allocaInst);
         }
     }
     for (int i = 0; i < np; ++i)
@@ -457,10 +460,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             {
                 copyConstructor = compileUnit->GetCopyConstructorFor(classType->TypeId());
             }
-            void* copyCtorType = copyConstructor->IrType(*emitter);
+            void* copyCtorType = copyConstructor->IrType(*emitter, context);
             void* callee = emitter->GetOrInsertFunction(util::ToUtf8(copyConstructor->MangledName()), copyCtorType, copyConstructor->DontThrow());
             std::vector<void*> args;
-            args.push_back(parameter->IrObject(*emitter));
+            args.push_back(parameter->IrObject(*emitter, context));
             args.push_back(arg);
             emitter->CreateCall(copyCtorType, callee, args);
         }
@@ -473,11 +476,11 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 throw std::runtime_error("internal error: class delegate type has no copy constructor");
             }
             std::vector<cmajor::symbols::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none, context);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -488,23 +491,23 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 copyConstructor = compileUnit->GetCopyConstructorFor(interfaceType->TypeId());
             }
             std::vector<cmajor::symbols::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
-            paramValue.SetType(interfaceType->AddPointer());
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
+            paramValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
-            argumentValue.SetType(interfaceType->AddPointer());
+            argumentValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none, context);
         }
         else
         {
-            emitter->CreateStore(arg, parameter->IrObject(*emitter));
+            emitter->CreateStore(arg, parameter->IrObject(*emitter, context));
         }
     }
     if (functionSymbol->ReturnParam())
     {
         void* arg = emitter->GetFunctionArgument(function, np);
-        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter));
+        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter, context));
     }
     for (cmajor::binder::BoundStatement* labeledStatement : boundFunction.LabeledStatements())
     {
@@ -529,7 +532,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && 
             !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
-            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
+            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter, context);
             emitter->CreateRet(defaultValue);
             lastInstructionWasRet = true;
         }
@@ -832,7 +835,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchS
         {
             cmajor::symbols::IntegralValue integralCaseValue(caseValue.get());
             caseMap[integralCaseValue] = caseDest;
-            emitter->AddCase(switchInst, caseValue->IrValue(*emitter), caseDest);
+            emitter->AddCase(switchInst, caseValue->IrValue(*emitter, context), caseDest);
         }
     }
     for (unsigned i = 0; i < n; ++i)
@@ -941,7 +944,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
                 std::lock_guard<std::recursive_mutex> lock(compileUnit->GetModule().Lock());
-                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
+                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer(context)->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
@@ -1061,8 +1064,8 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
-    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter, context), classPtrValue, vmtPtrIndex);
+    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false, context), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }
 
@@ -1247,7 +1250,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunction
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable)
 {
     cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
-    globalVariableSymbol->CreateIrObject(*emitter);
+    globalVariableSymbol->CreateIrObject(*emitter, context);
 }
 
 void* LLVMCodeGenerator::GetGlobalStringPtr(int stringId)
@@ -1424,7 +1427,7 @@ cmajor::ir::Pad* LLVMCodeGenerator::CurrentPad()
 void* LLVMCodeGenerator::CreateClassDIType(void* classPtr)
 {
     cmajor::symbols::ClassTypeSymbol* cls = static_cast<cmajor::symbols::ClassTypeSymbol*>(classPtr);
-    return cls->CreateDIType(*emitter);
+    return cls->CreateDIType(*emitter, context);
 }
 
 int LLVMCodeGenerator::Install(const std::string& str)
@@ -1539,10 +1542,10 @@ void LLVMCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction&
     bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
     inSetLineOrEntryCode = true;
     cmajor::symbols::LocalVariableSymbol* traceEntryVar = boundFunction.GetFunctionSymbol()->TraceEntryVar();
-    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter));
+    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter, context));
     emitter->SetIrObject(traceEntryVar, traceEntryAlloca);
     cmajor::symbols::LocalVariableSymbol* traceGuardVar = boundFunction.GetFunctionSymbol()->TraceGuardVar();
-    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter));
+    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter, context));
     emitter->SetIrObject(traceGuardVar, traceGuardAlloca);
     lastAlloca = traceGuardAlloca;
     for (const auto& statement : enterCode)

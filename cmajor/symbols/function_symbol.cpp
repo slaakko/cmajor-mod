@@ -8,6 +8,7 @@ module;
 
 module cmajor.symbols.function.symbol;
 
+import cmajor.symbols.context;
 import cmajor.symbols.class_template_specializations;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.exception;
@@ -135,7 +136,6 @@ public:
     static OperatorMangleMap& Instance();
     std::u32string Mangle(const std::u32string& groupName);
 private:
-    static std::unique_ptr<OperatorMangleMap> instance;
     std::unordered_map<std::u32string, std::u32string> mangleMap;
     OperatorMangleMap();
 };
@@ -187,9 +187,9 @@ FunctionGroupSymbol::FunctionGroupSymbol(const soul::ast::Span& span_, const std
 {
 }
 
-void FunctionGroupSymbol::ComputeMangledName()
+void FunctionGroupSymbol::ComputeMangledName(Context* context)
 {
-    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::u32string mangledName = util::ToUtf32(TypeString(context));
     if (Name().find(U"operator") != std::u32string::npos)
     {
         mangledName.append(1, U'_').append(OperatorMangleMap::Instance().Mangle(Name()));
@@ -491,6 +491,7 @@ FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::Span& sp
 void FunctionSymbol::Write(SymbolWriter& writer)
 {
     ContainerSymbol::Write(writer);
+    Context* context = writer.GetContext();
     Assert(!functionId.is_nil(), "function id not initialized");
     writer.GetBinaryStreamWriter().Write(functionId);
     writer.GetBinaryStreamWriter().Write(index);
@@ -505,7 +506,7 @@ void FunctionSymbol::Write(SymbolWriter& writer)
     if (IsFunctionTemplate() || (GetGlobalFlag(GlobalFlags::release) && IsInline()) || IsConstExpr())
     {
         usingNodes.Write(writer.GetAstWriter());
-        cmajor::ast::Node* node = GetRootModuleForCurrentThread()->GetSymbolTable().GetNode(this);
+        cmajor::ast::Node* node = context->RootModule()->GetSymbolTable().GetNode(this);
         writer.GetAstWriter().Write(node);
     }
     util::uuid returnTypeId = util::nil_uuid();
@@ -655,9 +656,9 @@ void FunctionSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void FunctionSymbol::AddMember(Symbol* member)
+void FunctionSymbol::AddMember(Symbol* member, Context* context)
 {
-    ContainerSymbol::AddMember(member);
+    ContainerSymbol::AddMember(member, context);
     if (member->GetSymbolType() == SymbolType::templateParameterSymbol)
     {
         templateParameters.push_back(static_cast<TemplateParameterSymbol*>(member));
@@ -677,7 +678,7 @@ bool FunctionSymbol::IsExportSymbol() const
     return ContainerSymbol::IsExportSymbol();
 }
 
-void FunctionSymbol::ComputeName()
+void FunctionSymbol::ComputeName(Context* context)
 {
     std::u32string name;
     name.append(groupName);
@@ -710,7 +711,7 @@ void FunctionSymbol::ComputeName()
         ParameterSymbol* parameter = parameters[i];
         if (i == 0 && (groupName == U"@constructor" || groupName == U"operator=" || IsConstructorDestructorOrNonstaticMemberFunction()))
         {
-            name.append(parameter->GetType()->RemovePointer()->FullName());
+            name.append(parameter->GetType()->RemovePointer(context)->FullName());
         }
         else
         {
@@ -723,18 +724,18 @@ void FunctionSymbol::ComputeName()
     SetName(name);
     if (!IsBasicTypeOperation())
     {
-        ComputeMangledName();
+        ComputeMangledName(context);
     }
 }
 
-void FunctionSymbol::ComputeMangledName()
+void FunctionSymbol::ComputeMangledName(Context* context)
 {
     if (IsCDecl())
     {
         SetMangledName(GroupName());
         return;
     }
-    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::u32string mangledName = util::ToUtf32(TypeString(context));
     if (groupName.find(U"operator") != std::u32string::npos)
     {
         mangledName.append(1, U'_').append(OperatorMangleMap::Instance().Mangle(GroupName()));
@@ -881,7 +882,7 @@ std::u32string FunctionSymbol::FullNameWithSpecifiers() const
     return fullNameWithSpecifiers;
 }
 
-std::u32string FunctionSymbol::DocName() const
+std::u32string FunctionSymbol::DocName(Context* context) const
 {
     std::u32string docName = groupName;
     if (!templateParameters.empty())
@@ -898,7 +899,7 @@ std::u32string FunctionSymbol::DocName() const
             {
                 docName.append(U", ");
             }
-            docName.append(templateParameter->DocName());
+            docName.append(templateParameter->DocName(context));
         }
         docName.append(1, '>');
     }
@@ -911,7 +912,7 @@ std::u32string FunctionSymbol::DocName() const
             docName.append(U", ");
         }
         ParameterSymbol* parameter = parameters[i];
-        if (parameter->GetType()->Ns() == Ns())
+        if (parameter->GetType()->Ns(context) == Ns(context))
         {
             docName.append(parameter->GetType()->Name());
         }
@@ -940,7 +941,7 @@ std::string FunctionSymbol::GetSpecifierStr()
     return specifierStr;
 }
 
-std::string FunctionSymbol::Syntax() 
+std::string FunctionSymbol::Syntax(Context* context)
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
@@ -949,10 +950,10 @@ std::string FunctionSymbol::Syntax()
     }
     if (ReturnType())
     {
-        syntax.append(util::ToUtf8(ReturnType()->DocName()));
+        syntax.append(util::ToUtf8(ReturnType()->DocName(context)));
         syntax.append(1, ' ');
     }
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     syntax.append(1, ';');
     return syntax;
 }
@@ -967,11 +968,11 @@ void FunctionSymbol::SetConversionTargetType(TypeSymbol* conversionTargetType_)
     conversionTargetType = conversionTargetType_;
 }
 
-void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     if ((flags & cmajor::ir::OperationFlags::virtualCall) != cmajor::ir::OperationFlags::none)
     {
-        GenerateVirtualCall(emitter, genObjects, flags);
+        GenerateVirtualCall(emitter, genObjects, flags, context);
         return;
     }
     int na = genObjects.size();
@@ -980,7 +981,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         cmajor::ir::GenObject* genObject = genObjects[i];
         genObject->Load(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
     }
-    void* functionType = IrType(emitter);
+    void* functionType = IrType(emitter, context);
     // MangledName changed to InstantiatedName:
     void* callee = emitter.GetOrInsertFunction(util::ToUtf8(InstantiatedName()), functionType, DontThrow());
     std::vector<void*> args;
@@ -1010,12 +1011,12 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         {
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.Stack().Push(emitter.CreateCall(functionType, callee, args));
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen));
@@ -1041,12 +1042,12 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             }
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen));
@@ -1063,12 +1064,12 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         {
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.CreateCall(functionType, callee, args);
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
@@ -1094,12 +1095,12 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             }
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
@@ -1112,7 +1113,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
     }
 }
 
-void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
+void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, Context* context)
 {
     int na = genObjects.size();
     Assert(na > 0, "nonempty argument list expected");
@@ -1134,12 +1135,12 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             void* thisPtr = emitter.Stack().Pop();
             if (classType != vmtPtrHolderClass)
             {
-                thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer()->IrType(emitter));
+                thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer(context)->IrType(emitter, context));
             }
-            void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
+            void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter, context), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
             void* vmtType = vmtPtrHolderClass->VmtArrayType(emitter);
             void* methodPtr = emitter.GetMethodPtr(vmtType, vmtPtr, VmtIndex() + GetFunctionVmtIndexOffset());
-            callee = emitter.CreateBitCast(methodPtr, emitter.GetIrTypeForPtrType(IrType(emitter)));
+            callee = emitter.CreateBitCast(methodPtr, emitter.GetIrTypeForPtrType(IrType(emitter, context)));
         }
     }
     std::vector<void*> args;
@@ -1169,12 +1170,12 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
         {
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.Stack().Push(emitter.CreateCall(functionType, callee, args));
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen));
@@ -1200,12 +1201,12 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             }
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen));
@@ -1222,12 +1223,12 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
         {
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.CreateCall(functionType, callee, args);
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
@@ -1253,12 +1254,12 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             }
             if (currentPad == nullptr)
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                void* functionType = IrType(emitter);
+                void* functionType = IrType(emitter, context);
                 soul::ast::FullSpan fullSpan = GetFullSpan();
                 soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
                 emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
@@ -1276,12 +1277,12 @@ std::unique_ptr<Value> FunctionSymbol::ConstructValue(const std::vector<std::uni
     return std::unique_ptr<Value>();
 }
 
-std::unique_ptr<Value> FunctionSymbol::ConvertValue(const std::unique_ptr<Value>& value) const
+std::unique_ptr<Value> FunctionSymbol::ConvertValue(const std::unique_ptr<Value>& value, Context* context) const
 {
     return std::unique_ptr<Value>();
 }
 
-void FunctionSymbol::Dump(util::CodeFormatter& formatter)
+void FunctionSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("group name: " + util::ToUtf8(groupName));
@@ -1315,42 +1316,42 @@ void FunctionSymbol::Dump(util::CodeFormatter& formatter)
     }
 }
 
-bool FunctionSymbol::IsDefaultConstructor() const
+bool FunctionSymbol::IsDefaultConstructor(Context* context) const
 {
     return parameters.size() == 1 && groupName == U"@constructor" && parameters[0]->GetType()->PointerCount() == 1 && 
-        parameters[0]->GetType()->RemovePointer()->IsClassTypeSymbol();
+        parameters[0]->GetType()->RemovePointer(context)->IsClassTypeSymbol();
 }
 
-bool FunctionSymbol::IsCopyConstructor() const
+bool FunctionSymbol::IsCopyConstructor(Context* context) const
 {
     return parameters.size() == 2 && groupName == U"@constructor" &&
         parameters[0]->GetType()->PointerCount() == 1 &&
-        parameters[0]->GetType()->RemovePointer()->IsClassTypeSymbol() &&
-        TypesEqual(parameters[0]->GetType()->BaseType()->AddConst()->AddLvalueReference(), parameters[1]->GetType());
+        parameters[0]->GetType()->RemovePointer(context)->IsClassTypeSymbol() &&
+        TypesEqual(parameters[0]->GetType()->BaseType()->AddConst(context)->AddLvalueReference(context), parameters[1]->GetType());
 }
 
-bool FunctionSymbol::IsMoveConstructor() const
+bool FunctionSymbol::IsMoveConstructor(Context* context) const
 {
     return parameters.size() == 2 && groupName == U"@constructor" &&
         parameters[0]->GetType()->PointerCount() == 1 &&
-        parameters[0]->GetType()->RemovePointer()->IsClassTypeSymbol() &&
-        TypesEqual(parameters[0]->GetType()->BaseType()->AddRvalueReference(), parameters[1]->GetType());
+        parameters[0]->GetType()->RemovePointer(context)->IsClassTypeSymbol() &&
+        TypesEqual(parameters[0]->GetType()->BaseType()->AddRvalueReference(context), parameters[1]->GetType());
 }
 
-bool FunctionSymbol::IsCopyAssignment() const
+bool FunctionSymbol::IsCopyAssignment(Context* context) const
 {
     return parameters.size() == 2 && groupName == U"operator=" &&
         parameters[0]->GetType()->PointerCount() == 1 &&
-        parameters[0]->GetType()->RemovePointer()->IsClassTypeSymbol() &&
-        TypesEqual(parameters[0]->GetType()->BaseType()->AddConst()->AddLvalueReference(), parameters[1]->GetType());
+        parameters[0]->GetType()->RemovePointer(context)->IsClassTypeSymbol() &&
+        TypesEqual(parameters[0]->GetType()->BaseType()->AddConst(context)->AddLvalueReference(context), parameters[1]->GetType());
 }
 
-bool FunctionSymbol::IsMoveAssignment() const
+bool FunctionSymbol::IsMoveAssignment(Context* context) const
 {
     return parameters.size() == 2 && groupName == U"operator=" &&
         parameters[0]->GetType()->PointerCount() == 1 &&
-        parameters[0]->GetType()->RemovePointer()->IsClassTypeSymbol() &&
-        TypesEqual(parameters[0]->GetType()->BaseType()->AddRvalueReference(), parameters[1]->GetType());
+        parameters[0]->GetType()->RemovePointer(context)->IsClassTypeSymbol() &&
+        TypesEqual(parameters[0]->GetType()->BaseType()->AddRvalueReference(context), parameters[1]->GetType());
 }
 
 void FunctionSymbol::AddLocalVariable(LocalVariableSymbol* localVariable)
@@ -1462,21 +1463,21 @@ void FunctionSymbol::CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usin
     }
 }
 
-LocalVariableSymbol* FunctionSymbol::CreateTemporary(TypeSymbol* type, const soul::ast::Span& span)
+LocalVariableSymbol* FunctionSymbol::CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context)
 {
     LocalVariableSymbol* temporary = new LocalVariableSymbol(span, U"@t" + util::ToUtf32(std::to_string(nextTemporaryIndex++)));
     temporary->SetType(type);
-    AddMember(temporary);
+    AddMember(temporary, context);
     AddLocalVariable(temporary);
     return temporary;
 }
 
-std::vector<LocalVariableSymbol*> FunctionSymbol::CreateTemporariesTo(FunctionSymbol* currentFunction)
+std::vector<LocalVariableSymbol*> FunctionSymbol::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context)
 {
     return std::vector<LocalVariableSymbol*>();
 }
 
-void* FunctionSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* FunctionSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     void* localIrType = emitter.GetFunctionIrType(this);
     if (!localIrType)
@@ -1484,7 +1485,7 @@ void* FunctionSymbol::IrType(cmajor::ir::Emitter& emitter)
         void* retType = emitter.GetIrTypeForVoid();
         if (returnType && returnType->GetSymbolType() != SymbolType::voidTypeSymbol && !ReturnsClassInterfaceOrClassDelegateByValue())
         {
-            retType = returnType->IrType(emitter);
+            retType = returnType->IrType(emitter, context);
         }
         bool interfaceMemFun = Parent()->GetSymbolType() == SymbolType::interfaceTypeSymbol;
         std::vector<void*> paramTypes;
@@ -1501,14 +1502,14 @@ void* FunctionSymbol::IrType(cmajor::ir::Emitter& emitter)
                 TypeSymbol* paramType = parameter->GetType();
                 if (paramType->IsClassTypeSymbol() || paramType->GetSymbolType() == SymbolType::classDelegateTypeSymbol || paramType->GetSymbolType() == SymbolType::interfaceTypeSymbol)
                 {
-                    paramType = paramType->AddConst()->AddLvalueReference();
+                    paramType = paramType->AddConst(context)->AddLvalueReference(context);
                 }
-                paramTypes.push_back(paramType->IrType(emitter));
+                paramTypes.push_back(paramType->IrType(emitter, context));
             }
         }
         if (returnParam)
         {
-            paramTypes.push_back(returnParam->GetType()->IrType(emitter));
+            paramTypes.push_back(returnParam->GetType()->IrType(emitter, context));
         }
         localIrType = emitter.GetIrTypeForFunction(retType, paramTypes);
         emitter.SetFunctionIrType(this, localIrType);
@@ -1812,17 +1813,17 @@ FunctionSymbol* ConstructorSymbol::Copy() const
     return copy;
 }
 
-std::string ConstructorSymbol::TypeString() const
+std::string ConstructorSymbol::TypeString(Context* context) const
 {
-    if (IsDefaultConstructor())
+    if (IsDefaultConstructor(context))
     {
         return "default_constructor";
     }
-    else if (IsCopyConstructor())
+    else if (IsCopyConstructor(context))
     {
         return "copy_constructor";
     }
-    else if (IsMoveConstructor())
+    else if (IsMoveConstructor(context))
     {
         return "move_constructor";
     }
@@ -1832,10 +1833,10 @@ std::string ConstructorSymbol::TypeString() const
     }
 }
 
-std::u32string ConstructorSymbol::DocName() const
+std::u32string ConstructorSymbol::DocName(Context* context) const
 {
     std::u32string docName;
-    docName.append(Parent()->DocName());
+    docName.append(Parent()->DocName(context));
     docName.append(1, '(');
     int n = Parameters().size();
     for (int i = 1; i < n; ++i)
@@ -1845,7 +1846,7 @@ std::u32string ConstructorSymbol::DocName() const
             docName.append(U", ");
         }
         ParameterSymbol* parameter = Parameters()[i];
-        if (parameter->GetType()->Ns() == Ns())
+        if (parameter->GetType()->Ns(context) == Ns(context))
         {
             docName.append(parameter->GetType()->Name());
         }
@@ -2097,13 +2098,13 @@ FunctionSymbol* MemberFunctionSymbol::Copy() const
     return copy;
 }
 
-std::string MemberFunctionSymbol::TypeString() const
+std::string MemberFunctionSymbol::TypeString(Context* context) const
 {
-    if (IsCopyAssignment())
+    if (IsCopyAssignment(context))
     {
         return "copy_assignment";
     }
-    else if (IsMoveAssignment())
+    else if (IsMoveAssignment(context))
     {
         return "move_assignment";
     }
@@ -2113,7 +2114,7 @@ std::string MemberFunctionSymbol::TypeString() const
     }
 }
 
-std::u32string MemberFunctionSymbol::DocName() const
+std::u32string MemberFunctionSymbol::DocName(Context* context) const
 {
     std::u32string docName;
     docName.append(GroupName());
@@ -2134,7 +2135,7 @@ std::u32string MemberFunctionSymbol::DocName() const
         if (parameter->GetType()->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol)
         {
             ClassTemplateSpecializationSymbol* classTemplateSpecializationSymbol = static_cast<ClassTemplateSpecializationSymbol*>(parameter->GetType());
-            if (classTemplateSpecializationSymbol->GetClassTemplate()->Ns() == Ns())
+            if (classTemplateSpecializationSymbol->GetClassTemplate()->Ns(context) == Ns(context))
             {
                 docName.append(classTemplateSpecializationSymbol->Name());
             }
@@ -2145,7 +2146,7 @@ std::u32string MemberFunctionSymbol::DocName() const
         }
         else
         {
-            if (parameter->GetType()->Ns() == Ns())
+            if (parameter->GetType()->Ns(context) == Ns(context))
             {
                 docName.append(parameter->GetType()->Name());
             }
@@ -2300,12 +2301,12 @@ FunctionSymbol* ConversionFunctionSymbol::Copy() const
     return copy;
 }
 
-std::u32string ConversionFunctionSymbol::DocName() const
+std::u32string ConversionFunctionSymbol::DocName(Context* context) const
 {
     std::u32string docName;
     docName.append(U"operator ");
     TypeSymbol* type = ReturnType();
-    if (type->Ns() == Ns())
+    if (type->Ns(context) == Ns(context))
     {
         docName.append(type->Name());
     }

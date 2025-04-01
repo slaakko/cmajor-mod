@@ -19,7 +19,7 @@ ConversionTableEntry::ConversionTableEntry(TypeSymbol* sourceType_, TypeSymbol* 
 #endif
 }
 
-ConversionTable::ConversionTable(Owner owner_, Module* module_) : owner(owner_), module(module_)
+ConversionTable::ConversionTable(Owner owner_, Context* context_, Module* module_) : owner(owner_), context(context_), module(module_)
 {
 }
 
@@ -40,7 +40,7 @@ void ConversionTable::AddConversion(FunctionSymbol* conversion)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(context->RootModule(), module, soul::ast::Span(), soul::ast::Span());
     }
 #endif
     ConversionTableEntry entry(conversion->ConversionSourceType(), conversion->ConversionTargetType());
@@ -56,7 +56,7 @@ void ConversionTable::Add(const ConversionTable& that)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(context->RootModule(), module, soul::ast::Span(), soul::ast::Span());
     }
 #endif
     for (const auto& p : that.conversionMap)
@@ -78,10 +78,10 @@ void ConversionTable::Check()
     }
 }
 
-FunctionSymbol* ConversionTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const
+FunctionSymbol* ConversionTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, Context* context) const
 {
-    TypeSymbol* sourcePlainType = sourceType->PlainType();
-    TypeSymbol* targetPlainType = targetType->PlainType();
+    TypeSymbol* sourcePlainType = sourceType->PlainType(context);
+    TypeSymbol* targetPlainType = targetType->PlainType(context);
     ConversionTableEntry entry(sourcePlainType, targetPlainType);
     auto it = conversionMap.find(entry);
     if (it != conversionMap.cend())

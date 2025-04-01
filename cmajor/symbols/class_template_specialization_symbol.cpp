@@ -123,21 +123,21 @@ bool ClassTemplateSpecializationSymbol::IsPrototypeTemplateSpecialization() cons
     return IsPrototype();
 }
 
-void* ClassTemplateSpecializationSymbol::IrType(cmajor::ir::Emitter& emitter)
+void* ClassTemplateSpecializationSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
     if (IsRecursive())
     {
         void* localIrType = emitter.GetIrTypeByTypeId(TypeId());
         if (!localIrType)
         {
-            localIrType = ClassTypeSymbol::IrType(emitter);
+            localIrType = ClassTypeSymbol::IrType(emitter, context);
             emitter.SetIrTypeByTypeId(TypeId(), localIrType);
         }
         return localIrType;
     }
     else
     {
-        return ClassTypeSymbol::IrType(emitter);
+        return ClassTypeSymbol::IrType(emitter, context);
     }
 }
 
@@ -226,9 +226,9 @@ void ClassTemplateSpecializationSymbol::Check()
     }
 }
 
-void ClassTemplateSpecializationSymbol::ComputeMangledName()
+void ClassTemplateSpecializationSymbol::ComputeMangledName(Context* context)
 {
-    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::u32string mangledName = util::ToUtf32(TypeString(context));
     std::string constraintStr;
     if (Constraint())
     {

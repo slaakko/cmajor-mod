@@ -212,7 +212,7 @@ void MemberVariableSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void MemberVariableSymbol::Dump(util::CodeFormatter& formatter)
+void MemberVariableSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("full name: " + util::ToUtf8(FullNameWithSpecifiers()));
@@ -221,16 +221,16 @@ void MemberVariableSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("layout index: " + util::ToString(layoutIndex));
 }
 
-std::string MemberVariableSymbol::Syntax() 
+std::string MemberVariableSymbol::Syntax(Context* context)
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
     {
         syntax.append(1, ' ');
     }
-    syntax.append(util::ToUtf8(GetType()->DocName()));
+    syntax.append(util::ToUtf8(GetType()->DocName(context)));
     syntax.append(1, ' ');
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     syntax.append(1, ';');
     return syntax;
 }
@@ -305,7 +305,7 @@ void MemberVariableSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     }
 }
 
-void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64_t offsetInBits)
+void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64_t offsetInBits, Context* context)
 {
     Assert(layoutIndex != -1, "invalid layout index");
     Assert(Parent() && Parent()->IsClassTypeSymbol(), "parent class type expected");
@@ -314,12 +314,12 @@ void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64
     void* localDIType = emitter.GetDIMemberType(memberVariableId);
     if (!localDIType)
     {
-        uint64_t sizeInBits = GetType()->SizeInBits(emitter);
-        uint32_t alignInBits = GetType()->AlignmentInBits(emitter);
-        void* scope = parentClassType->GetDIType(emitter);
+        uint64_t sizeInBits = GetType()->SizeInBits(emitter, context);
+        uint32_t alignInBits = GetType()->AlignmentInBits(emitter, context);
+        void* scope = parentClassType->GetDIType(emitter, context);
         soul::ast::FullSpan fullSpan = GetFullSpan();
         soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
-        localDIType = emitter.CreateDIMemberType(scope, util::ToUtf8(Name()), fullSpan, lineColLen, sizeInBits, alignInBits, offsetInBits, GetType()->GetDIType(emitter));
+        localDIType = emitter.CreateDIMemberType(scope, util::ToUtf8(Name()), fullSpan, lineColLen, sizeInBits, alignInBits, offsetInBits, GetType()->GetDIType(emitter, context));
         emitter.SetDIMemberType(memberVariableId, localDIType);
     }
     return localDIType;
@@ -352,9 +352,9 @@ GlobalVariableGroupSymbol::GlobalVariableGroupSymbol(const soul::ast::Span&  spa
 {
 }
 
-void GlobalVariableGroupSymbol::ComputeMangledName()
+void GlobalVariableGroupSymbol::ComputeMangledName(Context* context)
 {
-    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::u32string mangledName = util::ToUtf32(TypeString(context));
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(util::ToUtf8(FullNameWithSpecifiers()))));
     SetMangledName(mangledName);
 }
@@ -529,7 +529,7 @@ void GlobalVariableSymbol::Accept(SymbolCollector* collector)
     }
 }
 
-void GlobalVariableSymbol::Dump(util::CodeFormatter& formatter)
+void GlobalVariableSymbol::Dump(util::CodeFormatter& formatter, Context* context)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("group name: " + util::ToUtf8(groupName));
@@ -538,23 +538,23 @@ void GlobalVariableSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("type: " + util::ToUtf8(GetType()->FullName()));
 }
 
-std::string GlobalVariableSymbol::Syntax() 
+std::string GlobalVariableSymbol::Syntax(Context* context)
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
     {
         syntax.append(1, ' ');
     }
-    syntax.append(util::ToUtf8(GetType()->DocName()));
+    syntax.append(util::ToUtf8(GetType()->DocName(context)));
     syntax.append(1, ' ');
-    syntax.append(util::ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName(context)));
     syntax.append(1, ';');
     return syntax;
 }
 
-void GlobalVariableSymbol::ComputeMangledName()
+void GlobalVariableSymbol::ComputeMangledName(Context* context)
 {
-    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::u32string mangledName = util::ToUtf32(TypeString(context));
     mangledName.append(1, U'_').append(Name());
     SetMangledName(mangledName);
 }
@@ -634,22 +634,22 @@ void GlobalVariableSymbol::SetInitializer(std::unique_ptr<Value>&& initializer_)
     initializer = std::move(initializer_);
 }
 
-void* GlobalVariableSymbol::IrObject(cmajor::ir::Emitter& emitter)
+void* GlobalVariableSymbol::IrObject(cmajor::ir::Emitter& emitter, Context* context)
 {
-    return emitter.GetOrInsertGlobal(util::ToUtf8(MangledName()), GetType()->IrType(emitter));
+    return emitter.GetOrInsertGlobal(util::ToUtf8(MangledName()), GetType()->IrType(emitter, context));
 }
 
-void GlobalVariableSymbol::CreateIrObject(cmajor::ir::Emitter& emitter)
+void GlobalVariableSymbol::CreateIrObject(cmajor::ir::Emitter& emitter, Context* context)
 {
-    void* irObject = IrObject(emitter);
+    void* irObject = IrObject(emitter, context);
     void* init = nullptr;
     if (initializer == nullptr)
     {
-        init = GetType()->CreateDefaultIrValue(emitter);
+        init = GetType()->CreateDefaultIrValue(emitter, context);
     }
     else
     {
-        init = initializer->IrValue(emitter);
+        init = initializer->IrValue(emitter, context);
     }
     emitter.SetInitializer(irObject, init);
 }

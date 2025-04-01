@@ -30,11 +30,11 @@ struct NativeModule
     void* module;
 };
 
-MasmCodeGenerator::MasmCodeGenerator(cmajor::ir::Emitter* emitter_) : emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), nativeCompileUnit(nullptr), 
-    fileIndex(-1), generateLineNumbers(false), currentClass(nullptr), currentFunction(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false),
-    prevWasTerminator(false), destructorCallGenerated(false), genJumpingBoolCode(false), trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr),
-    basicBlockOpen(false), lastAlloca(nullptr), currentTryNextBlock(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), newCleanupNeeded(false), inTryBlock(false),
-    sequenceSecond(nullptr), currentBlock(nullptr), breakTargetBlock(nullptr), continueTargetBlock(nullptr), defaultDest(nullptr),
+MasmCodeGenerator::MasmCodeGenerator(cmajor::ir::Emitter* emitter_) : emitter(emitter_), context(nullptr), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), 
+    nativeCompileUnit(nullptr), fileIndex(-1), generateLineNumbers(false), currentClass(nullptr), currentFunction(nullptr), function(nullptr), entryBasicBlock(nullptr), 
+    lastInstructionWasRet(false), prevWasTerminator(false), destructorCallGenerated(false), genJumpingBoolCode(false), trueBlock(nullptr), falseBlock(nullptr), 
+    breakTarget(nullptr), continueTarget(nullptr), basicBlockOpen(false), lastAlloca(nullptr), currentTryNextBlock(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), 
+    newCleanupNeeded(false), inTryBlock(false), sequenceSecond(nullptr), currentBlock(nullptr), breakTargetBlock(nullptr), continueTargetBlock(nullptr), defaultDest(nullptr),
     currentTryBlockId(-1), nextTryBlockId(0), currentCaseMap(nullptr), latestRet(nullptr), prevLineNumber(0), inSetLineOrEntryCode(false)
 {
     emitter->SetEmittingDelegate(this);
@@ -137,6 +137,8 @@ void MasmCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targe
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    context = boundCompileUnit.GetContext();
+    emitter->SetContext(context);
     switch (cmajor::symbols::GetOptimizationLevel())
     {
         case 0:
@@ -176,12 +178,12 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     cmajor::binder::ConstantArrayRepository& constantArrayRepository = boundCompileUnit.GetConstantArrayRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantArrayRepository.ConstantArrays())
     {
-        constantSymbol->ArrayIrObject(*emitter, true);
+        constantSymbol->ArrayIrObject(*emitter, true, context);
     }
     cmajor::binder::ConstantStructureRepository& constantStructureRepository = boundCompileUnit.GetConstantStructureRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantStructureRepository.ConstantStructures())
     {
-        constantSymbol->StructureIrObject(*emitter, true);
+        constantSymbol->StructureIrObject(*emitter, true, context);
     }
     int n = boundCompileUnit.BoundNodes().size();
     for (int i = 0; i < n; ++i)
@@ -256,7 +258,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
-    void* functionType = functionSymbol->IrType(*emitter);
+    void* functionType = functionSymbol->IrType(*emitter, context);
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -316,25 +318,25 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = currentClass->GetClassTypeSymbol();
         if (!emitter->IsVmtObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->VmtObject(*emitter, true);
+            classTypeSymbol->VmtObject(*emitter, true, context);
         }
         if (!emitter->IsStaticObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->StaticObject(*emitter, true);
+            classTypeSymbol->StaticObject(*emitter, true, context);
         }
     }
     int np = functionSymbol->Parameters().size();
     for (int i = 0; i < np; ++i)
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->Parameters()[i];
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
     }
     if (functionSymbol->ReturnParam())
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->ReturnParam();
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -342,7 +344,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     for (int i = 0; i < nlv; ++i)
     {
         cmajor::symbols::LocalVariableSymbol* localVariable = functionSymbol->LocalVariables()[i];
-        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(localVariable, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -358,10 +360,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             {
                 copyConstructor = compileUnit->GetCopyConstructorFor(classType->TypeId());
             }
-            void* copyCtorType = copyConstructor->IrType(*emitter);
+            void* copyCtorType = copyConstructor->IrType(*emitter, context);
             void* callee = emitter->GetOrInsertFunction(util::ToUtf8(copyConstructor->MangledName()), copyCtorType, copyConstructor->DontThrow());
             std::vector<void*> args;
-            args.push_back(parameter->IrObject(*emitter));
+            args.push_back(parameter->IrObject(*emitter, context));
             args.push_back(arg);
             emitter->CreateCall(copyCtorType, callee, args);
         }
@@ -374,11 +376,11 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 throw std::runtime_error("internal error: class delegate type has no copy constructor");
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, context);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -389,23 +391,23 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 copyConstructor = compileUnit->GetCopyConstructorFor(interfaceType->TypeId());
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
-            paramValue.SetType(interfaceType->AddPointer());
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
+            paramValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
-            argumentValue.SetType(interfaceType->AddPointer());
+            argumentValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, context);
         }
         else
         {
-            emitter->CreateStore(arg, parameter->IrObject(*emitter));
+            emitter->CreateStore(arg, parameter->IrObject(*emitter, context));
         }
     }
     if (functionSymbol->ReturnParam())
     {
         void* arg = emitter->GetFunctionArgument(function, np);
-        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter));
+        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter, context));
     }
     for (cmajor::binder::BoundStatement* labeledStatement : boundFunction.LabeledStatements())
     {
@@ -424,7 +426,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
-            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
+            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter, context);
             emitter->CreateRet(defaultValue);
             lastInstructionWasRet = true;
         }
@@ -882,7 +884,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchS
         {
             cmajor::symbols::IntegralValue integralCaseValue(caseValue.get());
             caseMap[integralCaseValue] = caseDest;
-            emitter->AddCase(switchInst, caseValue->IrValue(*emitter), caseDest);
+            emitter->AddCase(switchInst, caseValue->IrValue(*emitter, context), caseDest);
         }
     }
     for (unsigned i = 0; i < n; ++i)
@@ -993,7 +995,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
             cmajor::symbols::TypeSymbol* firstArgumentBaseType = firstArgument->GetType()->BaseType();
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
-                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
+                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer(context)->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     cmajor::symbols::DestructorSymbol* destructor = classType->Destructor();
@@ -1009,7 +1011,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
                             if (compileUnitNode)
                             {
                                 destructor->SetCompileUnitId(compileUnitNode->Id());
-                                destructor->ComputeMangledName();
+                                destructor->ComputeMangledName(context);
                             }
                         }
                         newCleanupNeeded = true;
@@ -1111,8 +1113,8 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
-    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter, context), classPtrValue, vmtPtrIndex);
+    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false, context), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }
 
@@ -1222,7 +1224,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethro
     if (currentFunction->GetFunctionSymbol()->ReturnType() && currentFunction->GetFunctionSymbol()->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol &&
         !currentFunction->GetFunctionSymbol()->ReturnsClassInterfaceOrClassDelegateByValue())
     {
-        void* defaultValue = currentFunction->GetFunctionSymbol()->ReturnType()->CreateDefaultIrValue(*emitter);
+        void* defaultValue = currentFunction->GetFunctionSymbol()->ReturnType()->CreateDefaultIrValue(*emitter, context);
         emitter->CreateRet(defaultValue);
         lastInstructionWasRet = true;
     }
@@ -1401,7 +1403,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunction
 void MasmCodeGenerator::Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable)
 {
     cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
-    globalVariableSymbol->CreateIrObject(*emitter);
+    globalVariableSymbol->CreateIrObject(*emitter, context);
 }
 
 void* MasmCodeGenerator::GetGlobalStringPtr(int stringId)
@@ -1577,10 +1579,10 @@ void MasmCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction&
     bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
     inSetLineOrEntryCode = true;
     cmajor::symbols::LocalVariableSymbol* traceEntryVar = boundFunction.GetFunctionSymbol()->TraceEntryVar();
-    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter));
+    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter, context));
     emitter->SetIrObject(traceEntryVar, traceEntryAlloca);
     cmajor::symbols::LocalVariableSymbol* traceGuardVar = boundFunction.GetFunctionSymbol()->TraceGuardVar();
-    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter));
+    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter, context));
     emitter->SetIrObject(traceGuardVar, traceGuardAlloca);
     lastAlloca = traceGuardAlloca;
     for (const auto& statement : enterCode)

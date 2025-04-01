@@ -71,11 +71,11 @@ bool HasAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols::S
     return false;
 }
 
-void CheckAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols::Symbol* toSymbol)
+void CheckAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols::Symbol* toSymbol, cmajor::symbols::Context* context)
 {
     if (!HasAccess(fromFunction, toSymbol))
     {
-        throw cmajor::symbols::Exception(toSymbol->TypeString() + " '" + util::ToUtf8(toSymbol->FullName()) + "' is inaccessible due to its protection level",
+        throw cmajor::symbols::Exception(toSymbol->TypeString(context) + " '" + util::ToUtf8(toSymbol->FullName()) + "' is inaccessible due to its protection level",
             fromFunction->GetFullSpan(), toSymbol->GetFullSpan());
     }
 }

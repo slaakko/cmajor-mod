@@ -8,6 +8,7 @@ module;
 
 module cmajor.symbols.scope;
 
+import cmajor.symbols.context;
 import cmajor.symbols.container.symbol;
 import cmajor.symbols.classes;
 import cmajor.symbols.class_template_specializations;
@@ -46,7 +47,7 @@ ContainerScope* ContainerScope::BaseScope() const
     return nullptr;
 }
 
-ContainerScope* ContainerScope::ParentScope() const
+ContainerScope* ContainerScope::ParentScope(Context* context) const
 {
     if (parentScope)
     {
@@ -70,7 +71,7 @@ ContainerScope* ContainerScope::ParentScope() const
             if (!parent->GetModule()->IsRootModule() && parent->GetSymbolType() == SymbolType::namespaceSymbol)
             {
                 NamespaceSymbol* ns = static_cast<NamespaceSymbol*>(parent);
-                Module* rootModule = GetRootModuleForCurrentThread();
+                Module* rootModule = context->RootModule();
                 NamespaceSymbol* mappedNs = rootModule->GetSymbolTable().GetMappedNs(ns);
                 if (mappedNs)
                 {
@@ -110,9 +111,9 @@ void ContainerScope::Uninstall(Symbol* symbol)
     symbol->ResetInstalled();
 }
 
-Symbol* ContainerScope::Lookup(const std::u32string& name) const
+Symbol* ContainerScope::Lookup(const std::u32string& name, Context* context) const
 {
-    return Lookup(name, ScopeLookup::this_);
+    return Lookup(name, ScopeLookup::this_, context);
 }
 
 int CountQualifiedNameComponents(const std::u32string& qualifiedName)
@@ -442,13 +443,13 @@ void AddMatches(std::vector<CCSymbolEntry>& matches, std::vector<CCSymbolEntry>&
     }
 }
 
-Symbol* ContainerScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
+Symbol* ContainerScope::Lookup(const std::u32string& name, ScopeLookup lookup, Context* context) const
 {
     int numQualifiedNameComponents = CountQualifiedNameComponents(name);
     if (numQualifiedNameComponents > 1)
     {
         std::vector<std::u32string> components = ParseQualifiedName(name);
-        return LookupQualified(components, lookup);
+        return LookupQualified(components, lookup, context);
     }
     else
     {
@@ -463,7 +464,7 @@ Symbol* ContainerScope::Lookup(const std::u32string& name, ScopeLookup lookup) c
             ContainerScope* baseScope = BaseScope();
             if (baseScope)
             {
-                Symbol* s = baseScope->Lookup(name, lookup);
+                Symbol* s = baseScope->Lookup(name, lookup, context);
                 if (s)
                 {
                     return s;
@@ -472,10 +473,10 @@ Symbol* ContainerScope::Lookup(const std::u32string& name, ScopeLookup lookup) c
         }
         if ((lookup & ScopeLookup::parent) != ScopeLookup::none)
         {
-            ContainerScope* parentScope = ParentScope();
+            ContainerScope* parentScope = ParentScope(context);
             if (parentScope)
             {
-                Symbol* s = parentScope->Lookup(name, lookup);
+                Symbol* s = parentScope->Lookup(name, lookup, context);
                 if (s)
                 {
                     return s;
@@ -486,7 +487,7 @@ Symbol* ContainerScope::Lookup(const std::u32string& name, ScopeLookup lookup) c
     }
 }
 
-Symbol* ContainerScope::LookupQualified(const std::vector<std::u32string>& components, ScopeLookup lookup) const
+Symbol* ContainerScope::LookupQualified(const std::vector<std::u32string>& components, ScopeLookup lookup, Context* context) const
 {
     const ContainerScope* scope = this;
     Symbol* s = nullptr;
@@ -497,7 +498,7 @@ Symbol* ContainerScope::LookupQualified(const std::vector<std::u32string>& compo
         const std::u32string& component = components[i];
         if (scope)
         {
-            s = scope->Lookup(component, ScopeLookup::this_);
+            s = scope->Lookup(component, ScopeLookup::this_, context);
             if (s)
             {
                 scope = s->GetContainerScope();
@@ -512,10 +513,10 @@ Symbol* ContainerScope::LookupQualified(const std::vector<std::u32string>& compo
     {
         if ((lookup & ScopeLookup::parent) != ScopeLookup::none)
         {
-            ContainerScope* parentScope = ParentScope();
+            ContainerScope* parentScope = ParentScope(context);
             if (parentScope)
             {
-                return parentScope->LookupQualified(components, lookup);
+                return parentScope->LookupQualified(components, lookup, context);
             }
             else
             {
@@ -526,18 +527,18 @@ Symbol* ContainerScope::LookupQualified(const std::vector<std::u32string>& compo
     return s;
 }
 
-std::vector<CCSymbolEntry> ContainerScope::LookupBeginWith(const std::u32string& prefix) const
+std::vector<CCSymbolEntry> ContainerScope::LookupBeginWith(const std::u32string& prefix, Context* context) const
 {
-    return LookupBeginWith(prefix, ScopeLookup::this_);
+    return LookupBeginWith(prefix, ScopeLookup::this_, context);
 }
 
-std::vector<CCSymbolEntry> ContainerScope::LookupBeginWith(const std::u32string& prefix, ScopeLookup lookup) const
+std::vector<CCSymbolEntry> ContainerScope::LookupBeginWith(const std::u32string& prefix, ScopeLookup lookup, Context* context) const
 {
     int numQualifiedNameComponents = CountCCComponents(prefix);
     if (numQualifiedNameComponents > 1)
     {
         std::vector<CCComponent> components = ParseCCName(prefix);
-        return LookupQualifiedBeginWith(components, lookup);
+        return LookupQualifiedBeginWith(components, lookup, context);
     }
     else
     {
@@ -553,16 +554,16 @@ std::vector<CCSymbolEntry> ContainerScope::LookupBeginWith(const std::u32string&
             ContainerScope* baseScope = BaseScope();
             if (baseScope)
             {
-                std::vector<CCSymbolEntry> m = baseScope->LookupBeginWith(prefix, lookup);
+                std::vector<CCSymbolEntry> m = baseScope->LookupBeginWith(prefix, lookup, context);
                 AddMatches(matches, m);
             }
         }
         if ((lookup & ScopeLookup::parent) != ScopeLookup::none)
         {
-            ContainerScope* parentScope = ParentScope();
+            ContainerScope* parentScope = ParentScope(context);
             if (parentScope)
             {
-                std::vector<CCSymbolEntry> m = parentScope->LookupBeginWith(prefix, lookup);
+                std::vector<CCSymbolEntry> m = parentScope->LookupBeginWith(prefix, lookup, context);
                 AddMatches(matches, m);
             }
         }
@@ -570,7 +571,7 @@ std::vector<CCSymbolEntry> ContainerScope::LookupBeginWith(const std::u32string&
     }
 }
 
-std::vector<CCSymbolEntry> ContainerScope::LookupQualifiedBeginWith(const std::vector<CCComponent>& components, ScopeLookup lookup) const
+std::vector<CCSymbolEntry> ContainerScope::LookupQualifiedBeginWith(const std::vector<CCComponent>& components, ScopeLookup lookup, Context* context) const
 {
     std::vector<CCSymbolEntry> matches;
     const ContainerScope* scope = this;
@@ -601,7 +602,7 @@ std::vector<CCSymbolEntry> ContainerScope::LookupQualifiedBeginWith(const std::v
             }
             else
             {
-                s = scope->Lookup(component.str, ScopeLookup::this_);
+                s = scope->Lookup(component.str, ScopeLookup::this_, context);
             }
             if (s)
             {
@@ -640,7 +641,7 @@ std::vector<CCSymbolEntry> ContainerScope::LookupQualifiedBeginWith(const std::v
         }
         if (validAccess)
         {
-            std::vector<CCSymbolEntry> m = MakeCCMatches(components, scope->LookupBeginWith(components[n - 1].str));
+            std::vector<CCSymbolEntry> m = MakeCCMatches(components, scope->LookupBeginWith(components[n - 1].str, context));
             AddMatches(matches, m);
             lookup = lookup & ~ScopeLookup::parent;
         }
@@ -650,30 +651,30 @@ std::vector<CCSymbolEntry> ContainerScope::LookupQualifiedBeginWith(const std::v
         ContainerScope* baseScope = BaseScope();
         if (baseScope)
         {
-            std::vector<CCSymbolEntry> m = baseScope->LookupQualifiedBeginWith(components, ScopeLookup::this_and_base);
+            std::vector<CCSymbolEntry> m = baseScope->LookupQualifiedBeginWith(components, ScopeLookup::this_and_base, context);
             AddMatches(matches, m);
         }
     }
     if ((lookup & ScopeLookup::parent) != ScopeLookup::none)
     {
-        ContainerScope* parentScope = ParentScope();
+        ContainerScope* parentScope = ParentScope(context);
         if (parentScope)
         {
-            std::vector<CCSymbolEntry> m = parentScope->LookupQualifiedBeginWith(components, ScopeLookup::this_and_base_and_parent);
+            std::vector<CCSymbolEntry> m = parentScope->LookupQualifiedBeginWith(components, ScopeLookup::this_and_base_and_parent, context);
             AddMatches(matches, m);
         }
     }
     return matches;
 }
 
-const NamespaceSymbol* ContainerScope::Ns() const
+const NamespaceSymbol* ContainerScope::Ns(Context* context) const
 {
-    return container->Ns();
+    return container->Ns(context);
 }
 
-NamespaceSymbol* ContainerScope::Ns()
+NamespaceSymbol* ContainerScope::Ns(Context* context)
 {
-    return container->Ns();
+    return container->Ns(context);
 }
 
 void ContainerScope::Clear()
@@ -681,20 +682,21 @@ void ContainerScope::Clear()
     symbolMap.clear();
 }
 
-NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex)
+NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex, 
+    Context* context)
 {
     ContainerScope* scope = this;
-    NamespaceSymbol* parentNs = scope->Ns();
+    NamespaceSymbol* parentNs = scope->Ns(context);
     std::vector<std::u32string> components = util::Split(qualifiedNsName, '.');
     for (const std::u32string& component : components)
     {
-        Symbol* s = scope->Lookup(component);
+        Symbol* s = scope->Lookup(component, context);
         if (s)
         {
             if (s->GetSymbolType() == SymbolType::namespaceSymbol)
             {
                 scope = s->GetContainerScope();
-                parentNs = scope->Ns();
+                parentNs = scope->Ns(context);
             }
             else
             {
@@ -708,7 +710,7 @@ NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualified
             newNs->SetFileIndex(fileIndex);
             newNs->SetModule(container->GetModule());
             scope = newNs->GetContainerScope();
-            parentNs->AddMember(newNs);
+            parentNs->AddMember(newNs, context);
             parentNs = newNs;
         }
     }
@@ -716,14 +718,14 @@ NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualified
 }
 
 void ContainerScope::CollectViableFunctions(int arity, const std::u32string& groupName, std::unordered_set<ContainerScope*>& scopesLookedUp, ScopeLookup scopeLookup,
-    ViableFunctionSet& viableFunctions, Module* module)
+    ViableFunctionSet& viableFunctions, Module* module, Context* context)
 {
     if ((scopeLookup & ScopeLookup::this_) != ScopeLookup::none)
     {
         if (scopesLookedUp.find(this) == scopesLookedUp.end())
         {
             scopesLookedUp.insert(this);
-            Symbol* symbol = Lookup(groupName);
+            Symbol* symbol = Lookup(groupName, context);
             if (symbol)
             {
                 if (symbol->GetSymbolType() == SymbolType::functionGroupSymbol)
@@ -739,15 +741,15 @@ void ContainerScope::CollectViableFunctions(int arity, const std::u32string& gro
         ContainerScope* baseScope = BaseScope();
         if (baseScope)
         {
-            baseScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions, module);
+            baseScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions, module, context);
         }
     }
     if ((scopeLookup & ScopeLookup::parent) != ScopeLookup::none)
     {
-        ContainerScope* parentScope = ParentScope();
+        ContainerScope* parentScope = ParentScope(context);
         if (parentScope)
         {
-            parentScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions, module);
+            parentScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions, module, context);
         }
     }
 }
@@ -769,13 +771,13 @@ void FileScope::InstallAlias(cmajor::ast::AliasNode* aliasNode, TypeSymbol* type
     aliasMap[aliasNode->Id()->Str()] = type;
 }
 
-void FileScope::InstallNamespaceImport(ContainerScope* containerScope, cmajor::ast::NamespaceImportNode* namespaceImportNode)
+void FileScope::InstallNamespaceImport(ContainerScope* containerScope, cmajor::ast::NamespaceImportNode* namespaceImportNode, Context* context)
 {
     try
     {
         Assert(containerScope, "container scope is null"); 
         std::u32string importedNamespaceName = namespaceImportNode->Ns()->Str();
-        Symbol* symbol = containerScope->Lookup(importedNamespaceName, ScopeLookup::this_and_parent);
+        Symbol* symbol = containerScope->Lookup(importedNamespaceName, ScopeLookup::this_and_parent, context);
         if (symbol)
         {
             if (symbol->GetSymbolType() == SymbolType::namespaceSymbol)
@@ -802,12 +804,12 @@ void FileScope::InstallNamespaceImport(ContainerScope* containerScope, cmajor::a
     }
 }
 
-Symbol* FileScope::Lookup(const std::u32string& name) const
+Symbol* FileScope::Lookup(const std::u32string& name, Context* context) const
 {
-    return Lookup(name, ScopeLookup::this_);
+    return Lookup(name, ScopeLookup::this_, context);
 }
 
-Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
+Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup, Context* context) const
 {
     if (lookup != ScopeLookup::this_)
     {
@@ -824,7 +826,7 @@ Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
     {
         for (ContainerScope* containerScope : containerScopes)
         {
-            Symbol* symbol = containerScope->Lookup(name, ScopeLookup::this_);
+            Symbol* symbol = containerScope->Lookup(name, ScopeLookup::this_, context);
             if (symbol)
             {
                 foundSymbols.insert(symbol);
@@ -861,12 +863,12 @@ Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
     }
 }
 
-std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& prefix) const
+std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& prefix, Context* context) const
 {
-    return LookupBeginWith(prefix, ScopeLookup::this_);
+    return LookupBeginWith(prefix, ScopeLookup::this_, context);
 }
 
-std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& prefix, ScopeLookup lookup) const
+std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& prefix, ScopeLookup lookup, Context* context) const
 {
     std::vector<CCSymbolEntry> matches;
     auto it = aliasMap.lower_bound(prefix);
@@ -880,20 +882,20 @@ std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& pref
     }
     for (ContainerScope* containerScope : containerScopes)
     {
-        std::vector<CCSymbolEntry> m = containerScope->LookupBeginWith(prefix, ScopeLookup::this_);
+        std::vector<CCSymbolEntry> m = containerScope->LookupBeginWith(prefix, ScopeLookup::this_, context);
         AddMatches(matches, m);
     }
     return matches;
 }
 
 void FileScope::CollectViableFunctions(int arity, const std::u32string& groupName, std::unordered_set<ContainerScope*>& scopesLookedUp, ViableFunctionSet& viableFunctions,
-    Module* module)
+    Module* module, Context* context)
 {
     for (ContainerScope* containerScope : containerScopes)
     {
         if (scopesLookedUp.find(containerScope) == scopesLookedUp.end())
         {
-            containerScope->CollectViableFunctions(arity, groupName, scopesLookedUp, ScopeLookup::this_, viableFunctions, module);
+            containerScope->CollectViableFunctions(arity, groupName, scopesLookedUp, ScopeLookup::this_, viableFunctions, module, context);
             scopesLookedUp.insert(containerScope);
         }
     }

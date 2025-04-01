@@ -12,6 +12,7 @@ import util.uuid;
 
 export namespace cmajor::symbols {
 
+class Context;
 class TypeSymbol;
 class Value;
 class SymbolTable;
@@ -32,6 +33,6 @@ private:
     soul::ast::Span span;
 };
 
-void MetaInit(SymbolTable& symbolTable, const soul::ast::Span& rootSpan);
+void MetaInit(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, Context* context);
 
 } // namespace cmajor::symbols

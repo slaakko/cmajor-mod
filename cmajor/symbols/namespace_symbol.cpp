@@ -25,16 +25,16 @@ void NamespaceSymbol::Read(SymbolReader& reader)
     ContainerSymbol::Read(reader);
 }
 
-void NamespaceSymbol::Import(NamespaceSymbol* that, SymbolTable& symbolTable)
+void NamespaceSymbol::Import(NamespaceSymbol* that, SymbolTable& symbolTable, Context* context)
 {
-    NamespaceSymbol* ns = symbolTable.BeginNamespace(that->Name(), that->GetSpan(), that->ModuleId(), that->FileIndex());
+    NamespaceSymbol* ns = symbolTable.BeginNamespace(that->Name(), that->GetSpan(), that->ModuleId(), that->FileIndex(), context);
     symbolTable.MapNs(that, ns);
     for (const std::unique_ptr<Symbol>& symbol : that->Members())
     {
         if (symbol->GetSymbolType() == SymbolType::namespaceSymbol)
         {
             NamespaceSymbol* thatNs = static_cast<NamespaceSymbol*>(symbol.get());
-            Import(thatNs, symbolTable);
+            Import(thatNs, symbolTable, context);
         }
         else
         {
@@ -54,7 +54,7 @@ void NamespaceSymbol::Import(NamespaceSymbol* that, SymbolTable& symbolTable)
             {
                 continue;
             }
-            symbolTable.Container()->AddOwnedMember(symbol.get());
+            symbolTable.Container()->AddOwnedMember(symbol.get(), context);
         }
     }
     symbolTable.EndNamespace();

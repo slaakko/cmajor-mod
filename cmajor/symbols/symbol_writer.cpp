@@ -10,7 +10,7 @@ import cmajor.symbols.symbol;
 
 namespace cmajor::symbols {
 
-SymbolWriter::SymbolWriter(const std::string& fileName_) : astWriter(fileName_)
+SymbolWriter::SymbolWriter(const std::string& fileName_, Context* context_) : astWriter(fileName_), context(context_)
 {
 }
 

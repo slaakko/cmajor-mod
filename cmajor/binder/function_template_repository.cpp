@@ -86,13 +86,13 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
         globalNs->AddMember(usingNode->Clone(cloneContext));
     }
     bool fileScopeAdded = false;
-    if (!functionTemplate->Ns()->IsGlobalNamespace())
+    if (!functionTemplate->Ns(boundCompileUnit.GetContext())->IsGlobalNamespace())
     {
         cmajor::symbols::FileScope* primaryFileScope = new cmajor::symbols::FileScope();
-        primaryFileScope->AddContainerScope(functionTemplate->Ns()->GetContainerScope());
+        primaryFileScope->AddContainerScope(functionTemplate->Ns(boundCompileUnit.GetContext())->GetContainerScope());
         boundCompileUnit.AddFileScope(primaryFileScope);
         fileScopeAdded = true;
-        std::u32string fullNsName = functionTemplate->Ns()->FullName();
+        std::u32string fullNsName = functionTemplate->Ns(boundCompileUnit.GetContext())->FullName();
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
@@ -109,7 +109,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, functionTemplate->FileIndex(), functionTemplate->ModuleId());
-    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+    cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
     globalNs->Accept(symbolCreatorVisitor);
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(functionInstanceNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
@@ -137,7 +137,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
             cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(templateParameter->GetSpan(), 
                 templateParameter->Name());
             boundTemplateParameter->SetType(boundType);
-            functionSymbol->AddMember(boundTemplateParameter);
+            functionSymbol->AddMember(boundTemplateParameter, boundCompileUnit.GetContext());
         }
         else
         {

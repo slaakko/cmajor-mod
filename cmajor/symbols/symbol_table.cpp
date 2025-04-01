@@ -93,10 +93,10 @@ void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode
     module->GetSymbolTable().MapIdentifierToSymbolDefinition(identifierNode, module, symbol);
 }
 
-SymbolTable::SymbolTable(Module* module_) :
+SymbolTable::SymbolTable(Module* module_, Context* context) :
     module(module_), globalNs(soul::ast::Span(), std::u32string()), currentCompileUnit(nullptr), container(&globalNs), currentClass(nullptr),
     currentInterface(nullptr), mainFunctionSymbol(nullptr), currentFunctionSymbol(nullptr), parameterIndex(0), declarationBlockIndex(0),
-    conversionTable(ConversionTable::Owner::symbolTable, module), numSpecializationsNew(0), numSpecializationsCopied(0), createdFunctionSymbol(nullptr),
+    conversionTable(ConversionTable::Owner::symbolTable, context, module), numSpecializationsNew(0), numSpecializationsCopied(0), createdFunctionSymbol(nullptr),
     cursorContainer(nullptr), axiomNumber(0), instantiatingTemplate(false), currentFileIndex(-1), currentModuleId(util::nil_uuid())
 {
     globalNs.SetModule(module);
@@ -295,9 +295,9 @@ void SymbolTable::Read(SymbolReader& reader)
     }
 }
 
-void SymbolTable::Import(const SymbolTable& symbolTable)
+void SymbolTable::Import(const SymbolTable& symbolTable, Context* context)
 {
-    globalNs.Import(const_cast<NamespaceSymbol*>(&symbolTable.globalNs), *this);
+    globalNs.Import(const_cast<NamespaceSymbol*>(&symbolTable.globalNs), *this, context);
     for (const auto& pair : symbolTable.typeIdMap)
     {
         Symbol* typeOrConcept = pair.second;
@@ -408,7 +408,7 @@ void SymbolTable::BeginContainer(ContainerSymbol* container_)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, container_->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, container_->GetSpan(), soul::ast::Span());
     }
 #endif
     containerStack.push(container);
@@ -436,15 +436,15 @@ NamespaceSymbol* SymbolTable::GetMappedNs(NamespaceSymbol* fromNs) const
     return nullptr;
 }
 
-NamespaceSymbol* SymbolTable::BeginNamespace(cmajor::ast::NamespaceNode& namespaceNode)
+NamespaceSymbol* SymbolTable::BeginNamespace(cmajor::ast::NamespaceNode& namespaceNode, Context* context)
 {
     std::u32string nsName = namespaceNode.Id()->Str();
-    NamespaceSymbol* ns = BeginNamespace(nsName, namespaceNode.GetSpan(), namespaceNode.ModuleId(), namespaceNode.FileIndex());
+    NamespaceSymbol* ns = BeginNamespace(nsName, namespaceNode.GetSpan(), namespaceNode.ModuleId(), namespaceNode.FileIndex(), context);
     MapNode(&namespaceNode, container);
     return ns;
 }
 
-NamespaceSymbol* SymbolTable::BeginNamespace(const std::u32string& namespaceName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex)
+NamespaceSymbol* SymbolTable::BeginNamespace(const std::u32string& namespaceName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex, Context* context)
 {
     if (namespaceName.empty())
     {
@@ -456,7 +456,7 @@ NamespaceSymbol* SymbolTable::BeginNamespace(const std::u32string& namespaceName
     }
     else
     {
-        Symbol* symbol = container->GetContainerScope()->Lookup(namespaceName);
+        Symbol* symbol = container->GetContainerScope()->Lookup(namespaceName, context);
         if (symbol)
         {
             if (symbol->GetSymbolType() == SymbolType::namespaceSymbol)
@@ -472,7 +472,7 @@ NamespaceSymbol* SymbolTable::BeginNamespace(const std::u32string& namespaceName
         }
         else
         {
-            NamespaceSymbol* ns = container->GetContainerScope()->CreateNamespace(namespaceName, span, moduleId, fileIndex);
+            NamespaceSymbol* ns = container->GetContainerScope()->CreateNamespace(namespaceName, span, moduleId, fileIndex, context);
             BeginContainer(ns);
             return ns;
         }
@@ -541,13 +541,13 @@ void SymbolTable::BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t
     ResetDeclarationBlockIndex();
 }
 
-void SymbolTable::EndFunction(bool addMember)
+void SymbolTable::EndFunction(bool addMember, Context* context)
 {
     FunctionSymbol* functionSymbol = static_cast<FunctionSymbol*>(container);
     EndContainer();
     if (addMember)
     {
-        container->AddMember(functionSymbol);
+        container->AddMember(functionSymbol, context);
     }
     else
     {
@@ -555,7 +555,7 @@ void SymbolTable::EndFunction(bool addMember)
     }
 }
 
-void SymbolTable::AddParameter(cmajor::ast::ParameterNode& parameterNode)
+void SymbolTable::AddParameter(cmajor::ast::ParameterNode& parameterNode, Context* context)
 {
     bool artificialId = false;
     std::u32string parameterName = util::ToUtf32("@p" + std::to_string(parameterIndex));
@@ -581,7 +581,7 @@ void SymbolTable::AddParameter(cmajor::ast::ParameterNode& parameterNode)
     }
     parameterSymbol->SetCompileUnit(currentCompileUnit);
     MapNode(&parameterNode, parameterSymbol);
-    container->AddMember(parameterSymbol);
+    container->AddMember(parameterSymbol, context);
     ++parameterIndex;
     if (artificialId)
     {
@@ -612,14 +612,14 @@ void SymbolTable::BeginClass(cmajor::ast::ClassNode& classNode)
     BeginContainer(classTypeSymbol);
 }
 
-void SymbolTable::EndClass()
+void SymbolTable::EndClass(Context* context)
 {
     ClassTypeSymbol* classTypeSymbol = currentClass;
     currentClass = currentClassStack.top();
     currentClassStack.pop();
     EndContainer();
     classTypeSymbol->ComputeMinArity();
-    container->AddMember(classTypeSymbol);
+    container->AddMember(classTypeSymbol, context);
 }
 
 void SymbolTable::BeginClassTemplateSpecialization(cmajor::ast::ClassNode& classInstanceNode, ClassTemplateSpecializationSymbol* classTemplateSpecialization)
@@ -641,7 +641,7 @@ void SymbolTable::EndClassTemplateSpecialization()
     currentClassStack.pop();
 }
 
-void SymbolTable::AddTemplateParameter(cmajor::ast::TemplateParameterNode& templateParameterNode)
+void SymbolTable::AddTemplateParameter(cmajor::ast::TemplateParameterNode& templateParameterNode, Context* context)
 {
     TemplateParameterSymbol* templateParameterSymbol = new TemplateParameterSymbol(templateParameterNode.GetSpan(), templateParameterNode.Id()->Str());
     if (templateParameterNode.DefaultTemplateArgument())
@@ -652,20 +652,20 @@ void SymbolTable::AddTemplateParameter(cmajor::ast::TemplateParameterNode& templ
     templateParameterSymbol->SetModule(module);
     SetTypeIdFor(templateParameterSymbol);
     MapNode(&templateParameterNode, templateParameterSymbol);
-    container->AddMember(templateParameterSymbol);
+    container->AddMember(templateParameterSymbol, context);
 }
 
-void SymbolTable::AddTemplateParameter(cmajor::ast::IdentifierNode& identifierNode)
+void SymbolTable::AddTemplateParameter(cmajor::ast::IdentifierNode& identifierNode, Context* context)
 {
     TemplateParameterSymbol* templateParameterSymbol = new TemplateParameterSymbol(identifierNode.GetSpan(), identifierNode.Str());
     templateParameterSymbol->SetCompileUnit(currentCompileUnit);
     templateParameterSymbol->SetModule(module);
     SetTypeIdFor(templateParameterSymbol);
     MapNode(&identifierNode, templateParameterSymbol);
-    container->AddMember(templateParameterSymbol);
+    container->AddMember(templateParameterSymbol, context);
 }
 
-void SymbolTable::BeginInterface(cmajor::ast::InterfaceNode& interfaceNode)
+void SymbolTable::BeginInterface(cmajor::ast::InterfaceNode& interfaceNode, Context* context)
 {
     InterfaceTypeSymbol* interfaceTypeSymbol = new InterfaceTypeSymbol(interfaceNode.GetSpan(), interfaceNode.Id()->Str());
     currentInterfaceStack.push(currentInterface);
@@ -684,7 +684,7 @@ void SymbolTable::BeginInterface(cmajor::ast::InterfaceNode& interfaceNode)
     interfaceTypeSymbol->SetModule(module);
     MapNode(&interfaceNode, interfaceTypeSymbol);
     SetTypeIdFor(interfaceTypeSymbol);
-    container->AddMember(interfaceTypeSymbol);
+    container->AddMember(interfaceTypeSymbol, context);
     BeginContainer(interfaceTypeSymbol);
 }
 
@@ -723,13 +723,13 @@ void SymbolTable::BeginStaticConstructor(cmajor::ast::StaticConstructorNode& sta
     ResetDeclarationBlockIndex();
 }
 
-void SymbolTable::EndStaticConstructor(bool addMember)
+void SymbolTable::EndStaticConstructor(bool addMember, Context* context)
 {
     StaticConstructorSymbol* staticConstructorSymbol = static_cast<StaticConstructorSymbol*>(container);
     EndContainer();
     if (addMember)
     {
-        container->AddMember(staticConstructorSymbol);
+        container->AddMember(staticConstructorSymbol, context);
     }
     else
     {
@@ -737,7 +737,7 @@ void SymbolTable::EndStaticConstructor(bool addMember)
     }
 }
 
-void SymbolTable::BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex)
+void SymbolTable::BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex, Context* context)
 {
     ConstructorSymbol* constructorSymbol = new ConstructorSymbol(constructorNode.GetSpan(), U"@constructor");
     constructorSymbol->SetIndex(functionIndex);
@@ -772,10 +772,10 @@ void SymbolTable::BeginConstructor(cmajor::ast::ConstructorNode& constructorNode
     TypeSymbol* thisParamType = nullptr;
     if (currentClass)
     {
-        thisParamType = currentClass->AddPointer();
+        thisParamType = currentClass->AddPointer(context);
         thisParam->SetType(thisParamType);
         thisParam->SetBound();
-        constructorSymbol->AddMember(thisParam);
+        constructorSymbol->AddMember(thisParam, context);
     }
     else if (currentInterface)
     {
@@ -783,13 +783,13 @@ void SymbolTable::BeginConstructor(cmajor::ast::ConstructorNode& constructorNode
     }
 }
 
-void SymbolTable::EndConstructor(bool addMember)
+void SymbolTable::EndConstructor(bool addMember, Context* context)
 {
     ConstructorSymbol* constructorSymbol = static_cast<ConstructorSymbol*>(container);
     EndContainer();
     if (addMember)
     {
-        container->AddMember(constructorSymbol);
+        container->AddMember(constructorSymbol, context);
     }
     else
     {
@@ -797,7 +797,7 @@ void SymbolTable::EndConstructor(bool addMember)
     }
 }
 
-void SymbolTable::BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex)
+void SymbolTable::BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex, Context* context)
 {
     DestructorSymbol* destructorSymbol = new DestructorSymbol(destructorNode.GetSpan(), U"@destructor");
     destructorSymbol->SetIndex(functionIndex);
@@ -827,10 +827,10 @@ void SymbolTable::BeginDestructor(cmajor::ast::DestructorNode& destructorNode, i
     TypeSymbol* thisParamType = nullptr;
     if (currentClass)
     {
-        thisParamType = currentClass->AddPointer();
+        thisParamType = currentClass->AddPointer(context);
         thisParam->SetType(thisParamType);
         thisParam->SetBound();
-        destructorSymbol->AddMember(thisParam);
+        destructorSymbol->AddMember(thisParam, context);
     }
     else if (currentInterface)
     {
@@ -838,13 +838,13 @@ void SymbolTable::BeginDestructor(cmajor::ast::DestructorNode& destructorNode, i
     }
 }
 
-void SymbolTable::EndDestructor(bool addMember)
+void SymbolTable::EndDestructor(bool addMember, Context* context)
 {
     DestructorSymbol* destructorSymbol = static_cast<DestructorSymbol*>(container);
     EndContainer();
     if (addMember)
     {
-        container->AddMember(destructorSymbol);
+        container->AddMember(destructorSymbol, context);
     }
     else
     {
@@ -852,7 +852,7 @@ void SymbolTable::EndDestructor(bool addMember)
     }
 }
 
-void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex)
+void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex, Context* context)
 {
     MemberFunctionSymbol* memberFunctionSymbol = new MemberFunctionSymbol(memberFunctionNode.GetSpan(), memberFunctionNode.GroupId());
     memberFunctionSymbol->SetIndex(functionIndex);
@@ -892,16 +892,16 @@ void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFun
         {
             if (memberFunctionNode.IsConst())
             {
-                thisParamType = currentClass->AddConst()->AddPointer();
+                thisParamType = currentClass->AddConst(context)->AddPointer(context);
             }
             else
             {
-                thisParamType = currentClass->AddPointer();
+                thisParamType = currentClass->AddPointer(context);
             }
         }
         else if (currentInterface)
         {
-            thisParamType = currentInterface->AddPointer();
+            thisParamType = currentInterface->AddPointer(context);
         }
         else
         {
@@ -909,17 +909,17 @@ void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFun
         }
         thisParam->SetType(thisParamType);
         thisParam->SetBound();
-        memberFunctionSymbol->AddMember(thisParam);
+        memberFunctionSymbol->AddMember(thisParam, context);
     }
 }
 
-void SymbolTable::EndMemberFunction(bool addMember)
+void SymbolTable::EndMemberFunction(bool addMember, Context* context)
 {
     MemberFunctionSymbol* memberFunctionSymbol = static_cast<MemberFunctionSymbol*>(container);
     EndContainer();
     if (addMember)
     {
-        container->AddMember(memberFunctionSymbol);
+        container->AddMember(memberFunctionSymbol, context);
     }
     else
     {
@@ -927,7 +927,7 @@ void SymbolTable::EndMemberFunction(bool addMember)
     }
 }
 
-void SymbolTable::BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex)
+void SymbolTable::BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex, Context* context)
 {
     ConversionFunctionSymbol* conversionFunctionSymbol = new ConversionFunctionSymbol(conversionFunctionNode.GetSpan(), U"@conversion");
     conversionFunctionSymbol->SetIndex(functionIndex);
@@ -962,24 +962,24 @@ void SymbolTable::BeginConversionFunction(cmajor::ast::ConversionFunctionNode& c
     TypeSymbol* thisParamType = nullptr;
     if (conversionFunctionNode.IsConst())
     {
-        thisParamType = currentClass->AddConst()->AddPointer();
+        thisParamType = currentClass->AddConst(context)->AddPointer(context);
     }
     else
     {
-        thisParamType = currentClass->AddPointer();
+        thisParamType = currentClass->AddPointer(context);
     }
     thisParam->SetType(thisParamType);
     thisParam->SetBound();
-    conversionFunctionSymbol->AddMember(thisParam);
+    conversionFunctionSymbol->AddMember(thisParam, context);
 }
 
-void SymbolTable::EndConversionFunction(bool addMember)
+void SymbolTable::EndConversionFunction(bool addMember, Context* context)
 {
     ConversionFunctionSymbol* conversionFunctionSymbol = static_cast<ConversionFunctionSymbol*>(container);
     EndContainer();
     if (addMember)
     {
-        container->AddMember(conversionFunctionSymbol);
+        container->AddMember(conversionFunctionSymbol, context);
     }
     else
     {
@@ -987,7 +987,7 @@ void SymbolTable::EndConversionFunction(bool addMember)
     }
 }
 
-void SymbolTable::AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode)
+void SymbolTable::AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode, Context* context)
 {
     MemberVariableSymbol* memberVariableSymbol = new MemberVariableSymbol(memberVariableNode.GetSpan(), memberVariableNode.Id()->Str());
     if ((memberVariableNode.GetSpecifiers() & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
@@ -1006,10 +1006,10 @@ void SymbolTable::AddMemberVariable(cmajor::ast::MemberVariableNode& memberVaria
     }
     memberVariableSymbol->SetCompileUnit(currentCompileUnit);
     MapNode(&memberVariableNode, memberVariableSymbol);
-    container->AddMember(memberVariableSymbol);
+    container->AddMember(memberVariableSymbol, context);
 }
 
-void SymbolTable::BeginDelegate(cmajor::ast::DelegateNode& delegateNode)
+void SymbolTable::BeginDelegate(cmajor::ast::DelegateNode& delegateNode, Context* context)
 {
     DelegateTypeSymbol* delegateTypeSymbol = new DelegateTypeSymbol(delegateNode.GetSpan(), delegateNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1026,7 +1026,7 @@ void SymbolTable::BeginDelegate(cmajor::ast::DelegateNode& delegateNode)
     delegateTypeSymbol->SetModule(module);
     MapNode(&delegateNode, delegateTypeSymbol);
     SetTypeIdFor(delegateTypeSymbol);
-    container->AddMember(delegateTypeSymbol);
+    container->AddMember(delegateTypeSymbol, context);
     BeginContainer(delegateTypeSymbol);
     parameterIndex = 0;
 }
@@ -1036,7 +1036,7 @@ void SymbolTable::EndDelegate()
     EndContainer();
 }
 
-void SymbolTable::BeginClassDelegate(cmajor::ast::ClassDelegateNode& classDelegateNode)
+void SymbolTable::BeginClassDelegate(cmajor::ast::ClassDelegateNode& classDelegateNode, Context* context)
 {
     ClassDelegateTypeSymbol* classDelegateTypeSymbol = new ClassDelegateTypeSymbol(classDelegateNode.GetSpan(), classDelegateNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1053,7 +1053,7 @@ void SymbolTable::BeginClassDelegate(cmajor::ast::ClassDelegateNode& classDelega
     classDelegateTypeSymbol->SetModule(module);
     MapNode(&classDelegateNode, classDelegateTypeSymbol);
     SetTypeIdFor(classDelegateTypeSymbol);
-    container->AddMember(classDelegateTypeSymbol);
+    container->AddMember(classDelegateTypeSymbol, context);
     BeginContainer(classDelegateTypeSymbol);
     parameterIndex = 0;
 }
@@ -1088,11 +1088,11 @@ void SymbolTable::BeginConcept(cmajor::ast::ConceptNode& conceptNode, bool hasSo
     BeginContainer(conceptSymbol);
 }
 
-void SymbolTable::EndConcept()
+void SymbolTable::EndConcept(Context* context)
 {
     ConceptSymbol* conceptSymbol = static_cast<ConceptSymbol*>(container);
     EndContainer();
-    container->AddMember(conceptSymbol);
+    container->AddMember(conceptSymbol, context);
 }
 
 void SymbolTable::BeginAxiom(cmajor::ast::AxiomNode& axiomNode)
@@ -1122,14 +1122,14 @@ void SymbolTable::BeginAxiom(cmajor::ast::AxiomNode& axiomNode)
     BeginContainer(axiomSymbol);
 }
 
-void SymbolTable::EndAxiom()
+void SymbolTable::EndAxiom(Context* context)
 {
     AxiomSymbol* axiomSymbol = static_cast<AxiomSymbol*>(container);
     EndContainer();
-    container->AddMember(axiomSymbol);
+    container->AddMember(axiomSymbol, context);
 }
 
-void SymbolTable::BeginDeclarationBlock(cmajor::ast::Node& node)
+void SymbolTable::BeginDeclarationBlock(cmajor::ast::Node& node, Context* context)
 {
     DeclarationBlock* declarationBlock = new DeclarationBlock(node.GetSpan(), U"@locals" + util::ToUtf32(std::to_string(GetNextDeclarationBlockIndex())));
     if (instantiatingTemplate)
@@ -1145,7 +1145,7 @@ void SymbolTable::BeginDeclarationBlock(cmajor::ast::Node& node)
     declarationBlock->SetCompileUnit(currentCompileUnit);
     declarationBlock->SetModule(module);
     MapNode(&node, declarationBlock);
-    container->AddMember(declarationBlock);
+    container->AddMember(declarationBlock, context);
     BeginContainer(declarationBlock);
 }
 
@@ -1154,7 +1154,7 @@ void SymbolTable::EndDeclarationBlock()
     EndContainer();
 }
 
-void SymbolTable::AddLocalVariable(cmajor::ast::ConstructionStatementNode& constructionStatementNode)
+void SymbolTable::AddLocalVariable(cmajor::ast::ConstructionStatementNode& constructionStatementNode, Context* context)
 {
     if (!constructionStatementNode.Id()) return;
     if (GetGlobalFlag(GlobalFlags::profile) && constructionStatementNode.Id()->Str() == U"@functionProfiler")
@@ -1182,19 +1182,19 @@ void SymbolTable::AddLocalVariable(cmajor::ast::ConstructionStatementNode& const
     localVariableSymbol->SetCompileUnit(currentCompileUnit);
     localVariableSymbol->SetModule(module);
     MapNode(&constructionStatementNode, localVariableSymbol);
-    container->AddMember(localVariableSymbol);
+    container->AddMember(localVariableSymbol, context);
 }
 
-void SymbolTable::AddLocalVariable(cmajor::ast::IdentifierNode& identifierNode)
+void SymbolTable::AddLocalVariable(cmajor::ast::IdentifierNode& identifierNode, Context* context)
 {
     LocalVariableSymbol* localVariableSymbol = new LocalVariableSymbol(identifierNode.GetSpan(), identifierNode.Str());
     localVariableSymbol->SetCompileUnit(currentCompileUnit);
     localVariableSymbol->SetModule(module);
     MapNode(&identifierNode, localVariableSymbol);
-    container->AddMember(localVariableSymbol);
+    container->AddMember(localVariableSymbol, context);
 }
 
-AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::AliasNode& aliasNode)
+AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::AliasNode& aliasNode, Context* context)
 {
     AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(aliasNode.GetSpan(), aliasNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1210,11 +1210,11 @@ AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::AliasNode& aliasNode)
     aliasTypeSymbol->SetCompileUnit(currentCompileUnit);
     aliasTypeSymbol->SetModule(module);
     MapNode(&aliasNode, aliasTypeSymbol);
-    container->AddMember(aliasTypeSymbol);
+    container->AddMember(aliasTypeSymbol, context);
     return aliasTypeSymbol;
 }
 
-AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::TypedefNode& typedefNode)
+AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::TypedefNode& typedefNode, Context* context)
 {
     AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(typedefNode.GetSpan(), typedefNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1230,11 +1230,11 @@ AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::TypedefNode& typedefNode
     aliasTypeSymbol->SetCompileUnit(currentCompileUnit);
     aliasTypeSymbol->SetModule(module);
     MapNode(&typedefNode, aliasTypeSymbol);
-    container->AddMember(aliasTypeSymbol);
+    container->AddMember(aliasTypeSymbol, context);
     return aliasTypeSymbol;
 }
 
-ConstantSymbol* SymbolTable::AddConstant(cmajor::ast::ConstantNode& constantNode)
+ConstantSymbol* SymbolTable::AddConstant(cmajor::ast::ConstantNode& constantNode, Context* context)
 {
     ConstantSymbol* constantSymbol = new ConstantSymbol(constantNode.GetSpan(), constantNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1251,11 +1251,11 @@ ConstantSymbol* SymbolTable::AddConstant(cmajor::ast::ConstantNode& constantNode
     constantSymbol->SetModule(module);
     constantSymbol->SetStrValue(constantNode.StrValue());
     MapNode(&constantNode, constantSymbol);
-    container->AddMember(constantSymbol);
+    container->AddMember(constantSymbol, context);
     return constantSymbol;
 }
 
-GlobalVariableSymbol* SymbolTable::AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode)
+GlobalVariableSymbol* SymbolTable::AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode, Context* context)
 {
     GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSpan(), globalVariableNode.Id()->Str(), 
         globalVariableNode.CompileUnit()->Id(), globalVariableNode.CompileUnit()->FilePath());
@@ -1273,11 +1273,11 @@ GlobalVariableSymbol* SymbolTable::AddGlobalVariable(cmajor::ast::GlobalVariable
     globalVariableSymbol->SetCompileUnit(currentCompileUnit);
     globalVariableSymbol->SetModule(module);
     MapNode(&globalVariableNode, globalVariableSymbol);
-    container->AddMember(globalVariableSymbol);
+    container->AddMember(globalVariableSymbol, context);
     return globalVariableSymbol;
 }
 
-void SymbolTable::BeginEnumType(cmajor::ast::EnumTypeNode& enumTypeNode)
+void SymbolTable::BeginEnumType(cmajor::ast::EnumTypeNode& enumTypeNode, Context* context)
 {
     EnumTypeSymbol* enumTypeSymbol = new EnumTypeSymbol(enumTypeNode.GetSpan(), enumTypeNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1294,7 +1294,7 @@ void SymbolTable::BeginEnumType(cmajor::ast::EnumTypeNode& enumTypeNode)
     enumTypeSymbol->SetModule(module);
     MapNode(&enumTypeNode, enumTypeSymbol);
     SetTypeIdFor(enumTypeSymbol);
-    container->AddMember(enumTypeSymbol);
+    container->AddMember(enumTypeSymbol, context);
     BeginContainer(enumTypeSymbol);
 }
 
@@ -1303,7 +1303,7 @@ void SymbolTable::EndEnumType()
     EndContainer();
 }
 
-void SymbolTable::AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNode)
+void SymbolTable::AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNode, Context* context)
 {
     EnumConstantSymbol* enumConstantSymbol = new EnumConstantSymbol(enumConstantNode.GetSpan(), enumConstantNode.Id()->Str());
     if (instantiatingTemplate)
@@ -1319,39 +1319,39 @@ void SymbolTable::AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNod
     enumConstantSymbol->SetCompileUnit(currentCompileUnit);
     enumConstantSymbol->SetModule(module);
     MapNode(&enumConstantNode, enumConstantSymbol);
-    container->AddMember(enumConstantSymbol);
+    container->AddMember(enumConstantSymbol, context);
 }
 
-void SymbolTable::AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol)
+void SymbolTable::AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol, Context* context)
 {
     typeSymbol->SetFileIndex(currentCompileUnit->FileIndex());
     typeSymbol->SetModuleId(currentCompileUnit->ModuleId());
     typeSymbol->SetCompileUnit(currentCompileUnit);
     typeSymbol->SetModule(module);
     SetTypeIdFor(typeSymbol);
-    globalNs.AddMember(typeSymbol);
+    globalNs.AddMember(typeSymbol, context);
     typeNameMap[typeSymbol->FullName()] = typeSymbol;
 }
 
-void SymbolTable::AddTypeSymbol(TypeSymbol* typeSymbol)
+void SymbolTable::AddTypeSymbol(TypeSymbol* typeSymbol, Context* context)
 {
     typeSymbol->SetFileIndex(currentCompileUnit->FileIndex());
     typeSymbol->SetModuleId(currentCompileUnit->ModuleId());
     typeSymbol->SetCompileUnit(currentCompileUnit);
     typeSymbol->SetModule(module);
     SetTypeIdFor(typeSymbol);
-    container->AddMember(typeSymbol);
+    container->AddMember(typeSymbol, context);
     typeNameMap[typeSymbol->FullName()] = typeSymbol;
 }
 
-void SymbolTable::AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol)
+void SymbolTable::AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol, Context* context)
 {
     functionSymbol->SetFileIndex(currentCompileUnit->FileIndex());
     functionSymbol->SetModuleId(currentCompileUnit->ModuleId());
     functionSymbol->SetCompileUnit(currentCompileUnit);
     SetFunctionIdFor(functionSymbol);
     functionSymbol->SetModule(module);
-    globalNs.AddMember(functionSymbol);
+    globalNs.AddMember(functionSymbol, context);
     if (functionSymbol->IsConversion())
     {
         conversionTable.AddConversion(functionSymbol);
@@ -1612,7 +1612,7 @@ TypeSymbol* SymbolTable::GetTypeByName(const std::u32string& typeName) const
     }
 }
 
-TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec)
+TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec, Context* context)
 {
     if (!baseType)
     {
@@ -1654,26 +1654,26 @@ TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivat
         AliasTypeSymbol* valueType = new AliasTypeSymbol(baseType->GetSpan(), U"ValueType");
         valueType->SetModule(module);
         valueType->SetAccess(SymbolAccess::public_);
-        valueType->SetType(derivedType->RemovePointer());
-        TypeSymbol* withoutConst = valueType->GetType()->RemoveConst();
+        valueType->SetType(derivedType->RemovePointer(context));
+        TypeSymbol* withoutConst = valueType->GetType()->RemoveConst(context);
         if (withoutConst->IsBasicTypeSymbol())
         {
             valueType->SetType(withoutConst);
         }
         valueType->SetBound();
-        derivedType->AddMember(valueType);
+        derivedType->AddMember(valueType, context);
         AliasTypeSymbol* referenceType = new AliasTypeSymbol(baseType->GetSpan(), U"ReferenceType");
         referenceType->SetModule(module);
         referenceType->SetAccess(SymbolAccess::public_);
-        referenceType->SetType(valueType->GetType()->AddLvalueReference());
+        referenceType->SetType(valueType->GetType()->AddLvalueReference(context));
         referenceType->SetBound();
-        derivedType->AddMember(referenceType);
+        derivedType->AddMember(referenceType, context);
         AliasTypeSymbol* pointerType = new AliasTypeSymbol(baseType->GetSpan(), U"PointerType");
         pointerType->SetModule(module);
         pointerType->SetAccess(SymbolAccess::public_);
         pointerType->SetType(derivedType);
         pointerType->SetBound();
-        derivedType->AddMember(pointerType);
+        derivedType->AddMember(pointerType, context);
     }
     return derivedType;
 }
@@ -1683,7 +1683,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, classTemplate->GetFullSpan());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, classTemplate->GetFullSpan());
     }
 #endif
     std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
@@ -1714,7 +1714,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::CopyClassTemplateSpecialization(
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, source->GetFullSpan());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, source->GetFullSpan());
     }
 #endif
     std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
@@ -1759,12 +1759,12 @@ ClassTemplateSpecializationSymbol* SymbolTable::GetCurrentClassTemplateSpecializ
     return source;
 }
 
-ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, int64_t size)
+ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, int64_t size, Context* context)
 {
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, elementType->GetFullSpan());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, elementType->GetFullSpan());
     }
 #endif
     ArrayKey key(elementType, size);
@@ -1779,33 +1779,33 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, int64_t siz
     arrayTypeMap[key] = arrayType;
     arrayType->SetParent(&globalNs);
     arrayType->SetModule(module);
-    ArrayLengthFunction* arrayLengthFunction = new ArrayLengthFunction(arrayType);
+    ArrayLengthFunction* arrayLengthFunction = new ArrayLengthFunction(arrayType, context);
     SetFunctionIdFor(arrayLengthFunction);
-    arrayType->AddMember(arrayLengthFunction);
-    ArrayBeginFunction* arrayBeginFunction = new ArrayBeginFunction(arrayType);
+    arrayType->AddMember(arrayLengthFunction, context);
+    ArrayBeginFunction* arrayBeginFunction = new ArrayBeginFunction(arrayType, context);
     SetFunctionIdFor(arrayBeginFunction);
-    arrayType->AddMember(arrayBeginFunction);
-    ArrayEndFunction* arrayEndFunction = new ArrayEndFunction(arrayType);
+    arrayType->AddMember(arrayBeginFunction, context);
+    ArrayEndFunction* arrayEndFunction = new ArrayEndFunction(arrayType, context);
     SetFunctionIdFor(arrayEndFunction);
-    arrayType->AddMember(arrayEndFunction);
-    ArrayCBeginFunction* arrayCBeginFunction = new ArrayCBeginFunction(arrayType);
+    arrayType->AddMember(arrayEndFunction, context);
+    ArrayCBeginFunction* arrayCBeginFunction = new ArrayCBeginFunction(arrayType, context);
     SetFunctionIdFor(arrayCBeginFunction);
-    arrayType->AddMember(arrayCBeginFunction);
-    ArrayCEndFunction* arrayCEndFunction = new ArrayCEndFunction(arrayType);
+    arrayType->AddMember(arrayCBeginFunction, context);
+    ArrayCEndFunction* arrayCEndFunction = new ArrayCEndFunction(arrayType, context);
     SetFunctionIdFor(arrayCEndFunction);
-    arrayType->AddMember(arrayCEndFunction);
+    arrayType->AddMember(arrayCEndFunction, context);
     AliasTypeSymbol* iterator = new AliasTypeSymbol(elementType->GetSpan(), U"Iterator");
     iterator->SetModule(module);
     iterator->SetAccess(SymbolAccess::public_);
-    iterator->SetType(arrayType->ElementType()->AddPointer());
+    iterator->SetType(arrayType->ElementType()->AddPointer(context));
     iterator->SetBound();
-    arrayType->AddMember(iterator);
+    arrayType->AddMember(iterator, context);
     AliasTypeSymbol* constIterator = new AliasTypeSymbol(elementType->GetSpan(), U"ConstIterator");
     constIterator->SetModule(module);
     constIterator->SetAccess(SymbolAccess::public_);
-    constIterator->SetType(arrayType->ElementType()->AddConst()->AddPointer());
+    constIterator->SetType(arrayType->ElementType()->AddConst(context)->AddPointer(context));
     constIterator->SetBound();
-    arrayType->AddMember(constIterator);
+    arrayType->AddMember(constIterator, context);
     arrayTypes.push_back(std::unique_ptr<ArrayTypeSymbol>(arrayType));
     derivedTypeMap[arrayType->TypeId()].clear();
     return arrayType;
@@ -1816,7 +1816,7 @@ void SymbolTable::AddClassTemplateSpecializationsToClassTemplateSpecializationMa
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, soul::ast::Span(), soul::ast::Span());
     }
 #endif
     for (ClassTemplateSpecializationSymbol* classTemplateSpecialization : classTemplateSpecializations)
@@ -1835,7 +1835,7 @@ void SymbolTable::AddConversion(FunctionSymbol* conversion, Module* module)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, conversion->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, conversion->GetSpan(), soul::ast::Span());
     }
 #endif
     std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
@@ -1847,10 +1847,10 @@ void SymbolTable::AddConversion(FunctionSymbol* conversion)
     AddConversion(conversion, nullptr);
 }
 
-FunctionSymbol* SymbolTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const
+FunctionSymbol* SymbolTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, Context* context) const
 {
     std::lock_guard<std::recursive_mutex> lock(module->Lock());
-    return conversionTable.GetConversion(sourceType, targetType);
+    return conversionTable.GetConversion(sourceType, targetType, context);
 }
 
 void SymbolTable::AddPolymorphicClass(ClassTypeSymbol* polymorphicClass)
@@ -1858,7 +1858,7 @@ void SymbolTable::AddPolymorphicClass(ClassTypeSymbol* polymorphicClass)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, polymorphicClass->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, polymorphicClass->GetSpan(), soul::ast::Span());
     }
 #endif
     if (!polymorphicClass->IsPolymorphic())
@@ -1873,7 +1873,7 @@ void SymbolTable::AddClassHavingStaticConstructor(ClassTypeSymbol* classHavingSt
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, classHavingStaticConstructor->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, classHavingStaticConstructor->GetSpan(), soul::ast::Span());
     }
 #endif
     if (!classHavingStaticConstructor->StaticConstructor())
@@ -1888,7 +1888,7 @@ void SymbolTable::AddJsonClass(const std::u32string& jsonClass)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, soul::ast::Span(), soul::ast::Span());
     }
 #endif
     jsonClasses.insert(jsonClass);
@@ -1982,11 +1982,13 @@ FunctionSymbol* SymbolTable::GetInvoke(cmajor::ast::IdentifierNode* invokeId) co
 
 void SymbolTable::MapSymbol(cmajor::ast::Node* node, Symbol* symbol)
 {
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     mappedNodeSymbolMap[node] = symbol;
 }
 
 Symbol* SymbolTable::GetMappedSymbol(cmajor::ast::Node* node) const
 {
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     auto it = mappedNodeSymbolMap.find(node);
     if (it != mappedNodeSymbolMap.cend())
     {
@@ -2001,6 +2003,7 @@ Symbol* SymbolTable::GetMappedSymbol(cmajor::ast::Node* node) const
 void SymbolTable::MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode, Module* module, Symbol* symbol)
 {
     if (GetGlobalFlag(GlobalFlags::cmdoc)) return;
+    std::lock_guard<std::recursive_mutex> lock(this->module->Lock());
     if (identifierSymbolDefinitionMap.find(identifierNode) != identifierSymbolDefinitionMap.cend()) return;
     identifierSymbolDefinitionMap[identifierNode] = symbol;
     SymbolLocation identifierLocation = MakeSymbolLocation(identifierNode->GetSpan(), module, identifierNode->FileIndex());
@@ -2237,7 +2240,7 @@ void IntrinsicConcepts::AddIntrinsicConcept(cmajor::ast::ConceptNode* intrinsicC
     intrinsicConcepts.push_back(std::unique_ptr<cmajor::ast::ConceptNode>(intrinsicConcept));
 }
 
-void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, cmajor::ast::CompileUnitNode* rootCompileUnit)
+void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, cmajor::ast::CompileUnitNode* rootCompileUnit, Context* context)
 {
     symbolTable.SetCurrentCompileUnit(rootCompileUnit);
     symbolTable.InitUuids();
@@ -2257,26 +2260,27 @@ void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSp
     WCharTypeSymbol* wcharType = new WCharTypeSymbol(rootSpan, U"wchar");
     UCharTypeSymbol* ucharType = new UCharTypeSymbol(rootSpan, U"uchar");
     VoidTypeSymbol* voidType = new VoidTypeSymbol(rootSpan, U"void");
-    symbolTable.AddTypeSymbolToGlobalScope(autoType);
-    symbolTable.AddTypeSymbolToGlobalScope(boolType);
-    symbolTable.AddTypeSymbolToGlobalScope(sbyteType);
-    symbolTable.AddTypeSymbolToGlobalScope(byteType);
-    symbolTable.AddTypeSymbolToGlobalScope(shortType);
-    symbolTable.AddTypeSymbolToGlobalScope(ushortType);
-    symbolTable.AddTypeSymbolToGlobalScope(intType);
-    symbolTable.AddTypeSymbolToGlobalScope(uintType);
-    symbolTable.AddTypeSymbolToGlobalScope(longType);
-    symbolTable.AddTypeSymbolToGlobalScope(ulongType);
-    symbolTable.AddTypeSymbolToGlobalScope(floatType);
-    symbolTable.AddTypeSymbolToGlobalScope(doubleType);
-    symbolTable.AddTypeSymbolToGlobalScope(charType);
-    symbolTable.AddTypeSymbolToGlobalScope(wcharType);
-    symbolTable.AddTypeSymbolToGlobalScope(ucharType);
-    symbolTable.AddTypeSymbolToGlobalScope(voidType);
-    symbolTable.BeginNamespace(U"System", rootSpan, symbolTable.GlobalNs().ModuleId(), symbolTable.GlobalNs().FileIndex());
-    symbolTable.AddTypeSymbol(new NullPtrType(rootSpan, U"NullPtrType"));
+    symbolTable.AddTypeSymbolToGlobalScope(autoType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(boolType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(sbyteType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(byteType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(shortType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(ushortType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(intType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(uintType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(longType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(ulongType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(floatType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(doubleType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(charType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(wcharType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(ucharType, context);
+    symbolTable.AddTypeSymbolToGlobalScope(voidType, context);
+    symbolTable.BeginNamespace(U"System", rootSpan, symbolTable.GlobalNs().ModuleId(), symbolTable.GlobalNs().FileIndex(), context);
+    symbolTable.AddTypeSymbol(new NullPtrType(rootSpan, U"NullPtrType"), context);
     symbolTable.EndNamespace();
-    MakeBasicTypeOperations(symbolTable, rootSpan, boolType, sbyteType, byteType, shortType, ushortType, intType, uintType, longType, ulongType, floatType, doubleType, charType, wcharType, ucharType, voidType);
+    MakeBasicTypeOperations(context, symbolTable, rootSpan, boolType, sbyteType, byteType, shortType, ushortType, intType, uintType, longType, ulongType, 
+        floatType, doubleType, charType, wcharType, ucharType, voidType);
     if (!IntrinsicConcepts::Instance().Initialized())
     {
         IntrinsicConcepts::Instance().SetInitialized();
@@ -2296,12 +2300,12 @@ void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSp
         for (int i = 0; i < n; ++i)
         {
             cmajor::ast::IdentifierNode* typeParamId = conceptNode->TypeParameters()[i];
-            symbolTable.AddTemplateParameter(*typeParamId);
+            symbolTable.AddTemplateParameter(*typeParamId, context);
         }
-        symbolTable.EndConcept();
-        conceptSymbol->ComputeName();
+        symbolTable.EndConcept(context);
+        conceptSymbol->ComputeName(context);
     }
-    symbolTable.AddTypeSymbolToGlobalScope(new StringFunctionContainerSymbol(rootSpan)); 
+    symbolTable.AddTypeSymbolToGlobalScope(new StringFunctionContainerSymbol(rootSpan, context), context); 
 }
 
 /*

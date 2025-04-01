@@ -55,6 +55,7 @@ public:
 private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
+    cmajor::symbols::Context* context;
     cmajor::symbols::Module* module;
     cmajor::symbols::ContainerScope* containerScope;
     ClassTemplateRepository& classTemplateRepository;
@@ -67,7 +68,7 @@ private:
 };
 
 TypeResolver::TypeResolver(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, TypeResolverFlags flags_, cmajor::symbols::ClassTypeSymbol* currentClass_) :
-    boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()),
+    boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), context(boundCompileUnit.GetContext()), module(&boundCompileUnit.GetModule()),
     classTemplateRepository(boundCompileUnit.GetClassTemplateRepository()), containerScope(containerScope_),
     type(nullptr), derivationRec(), nsTypeSymbol(), flags(flags_), currentClass(currentClass_)
 {
@@ -211,7 +212,7 @@ void TypeResolver::Visit(cmajor::ast::ArrayNode& arrayNode)
             throw cmajor::symbols::Exception("long type value expected ", arrayNode.Size()->GetFullSpan());
         }
     }
-    type = symbolTable.MakeArrayType(type, size);
+    type = symbolTable.MakeArrayType(type, size, boundCompileUnit.GetContext());
 }
 
 void TypeResolver::ResolveSymbol(cmajor::ast::Node& node, cmajor::ast::IdentifierNode* idNode, cmajor::symbols::Symbol* symbol)
@@ -297,12 +298,12 @@ void TypeResolver::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
     boundCompileUnit.SetLatestIdentifier(&identifierNode);
     std::u32string name = identifierNode.Str();
-    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
+    cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent, context);
     if (!symbol)
     {
         for (const std::unique_ptr<cmajor::symbols::FileScope>& fileScope : boundCompileUnit.FileScopes())
         {
-            symbol = fileScope->Lookup(name);
+            symbol = fileScope->Lookup(name, context);
             if (symbol)
             {
                 break;
@@ -465,7 +466,7 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
             dotNode.GetFullSpan(), type->GetFullSpan());
     }
     std::u32string name = dotNode.MemberId()->Str();
-    cmajor::symbols::Symbol* symbol = scope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base);
+    cmajor::symbols::Symbol* symbol = scope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base, context);
     if (symbol)
     {
         ResolveSymbol(dotNode, dotNode.MemberId(), symbol);
@@ -477,7 +478,7 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
             cmajor::symbols::TemplateParameterSymbol* templateParameterSymbol = new cmajor::symbols::TemplateParameterSymbol(dotNode.GetSpan(), name);
             templateParameterSymbol->SetModule(module);
             symbolTable.SetTypeIdFor(templateParameterSymbol);
-            type->AddMember(templateParameterSymbol);
+            type->AddMember(templateParameterSymbol, context);
             ResolveSymbol(dotNode, dotNode.MemberId(), templateParameterSymbol);
         }
         else
@@ -555,7 +556,7 @@ cmajor::symbols::TypeSymbol* ResolveType(cmajor::ast::Node* typeExprNode, BoundC
     cmajor::symbols::TypeDerivationRec derivationRec = UnifyDerivations(typeResolver.DerivationRec(), type->DerivationRec());
     if (!derivationRec.derivations.empty())
     {
-        return boundCompileUnit.GetSymbolTable().MakeDerivedType(type->BaseType(), derivationRec);
+        return boundCompileUnit.GetSymbolTable().MakeDerivedType(type->BaseType(), derivationRec, boundCompileUnit.GetContext());
     }
     return type;
 }

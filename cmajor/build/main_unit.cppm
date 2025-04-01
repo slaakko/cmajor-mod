@@ -11,6 +11,6 @@ import std.core;
 
 export namespace cmajor::build {
 
-void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths, std::vector<std::string>& cppFilePaths);
+void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::string>& objectFilePaths, std::vector<std::string>& cppFilePaths);
 
 } // namespace cmajor::build

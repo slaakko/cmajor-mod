@@ -39,7 +39,7 @@ struct NativeModule
 };
 
 CppCodeGenerator::CppCodeGenerator(cmajor::ir::Emitter* emitter_) :
-    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fileIndex(-1),
+    emitter(emitter_), context(nullptr), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fileIndex(-1),
     nativeCompileUnit(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false), destructorCallGenerated(false), genJumpingBoolCode(false),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
@@ -83,6 +83,8 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    context = boundCompileUnit.GetContext();
+    emitter->SetContext(context);
     fileIndex = boundCompileUnit.FileIndex();
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.LLFilePath(), ".cpp");
     NativeModule nativeModule(emitter, intermediateFilePath);
@@ -96,9 +98,9 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
         module->AddCompileUnitId(compileUnitId);
     }
     cmajor::symbols::TypeSymbol* longType = module->GetSymbolTable().GetTypeByName(U"long");
-    module->GetTypeIndex().AddType(longType->TypeId(), longType, *emitter);
+    module->GetTypeIndex().AddType(longType->TypeId(), longType, *emitter, boundCompileUnit.GetContext());
     cmajor::symbols::TypeSymbol* boolType = module->GetSymbolTable().GetTypeByName(U"bool");
-    module->GetTypeIndex().AddType(boolType->TypeId(), boolType, *emitter);
+    module->GetTypeIndex().AddType(boolType->TypeId(), boolType, *emitter, boundCompileUnit.GetContext());
     emitter->SetCompileUnitId(compileUnitId);
     emitter->SetCurrentSourcePos(0, 0, 0);
     generateLineNumbers = false;
@@ -108,12 +110,12 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
     cmajor::binder::ConstantArrayRepository& constantArrayRepository = boundCompileUnit.GetConstantArrayRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantArrayRepository.ConstantArrays())
     {
-        constantSymbol->ArrayIrObject(*emitter, true);
+        constantSymbol->ArrayIrObject(*emitter, true, context);
     }
     cmajor::binder::ConstantStructureRepository& constantStructureRepository = boundCompileUnit.GetConstantStructureRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantStructureRepository.ConstantStructures())
     {
-        constantSymbol->StructureIrObject(*emitter, true);
+        constantSymbol->StructureIrObject(*emitter, true, context);
     }
     int n = boundCompileUnit.BoundNodes().size();
     for (int i = 0; i < n; ++i)
@@ -159,7 +161,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
-    void* functionType = functionSymbol->IrType(*emitter);
+    void* functionType = functionSymbol->IrType(*emitter, context);
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -242,37 +244,37 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = currentClass->GetClassTypeSymbol();
         if (!emitter->IsVmtObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->VmtObject(*emitter, true);
+            classTypeSymbol->VmtObject(*emitter, true, context);
         }
         if (!emitter->IsStaticObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->StaticObject(*emitter, true);
+            classTypeSymbol->StaticObject(*emitter, true, context);
         }
     }
     int np = functionSymbol->Parameters().size();
     for (int i = 0; i < np; ++i)
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->Parameters()[i];
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         if (functionSymbol->HasSource())
         {
             const util::uuid& typeId = parameter->GetType()->TypeId();
-            module->GetTypeIndex().AddType(typeId, parameter->GetType(), *emitter);
-            emitter->AddLocalVariable(util::ToUtf8(parameter->Name()), typeId, parameter->IrObject(*emitter));
+            module->GetTypeIndex().AddType(typeId, parameter->GetType(), *emitter, context);
+            emitter->AddLocalVariable(util::ToUtf8(parameter->Name()), typeId, parameter->IrObject(*emitter, context));
         }
         lastAlloca = allocaInst;
     }
     if (functionSymbol->ReturnParam())
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->ReturnParam();
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(parameter, allocaInst);
         if (functionSymbol->HasSource())
         {
             const util::uuid& typeId = parameter->GetType()->TypeId();
-            module->GetTypeIndex().AddType(typeId, parameter->GetType(), *emitter);
-            emitter->AddLocalVariable(util::ToUtf8(parameter->Name()), typeId, parameter->IrObject(*emitter));
+            module->GetTypeIndex().AddType(typeId, parameter->GetType(), *emitter, context);
+            emitter->AddLocalVariable(util::ToUtf8(parameter->Name()), typeId, parameter->IrObject(*emitter, context));
         }
         lastAlloca = allocaInst;
     }
@@ -280,7 +282,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     for (int i = 0; i < nlv; ++i)
     {
         cmajor::symbols::LocalVariableSymbol* localVariable = functionSymbol->LocalVariables()[i];
-        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter));
+        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter, context));
         emitter->SetIrObject(localVariable, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -296,10 +298,10 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             {
                 copyConstructor = compileUnit->GetCopyConstructorFor(classType->TypeId());
             }
-            void* copyCtorType = copyConstructor->IrType(*emitter);
+            void* copyCtorType = copyConstructor->IrType(*emitter, context);
             void* callee = emitter->GetOrInsertFunction(util::ToUtf8(copyConstructor->MangledName()), copyCtorType, copyConstructor->DontThrow());
             std::vector<void*> args;
-            args.push_back(parameter->IrObject(*emitter));
+            args.push_back(parameter->IrObject(*emitter, context));
             args.push_back(arg);
             emitter->CreateCall(copyCtorType, callee, args);
         }
@@ -312,11 +314,11 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 throw std::runtime_error("internal error: class delegate type has no copy constructor");
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, context);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -327,23 +329,23 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 copyConstructor = compileUnit->GetCopyConstructorFor(interfaceType->TypeId());
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
-            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
-            paramValue.SetType(interfaceType->AddPointer());
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter, context));
+            paramValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
-            argumentValue.SetType(interfaceType->AddPointer());
+            argumentValue.SetType(interfaceType->AddPointer(context));
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, context);
         }
         else
         {
-            emitter->CreateStore(arg, parameter->IrObject(*emitter));
+            emitter->CreateStore(arg, parameter->IrObject(*emitter, context));
         }
     }
     if (functionSymbol->ReturnParam())
     {
         void* arg = emitter->GetFunctionArgument(function, np);
-        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter));
+        emitter->CreateStore(arg, functionSymbol->ReturnParam()->IrObject(*emitter, context));
     }
     for (cmajor::binder::BoundStatement* labeledStatement : boundFunction.LabeledStatements())
     {
@@ -363,7 +365,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
-            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
+            void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter, context);
             if (generateLineNumbers)
             {
                 cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), body->EndSpan(), fileIndex);
@@ -1050,7 +1052,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchSt
         {
             cmajor::symbols::IntegralValue integralCaseValue(caseValue.get());
             caseMap[integralCaseValue] = caseDest;
-            emitter->AddCase(switchInst, caseValue->IrValue(*emitter), caseDest);
+            emitter->AddCase(switchInst, caseValue->IrValue(*emitter, context), caseDest);
         }
     }
     for (unsigned i = 0; i < n; ++i)
@@ -1156,8 +1158,8 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
         if (localVariable)
         {
             const util::uuid& typeId = localVariable->GetType()->TypeId();
-            module->GetTypeIndex().AddType(typeId, localVariable->GetType(), *emitter);
-            emitter->AddLocalVariable(util::ToUtf8(localVariable->Name()), typeId, localVariable->IrObject(*emitter));
+            module->GetTypeIndex().AddType(typeId, localVariable->GetType(), *emitter, context);
+            emitter->AddLocalVariable(util::ToUtf8(localVariable->Name()), typeId, localVariable->IrObject(*emitter, context));
         }
     }
     destructorCallGenerated = false;
@@ -1185,7 +1187,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
                 std::lock_guard<std::recursive_mutex> lock(compileUnit->GetModule().Lock());
-                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
+                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer(context)->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
@@ -1210,7 +1212,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
                             if (compileUnitNode)
                             {
                                 destructor->SetCompileUnitId(compileUnitNode->Id());
-                                destructor->ComputeMangledName();
+                                destructor->ComputeMangledName(context);
                             }
                         }
 
@@ -1381,8 +1383,8 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetVm
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
-    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter, context), classPtrValue, vmtPtrIndex);
+    void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false, context), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }
 
@@ -1463,7 +1465,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
         void* handleExceptionFunctionType = emitter->GetIrTypeForFunction(emitter->GetIrTypeForBool(), handleExceptionParamTypes);
         std::vector<void*> handleExceptionArgs;
         cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSpan(), boundCatchStatement->CatchTypeUuidId());
-        void* catchTypeIdValue = uuidValue.IrValue(*emitter);
+        void* catchTypeIdValue = uuidValue.IrValue(*emitter, context);
         handleExceptionArgs.push_back(catchTypeIdValue);
         void* handleException = emitter->GetOrInsertFunction("RtmHandleException", handleExceptionFunctionType, true);
         void* handleThisEx = emitter->CreateCall(handleExceptionFunctionType, handleException, handleExceptionArgs);
@@ -1636,7 +1638,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructExpression& boundCons
 {
     boundConstructExpression.Load(*emitter, cmajor::ir::OperationFlags::none);
     cmajor::symbols::TypeSymbol* type = boundConstructExpression.GetType();
-    module->GetTypeIndex().AddType(type->TypeId(), type, *emitter);
+    module->GetTypeIndex().AddType(type->TypeId(), type, *emitter, context);
     GenJumpingBoolCode();
 }
 
@@ -1644,7 +1646,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructAndReturnTemporaryExp
 {
     boundConstructAndReturnTemporaryExpression.Load(*emitter, cmajor::ir::OperationFlags::none);
     cmajor::symbols::TypeSymbol* type = boundConstructAndReturnTemporaryExpression.GetType();
-    module->GetTypeIndex().AddType(type->TypeId(), type, *emitter);
+    module->GetTypeIndex().AddType(type->TypeId(), type, *emitter, context);
     GenJumpingBoolCode();
 }
 
@@ -1658,9 +1660,9 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundIsExpression& boundIsExpressio
 {
     boundIsExpression.Load(*emitter, cmajor::ir::OperationFlags::none);
     cmajor::symbols::TypeSymbol* exprType = boundIsExpression.Expr()->GetType();
-    module->GetTypeIndex().AddType(exprType->TypeId(), exprType, *emitter);
+    module->GetTypeIndex().AddType(exprType->TypeId(), exprType, *emitter, context);
     cmajor::symbols::TypeSymbol* rightType = boundIsExpression.RightClassType();
-    module->GetTypeIndex().AddType(rightType->TypeId(), rightType, *emitter);
+    module->GetTypeIndex().AddType(rightType->TypeId(), rightType, *emitter, context);
     GenJumpingBoolCode();
 }
 
@@ -1668,25 +1670,25 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundAsExpression& boundAsExpressio
 {
     boundAsExpression.Load(*emitter, cmajor::ir::OperationFlags::none);
     cmajor::symbols::TypeSymbol* exprType = boundAsExpression.Expr()->GetType();
-    module->GetTypeIndex().AddType(exprType->TypeId(), exprType, *emitter);
+    module->GetTypeIndex().AddType(exprType->TypeId(), exprType, *emitter, context);
     cmajor::symbols::TypeSymbol* rightType = boundAsExpression.RightClassType();
-    module->GetTypeIndex().AddType(rightType->TypeId(), rightType, *emitter);
+    module->GetTypeIndex().AddType(rightType->TypeId(), rightType, *emitter, context);
 }
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundTypeNameExpression& boundTypeNameExpression)
 {
     boundTypeNameExpression.Load(*emitter, cmajor::ir::OperationFlags::none);
     cmajor::symbols::TypeSymbol* classPtrType = boundTypeNameExpression.ClassPtr()->GetType();
-    module->GetTypeIndex().AddType(classPtrType->TypeId(), classPtrType, *emitter);
+    module->GetTypeIndex().AddType(classPtrType->TypeId(), classPtrType, *emitter, context);
 }
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundBitCast& boundBitCast)
 {
     boundBitCast.Load(*emitter, cmajor::ir::OperationFlags::none);
     cmajor::symbols::TypeSymbol* exprType = boundBitCast.Expr()->GetType();
-    module->GetTypeIndex().AddType(exprType->TypeId(), exprType, *emitter);
+    module->GetTypeIndex().AddType(exprType->TypeId(), exprType, *emitter, context);
     cmajor::symbols::TypeSymbol* type = boundBitCast.GetType();
-    module->GetTypeIndex().AddType(type->TypeId(), type, *emitter);
+    module->GetTypeIndex().AddType(type->TypeId(), type, *emitter, context);
 }
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundFunctionPtr& boundFunctionPtr)
@@ -1731,7 +1733,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunction)
 void CppCodeGenerator::Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable)
 {
     cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
-    globalVariableSymbol->CreateIrObject(*emitter);
+    globalVariableSymbol->CreateIrObject(*emitter, context);
 }
 
 void CppCodeGenerator::GenJumpingBoolCode()
@@ -2010,10 +2012,10 @@ void CppCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& 
     bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
     inSetLineOrEntryCode = true;
     cmajor::symbols::LocalVariableSymbol* traceEntryVar = boundFunction.GetFunctionSymbol()->TraceEntryVar();
-    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter));
+    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter, context));
     emitter->SetIrObject(traceEntryVar, traceEntryAlloca);
     cmajor::symbols::LocalVariableSymbol* traceGuardVar = boundFunction.GetFunctionSymbol()->TraceGuardVar();
-    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter));
+    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter, context));
     emitter->SetIrObject(traceGuardVar, traceGuardAlloca);
     lastAlloca = traceGuardAlloca;
     for (const auto& statement : enterCode)

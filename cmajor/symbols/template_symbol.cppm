@@ -24,17 +24,17 @@ public:
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void* IrType(cmajor::ir::Emitter& emitter) override 
+    void* IrType(cmajor::ir::Emitter& emitter, Context* context) override 
     { 
         Assert(false, "tried to get ir type of template parameter"); 
         return nullptr; 
     }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override 
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter, Context* context) override 
     {
         Assert(false, "tried to create defualt ir value of template parameter"); 
         return nullptr; 
     }
-    TypeSymbol* Unify(TypeSymbol* type) override;
+    TypeSymbol* Unify(TypeSymbol* type, Context* context) override;
     bool ContainsTemplateParameter() const override { return true; }
     bool HasDefault() const { return hasDefault; }
     void SetHasDefault() { hasDefault = true; }

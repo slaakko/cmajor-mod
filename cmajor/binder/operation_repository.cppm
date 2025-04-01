@@ -50,10 +50,12 @@ public:
     int Arity() const { return arity; }
     cmajor::symbols::SymbolTable* GetSymbolTable();
     BoundCompileUnit& GetBoundCompileUnit();
+    cmajor::symbols::Context* GetContext() { return context; }
 private:
     std::u32string groupName;
     int arity;
     BoundCompileUnit& boundCompileUnit;
+    cmajor::symbols::Context* context;
 };
 
 class ArityOperation
@@ -86,7 +88,8 @@ public:
         cmajor::ast::Node* node, CollectFlags flags);
     void GenerateCopyConstructorFor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
         cmajor::ast::Node* node);
-    void GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node);
+    void GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, 
+        cmajor::symbols::Context* context, cmajor::ast::Node* node);
 private:
     BoundCompileUnit& boundCompileUnit;
     std::unordered_map<std::u32string, OperationGroup*> operationGroupMap;
