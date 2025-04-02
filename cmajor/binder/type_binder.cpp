@@ -1050,6 +1050,7 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
     }
     classDelegateTypeSymbol->AddMember(memberDelegateType, context);
     cmajor::symbols::ClassTypeSymbol* objectDelegatePairType = new cmajor::symbols::ClassTypeSymbol(classDelegateNode.GetSpan(), U"@objectDelegatePairType");
+    objectDelegatePairType->SetModule(context->RootModule());
     objectDelegatePairType->SetAccess(cmajor::symbols::SymbolAccess::public_);
     objectDelegatePairType->SetGroupName(U"@objectDelegatePairType");
     cmajor::symbols::MemberVariableSymbol* objVar = new cmajor::symbols::MemberVariableSymbol(classDelegateNode.GetSpan(), U"obj");

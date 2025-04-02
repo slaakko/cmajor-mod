@@ -887,10 +887,10 @@ void ClassToInterfaceConversion::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-std::vector<LocalVariableSymbol*> ClassToInterfaceConversion::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context)
+std::vector<LocalVariableSymbol*> ClassToInterfaceConversion::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context, bool add)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(targetInterfaceType, GetSpan(), context));
+    temporaries.push_back(currentFunction->CreateTemporary(targetInterfaceType, GetSpan(), context, add));
     return temporaries;
 }
 

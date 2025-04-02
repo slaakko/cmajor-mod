@@ -145,7 +145,7 @@ void MakeUnitTestFiles(cmajor::ast::Solution* solution, cmajor::ast::Project* pr
     const std::string& projectFilePath, int32_t fileIndex, soul::lexer::FileMap& fileMap, cmajor::symbols::Module* module,
     util::SynchronizedQueue<UnitTest>& unitTestQueue, int& unitTestIndex)
 {
-    std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, fileMap, cmajor::build::Flags::none, module);
+    std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, &fileMap, cmajor::build::Flags::none, module);
     cmajor::ast::CloneContext makeUnitTestUnitContext;
     makeUnitTestUnitContext.SetMakeTestUnits();
     std::unique_ptr<cmajor::ast::CompileUnitNode> environmentNode(static_cast<cmajor::ast::CompileUnitNode*>(compileUnit->Clone(makeUnitTestUnitContext)));

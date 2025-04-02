@@ -314,7 +314,7 @@ int main(int argc, const char** argv)
         cmajor::symbols::SetUseModuleCache(useModuleCache);
         cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::llvmBackEnd);
         cmajor::backend::BackEnd* backend = cmajor::backend::GetCurrentBackEnd();
-        std::set<std::string> builtProjects;
+        cmajor::build::ProjectSet projectSet;
         cmajor::symbols::SetUseModuleCache(useModuleCache);
         if ((!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo) || genDebugInfo)
         {
@@ -324,7 +324,7 @@ int main(int argc, const char** argv)
         {
             if (file.ends_with(".cmp"))
             {
-                cmajor::build::BuildProject(file, rootModule, builtProjects);
+                cmajor::build::BuildProject(file, rootModule, projectSet);
             }
             else if (file.ends_with(".cms"))
             {

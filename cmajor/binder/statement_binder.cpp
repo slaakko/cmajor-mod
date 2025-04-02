@@ -909,7 +909,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
                     new cmajor::ast::IdentifierNode(compoundStatementNode.GetSpan(), U"System.Runtime.FunctionProfiler"),
                     new cmajor::ast::IdentifierNode(compoundStatementNode.GetSpan(), U"@functionProfiler"));
                 constructFunctionProfiler.AddArgument(new cmajor::ast::UuidLiteralNode(compoundStatementNode.GetSpan(), functionId));
-                std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+                std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
                 symbolTable.SetCurrentFunctionSymbol(currentFunction->GetFunctionSymbol());
                 symbolTable.BeginContainer(containerScope->Container());
                 cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
@@ -1090,8 +1090,13 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                         if (conversionFun->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol)
                         {
                             BoundFunctionCall* constructorCall = new BoundFunctionCall(returnStatementNode.GetSpan(), conversionFun);
+                            bool immutable = currentFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
                             cmajor::symbols::LocalVariableSymbol* temporary = currentFunction->GetFunctionSymbol()->CreateTemporary(conversionFun->ConversionTargetType(),
-                                returnStatementNode.GetSpan(), context);
+                                returnStatementNode.GetSpan(), context, !immutable);
+                            if (immutable)
+                            {
+                                currentFunction->AddTemporary(temporary);
+                            }
                             constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                                 new BoundLocalVariable(returnStatementNode.GetSpan(), temporary)),
                                 conversionFun->ConversionTargetType()->AddPointer(context))));
@@ -1801,7 +1806,7 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
     cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(span, constructIteratorStatement, itNotEndCond, incrementItStatement, actionStatement);
     compoundStatementNode->AddStatement(forStatement);
 
-    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
     symbolTable.BeginContainer(containerScope->Container());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
     compoundStatementNode->Accept(symbolCreatorVisitor);
@@ -2150,7 +2155,7 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
         handlerBlock.AddStatement(setExceptionVar);
     }
     handlerBlock.AddStatement(static_cast<cmajor::ast::StatementNode*>(catchNode.CatchBlock()->Clone(cloneContext)));
-    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
     symbolTable.BeginContainer(containerScope->Container());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
     handlerBlock.Accept(symbolCreatorVisitor);
@@ -2209,7 +2214,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
         invokeSetUnitTestAssertionResult->AddArgument(assertStatementNode.AssertExpr()->Clone(cloneContext));
         invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSpan(), assertionLineNumber));
         cmajor::ast::ExpressionStatementNode setUnitTestAssertionResult(assertStatementNode.GetSpan(), invokeSetUnitTestAssertionResult);
-        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
         symbolTable.BeginContainer(containerScope->Container());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());
         setUnitTestAssertionResult.Accept(symbolCreatorVisitor);

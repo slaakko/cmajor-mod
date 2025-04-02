@@ -106,7 +106,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     }
     cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(functionNode->Clone(cloneContext));
     currentNs->AddMember(functionInstanceNode);
-    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, functionTemplate->FileIndex(), functionTemplate->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, boundCompileUnit.GetContext());

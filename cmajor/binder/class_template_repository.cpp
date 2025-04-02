@@ -195,7 +195,7 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
         }
         classTemplateSpecialization->AddMember(boundTemplateParameter, context);
     }
-    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, classTemplateSpecialization->FileIndex(), classTemplateSpecialization->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable, context);
@@ -374,7 +374,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
                 boundCompileUnit.RemoveLastFileScope();
             }
         }
-        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
         cmajor::symbols::FunctionSymbol* master = memberFunction;
         master->ResetImmutable();
         cmajor::symbols::FunctionSymbol* copy = master->Copy();

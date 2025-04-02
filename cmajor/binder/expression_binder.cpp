@@ -186,7 +186,12 @@ void ExpressionBinder::BindUnaryOp(BoundExpression* operand, cmajor::ast::Node& 
                 boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &node);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan(), context);
+        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan(), context, !immutable);
+        if (immutable)
+        {
+            boundFunction->AddTemporary(temporary);
+        }
         operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundLocalVariable(node.GetSpan(), temporary)), type->AddPointer(context))));
         if (type->IsClassTypeSymbol())
@@ -273,7 +278,12 @@ void ExpressionBinder::BindBinaryOp(BoundExpression* left, BoundExpression* righ
                 boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &node);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan(), context);
+        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan(), context, !immutable);
+        if (immutable)
+        {
+            boundFunction->AddTemporary(temporary);
+        }
         operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSpan(), temporary)),
             type->AddPointer(context))));
         if (type->IsClassTypeSymbol())
@@ -1369,7 +1379,12 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
             }
         }
         cmajor::symbols::TypeSymbol* pointerType = type->AddPointer(context);
-        cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan(), context);
+        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+        cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan(), context, !immutable);
+        if (immutable)
+        {
+            boundFunction->AddTemporary(temporary);
+        }
         Assert(expression->GetBoundNodeType() == BoundNodeType::boundFunctionCall, "function call expected");
         BoundFunctionCall* boundFunctionCall = static_cast<BoundFunctionCall*>(expression.get());
         boundFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
@@ -1434,7 +1449,13 @@ void ExpressionBinder::Visit(cmajor::ast::DisjunctionNode& disjunctionNode)
     std::unique_ptr<BoundExpression> left = BindExpression(disjunctionNode.Left(), boundCompileUnit, boundFunction, containerScope, statementBinder);
     std::unique_ptr<BoundExpression> right = BindExpression(disjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
     BoundDisjunction* boundDisjunction = new BoundDisjunction(disjunctionNode.GetSpan(), std::move(left), std::move(right), symbolTable.GetTypeByName(U"bool"));
-    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"bool"), disjunctionNode.GetSpan(), context);
+    bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+        symbolTable.GetTypeByName(U"bool"), disjunctionNode.GetSpan(), context, !immutable);
+    if (immutable)
+    {
+        boundFunction->AddTemporary(temporary);
+    }
     boundDisjunction->SetTemporary(new BoundLocalVariable(disjunctionNode.GetSpan(), temporary));
     expression.reset(boundDisjunction);
 }
@@ -1444,7 +1465,13 @@ void ExpressionBinder::Visit(cmajor::ast::ConjunctionNode& conjunctionNode)
     std::unique_ptr<BoundExpression> left = BindExpression(conjunctionNode.Left(), boundCompileUnit, boundFunction, containerScope, statementBinder);
     std::unique_ptr<BoundExpression> right = BindExpression(conjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
     BoundConjunction* boundConjunction = new BoundConjunction(conjunctionNode.GetSpan(), std::move(left), std::move(right), symbolTable.GetTypeByName(U"bool"));
-    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"bool"), conjunctionNode.GetSpan(), context);
+    bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+        symbolTable.GetTypeByName(U"bool"), conjunctionNode.GetSpan(), context, !immutable);
+    if (immutable)
+    {
+        boundFunction->AddTemporary(temporary);
+    }
     boundConjunction->SetTemporary(new BoundLocalVariable(conjunctionNode.GetSpan(), temporary));
     expression.reset(boundConjunction);
 }
@@ -1719,10 +1746,21 @@ void ExpressionBinder::Visit(cmajor::ast::IsNode& isNode)
                         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftBaseType);
                         if (leftClassType->IsPolymorphic())
                         {
-                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(isNode.GetSpan(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), isNode.GetSpan(), context)));
-                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(isNode.GetSpan(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), isNode.GetSpan(), context)));
+                            bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+                            cmajor::symbols::LocalVariableSymbol* temporary1 = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                                symbolTable.GetTypeByName(U"ulong"), isNode.GetSpan(), context, !immutable);
+                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(isNode.GetSpan(), temporary1));
+                            if (immutable)
+                            {
+                                boundFunction->AddTemporary(temporary1);
+                            }
+                            cmajor::symbols::LocalVariableSymbol* temporary2 = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                                symbolTable.GetTypeByName(U"ulong"), isNode.GetSpan(), context, !immutable);
+                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(isNode.GetSpan(), temporary2));
+                            if (immutable)
+                            {
+                                boundFunction->AddTemporary(temporary2);
+                            }
                             expression.reset(new BoundIsExpression(std::move(boundExpr), rightClassType, symbolTable.GetTypeByName(U"bool"),
                                 std::move(leftClassIdVar), std::move(rightClassIdVar)));
                         }
@@ -1784,14 +1822,30 @@ void ExpressionBinder::Visit(cmajor::ast::AsNode& asNode)
                         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftBaseType);
                         if (leftClassType->IsPolymorphic())
                         {
-                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(asNode.GetSpan(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), asNode.GetSpan(), context)));
-                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(asNode.GetSpan(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), asNode.GetSpan(), context)));
+                            bool immutable = boundFunction->GetFunctionSymbol()->IsImmutable();
+                            cmajor::symbols::LocalVariableSymbol* temporary1 = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                                symbolTable.GetTypeByName(U"ulong"), asNode.GetSpan(), context, !immutable);
+                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(asNode.GetSpan(), temporary1));
+                            if (immutable)
+                            {
+                                boundFunction->AddTemporary(temporary1);
+                            }
+                            cmajor::symbols::LocalVariableSymbol* temporary2 = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                                symbolTable.GetTypeByName(U"ulong"), asNode.GetSpan(), context, !immutable);
+                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(asNode.GetSpan(), temporary2));
+                            if (immutable)
+                            {
+                                boundFunction->AddTemporary(temporary2);
+                            }
+                            cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                                rightClassType->AddPointer(context), asNode.GetSpan(), context, !immutable);
                             expression.reset(new BoundAsExpression(std::move(boundExpr), rightClassType,
-                                std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(asNode.GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(
-                                    rightClassType->AddPointer(context), asNode.GetSpan(), context))),
+                                std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(asNode.GetSpan(), temporary)),
                                 std::move(leftClassIdVar), std::move(rightClassIdVar), context));
+                            if (immutable)
+                            {
+                                boundFunction->AddTemporary(temporary);
+                            }
                         }
                         else
                         {
@@ -1967,7 +2021,12 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context);
+        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context, !immutable);
+        if (immutable)
+        {
+            boundFunction->AddTemporary(temporary);
+        }
         std::unique_ptr<BoundExpression> addrOfTemporary(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
             invokeNode.GetSpan(), temporary)), type->AddPointer(context)));
         arguments.push_back(std::move(addrOfTemporary));
@@ -2076,7 +2135,12 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                     boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
                 }
             }
-            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context);
+            bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context, !immutable);
+            if (immutable)
+            {
+                boundFunction->AddTemporary(temporary);
+            }
             delegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
                 invokeNode.GetSpan(), temporary)),
                 type->AddPointer(context))));
@@ -2178,7 +2242,12 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                     boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
                 }
             }
-            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context);
+            bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context, !immutable);
+            if (immutable)
+            {
+                boundFunction->AddTemporary(temporary);
+            }
             classDelegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
                 invokeNode.GetSpan(), temporary)), type->AddPointer(context))));
             if (type->IsClassTypeSymbol())
@@ -2341,7 +2410,12 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context);
+        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan(), context, !immutable);
+        if (immutable)
+        {
+            boundFunction->AddTemporary(temporary);
+        }
         functionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundLocalVariable(invokeNode.GetSpan(), temporary)), type->AddPointer(context))));
         if (type->IsClassTypeSymbol())
@@ -2725,8 +2799,13 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
                         boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &castNode);
                     }
                 }
-                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionFun->ConversionTargetType(), 
-                    conversionFun->GetSpan(), context);
+                bool immutable = boundFunction->GetFunctionSymbol()->IsImmutable();
+                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                    conversionFun->ConversionTargetType(), conversionFun->GetSpan(), context, !immutable);
+                if (immutable)
+                {
+                    boundFunction->AddTemporary(temporary);
+                }
                 constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                     new BoundLocalVariable(castNode.GetSpan(), temporary)),
                     conversionFun->ConversionTargetType()->AddPointer(context))));

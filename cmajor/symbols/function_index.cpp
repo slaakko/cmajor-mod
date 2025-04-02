@@ -18,7 +18,7 @@ FunctionIndex::FunctionIndex(Module* module_) : module(module_), mainFunctionId(
 
 void FunctionIndex::AddFunction(const util::uuid& functionId, FunctionSymbol* functionSymbol)
 {
-    std::lock_guard<std::recursive_mutex> lock(module->GetLock());
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     if (functionMap.find(functionId) == functionMap.cend())
     {
         functionMap[functionId] = functionSymbol;

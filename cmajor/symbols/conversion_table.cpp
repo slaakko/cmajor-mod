@@ -6,6 +6,8 @@
 module cmajor.symbols.conversion.table;
 
 import soul.ast.span;
+import cmajor.symbols.context;
+import cmajor.symbols.exception;
 import cmajor.symbols.modules;
 import cmajor.symbols.function.symbol;
 import util;
@@ -40,7 +42,7 @@ void ConversionTable::AddConversion(FunctionSymbol* conversion)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(context->RootModule(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(context->RootModule(), module, soul::ast::FullSpan(), soul::ast::FullSpan());
     }
 #endif
     ConversionTableEntry entry(conversion->ConversionSourceType(), conversion->ConversionTargetType());
@@ -56,7 +58,7 @@ void ConversionTable::Add(const ConversionTable& that)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(context->RootModule(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(context->RootModule(), module, soul::ast::FullSpan(), soul::ast::FullSpan());
     }
 #endif
     for (const auto& p : that.conversionMap)

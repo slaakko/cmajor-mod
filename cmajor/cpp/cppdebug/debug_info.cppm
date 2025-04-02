@@ -38,7 +38,7 @@ inline bool operator==(const SourceSpan& left, const SourceSpan& right)
     return left.line == right.line && left.scol == right.scol && left.ecol == right.ecol;
 }
 
-SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::Span& span, int32_t fileIdex);
+SourceSpan MakeSourceSpan(soul::lexer::FileMap* fileMap, const soul::ast::Span& span, int32_t fileIdex);
 
 struct Frame
 {

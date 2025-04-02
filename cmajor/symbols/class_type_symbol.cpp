@@ -363,6 +363,7 @@ ClassTypeSymbol::ClassTypeSymbol(SymbolType symbolType_, const soul::ast::Span& 
 
 bool ClassTypeSymbol::GetFlag(ClassTypeSymbolFlags flag) 
 {
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
     if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
     {
@@ -376,6 +377,7 @@ bool ClassTypeSymbol::GetFlag(ClassTypeSymbolFlags flag)
 
 void ClassTypeSymbol::SetFlag(ClassTypeSymbolFlags flag)
 {
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
     if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
     {
@@ -389,6 +391,7 @@ void ClassTypeSymbol::SetFlag(ClassTypeSymbolFlags flag)
 
 void ClassTypeSymbol::ResetFlag(ClassTypeSymbolFlags flag)
 {
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
     if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
     {

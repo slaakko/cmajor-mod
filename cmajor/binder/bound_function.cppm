@@ -45,6 +45,7 @@ public:
     void SetLineCode(std::unique_ptr<BoundStatement>&& lineCode_);
     BoundStatement* GetLineCode() const { return lineCode.get(); }
     BoundCompileUnit* GetBoundCompileUnit() const { return boundCompileUnit; }
+    void AddTemporary(cmajor::symbols::LocalVariableSymbol* temporary);
 private:
     BoundCompileUnit* boundCompileUnit;
     cmajor::symbols::FunctionSymbol* functionSymbol;

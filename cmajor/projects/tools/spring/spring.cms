@@ -2,5 +2,5 @@ solution spring;
 project <spring.cmp>;
 activeProject spring;
 activeBackEnd=llvm;
-activeConfig=debug;
+activeConfig=release;
 activeOptLevel=2;

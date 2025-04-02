@@ -122,7 +122,7 @@ int main(int argc, const char** argv)
                     std::cout << ">>> " << file << "\n";
                 }
                 int fileIndex = fileMap.MapFile(file);
-                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, fileMap, flags, nullptr);
+                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, &fileMap, flags, nullptr);
             }
             else if (file.ends_with(".cmp"))
             {

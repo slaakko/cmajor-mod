@@ -3246,7 +3246,7 @@ BoundExpression* MakeExitEntryPtr(BoundCompileUnit& boundCompileUnit, cmajor::sy
                 cmajor::symbols::ClassGroupTypeSymbol* classGroupSymbol = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(symbol);
                 symbol = classGroupSymbol->GetClass(0);
             }
-            std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+            std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
             cmajor::symbols::TypeSymbol* exitEntryType = static_cast<cmajor::symbols::TypeSymbol*>(symbol);
             cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(boundCompileUnit.GetSymbolTable(), boundCompileUnit.GetContext());
             cmajor::ast::GlobalVariableNode globalVariableNode(node->GetSpan(), cmajor::ast::Specifiers::private_, new cmajor::ast::DotNode(node->GetSpan(),
@@ -3300,9 +3300,15 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
             constructorLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, staticInitCriticalSectionClassType->ClassInterfaceOrNsScope(context)));
             constructorLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> constructorArguments;
+            bool immutable = staticConstructorSymbol->GetModule()->IsImmutable();
+            cmajor::symbols::LocalVariableSymbol* temporary = staticConstructorSymbol->CreateTemporary(
+                staticInitCriticalSectionClassType, node->GetSpan(), context, !immutable);
+            if (immutable)
+            {
+                boundFunction->AddTemporary(temporary);
+            }
             constructorArguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
-                new BoundLocalVariable(node->GetSpan(), staticConstructorSymbol->CreateTemporary(staticInitCriticalSectionClassType, node->GetSpan(), context))),
-                staticInitCriticalSectionClassType->AddPointer(context))));
+                new BoundLocalVariable(node->GetSpan(), temporary)), staticInitCriticalSectionClassType->AddPointer(context))));
             std::unique_ptr<BoundConstructionStatement> constructionStatement(new BoundConstructionStatement(
                 ResolveOverload(U"@constructor", containerScope, constructorLookups, constructorArguments, boundCompileUnit, boundFunction, node), node->GetSpan()));
             boundCompoundStatement->AddStatement(std::move(constructionStatement));

@@ -211,7 +211,11 @@ void CompileThreadFunction(CompileData* data, int threadId)
             if (compileUnitIndex >= 0 && compileUnitIndex < data->boundCompileUnits.size())
             {
                 cmajor::binder::BoundCompileUnit* boundCompileUnit = data->boundCompileUnits[compileUnitIndex].get();
-                std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
+                cmajor::symbols::Context compileUnitContext;
+                compileUnitContext.SetRootModule(data->context->RootModule());
+                boundCompileUnit->SetContext(&compileUnitContext);
+                std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(
+                    cmajor::symbols::GetOptimizationLevel());
                 GenerateCode(*boundCompileUnit, emittingContext.get()); 
                 {
                     std::lock_guard<std::mutex> lock(*data->mtx);

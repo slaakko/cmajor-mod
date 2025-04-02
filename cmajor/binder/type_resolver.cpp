@@ -526,7 +526,8 @@ cmajor::symbols::TypeSymbol* ResolveType(cmajor::ast::Node* typeExprNode, BoundC
     return ResolveType(typeExprNode, boundCompileUnit, containerScope, flags, nullptr);
 }
 
-cmajor::symbols::TypeSymbol* ResolveType(cmajor::ast::Node* typeExprNode, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, TypeResolverFlags flags, cmajor::symbols::ClassTypeSymbol* currentClass)
+cmajor::symbols::TypeSymbol* ResolveType(cmajor::ast::Node* typeExprNode, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, 
+    TypeResolverFlags flags, cmajor::symbols::ClassTypeSymbol* currentClass)
 {
     cmajor::symbols::Module* module = &boundCompileUnit.GetModule();
     bool resolveClassGroup = (flags & TypeResolverFlags::resolveClassGroup) != TypeResolverFlags::none;

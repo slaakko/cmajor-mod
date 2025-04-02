@@ -123,7 +123,22 @@ void Preprocess(cmajor::ast::Project* project)
     }
 }
 
-void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols::Module>& rootModule, bool& stop, bool resetRootModule, std::set<std::string>& builtProjects)
+ProjectSet::ProjectSet()
+{
+}
+
+bool ProjectSet::ProjectStartedToBuild(const std::string& projectFilePath)
+{
+    std::lock_guard<std::mutex> lock(mtx);
+    if (projectsStartedToBuild.find(projectFilePath) == projectsStartedToBuild.end())
+    {
+        projectsStartedToBuild.insert(projectFilePath);
+        return false;
+    }
+    return true;
+}
+
+void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols::Module>& rootModule, bool& stop, bool resetRootModule, ProjectSet& projectSet)
 {
     try
     {
@@ -136,308 +151,300 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
         }
         variables.AddVariable(new Variable("PROJECT_DIR", project->ProjectDir()));
         variables.AddVariable(new Variable("LIBRARY_DIR", project->LibraryDir()));
-        if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::msbuild))
+        for (const std::string& referencedProjectFilePath : project->ReferencedProjectFilePaths())
         {
-            if (builtProjects.find(project->FilePath()) != builtProjects.cend()) return;
-            builtProjects.insert(project->FilePath());
-            for (const std::string& referencedProjectFilePath : project->ReferencedProjectFilePaths())
+            std::unique_ptr<cmajor::ast::Project> referencedProject = ReadProject(referencedProjectFilePath);
+            std::unique_ptr<cmajor::symbols::Module> module;
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll))
             {
-                std::unique_ptr<cmajor::ast::Project> referencedProject = ReadProject(referencedProjectFilePath);
                 project->AddDependsOnId(referencedProject->Id());
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll))
+                try
                 {
-                    if (builtProjects.find(referencedProjectFilePath) == builtProjects.cend())
-                    {
-                        std::unique_ptr<cmajor::symbols::Module> module;
-                        try
-                        {
-                            BuildProject(referencedProject.get(), module, stop, resetRootModule, builtProjects);
-                        }
-                        catch (...)
-                        {
-                            rootModule.reset(module.release());
-                            throw;
-                        }
-                    }
+                    BuildProject(referencedProject.get(), module, stop, resetRootModule, projectSet);
+                }
+                catch (...)
+                {
+                    rootModule.reset(module.release());
+                    throw;
                 }
             }
-            bool systemLibraryInstalled = false;
-            std::string config = cmajor::symbols::GetConfig();
-            std::string configOptLevel = config;
-            int optLevel = cmajor::symbols::GetOptimizationLevel();
-            if (configOptLevel == "release")
+        }
+        if (projectSet.ProjectStartedToBuild(project->FilePath())) return;
+        bool systemLibraryInstalled = false;
+        std::string config = cmajor::symbols::GetConfig();
+        std::string configOptLevel = config;
+        int optLevel = cmajor::symbols::GetOptimizationLevel();
+        if (configOptLevel == "release")
+        {
+            configOptLevel.append("/").append(std::to_string(optLevel));
+        }
+        bool isSystemModule = cmajor::symbols::IsSystemModule(project->Name());
+        if (isSystemModule)
+        {
+            project->SetSystemProject();
+        }
+        bool upToDate = false;
+        cmajor::ast::BackEnd astBackEnd = cmajor::ast::BackEnd::llvm;
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
+        {
+            astBackEnd = cmajor::ast::BackEnd::systemx;
+        }
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+        {
+            astBackEnd = cmajor::ast::BackEnd::cpp;
+        }
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            astBackEnd = cmajor::ast::BackEnd::masm;
+        }
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
+        {
+            astBackEnd = cmajor::ast::BackEnd::sbin;
+        }
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cm)
+        {
+            astBackEnd = cmajor::ast::BackEnd::cm;
+        }
+        if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild))
+        {
+            upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd, optLevel));
+        }
+        if (upToDate)
+        {
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
-                configOptLevel.append("/").append(std::to_string(optLevel));
+                util::LogMessage(project->LogStreamId(), "===== Project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") is up-to-date.");
             }
-            bool isSystemModule = cmajor::symbols::IsSystemModule(project->Name());
-            if (isSystemModule)
+            return;
+        }
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(project->LogStreamId(), "===== Building project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") using " + configOptLevel + 
+                " configuration.");
+        }
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+        {
+            cmdoclib::SetEmptyLibraryPrefix(util::ToUtf8(project->Name()));
+        }
+        cmajor::symbols::Context context;
+        rootModule.reset(new cmajor::symbols::Module(&context, project->Name(), project->ModuleFilePath(), project->GetTarget()));
+        rootModule->SetRootModule();
+        context.SetRootModule(rootModule.get());
+        {
+            rootModule->SetLogStreamId(project->LogStreamId());
+            rootModule->SetCurrentProjectName(project->Name());
+            rootModule->SetCurrentToolName(U"cmc");
+            std::filesystem::path libraryFilePath = project->LibraryFilePath();
+            std::filesystem::path libDir = libraryFilePath.remove_filename();
+            std::string definesFilePath = util::GetFullPath((libDir / std::filesystem::path("defines.txt")).generic_string());
+            SetDefines(rootModule.get(), definesFilePath);
+            rootModule->SetFlag(cmajor::symbols::ModuleFlags::compiling);
+            Flags flags = Flags::none;
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile))
             {
-                project->SetSystemProject();
+                flags = flags | Flags::singleThreadedParse;
             }
-            bool upToDate = false;
-            cmajor::ast::BackEnd astBackEnd = cmajor::ast::BackEnd::llvm;
-            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
+            ParseSourceFiles(project, rootModule->FileMap(), flags, rootModule.get());
+            int n = rootModule->FileMap()->NextFileId();
+            for (int fileId = 0; fileId < n; ++fileId)
             {
-                astBackEnd = cmajor::ast::BackEnd::systemx;
+                rootModule->GetFileTable().RegisterFilePath(rootModule->FileMap()->GetFilePath(fileId));
             }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+            bool prevPreparing = rootModule->Preparing();
+            rootModule->SetPreparing(true);
+            cmajor::symbols::PrepareModuleForCompilation(&context, project->References(), project->GetTarget(), project->RootSpan(), project->RootFileIndex(),
+                project->RootCompileUnit());
+            Preprocess(project);
+            CreateSymbols(&context, context.RootModule()->GetSymbolTable(), project, stop);
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
-                astBackEnd = cmajor::ast::BackEnd::cpp;
+                util::LogMessage(project->LogStreamId(), "Binding types...");
             }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            cmajor::binder::AttributeBinder attributeBinder(&context);
+            std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> boundCompileUnits = BindTypes(&context, project, &attributeBinder, stop);
+            if (stop)
             {
-                astBackEnd = cmajor::ast::BackEnd::masm;
-            }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
-            {
-                astBackEnd = cmajor::ast::BackEnd::sbin;
-            }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cm)
-            {
-                astBackEnd = cmajor::ast::BackEnd::cm;
-            }
-            if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild))
-            {
-                upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd, optLevel));
-            }
-            if (upToDate)
-            {
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-                {
-                    util::LogMessage(project->LogStreamId(), "===== Project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") is up-to-date.");
-                }
                 return;
+            }
+            rootModule->SetPreparing(prevPreparing);
+            std::vector<std::string> objectFilePaths;
+            std::vector<std::string> asmFilePaths;
+            std::vector<std::string> cppFilePaths;
+            std::map<int, cmdoclib::File> docFileMap;
+            Compile(project, &context, boundCompileUnits, objectFilePaths, asmFilePaths, docFileMap, stop);
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+            {
+                cmdoclib::GenerateSymbolTableXml(rootModule.get(), docFileMap);
+            }
+            for (const auto& warning : rootModule->WarningCollection().Warnings())
+            {
+                cmajor::symbols::LogWarning(rootModule->LogStreamId(), warning);
+            }
+            AddResources(project, rootModule.get(), objectFilePaths);
+            for (const auto& rcFilePath : project->ResourceScriptFilePaths())
+            {
+                rootModule->AddResourceScriptFilePath(rcFilePath);
+            }
+            if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
+            {
+                GenerateMainUnit(project, &context, objectFilePaths, cppFilePaths);
             }
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
-                util::LogMessage(project->LogStreamId(), "===== Building project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") using " + configOptLevel + 
-                    " configuration.");
+                util::LogMessage(project->LogStreamId(), "Writing module file...");
             }
-            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+            cmajor::symbols::SymbolWriter writer(project->ModuleFilePath(), &context);
+            rootModule->Write(writer);
+            rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
+            project->SetModuleFilePath(rootModule->OriginalFilePath());
+            project->SetLibraryFilePath(rootModule->LibraryFilePath());
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
-                cmdoclib::SetEmptyLibraryPrefix(util::ToUtf8(project->Name()));
+                util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
             }
-            cmajor::symbols::Context context;
-            rootModule.reset(new cmajor::symbols::Module(&context, project->Name(), project->ModuleFilePath(), project->GetTarget()));
-            rootModule->SetRootModule();
-            context.SetRootModule(rootModule.get());
-            //cmajor::symbols::SetRootModuleForCurrentThread(rootModule.get());
+            RunBuildActions(*project, variables);
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
             {
-                rootModule->SetLogStreamId(project->LogStreamId());
-                rootModule->SetCurrentProjectName(project->Name());
-                rootModule->SetCurrentToolName(U"cmc");
-                std::filesystem::path libraryFilePath = project->LibraryFilePath();
-                std::filesystem::path libDir = libraryFilePath.remove_filename();
-                std::string definesFilePath = util::GetFullPath((libDir / std::filesystem::path("defines.txt")).generic_string());
-                SetDefines(rootModule.get(), definesFilePath);
-                rootModule->SetFlag(cmajor::symbols::ModuleFlags::compiling);
-                Flags flags = Flags::none;
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile))
+                std::vector<std::string> resourceScriptFiles;
+                resourceScriptFiles.push_back(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "rc"), "soul.xml.xpath.lexer.classmap.rc")));
+                for (const auto& rcFilePath : rootModule->AllResourceScriptFilePaths())
                 {
-                    flags = flags | Flags::singleThreadedParse;
+                    resourceScriptFiles.push_back(rcFilePath);
                 }
-                ParseSourceFiles(project, rootModule->FileMap(), flags, rootModule.get());
-                int n = rootModule->FileMap().NextFileId();
-                for (int fileId = 0; fileId < n; ++fileId)
+                std::string classIndexFilePath;
+                std::string traceDataFilePath;
+                if (project->GetTarget() == cmajor::ast::Target::program || 
+                    project->GetTarget() == cmajor::ast::Target::winguiapp || 
+                    project->GetTarget() == cmajor::ast::Target::winapp)
                 {
-                    rootModule->GetFileTable().RegisterFilePath(rootModule->FileMap().GetFilePath(fileId));
+                    classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
+                    cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
+                    traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
+                    rootModule->WriteTraceData(traceDataFilePath);
                 }
-                bool prevPreparing = rootModule->Preparing();
-                rootModule->SetPreparing(true);
-                cmajor::symbols::PrepareModuleForCompilation(&context, project->References(), project->GetTarget(), project->RootSpan(), project->RootFileIndex(),
-                    project->RootCompileUnit());
-                Preprocess(project);
-                CreateSymbols(&context, context.RootModule()->GetSymbolTable(), project, stop);
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                 {
-                    util::LogMessage(project->LogStreamId(), "Binding types...");
-                }
-                cmajor::binder::AttributeBinder attributeBinder(&context);
-                std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> boundCompileUnits = BindTypes(&context, project, &attributeBinder, stop);
-                if (stop)
-                {
-                    return;
-                }
-                rootModule->SetPreparing(prevPreparing);
-                std::vector<std::string> objectFilePaths;
-                std::vector<std::string> asmFilePaths;
-                std::vector<std::string> cppFilePaths;
-                std::map<int, cmdoclib::File> docFileMap;
-                Compile(project, &context, boundCompileUnits, objectFilePaths, asmFilePaths, docFileMap, stop);
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
-                {
-                    cmdoclib::GenerateSymbolTableXml(rootModule.get(), docFileMap);
-                }
-                for (const auto& warning : rootModule->WarningCollection().Warnings())
-                {
-                    cmajor::symbols::LogWarning(rootModule->LogStreamId(), warning);
-                }
-                AddResources(project, rootModule.get(), objectFilePaths);
-                for (const auto& rcFilePath : project->ResourceScriptFilePaths())
-                {
-                    rootModule->AddResourceScriptFilePath(rcFilePath);
-                }
-                if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
-                {
-                    GenerateMainUnit(project, &context, objectFilePaths, cppFilePaths);
-                }
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-                {
-                    util::LogMessage(project->LogStreamId(), "Writing module file...");
-                }
-                cmajor::symbols::SymbolWriter writer(project->ModuleFilePath(), &context);
-                rootModule->Write(writer);
-                rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
-                project->SetModuleFilePath(rootModule->OriginalFilePath());
-                project->SetLibraryFilePath(rootModule->LibraryFilePath());
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-                {
-                    util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
-                }
-                RunBuildActions(*project, variables);
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
-                    cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
-                {
-                    std::vector<std::string> resourceScriptFiles;
-                    resourceScriptFiles.push_back(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "rc"), "soul.xml.xpath.lexer.classmap.rc")));
-                    for (const auto& rcFilePath : rootModule->AllResourceScriptFilePaths())
-                    {
-                        resourceScriptFiles.push_back(rcFilePath);
-                    }
-                    std::string classIndexFilePath;
-                    std::string traceDataFilePath;
-                    if (project->GetTarget() == cmajor::ast::Target::program || 
-                        project->GetTarget() == cmajor::ast::Target::winguiapp || 
-                        project->GetTarget() == cmajor::ast::Target::winapp)
-                    {
-                        classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
-                        cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
-                        traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
-                        rootModule->WriteTraceData(traceDataFilePath);
-                    }
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
-                    {
-                        cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
-                            cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-                        if (project->GetTarget() == cmajor::ast::Target::program ||
-                            project->GetTarget() == cmajor::ast::Target::winguiapp ||
-                            project->GetTarget() == cmajor::ast::Target::winapp)
-                        {
-                            cmajor::masm::build::Install(project);
-                        }
-                    }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
-                    {
-                        bool program = project->GetTarget() == cmajor::ast::Target::program ||
-                            project->GetTarget() == cmajor::ast::Target::winguiapp ||
-                            project->GetTarget() == cmajor::ast::Target::winapp;
-                        std::string libraryFilePath = cmajor::sbin::build::MakeLib(
-                            project, rootModule.get(), objectFilePaths, program, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-                        if (program)
-                        {
-                            std::string vsProjectFilePath = cmajor::masm::build::MakeVSProjectFile(
-                                project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath,
-                                traceDataFilePath, libraryFilePath, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-                            cmajor::masm::build::MSBuild(vsProjectFilePath, cmajor::symbols::GetConfig(), project->LogStreamId());
-                            cmajor::masm::build::Install(project);
-                        }
-                    }
-                }
-                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
-                {
+                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
+                        cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
                     if (project->GetTarget() == cmajor::ast::Target::program ||
                         project->GetTarget() == cmajor::ast::Target::winguiapp ||
                         project->GetTarget() == cmajor::ast::Target::winapp)
                     {
-                        std::string classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
-                        cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
-                        std::string  traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
-                        rootModule->WriteTraceData(traceDataFilePath);
-                        GenerateRuntimeResourceFile(project, rootModule.get(), classIndexFilePath, traceDataFilePath);
-                        CompileResourceScriptFiles(project, rootModule.get());
+                        cmajor::masm::build::Install(project);
                     }
                 }
-                if (!objectFilePaths.empty())
+                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::sbin)
                 {
-                    Archive(project, objectFilePaths);
-                }
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
-                {
-                    GenerateMainUnit(project, &context, objectFilePaths, cppFilePaths);
-                }
-                if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
-                {
-                    Link(project, rootModule.get());
-                }
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
-                {
-                    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                    bool program = project->GetTarget() == cmajor::ast::Target::program ||
+                        project->GetTarget() == cmajor::ast::Target::winguiapp ||
+                        project->GetTarget() == cmajor::ast::Target::winapp;
+                    std::string libraryFilePath = cmajor::sbin::build::MakeLib(
+                        project, rootModule.get(), objectFilePaths, program, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                    if (program)
                     {
-                        util::LogMessage(project->LogStreamId(), "Writing project debug info file...");
-                    }
-                    std::string pdiFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".pdi");
-                    rootModule->WriteProjectDebugInfoFile(pdiFilePath);
-                    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-                    {
-                        util::LogMessage(project->LogStreamId(), "==> " + pdiFilePath);
-                    }
-                    if (project->GetTarget() == cmajor::ast::Target::program || 
-                        project->GetTarget() == cmajor::ast::Target::winguiapp || 
-                        project->GetTarget() == cmajor::ast::Target::winapp)
-                    {
-                        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-                        {
-                            util::LogMessage(project->LogStreamId(), "Writing debug information file...");
-                        }
-#ifdef _WIN32
-                        std::string cmdbFilePath = util::Path::ChangeExtension(project->ExecutableFilePath(), ".cmdb");
-#else
-                        std::string cmdbFilePath = project->ExecutableFilePath() + ".cmdb";
-#endif
-                        rootModule->WriteCmdbFile(cmdbFilePath);
-                        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-                        {
-                            util::LogMessage(project->LogStreamId(), "==> " + cmdbFilePath);
-                        }
+                        std::string vsProjectFilePath = cmajor::masm::build::MakeVSProjectFile(
+                            project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath,
+                            traceDataFilePath, libraryFilePath, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                        cmajor::masm::build::MSBuild(vsProjectFilePath, cmajor::symbols::GetConfig(), project->LogStreamId());
+                        cmajor::masm::build::Install(project);
                     }
                 }
+            }
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+            {
+                if (project->GetTarget() == cmajor::ast::Target::program ||
+                    project->GetTarget() == cmajor::ast::Target::winguiapp ||
+                    project->GetTarget() == cmajor::ast::Target::winapp)
+                {
+                    std::string classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
+                    cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
+                    std::string  traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
+                    rootModule->WriteTraceData(traceDataFilePath);
+                    GenerateRuntimeResourceFile(project, rootModule.get(), classIndexFilePath, traceDataFilePath);
+                    CompileResourceScriptFiles(project, rootModule.get());
+                }
+            }
+            if (!objectFilePaths.empty())
+            {
+                Archive(project, objectFilePaths);
+            }
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+            {
+                GenerateMainUnit(project, &context, objectFilePaths, cppFilePaths);
+            }
+            if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
+            {
+                Link(project, rootModule.get());
+            }
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+            {
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
-                    util::LogMessage(project->LogStreamId(), std::to_string(rootModule->GetSymbolTable().NumSpecializations()) + " class template specializations, " +
-                        std::to_string(rootModule->GetSymbolTable().NumSpecializationsNew()) + " new, " +
-                        std::to_string(rootModule->GetSymbolTable().NumSpecializationsCopied()) + " copied.");
-                    util::LogMessage(project->LogStreamId(), "Project '" + util::ToUtf8(project->Name()) + "' built successfully.");
+                    util::LogMessage(project->LogStreamId(), "Writing project debug info file...");
                 }
-                if (rootModule->IsSystemModule())
+                std::string pdiFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".pdi");
+                rootModule->WriteProjectDebugInfoFile(pdiFilePath);
+                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
-                    project->SetSystemProject();
+                    util::LogMessage(project->LogStreamId(), "==> " + pdiFilePath);
                 }
-                if (rootModule->Name() == U"System.Install")
+                if (project->GetTarget() == cmajor::ast::Target::program || 
+                    project->GetTarget() == cmajor::ast::Target::winguiapp || 
+                    project->GetTarget() == cmajor::ast::Target::winapp)
                 {
-                    if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+                    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                     {
-                        InstallSystemLibraries(rootModule.get());
-                        systemLibraryInstalled = true;
+                        util::LogMessage(project->LogStreamId(), "Writing debug information file...");
+                    }
+#ifdef _WIN32
+                    std::string cmdbFilePath = util::Path::ChangeExtension(project->ExecutableFilePath(), ".cmdb");
+#else
+                    std::string cmdbFilePath = project->ExecutableFilePath() + ".cmdb";
+#endif
+                    rootModule->WriteCmdbFile(cmdbFilePath);
+                    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                    {
+                        util::LogMessage(project->LogStreamId(), "==> " + cmdbFilePath);
                     }
                 }
-                else if (rootModule->Name() == U"System.Windows.Install")
+            }
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+            {
+                util::LogMessage(project->LogStreamId(), std::to_string(rootModule->GetSymbolTable().NumSpecializations()) + " class template specializations, " +
+                    std::to_string(rootModule->GetSymbolTable().NumSpecializationsNew()) + " new, " +
+                    std::to_string(rootModule->GetSymbolTable().NumSpecializationsCopied()) + " copied.");
+                util::LogMessage(project->LogStreamId(), "Project '" + util::ToUtf8(project->Name()) + "' built successfully.");
+            }
+            if (rootModule->IsSystemModule())
+            {
+                project->SetSystemProject();
+            }
+            if (rootModule->Name() == U"System.Install")
+            {
+                if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
                 {
-                    if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
-                    {
-                        InstallSystemWindowsLibraries(rootModule.get());
-                        systemLibraryInstalled = true;
-                    }
+                    InstallSystemLibraries(rootModule.get());
+                    systemLibraryInstalled = true;
                 }
             }
-            if (resetRootModule)
+            else if (rootModule->Name() == U"System.Windows.Install")
             {
-                PutModuleToModuleCache(std::move(rootModule));
-                rootModule.reset();
+                if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+                {
+                    InstallSystemWindowsLibraries(rootModule.get());
+                    systemLibraryInstalled = true;
+                }
             }
-            if (systemLibraryInstalled)
-            {
-                cmajor::symbols::ResetModuleCache();
-            }
+        }
+        if (resetRootModule)
+        {
+            PutModuleToModuleCache(std::move(rootModule));
+            rootModule.reset();
+        }
+        if (systemLibraryInstalled)
+        {
+            cmajor::symbols::ResetModuleCache();
         }
     }
     catch (const soul::lexer::ParsingException&)
@@ -480,7 +487,7 @@ void CleanProject(cmajor::ast::Project* project)
     }
 }
 
-void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::symbols::Module>& rootModule, std::set<std::string>& builtProjects)
+void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::symbols::Module>& rootModule, ProjectSet& projectSet)
 {
     std::unique_ptr<cmajor::ast::Project> project = ReadProject(projectFilePath);
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
@@ -493,7 +500,7 @@ void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::sy
                 project->AddDependsOnId(referencedProject->Id());
                 if (currentSolution == nullptr && cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll))
                 {
-                    BuildProject(referencedProjectFilePath, rootModule, builtProjects);
+                    BuildProject(referencedProjectFilePath, rootModule, projectSet);
                 }
             }
         }
@@ -502,16 +509,16 @@ void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::sy
     else
     {
         stopBuild = false;
-        BuildProject(project.get(), rootModule, stopBuild, true, builtProjects);
+        BuildProject(project.get(), rootModule, stopBuild, true, projectSet);
     }
 }
 
 struct BuildData
 {
     BuildData(bool& stop_, util::SynchronizedQueue<cmajor::ast::Project*>& buildQueue_, util::SynchronizedQueue<cmajor::ast::Project*>& readyQueue_,
-        std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules_, bool& isSystemSolution_, std::set<std::string>& builtProjects_) :
+        std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules_, bool& isSystemSolution_, ProjectSet& projectSet_) :
         stop(stop_), buildQueue(buildQueue_), readyQueue(readyQueue_), rootModules(rootModules_), 
-        isSystemSolution(isSystemSolution_), builtProjects(builtProjects_)
+        isSystemSolution(isSystemSolution_), projectSet(projectSet_)
     {
     }
     std::mutex mtx;
@@ -520,7 +527,7 @@ struct BuildData
     util::SynchronizedQueue<cmajor::ast::Project*>& readyQueue;
     std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules;
     bool& isSystemSolution;
-    std::set<std::string>& builtProjects;
+    ProjectSet& projectSet;
     std::vector<std::exception_ptr> exceptions;
 };
 
@@ -531,7 +538,7 @@ void BuildThreadFunction(BuildData* buildData)
         cmajor::ast::Project* toBuild = buildData->buildQueue.Get();
         while (toBuild && !buildData->stop)
         {
-            BuildProject(toBuild, buildData->rootModules[toBuild->Index()], buildData->stop, true, buildData->builtProjects);
+            BuildProject(toBuild, buildData->rootModules[toBuild->Index()], buildData->stop, true, buildData->projectSet);
             if (toBuild->IsSystemProject())
             {
                 buildData->isSystemSolution = true;
@@ -572,7 +579,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
 void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules, 
     std::string& solutionName, std::vector<std::string>& moduleNames)
 {
-    std::set<std::string> builtProjects;
+    ProjectSet projectSet;
     std::string config = cmajor::symbols::GetConfig();
     if (config == "release")
     {
@@ -647,7 +654,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
             {
                 cmajor::ast::Project* project = projectsToBuild[i];
                 stopBuild = false;
-                BuildProject(project, rootModules[i], stopBuild, true, builtProjects);
+                BuildProject(project, rootModules[i], stopBuild, true, projectSet);
             }
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
@@ -663,7 +670,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
             stopBuild = false;
             util::SynchronizedQueue<cmajor::ast::Project*> buildQueue;
             util::SynchronizedQueue<cmajor::ast::Project*> readyQueue;
-            BuildData buildData(stopBuild, buildQueue, readyQueue, rootModules, isSystemSolution, builtProjects);
+            BuildData buildData(stopBuild, buildQueue, readyQueue, rootModules, isSystemSolution, projectSet);
             std::vector<std::thread> threads;
             for (int i = 0; i < numThreads; ++i)
             {

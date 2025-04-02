@@ -156,7 +156,7 @@ void BuildService::ExecuteCommand()
     buildInProgress = true;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
-    std::set<std::string> builtProjects;
+    cmajor::build::ProjectSet projectSet;
     int logStreamId = -1;
     cmajor::info::bs::BuildResult result;
     try
@@ -306,7 +306,7 @@ void BuildService::ExecuteCommand()
         }
         else if (buildCommand->filePath.ends_with(".cmp"))
         {
-            cmajor::build::BuildProject(util::GetFullPath(buildCommand->filePath), rootModule, builtProjects);
+            cmajor::build::BuildProject(util::GetFullPath(buildCommand->filePath), rootModule, projectSet);
         }
         else
         {
@@ -408,6 +408,7 @@ GetDefinitionReplyServiceMessage::GetDefinitionReplyServiceMessage(const cmajor:
 
 cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDefinitionRequest& request)
 {
+    cmajor::symbols::Context context;
     cmajor::info::bs::GetDefinitionReply reply;
     int len = util::ToUtf32(request.identifier).length();
     try
@@ -469,7 +470,6 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                         cmajor::symbols::MoveNonSystemModulesTo(prevCache);
                         cmajor::symbols::UpdateModuleCache();
                     }
-                    cmajor::symbols::Context context;
                     std::unique_ptr<cmajor::symbols::Module> module(new cmajor::symbols::Module(&context, moduleFilePath, true));
                     cmajor::symbols::SetCacheModule(moduleFilePath, std::move(module));
                     cmajor::symbols::RestoreModulesFrom(prevCache.get());
@@ -490,11 +490,11 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                 int32_t line = request.identifierLocation.line;
                 int32_t scol = request.identifierLocation.scol;
                 soul::ast::LineColLen lineColLen(line, scol, len);
-                const std::vector<int>* lineStarts = module->FileMap().LineStartIndeces(fileIndex);
+                const std::vector<int>* lineStarts = module->FileMap()->LineStartIndeces(fileIndex);
                 if (!lineStarts)
                 {
-                    module->FileMap().ReadFile(fileIndex);
-                    lineStarts = module->FileMap().LineStartIndeces(fileIndex);
+                    module->FileMap()->ReadFile(fileIndex);
+                    lineStarts = module->FileMap()->LineStartIndeces(fileIndex);
                 }
                 if (lineStarts)
                 {

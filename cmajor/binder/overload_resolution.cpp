@@ -978,8 +978,9 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     BoundLocalVariable* backingStore = nullptr;
                     if (boundFunction)
                     {
-                        backingStore = new BoundLocalVariable(node->GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(argument->GetType(), node->GetSpan(), 
-                            context));
+                        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+                        backingStore = new BoundLocalVariable(node->GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(
+                            argument->GetType(), node->GetSpan(), context, !immutable));
                     }
                     argument.reset(new BoundTemporary(std::move(argument), std::unique_ptr<BoundLocalVariable>(backingStore)));
                 }
@@ -1021,7 +1022,9 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                         boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, node);
                     }
                 }
-                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan(), context);
+                bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                    conversionTargetType, node->GetSpan(), context, !immutable);
                 constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                     new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer(context))));
                 if (conversionTargetType->IsClassTypeSymbol())
@@ -1035,7 +1038,8 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     }
                 }
                 constructorCall->AddArgument(std::move(argument));
-                std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol(), context);
+                std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(
+                    boundFunction->GetFunctionSymbol(), context, !immutable);
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
                     constructorCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
@@ -1061,10 +1065,17 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                         boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, node);
                     }
                 }
-                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan(), context);
+                bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                    conversionTargetType, node->GetSpan(), context, !immutable);
+                if (immutable)
+                {
+                    boundFunction->AddTemporary(temporary);
+                }
                 conversionFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                     new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer(context))));
-                std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol(), context);
+                std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(
+                    boundFunction->GetFunctionSymbol(), context, !immutable);
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
                     conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
@@ -1088,7 +1099,9 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
             else
             {
                 BoundConversion* conversion = new BoundConversion(std::move(argument), conversionFun);
-                std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol(), context);
+                bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+                std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(
+                    boundFunction->GetFunctionSymbol(), context, !immutable);
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
                     conversion->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
@@ -1105,7 +1118,14 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     BoundLocalVariable* backingStore = nullptr;
                     if (boundFunction)
                     {
-                        backingStore = new BoundLocalVariable(node->GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(argument->GetType(), node->GetSpan(), context));
+                        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+                        cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(
+                            argument->GetType(), node->GetSpan(), context, !immutable);
+                        if (immutable)
+                        {
+                            boundFunction->AddTemporary(temporary);
+                        }
+                        backingStore = new BoundLocalVariable(node->GetSpan(), temporary);
                     }
                     argument.reset(new BoundTemporary(std::move(argument), std::unique_ptr<BoundLocalVariable>(backingStore)));
                 }
@@ -1178,10 +1198,15 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
     }
     if (boundFunction)
     {
-        std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = bestFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol(), context);
+        bool immutable = boundFunction->GetFunctionSymbol()->GetModule()->IsImmutable();
+        std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = bestFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol(), context, !immutable);
         for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
         {
             boundFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
+            if (immutable)
+            {
+                boundFunction->AddTemporary(temporaryLocalVariable);
+            }
         }
     }
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunctionCall->GetFunctionSymbol();
@@ -1413,7 +1438,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                     if (!instantiatedBestFun)
                     {
                         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(bestFun->Parent());
-                        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+                        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
                         cmajor::symbols::ClassTemplateSpecializationSymbol* copy = boundCompileUnit.GetSymbolTable().CopyClassTemplateSpecialization(specialization);
                         boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(
                             copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), node);

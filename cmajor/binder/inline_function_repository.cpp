@@ -101,7 +101,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         inlineFunction->SetHasArtificialBody();
     }
     currentNs->AddMember(functionInstanceNode);
-    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, inlineFunction->FileIndex(), inlineFunction->ModuleId());
     if (!inlineFunction->Parent()->IsClassTypeSymbol())

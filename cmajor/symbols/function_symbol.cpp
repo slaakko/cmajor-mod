@@ -1463,16 +1463,19 @@ void FunctionSymbol::CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usin
     }
 }
 
-LocalVariableSymbol* FunctionSymbol::CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context)
+LocalVariableSymbol* FunctionSymbol::CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context, bool add)
 {
     LocalVariableSymbol* temporary = new LocalVariableSymbol(span, U"@t" + util::ToUtf32(std::to_string(nextTemporaryIndex++)));
     temporary->SetType(type);
-    AddMember(temporary, context);
-    AddLocalVariable(temporary);
+    if (add)
+    {
+        AddMember(temporary, context);
+        AddLocalVariable(temporary);
+    }
     return temporary;
 }
 
-std::vector<LocalVariableSymbol*> FunctionSymbol::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context)
+std::vector<LocalVariableSymbol*> FunctionSymbol::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context, bool add)
 {
     return std::vector<LocalVariableSymbol*>();
 }

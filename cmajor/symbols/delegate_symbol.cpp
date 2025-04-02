@@ -1618,10 +1618,10 @@ MemberFunctionToClassDelegateConversion::MemberFunctionToClassDelegateConversion
     SetConversionTargetType(targetType->PlainType(context));
 }
 
-std::vector<LocalVariableSymbol*> MemberFunctionToClassDelegateConversion::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context)
+std::vector<LocalVariableSymbol*> MemberFunctionToClassDelegateConversion::CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context, bool add)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    LocalVariableSymbol* objectDelegatePairVariable = currentFunction->CreateTemporary(targetType->ObjectDelegatePairType(), GetSpan(), context);
+    LocalVariableSymbol* objectDelegatePairVariable = currentFunction->CreateTemporary(targetType->ObjectDelegatePairType(), GetSpan(), context, add);
     temporaries.push_back(objectDelegatePairVariable);
     return temporaries;
 }

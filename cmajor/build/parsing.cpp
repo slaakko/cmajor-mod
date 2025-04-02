@@ -19,9 +19,9 @@ void PrintSourceFile(const std::string& outFilePath, cmajor::ast::Node* compileU
     compileUnitNode->Accept(writer);
 }
 
-std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module)
+std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, soul::lexer::FileMap* fileMap, Flags flags, cmajor::symbols::Module* module)
 {
-    std::string sourceFilePath = fileMap.GetFilePath(fileIndex);
+    std::string sourceFilePath = fileMap->GetFilePath(fileIndex);
     std::string content = util::ReadFile(sourceFilePath, true);
     std::u32string ucontent;
     try
@@ -46,7 +46,7 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
         compileUnit->SetModuleId(module->Id());
     }
     compileUnit->SetFileIndex(fileIndex);
-    fileMap.AddFileContent(fileIndex, std::move(ucontent), lexer.GetLineStartIndeces());
+    fileMap->AddFileContent(fileIndex, std::move(ucontent), lexer.GetLineStartIndeces());
     if ((flags & Flags::ast) != Flags::none)
     {
         std::string astFilePath = util::Path::ChangeExtension(sourceFilePath, ".ast");
@@ -89,7 +89,7 @@ std::unique_ptr<cmajor::ast::Solution> ParseSolutionFile(const std::string& solu
     return solution;
 }
 
-void ParseSingleThreaded(cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module)
+void ParseSingleThreaded(cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap* fileMap, Flags flags, cmajor::symbols::Module* module)
 {
     for (int fileIndex : fileIndeces)
     {
@@ -100,12 +100,12 @@ void ParseSingleThreaded(cmajor::ast::Project* project, const std::vector<int>& 
 
 struct ParsingThreadData
 {
-    ParsingThreadData(Flags flags_, soul::lexer::FileMap& fileMap_, int size_, cmajor::symbols::Module* module_) : 
+    ParsingThreadData(Flags flags_, soul::lexer::FileMap* fileMap_, int size_, cmajor::symbols::Module* module_) : 
         flags(flags_), fileMap(fileMap_), stop(false), module(module_)
     { 
         compileUnits.resize(size_); exceptions.resize(size_); 
     }
-    soul::lexer::FileMap& fileMap;
+    soul::lexer::FileMap* fileMap;
     std::list<int> fileIndexQueue;
     std::mutex mtx;
     bool stop;
@@ -145,7 +145,7 @@ void ParseThreadFunc(ParsingThreadData* threadData)
     }
 }
 
-void ParseMultiThreaded(cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module)
+void ParseMultiThreaded(cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap* fileMap, Flags flags, cmajor::symbols::Module* module)
 {
     ParsingThreadData threadData(flags, fileMap, fileIndeces.size(), module);
     for (int fileIndex : fileIndeces)
@@ -176,12 +176,12 @@ void ParseMultiThreaded(cmajor::ast::Project* project, const std::vector<int>& f
     }
 }
 
-void ParseSourceFiles(cmajor::ast::Project* project, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module)
+void ParseSourceFiles(cmajor::ast::Project* project, soul::lexer::FileMap* fileMap, Flags flags, cmajor::symbols::Module* module)
 {
     std::vector<int> fileIndeces;
     for (const auto& sourceFilePath : project->SourceFilePaths())
     {
-        fileIndeces.push_back(fileMap.MapFile(sourceFilePath));
+        fileIndeces.push_back(fileMap->MapFile(sourceFilePath));
     }
     if ((flags & Flags::singleThreadedParse) != Flags::none)
     {

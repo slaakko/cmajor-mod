@@ -50,6 +50,7 @@ void MakeResourceFile(const std::string& resourceFilePath, const std::string& cl
 
 std::string CompileResourceFile(const std::string& resourceFilePath, cmajor::ast::Project* project)
 {
+    std::lock_guard<std::recursive_mutex> lock(resourceLock);
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         std::string command = "llvm-rc";
@@ -89,6 +90,7 @@ std::string CompileResourceFile(const std::string& resourceFilePath, cmajor::ast
 void GenerateRuntimeResourceFile(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, 
     const std::string& classIndexFilePath, const std::string& traceDataFilePath)
 {
+    std::lock_guard<std::recursive_mutex> lock(resourceLock);
     std::string resourceScriptFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "runtime_info.rc");
     MakeResourceFile(resourceScriptFilePath, classIndexFilePath, traceDataFilePath);
     std::string compiledResourceFilePath = CompileResourceFile(resourceScriptFilePath, project);

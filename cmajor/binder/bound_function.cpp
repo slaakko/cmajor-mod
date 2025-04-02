@@ -41,6 +41,11 @@ void BoundFunction::SetBody(std::unique_ptr<BoundCompoundStatement>&& body_)
     body->SetParent(this);
 }
 
+void BoundFunction::AddTemporary(cmajor::symbols::LocalVariableSymbol* temporary)
+{
+    temporaries.push_back(std::unique_ptr<cmajor::symbols::LocalVariableSymbol>(temporary));
+}
+
 void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall>&& destructorCall,
     BoundFunction* currentFunction, cmajor::symbols::ContainerScope* currentContainerScope, 
     cmajor::ast::Node* node)
@@ -85,7 +90,7 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
             if (!instantiatedDestructorSymbol)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(destructorSymbol->Parent());
-                std::lock_guard<std::recursive_mutex> lock(GetBoundCompileUnit()->GetModule().GetLock());
+                std::lock_guard<std::recursive_mutex> lock(GetBoundCompileUnit()->GetModule().Lock());
                 cmajor::symbols::ClassTemplateSpecializationSymbol* copy = GetBoundCompileUnit()->GetSymbolTable().CopyClassTemplateSpecialization(specialization);
                 GetBoundCompileUnit()->GetClassTemplateRepository().BindClassTemplateSpecialization(copy, currentContainerScope, node);
                 int index = destructorSymbol->GetIndex();

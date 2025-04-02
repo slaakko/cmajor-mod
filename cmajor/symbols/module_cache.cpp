@@ -351,10 +351,6 @@ Module* GetModuleFromModuleCache(const std::string& moduleFilePath)
 {
     std::lock_guard<std::recursive_mutex> lock(mtx);
     Module* module = ModuleCache::Instance().GetModule(moduleFilePath);
-    if (module->Name().empty())
-    {
-        util::DebugBreak();
-    }
     return module;
 }
 

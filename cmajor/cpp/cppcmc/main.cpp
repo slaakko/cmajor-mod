@@ -66,7 +66,7 @@ int main(int argc, const char** argv)
 {
     cmajor::symbols::SetBackEnd(cmajor::symbols::BackEnd::cpp);
     cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::cppBackEnd);
-    std::set<std::string> builtProjects;
+    cmajor::build::ProjectSet projectSet;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
     try
@@ -360,7 +360,7 @@ int main(int argc, const char** argv)
                     }
                     else
                     {
-                        cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, builtProjects);
+                        cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, projectSet);
                     }
                 }
             }

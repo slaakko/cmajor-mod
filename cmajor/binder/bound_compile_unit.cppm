@@ -9,6 +9,7 @@ module;
 export module cmajor.binder.bound.compile.unit;
 
 import std.core;
+import soul.lexer;
 import cmajor.binder.bound.node;
 import cmajor.binder.class_template_repository;
 import cmajor.binder.function_template_repository;
@@ -152,6 +153,7 @@ public:
     int FunctionsInlined() const { return functionsInlined; }
     void SetTotal(int n) { totalFunctions = n; }
     void SetInlined(int n) { functionsInlined = n; }
+    void SetContext(cmajor::symbols::Context* context_) { context = context_; }
 private:
     cmajor::symbols::Context* context;
     util::uuid moduleId;

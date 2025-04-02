@@ -270,8 +270,8 @@ public:
     bool ReturnsClassInterfaceOrClassDelegateByValue() const;
     bool IsFunctionTemplate() const { return !templateParameters.empty(); }
     void CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usingNodes_);
-    LocalVariableSymbol* CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context);
-    virtual std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context);
+    LocalVariableSymbol* CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context, bool add);
+    virtual std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction, Context* context, bool add);
     void* IrType(cmajor::ir::Emitter& emitter, Context* context);
     int32_t VmtIndex() const { return vmtIndex; }
     void SetVmtIndex(int32_t vmtIndex_) { vmtIndex = vmtIndex_; }

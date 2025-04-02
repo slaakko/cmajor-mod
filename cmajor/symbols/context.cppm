@@ -6,6 +6,7 @@
 export module cmajor.symbols.context;
 
 import std.core;
+import soul.lexer;
 
 export namespace cmajor::symbols {
 

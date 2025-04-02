@@ -1048,7 +1048,7 @@ void Module::MakeFilePathFileIndexMap()
     }
 }
 
-std::string Module::GetFilePath(int32_t fileIndex) const
+std::string Module::GetFilePath(int32_t fileIndex) 
 {
     if (fileIndex == -1)
     {
@@ -1097,10 +1097,6 @@ std::string Module::GetErrorLines(const soul::ast::Span& span, int fileIndex, so
 soul::ast::LineColLen Module::GetLineColLen(const soul::ast::Span& span, int fileIndex)
 {
     if (!span.IsValid()) return soul::ast::LineColLen();
-    if (!fileMap.HasFileContent(fileIndex))
-    {
-        fileMap.ReadFile(fileIndex);
-    }
     const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(fileIndex);
     if (lineStartIndeces)
     {
@@ -2242,11 +2238,7 @@ std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
 
 int GetLineNumber(const soul::ast::FullSpan& fullSpan)
 {
-    Module* module = GetModuleById(fullSpan.moduleId);
-    if (!module) return -1;
-    std::lock_guard<std::recursive_mutex> lock(module->Lock());
-    soul::ast::LineColLen lineColLen = module->GetLineColLen(fullSpan.span, fullSpan.fileIndex);
-    if (!lineColLen.IsValid()) return -1;
+    soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
     return lineColLen.line;
 }
 
@@ -2254,8 +2246,21 @@ soul::ast::LineColLen GetLineColLen(const soul::ast::FullSpan& fullSpan)
 {
     Module* module = GetModuleById(fullSpan.moduleId);
     if (!module) return soul::ast::LineColLen();
-    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     soul::ast::LineColLen lineColLen = module->GetLineColLen(fullSpan.span, fullSpan.fileIndex);
+    if (!lineColLen.IsValid())
+    {
+        int fileIndex = fullSpan.fileIndex;
+        soul::lexer::FileMap* fileMap = module->FileMap();
+        if (!fileMap->HasFileContent(fileIndex))
+        {
+            fileMap->ReadFile(fileIndex);
+        }
+        const std::vector<int>* lineStartIndeces = fileMap->LineStartIndeces(fileIndex);
+        if (lineStartIndeces)
+        {
+            lineColLen = soul::ast::SpanToLineColLen(fullSpan.span, *lineStartIndeces);
+        }
+    }
     return lineColLen;
 }
 

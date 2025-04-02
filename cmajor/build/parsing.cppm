@@ -13,11 +13,11 @@ import cmajor.symbols;
 
 export namespace cmajor::build {
 
-std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module);
+std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, soul::lexer::FileMap* fileMap, Flags flags, cmajor::symbols::Module* module);
 
 std::unique_ptr<cmajor::ast::Project> ParseProjectFile(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend, int optLevel);
 
-void ParseSourceFiles(cmajor::ast::Project* project, soul::lexer::FileMap& fileMap, Flags flags, cmajor::symbols::Module* module);
+void ParseSourceFiles(cmajor::ast::Project* project, soul::lexer::FileMap* fileMap, Flags flags, cmajor::symbols::Module* module);
 
 std::unique_ptr<cmajor::ast::Project> ParseProject(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend, int optLevel,
     soul::lexer::FileMap& fileMap, Flags flags);

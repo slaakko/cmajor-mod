@@ -68,7 +68,7 @@ int main(int argc, const char** argv)
 {
     cmajor::symbols::SetBackEnd(cmajor::symbols::BackEnd::sbin);
     cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::sbinBackEnd);
-    std::set<std::string> builtProjects;
+    cmajor::build::ProjectSet projectSet;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
     std::unique_ptr<cmajor::ir::EmittingContext> emittingContext;
@@ -386,7 +386,7 @@ int main(int argc, const char** argv)
                     {
                         throw std::runtime_error("project file '" + fp.generic_string() + "' not found");
                     }
-                    cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, builtProjects);
+                    cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, projectSet);
                 }
                 else
                 {

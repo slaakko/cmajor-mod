@@ -11,6 +11,6 @@ project <intermediate/intermediate.cmp>;
 project <optimizer/optimizer.cmp>;
 project <symbols/symbols.cmp>;
 activeProject cmcmc;
-activeBackEnd=sbin;
+activeBackEnd=llvm;
 activeConfig=debug;
 activeOptLevel=2;

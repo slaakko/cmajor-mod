@@ -17,6 +17,6 @@ project <scmpg.ast/scmpg.ast.cmp>;
 project <scmpg.parser/scmpg.parser.cmp>;
 project <soul2html/soul2html.cmp>;
 activeProject scmpg;
-activeBackEnd=llvm;
-activeConfig=debug;
+activeBackEnd=masm;
+activeConfig=release;
 activeOptLevel=2;

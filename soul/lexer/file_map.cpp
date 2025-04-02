@@ -15,6 +15,7 @@ FileMap::FileMap() : nextFileId(0)
 
 int32_t FileMap::MapFile(const std::string& filePath)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     int32_t fileId = nextFileId++;
     MapFile(filePath, fileId);
     return fileId;
@@ -22,11 +23,13 @@ int32_t FileMap::MapFile(const std::string& filePath)
 
 void FileMap::MapFile(const std::string& filePath, int32_t fileId)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     filePathMap[fileId] = filePath;
 }
 
-const std::string& FileMap::GetFilePath(int32_t fileId) const
+const std::string& FileMap::GetFilePath(int32_t fileId) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     auto it = filePathMap.find(fileId);
     if (it != filePathMap.end())
     {
@@ -41,16 +44,19 @@ const std::string& FileMap::GetFilePath(int32_t fileId) const
 
 void FileMap::AddFileContent(int32_t fileId, std::u32string&& fileContent, std::vector<int>&& lineStartIndeces)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     fileContentsMap[fileId] = std::make_pair(std::move(fileContent), std::move(lineStartIndeces));
 }
 
-bool FileMap::HasFileContent(int32_t fileId) const
+bool FileMap::HasFileContent(int32_t fileId) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     return fileContentsMap.find(fileId) != fileContentsMap.end();
 }
 
-const std::pair<std::u32string, std::vector<int>>& FileMap::GetFileContent(int32_t fileId) const
+const std::pair<std::u32string, std::vector<int>>& FileMap::GetFileContent(int32_t fileId) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     auto it = fileContentsMap.find(fileId);
     if (it != fileContentsMap.end())
     {
@@ -85,7 +91,9 @@ std::vector<int> ComputeLineStartIndeces(const std::u32string& content)
 
 void FileMap::ReadFile(int32_t fileId) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     std::string filePath = GetFilePath(fileId);
+    if (filePath.empty()) return;
     std::string fileContent = util::ReadFile(filePath);
     std::u32string ucontent;
     try
@@ -102,6 +110,7 @@ void FileMap::ReadFile(int32_t fileId)
 
 std::u32string FileMap::GetFileLine(int32_t fileId, int line) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     if (fileId == -1) return std::u32string();
     if (!HasFileContent(fileId))
     {
@@ -130,10 +139,9 @@ std::u32string FileMap::GetFileLine(int32_t fileId, int line)
     return trimmedLine;
 }
 
-std::mutex tokenMapMutex;
-
-const std::vector<int>* FileMap::LineStartIndeces(int32_t fileId) const
+const std::vector<int>* FileMap::LineStartIndeces(int32_t fileId) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     auto it = fileContentsMap.find(fileId);
     if (it != fileContentsMap.end())
     {

@@ -188,7 +188,7 @@ public:
     ResourceTable& GetResourceTable() { return resourceTable; }
     ResourceTable& GetGlobalResourceTable() { return globalResourceTable; }
 #endif
-    std::string GetFilePath(int32_t fileIndex) const;
+    std::string GetFilePath(int32_t fileIndex);
     void Write(SymbolWriter& writer);
     void SetDirectoryPath(const std::string& directoryPath_);
     void SetObjectFileDirectoryPath(const std::string& objectFileDirectoryPath_);
@@ -237,7 +237,6 @@ public:
     void DecDebugLogIndent() { --debugLogIndent; }
     int Index() const { return index; }
     void SetIndex(int index_) { index = index_; }
-    std::recursive_mutex& GetLock() { return lock; }
     void StartBuild();
     void StopBuild();
     int64_t GetBuildStartTimeMs() const { return buildStartMs; }
@@ -262,7 +261,7 @@ public:
     ParseResult ParseSource(const std::string& sourceFilePath, const std::u32string& sourceCode);
     std::string GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext);
     std::string GetParamHelpList(const std::string& sourceFilePath, int symbolIndex);
-    soul::lexer::FileMap& FileMap() { return fileMap; }
+    soul::lexer::FileMap* FileMap() { return &fileMap; }
     void MakeFileMapFromFileTable();
     std::string GetErrorLines(const soul::ast::Span& span, int fileIndex, soul::ast::LineColLen& lineColLen);
     soul::ast::LineColLen GetLineColLen(const soul::ast::Span& span, int fileIndex);

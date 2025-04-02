@@ -9,6 +9,8 @@ module;
 module cmajor.symbols.symbol.table;
 
 import cmajor.symbols.type.symbol;
+import cmajor.symbols.exception;
+import cmajor.symbols.context;
 import cmajor.symbols.classes;
 import cmajor.symbols.modules;
 import cmajor.symbols.module_cache;
@@ -408,7 +410,7 @@ void SymbolTable::BeginContainer(ContainerSymbol* container_)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, container_->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, container_->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     containerStack.push(container);
@@ -1621,7 +1623,7 @@ TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivat
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module, baseType->GetModule(), baseType->GetFullSpan());
+        throw ModuleImmutableException(module, baseType->GetModule(), baseType->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     if (derivationRec.IsEmpty())
@@ -1683,7 +1685,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, classTemplate->GetFullSpan());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, classTemplate->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
@@ -1714,7 +1716,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::CopyClassTemplateSpecialization(
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, source->GetFullSpan());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, source->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
@@ -1764,7 +1766,7 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, int64_t siz
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, elementType->GetFullSpan());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, elementType->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     ArrayKey key(elementType, size);
@@ -1816,7 +1818,7 @@ void SymbolTable::AddClassTemplateSpecializationsToClassTemplateSpecializationMa
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, soul::ast::FullSpan(), soul::ast::FullSpan());
     }
 #endif
     for (ClassTemplateSpecializationSymbol* classTemplateSpecialization : classTemplateSpecializations)
@@ -1835,7 +1837,7 @@ void SymbolTable::AddConversion(FunctionSymbol* conversion, Module* module)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, conversion->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, conversion->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
@@ -1858,7 +1860,7 @@ void SymbolTable::AddPolymorphicClass(ClassTypeSymbol* polymorphicClass)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, polymorphicClass->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, polymorphicClass->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     if (!polymorphicClass->IsPolymorphic())
@@ -1873,7 +1875,7 @@ void SymbolTable::AddClassHavingStaticConstructor(ClassTypeSymbol* classHavingSt
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, classHavingStaticConstructor->GetSpan(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, classHavingStaticConstructor->GetFullSpan(), soul::ast::FullSpan());
     }
 #endif
     if (!classHavingStaticConstructor->StaticConstructor())
@@ -1888,7 +1890,7 @@ void SymbolTable::AddJsonClass(const std::u32string& jsonClass)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module->IsImmutable())
     {
-        throw ModuleImmutableException(module->GetContext()->RootModule(), module, soul::ast::Span(), soul::ast::Span());
+        throw ModuleImmutableException(module->GetContext()->RootModule(), module, soul::ast::FullSpan(), soul::ast::FullSpan());
     }
 #endif
     jsonClasses.insert(jsonClass);
