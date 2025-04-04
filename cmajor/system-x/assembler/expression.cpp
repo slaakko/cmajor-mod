@@ -12,6 +12,7 @@ namespace cmajor::systemx::assembler {
 UnaryExpression::UnaryExpression(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* operand_) :
     Node(NodeKind::unaryExprNode, sourcePos_), op(op_), operand(operand_)
 {
+    operand->SetOwner(this);
 }
 
 void UnaryExpression::Accept(Visitor& visitor)
@@ -23,10 +24,26 @@ void UnaryExpression::Write(util::CodeFormatter& formatter)
 {
     switch (op)
     {
-    case Operator::unaryPlus: formatter.Write("+"); break;
-    case Operator::unaryMinus: formatter.Write("-"); break;
-    case Operator::complement: formatter.Write("~"); break;
-    case Operator::reg: formatter.Write("$"); break;
+        case Operator::unaryPlus:
+        {
+            formatter.Write("+");
+            break;
+        }
+        case Operator::unaryMinus:
+        {
+            formatter.Write("-");
+            break;
+        }
+        case Operator::complement:
+        {
+            formatter.Write("~");
+            break;
+        }
+        case Operator::reg:
+        {
+            formatter.Write("$");
+            break;
+        }
     }
     operand->Write(formatter);
 }
@@ -34,6 +51,8 @@ void UnaryExpression::Write(util::CodeFormatter& formatter)
 BinaryExpression::BinaryExpression(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* left_, Node* right_) :
     Node(NodeKind::binaryExprNode, sourcePos_), op(op_), left(left_), right(right_)
 {
+    left->SetOwner(this);
+    right->SetOwner(this);
 }
 
 void BinaryExpression::Accept(Visitor& visitor)
@@ -46,17 +65,61 @@ void BinaryExpression::Write(util::CodeFormatter& formatter)
     left->Write(formatter);
     switch (op)
     {
-    case Operator::multiply: formatter.Write("*"); break;
-    case Operator::divide: formatter.Write("/"); break;
-    case Operator::fractional_divide: formatter.Write("//"); break;
-    case Operator::modulus: formatter.Write("%"); break;
-    case Operator::shift_left: formatter.Write("<<"); break;
-    case Operator::shift_right: formatter.Write(">>"); break;
-    case Operator::bitwise_and: formatter.Write("&"); break;
-    case Operator::add: formatter.Write("+"); break;
-    case Operator::subtract: formatter.Write("-"); break;
-    case Operator::bitwise_or: formatter.Write("|"); break;
-    case Operator::bitwise_xor: formatter.Write("^"); break;
+        case Operator::multiply:
+        {
+            formatter.Write("*");
+            break;
+        }
+        case Operator::divide:
+        {
+            formatter.Write("/");
+            break;
+        }
+        case Operator::fractional_divide:
+        {
+            formatter.Write("//");
+            break;
+        }
+        case Operator::modulus:
+        {
+            formatter.Write("%");
+            break;
+        }
+        case Operator::shift_left:
+        {
+            formatter.Write("<<");
+            break;
+        }
+        case Operator::shift_right:
+        {
+            formatter.Write(">>");
+            break;
+        }
+        case Operator::bitwise_and:
+        {
+            formatter.Write("&");
+            break;
+        }
+        case Operator::add:
+        {
+            formatter.Write("+");
+            break;
+        }
+        case Operator::subtract:
+        {
+            formatter.Write("-");
+            break;
+        }
+        case Operator::bitwise_or:
+        {
+            formatter.Write("|");
+            break;
+        }
+        case Operator::bitwise_xor:
+        {
+            formatter.Write("^");
+            break;
+        }
     }
     right->Write(formatter);
 }
@@ -64,6 +127,7 @@ void BinaryExpression::Write(util::CodeFormatter& formatter)
 ParenthesizedExpression::ParenthesizedExpression(const soul::ast::SourcePos& sourcePos_, Node* expr_) :
     Node(NodeKind::parenExprNode, sourcePos_), expr(expr_)
 {
+    expr->SetOwner(this);
 }
 
 void ParenthesizedExpression::Accept(Visitor& visitor)

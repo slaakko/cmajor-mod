@@ -13,6 +13,8 @@ import std.core;
 
 export namespace cmajor::systemx::assembler {
 
+class AssemblyObject;
+
 class OperandList : public Node
 {
 public:

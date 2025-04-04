@@ -20,6 +20,7 @@ OperandList::OperandList(const soul::ast::SourcePos& sourcePos_) :
 
 void OperandList::AddOperand(Node* operand)
 {
+    operand->SetOwner(this);
     operands.push_back(std::unique_ptr<Node>(operand));
 }
 
@@ -47,7 +48,8 @@ Instruction::Instruction(const soul::ast::SourcePos& sourcePos_, Symbol* label_,
 {
 }
 
-Instruction::Instruction(int opCode_) : Node(NodeKind::instructionNode, soul::ast::SourcePos()), label(), opCode(new OpCode(opCode_)), operandList(new OperandList(soul::ast::SourcePos()))
+Instruction::Instruction(int opCode_) : 
+    Node(NodeKind::instructionNode, soul::ast::SourcePos()), label(), opCode(new OpCode(opCode_)), operandList(new OperandList(soul::ast::SourcePos()))
 {
 }
 

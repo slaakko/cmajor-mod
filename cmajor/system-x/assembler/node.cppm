@@ -28,9 +28,11 @@ public:
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     virtual void Accept(Visitor& visitor) = 0;
     virtual void Write(util::CodeFormatter& formatter);
+    void SetOwner(void* owner_);
 private:
     NodeKind kind;
     soul::ast::SourcePos sourcePos;
+    void* owner;
 };
 
 } // namespace cmajor::systemx::assembler

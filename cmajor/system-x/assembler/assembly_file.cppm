@@ -41,6 +41,7 @@ class AssemblyFunction : public AssemblyObject
 {
 public:
     AssemblyFunction(const std::string& name_);
+    ~AssemblyFunction();
     AssemblyFunction(const AssemblyFunction&) = delete;
     AssemblyFunction& operator=(const AssemblyFunction&) = delete;
     void SetComment(const std::string& comment_);
@@ -62,6 +63,7 @@ class AssemblyStruct : public AssemblyObject
 public:
     AssemblyStruct(const std::string& name_);
     AssemblyStruct(const AssemblyStruct&) = delete;
+    ~AssemblyStruct();
     AssemblyStruct& operator=(const AssemblyStruct&) = delete;
     void AddInstruction(Instruction* inst);
     void Write(util::CodeFormatter& formatter) override;
@@ -74,6 +76,7 @@ class AssemblyExternObject : public AssemblyObject
 {
 public:
     AssemblyExternObject();
+    ~AssemblyExternObject();
     AssemblyExternObject(const AssemblyExternObject&) = delete;
     AssemblyExternObject& operator=(const AssemblyExternObject&) = delete;
     void AddExternSymbol(GlobalSymbol* externSymbol);
@@ -86,6 +89,7 @@ class AssemblyLinkOnceObject : public AssemblyObject
 {
 public:
     AssemblyLinkOnceObject();
+    ~AssemblyLinkOnceObject();
     AssemblyLinkOnceObject(const AssemblyLinkOnceObject&) = delete;
     AssemblyLinkOnceObject& operator=(const AssemblyLinkOnceObject&) = delete;
     void AddLinkOnceSymbol(GlobalSymbol* linkOnceSymbol);
@@ -98,6 +102,7 @@ class AssemblyDebugInfo : public AssemblyObject
 {
 public:
     AssemblyDebugInfo();
+    ~AssemblyDebugInfo();
     AssemblyDebugInfo(const AssemblyDebugInfo&) = delete;
     AssemblyDebugInfo operator=(const AssemblyDebugInfo&) = delete;
     void AddInstruction(Instruction* inst);
@@ -110,6 +115,7 @@ class AssemblySection
 {
 public:
     AssemblySection(AssemblySectionKind kind_);
+    ~AssemblySection();
     AssemblySection(const AssemblySection&) = delete;
     AssemblySection& operator=(const AssemblySection&) = delete;
     AssemblyExternObject* GetOrCreateExternObject();
@@ -129,6 +135,7 @@ class AssemblyFile
 {
 public:
     AssemblyFile(const std::string& filePath_);
+    ~AssemblyFile();
     AssemblySection* GetLinkSection();
     AssemblySection* GetCodeSection();
     AssemblySection* GetDataSection();

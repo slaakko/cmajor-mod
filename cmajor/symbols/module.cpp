@@ -205,16 +205,8 @@ void ModuleDependency::Dump(util::CodeFormatter& formatter)
 
 void ModuleDependency::Check()
 {
-    if (module->Name().empty())
-    {
-        util::DebugBreak();
-    }
     for (Module* ref : referencedModules)
     {
-        if (ref->Name().empty())
-        {
-            util::DebugBreak();
-        }
         ref->GetModuleDependency().Check();
     }
 }

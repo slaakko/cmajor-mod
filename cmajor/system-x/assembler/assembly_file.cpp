@@ -17,8 +17,16 @@ AssemblyObject::~AssemblyObject()
 {
 }
 
-AssemblyFunction::AssemblyFunction(const std::string& name_) : AssemblyObject(AssemblyObjectKind::function), name(name_), activeFunctionPart(FunctionPart::body)
+AssemblyFunction::AssemblyFunction(const std::string& name_) : 
+    AssemblyObject(AssemblyObjectKind::function), name(name_), activeFunctionPart(FunctionPart::body)
 {
+}
+
+AssemblyFunction::~AssemblyFunction()
+{
+    prologue.clear(); 
+    body.clear();
+    epilogue.clear();
 }
 
 void AssemblyFunction::SetComment(const std::string& comment_)
@@ -33,11 +41,24 @@ void AssemblyFunction::SetActiveFunctionPart(FunctionPart functionPart)
 
 void AssemblyFunction::AddInstruction(Instruction* inst)
 {
+    inst->SetOwner(this);
     switch (activeFunctionPart)
     {
-    case FunctionPart::prologue: prologue.push_back(std::unique_ptr<Instruction>(inst)); break;
-    case FunctionPart::body: body.push_back(std::unique_ptr<Instruction>(inst)); break;
-    case FunctionPart::epilogue: epilogue.push_back(std::unique_ptr<Instruction>(inst)); break;
+        case FunctionPart::prologue:
+        {
+            prologue.push_back(std::unique_ptr<Instruction>(inst));
+            break;
+        }
+        case FunctionPart::body:
+        {
+            body.push_back(std::unique_ptr<Instruction>(inst));
+            break;
+        }
+        case FunctionPart::epilogue:
+        {
+            epilogue.push_back(std::unique_ptr<Instruction>(inst));
+            break;
+        }
     }
 }
 
@@ -70,8 +91,14 @@ AssemblyStruct::AssemblyStruct(const std::string& name_) : AssemblyObject(Assemb
 {
 }
 
+AssemblyStruct::~AssemblyStruct()
+{
+    content.clear();
+}
+
 void AssemblyStruct::AddInstruction(Instruction* inst)
 {
+    inst->SetOwner(this);
     content.push_back(std::unique_ptr<Instruction>(inst));
 }
 
@@ -89,6 +116,11 @@ void AssemblyStruct::Write(util::CodeFormatter& formatter)
 
 AssemblyExternObject::AssemblyExternObject() : AssemblyObject(AssemblyObjectKind::externObjects)
 {
+}
+
+AssemblyExternObject::~AssemblyExternObject()
+{
+    content.clear();
 }
 
 void AssemblyExternObject::AddExternSymbol(GlobalSymbol* externSymbol)
@@ -111,6 +143,11 @@ AssemblyLinkOnceObject::AssemblyLinkOnceObject() : AssemblyObject(AssemblyObject
 {
 }
 
+AssemblyLinkOnceObject::~AssemblyLinkOnceObject()
+{
+    content.clear();
+}
+
 void AssemblyLinkOnceObject::AddLinkOnceSymbol(GlobalSymbol* linkOnceSymbol)
 {
     content.push_back(std::unique_ptr<Instruction>(new Instruction(LINKONCE)));
@@ -131,8 +168,14 @@ AssemblyDebugInfo::AssemblyDebugInfo() : AssemblyObject(AssemblyObjectKind::debu
 {
 }
 
+AssemblyDebugInfo::~AssemblyDebugInfo()
+{
+    content.clear();
+}
+
 void AssemblyDebugInfo::AddInstruction(Instruction* inst)
 {
+    inst->SetOwner(this);
     content.push_back(std::unique_ptr<Instruction>(inst));
 }
 
@@ -148,6 +191,11 @@ void AssemblyDebugInfo::Write(util::CodeFormatter& formatter)
 
 AssemblySection::AssemblySection(AssemblySectionKind kind_) : kind(kind_), externObject(nullptr), linkOnceObject(nullptr)
 {
+}
+
+AssemblySection::~AssemblySection()
+{
+    objects.clear();
 }
 
 AssemblyExternObject* AssemblySection::GetOrCreateExternObject()
@@ -246,6 +294,14 @@ void AssemblySection::Write(util::CodeFormatter& formatter)
 AssemblyFile::AssemblyFile(const std::string& filePath_) : filePath(filePath_), file(filePath), formatter(file)
 {
     formatter.SetIndentSize(8);
+}
+
+AssemblyFile::~AssemblyFile()
+{
+    linkSection.reset();
+    codeSection.reset(); 
+    dataSection.reset();
+    debugSection.reset();
 }
 
 AssemblyFunction* AssemblyFile::CreateFunction(const std::string& name)

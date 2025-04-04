@@ -841,6 +841,7 @@ void Assembler::Visit(Instruction& node)
 
 void Assembler::AddInstruction(Instruction* instruction)
 {
+    instruction->SetOwner(this);
     instructions.push_back(std::unique_ptr<Instruction>(instruction));
 }
 

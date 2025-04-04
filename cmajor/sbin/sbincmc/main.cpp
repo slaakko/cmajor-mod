@@ -68,13 +68,13 @@ int main(int argc, const char** argv)
 {
     cmajor::symbols::SetBackEnd(cmajor::symbols::BackEnd::sbin);
     cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::sbinBackEnd);
+    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
     cmajor::build::ProjectSet projectSet;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
     std::unique_ptr<cmajor::ir::EmittingContext> emittingContext;
     try
     {
-        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
         InitApplication();
         std::string projectName;

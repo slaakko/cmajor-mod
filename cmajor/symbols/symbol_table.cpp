@@ -1736,7 +1736,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::CopyClassTemplateSpecialization(
     copy->SetFileIndex(source->FileIndex());
     copy->SetModuleId(source->ModuleId());
     copy->SetModule(module);
-    if (source->VmtEmitted())
+    if (source->IsVmtEmitted())
     {
         copy->SetVmtEmitted();
     }

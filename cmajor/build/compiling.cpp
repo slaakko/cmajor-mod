@@ -124,129 +124,43 @@ void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Conte
     }
 }
 
-class CompileQueue
-{
-public:
-    CompileQueue(std::mutex* mtx_, const std::string& name_, bool& stop_, bool& ready_, int logStreamId_);
-    void Put(int compileUnitIndex);
-    int Get();
-    void NotifyAll();
-private:
-    std::mutex* mtx;
-    std::string name;
-    std::list<int> queue;
-    std::condition_variable cond;
-    bool& stop;
-    bool& ready;
-    int logStreamId;
-};
-
-CompileQueue::CompileQueue(std::mutex* mtx_, const std::string& name_, bool& stop_, bool& ready_, int logStreamId_) :
-    mtx(mtx_), name(name_), stop(stop_), ready(ready_), logStreamId(logStreamId_)
-{
-}
-
-void CompileQueue::Put(int compileUnitIndex)
-{
-    std::lock_guard<std::mutex> lock(*mtx);
-    queue.push_back(compileUnitIndex);
-    cond.notify_one();
-}
-
-int CompileQueue::Get()
-{
-    while (!stop && !ready)
-    {
-        std::unique_lock<std::mutex> lock(*mtx);
-        cond.wait(lock, [this] { return stop || ready || !queue.empty(); });
-        if (stop || ready) return -1;
-        int compileUnitIndex = queue.front();
-        queue.pop_front();
-        return compileUnitIndex;
-    }
-    return -1;
-}
-
-void CompileQueue::NotifyAll()
-{
-    cond.notify_all();
-}
-
 struct CompileData
 {
-    CompileData(std::mutex* mtx_, cmajor::symbols::Context* context_, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits_,
-        std::vector<std::string>& objectFilePaths_, std::vector<std::string>& asmFilePaths_, bool& stop_, bool& ready_, int numThreads_, CompileQueue& input_, CompileQueue& output_) :
-        mtx(mtx_), context(context_), boundCompileUnits(boundCompileUnits_), objectFilePaths(objectFilePaths_), asmFilePaths(asmFilePaths_), stop(stop_), ready(ready_), 
-        numThreads(numThreads_), input(input_), output(output_)
+    CompileData(cmajor::symbols::Context* context_, bool& stop_,util::SynchronizedQueue<cmajor::binder::BoundCompileUnit*>& inputQueue_, 
+        util::SynchronizedQueue<cmajor::binder::BoundCompileUnit*>& outputQueue_) :
+        context(context_), stop(stop_), inputQueue(inputQueue_), outputQueue(outputQueue_), exceptions()
     {
-        exceptions.resize(numThreads);
-        sourceFileFilePaths.resize(boundCompileUnits.size());
-        for (int i = 0; i < boundCompileUnits.size(); ++i)
-        {
-            sourceFileFilePaths[i] = boundCompileUnits[i]->GetCompileUnitNode()->FilePath();
-        }
     }
-    std::mutex* mtx;
+    std::mutex mtx;
     cmajor::symbols::Context* context;
-    std::vector<std::string> sourceFileFilePaths;
-    std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits;
-    std::vector<std::string>& objectFilePaths;
-    std::vector<std::string>& asmFilePaths;
     bool& stop;
-    bool& ready;
-    int numThreads;
-    CompileQueue& input;
-    CompileQueue& output;
+    util::SynchronizedQueue<cmajor::binder::BoundCompileUnit*>& inputQueue;
+    util::SynchronizedQueue<cmajor::binder::BoundCompileUnit*>& outputQueue;
     std::vector<std::exception_ptr> exceptions;
 };
 
-void CompileThreadFunction(CompileData* data, int threadId)
+void CompileThreadFunction(CompileData* compileData)
 {
     try
     {
-        //SetRootModuleForCurrentThread(data->module);
-        while (!data->stop && !data->ready)
+        cmajor::binder::BoundCompileUnit* compileUnit = compileData->inputQueue.Get();
+        while (compileUnit && !compileData->stop)
         {
-            int compileUnitIndex = data->input.Get();
-            if (compileUnitIndex >= 0 && compileUnitIndex < data->boundCompileUnits.size())
-            {
-                cmajor::binder::BoundCompileUnit* boundCompileUnit = data->boundCompileUnits[compileUnitIndex].get();
-                cmajor::symbols::Context compileUnitContext;
-                compileUnitContext.SetRootModule(data->context->RootModule());
-                boundCompileUnit->SetContext(&compileUnitContext);
-                std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(
-                    cmajor::symbols::GetOptimizationLevel());
-                GenerateCode(*boundCompileUnit, emittingContext.get()); 
-                {
-                    std::lock_guard<std::mutex> lock(*data->mtx);
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
-                    {
-                        data->asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
-                    }
-                    else
-                    {
-                        data->objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
-                    }
-                }
-                data->output.Put(compileUnitIndex);
-            }
+            std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
+            GenerateCode(*compileUnit, emittingContext.get());
+            compileData->outputQueue.Put(compileUnit);
+            compileUnit = compileData->inputQueue.Get();
         }
-
     }
     catch (...)
     {
-        std::lock_guard<std::mutex> lock(*data->mtx);
-        std::exception_ptr exception = std::current_exception();
-        if (threadId >= 0 && threadId < data->exceptions.size())
-        {
-            data->exceptions[threadId] = exception;
-        }
-        data->stop = true;
-        data->output.NotifyAll();
+        std::lock_guard lock(compileData->mtx);
+        compileData->exceptions.push_back(std::current_exception());
+        compileData->inputQueue.Exit();
+        compileData->outputQueue.Exit();
+        compileData->stop = true;
     }
 }
-
-std::mutex mtx;
 
 void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Context* context, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
     std::vector<std::string>& objectFilePaths, std::vector<std::string>& asmFilePaths, bool& stop)
@@ -284,51 +198,59 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Contex
             throw;
         }
     }
-    bool ready = false;
-    CompileQueue input(&mtx, "input", stop, ready, context->RootModule()->LogStreamId());
-    CompileQueue output(&mtx, "output", stop, ready, context->RootModule()->LogStreamId());
-    CompileData compileData(&mtx, context, boundCompileUnits, objectFilePaths, asmFilePaths, stop, ready, numThreads, input, output);
+    util::SynchronizedQueue<cmajor::binder::BoundCompileUnit*> inputQueue;
+    util::SynchronizedQueue<cmajor::binder::BoundCompileUnit*> outputQueue;
+    CompileData compileData(context, stop, inputQueue, outputQueue);
+    for (const auto& compileUnit : boundCompileUnits)
+    {
+        inputQueue.Put(compileUnit.get());
+    }
     std::vector<std::thread> threads;
     for (int i = 0; i < numThreads; ++i)
     {
-        threads.push_back(std::thread{ CompileThreadFunction, &compileData, i });
-    }
-    for (int i = 0; i < n; ++i)
-    {
-        input.Put(i);
+        threads.push_back(std::thread{ CompileThreadFunction, &compileData });
     }
     int numOutputsReceived = 0;
-    while (numOutputsReceived < n && !stop)
+    while (numOutputsReceived < boundCompileUnits.size() && !stop)
     {
-        int compileUnitIndex = output.Get();  
-        if (compileUnitIndex != -1) 
+        cmajor::binder::BoundCompileUnit* compileUnit = outputQueue.Get();
+        if (compileUnit)
         {
             ++numOutputsReceived;
-        } 
+        }
     }
-    {
-        std::lock_guard<std::mutex> lock(mtx);
-        ready = true;
-        compileData.input.NotifyAll();
-    }
+    inputQueue.Exit();
+    outputQueue.Exit();
     for (int i = 0; i < numThreads; ++i)
     {
         if (threads[i].joinable())
         {
             threads[i].join();
         }
-    } 
-    for (int i = 0; i < numThreads; ++i)
+    }
+    for (int i = 0; i < compileData.exceptions.size(); ++i)
     {
         if (compileData.exceptions[i])
         {
             std::rethrow_exception(compileData.exceptions[i]);
         }
     }
+    for (int i = 0; i < boundCompileUnits.size(); ++i)
+    {
+        cmajor::binder::BoundCompileUnit* compileUnit = boundCompileUnits[i].get();
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            asmFilePaths.push_back(compileUnit->AsmFilePath());
+        }
+        else
+        {
+            objectFilePaths.push_back(compileUnit->ObjectFilePath());
+        }
+    }
     context->RootModule()->StopBuild();
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
     {
-        util::LogMessage(context->RootModule()->LogStreamId(), util::ToUtf8(context->RootModule()->Name()) + " compilation time: " + 
+        util::LogMessage(context->RootModule()->LogStreamId(), util::ToUtf8(context->RootModule()->Name()) + " compilation time: " +
             util::FormatTimeMs(context->RootModule()->GetBuildTimeMs()));
     }
 }

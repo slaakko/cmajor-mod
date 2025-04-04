@@ -72,7 +72,7 @@ void PrintHelp()
 
 int main(int argc, const char** argv)
 {
-    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
+    //cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
     cmajor::symbols::SetBackEnd(cmajor::symbols::BackEnd::systemx);
     cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::systemxBackEnd);
     cmajor::build::ProjectSet projectSet;

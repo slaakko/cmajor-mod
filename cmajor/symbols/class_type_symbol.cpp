@@ -50,6 +50,7 @@ ClassTypeFlagMap::ClassTypeFlagMap()
 
 void ClassTypeFlagMap::Import(ClassTypeFlagMap& that)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     for (const auto& clsFlags : that.flagMap)
     {
         SetFlag(clsFlags.first, clsFlags.second);
@@ -58,6 +59,7 @@ void ClassTypeFlagMap::Import(ClassTypeFlagMap& that)
 
 void ClassTypeFlagMap::Write(SymbolWriter& writer)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     int32_t n = flagMap.size();
     writer.GetBinaryStreamWriter().Write(n);
     for (const auto& clsFlags : flagMap)
@@ -69,6 +71,7 @@ void ClassTypeFlagMap::Write(SymbolWriter& writer)
 
 void ClassTypeFlagMap::Read(SymbolReader& reader)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     int32_t n = reader.GetBinaryStreamReader().ReadInt();
     for (int32_t i = 0; i < n; ++i)
     {
@@ -78,20 +81,35 @@ void ClassTypeFlagMap::Read(SymbolReader& reader)
     }
 }
 
+bool ClassTypeFlagMap::GetSetFlagLocked(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag)
+{
+    std::lock_guard<std::recursive_mutex> lock(mtx);
+    ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
+    if ((flags & flag) == ClassTypeSymbolFlags::none)
+    {
+        flags = flags | flag;
+        return false;
+    }
+    return true;
+}
+
 bool ClassTypeFlagMap::GetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag) 
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
     return (flags & flag) != ClassTypeSymbolFlags::none;
 }
 
 void ClassTypeFlagMap::SetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
     flags = flags | flag;
 }
 
 void ClassTypeFlagMap::ResetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag)
 {
+    std::lock_guard<std::recursive_mutex> lock(mtx);
     ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
     flags = flags & ~flag;
 }
@@ -361,9 +379,24 @@ ClassTypeSymbol::ClassTypeSymbol(SymbolType symbolType_, const soul::ast::Span& 
 {
 }
 
+bool ClassTypeSymbol::GetSetFlagLocked(ClassTypeSymbolFlags flag)
+{
+    bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
+    if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
+    {
+        return GetClassTypeFlagMap().GetSetFlagLocked(MangledName(), flag);
+    }
+    std::lock_guard<std::recursive_mutex> lock(mtx);
+    if (!GetFlag(flag))
+    {
+        SetFlag(flag);
+        return false;
+    }
+    return true;
+}
+
 bool ClassTypeSymbol::GetFlag(ClassTypeSymbolFlags flag) 
 {
-    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
     if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
     {
@@ -371,13 +404,13 @@ bool ClassTypeSymbol::GetFlag(ClassTypeSymbolFlags flag)
     }
     else
     {
+        std::lock_guard<std::recursive_mutex> lock(mtx);
         return (flags & flag) != ClassTypeSymbolFlags::none;
     }
 }
 
 void ClassTypeSymbol::SetFlag(ClassTypeSymbolFlags flag)
 {
-    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
     if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
     {
@@ -385,13 +418,13 @@ void ClassTypeSymbol::SetFlag(ClassTypeSymbolFlags flag)
     }
     else
     {
+        std::lock_guard<std::recursive_mutex> lock(mtx);
         flags = flags | flag;
     }
 }
 
 void ClassTypeSymbol::ResetFlag(ClassTypeSymbolFlags flag)
 {
-    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
     if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
     {
@@ -399,6 +432,7 @@ void ClassTypeSymbol::ResetFlag(ClassTypeSymbolFlags flag)
     }
     else
     {
+        std::lock_guard<std::recursive_mutex> lock(mtx);
         flags = flags & ~flag;
     }
 }
@@ -1748,7 +1782,6 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create, Cont
     void* vmtObject = emitter.GetOrInsertGlobal(VmtObjectName(emitter), localVmtObjectType);
     if (!emitter.IsVmtObjectCreated(this) && create && !VmtEmitted())
     {
-        SetVmtEmitted();
         emitter.SetVmtObjectCreated(this);
         bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
         if (specialization)
@@ -1908,7 +1941,6 @@ void* ClassTypeSymbol::StaticObject(cmajor::ir::Emitter& emitter, bool create, C
         {
             return staticObject;
         }
-        SetStaticsEmitted();
         std::vector<void*> arrayOfStatics;
         for (TypeSymbol* type : staticLayout)
         {

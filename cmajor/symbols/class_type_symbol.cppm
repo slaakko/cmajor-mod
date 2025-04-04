@@ -114,11 +114,13 @@ public:
     void Import(ClassTypeFlagMap& that);
     void Write(SymbolWriter& writer);
     void Read(SymbolReader& reader);
+    bool GetSetFlagLocked(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
     bool GetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
     void SetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
     void ResetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
 private:
     std::map<std::u32string, ClassTypeSymbolFlags> flagMap;
+    std::recursive_mutex mtx;
 };
 
 class ClassTypeSymbol : public TypeSymbol
@@ -212,11 +214,12 @@ public:
     bool IsRecursive();
     bool Recursive() { return GetFlag(ClassTypeSymbolFlags::recursive); }
     void SetRecursive() { SetFlag(ClassTypeSymbolFlags::recursive); }
-    bool VmtEmitted() { return GetFlag(ClassTypeSymbolFlags::vmtEmitted); }
-    void SetVmtEmitted() { SetFlag(ClassTypeSymbolFlags::vmtEmitted); }
-    bool StaticsEmitted() { return GetFlag(ClassTypeSymbolFlags::staticsEmitted); }
-    void SetStaticsEmitted() { SetFlag(ClassTypeSymbolFlags::staticsEmitted); }
+    bool VmtEmitted() { return GetSetFlagLocked(ClassTypeSymbolFlags::vmtEmitted); }
+    bool IsVmtEmitted() { return GetFlag(ClassTypeSymbolFlags::vmtEmitted); }
+    void SetVmtEmitted() { SetFlag(ClassTypeSymbolFlags::vmtEmitted); };
+    bool StaticsEmitted() { return GetSetFlagLocked(ClassTypeSymbolFlags::staticsEmitted); }
     ClassTypeSymbolFlags GetClassTypeSymbolFlags() const { return flags; }
+    bool GetSetFlagLocked(ClassTypeSymbolFlags flag);
     bool GetFlag(ClassTypeSymbolFlags flag);
     void SetFlag(ClassTypeSymbolFlags flag);
     void ResetFlag(ClassTypeSymbolFlags flag);
@@ -283,6 +286,7 @@ private:
     std::unique_ptr<cmajor::ast::ConstraintNode> constraint;
     ClassTemplateSpecializationSymbol* prototype;
     ClassGroupTypeSymbol* classGroup;
+    std::recursive_mutex mtx;
     void InitVmt(std::vector<FunctionSymbol*>& vmtToInit);
     void* CreateImt(cmajor::ir::Emitter& emitter, int index, Context* context);
     void* CreateImts(cmajor::ir::Emitter& emitter, Context* context);
