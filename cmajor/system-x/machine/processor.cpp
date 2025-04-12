@@ -20,7 +20,8 @@ Scheduler::~Scheduler()
 {
 }
 
-Processor::Processor() : mainFiber(nullptr), id(0), machine(nullptr), currentProcess(nullptr), currentHandler(nullptr), kernelStackSize(KernelStackSize())
+Processor::Processor() : 
+    id(0), machine(nullptr), currentProcess(nullptr), kernelStackSize(KernelStackSize()), mainFiber(nullptr)
 {
 }
 
@@ -46,33 +47,57 @@ void Processor::Run()
         mainFiber = util::ConvertThreadToFiber(this);
         while (!machine->Exiting())
         {
+            UserProcess* kernelProcess = GetRunnableKernelProcess();
+            if (kernelProcess)
+            {
+                void* kernelFiber = nullptr;
+                {
+                    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+                    kernelProcess->SetMainFiber(mainFiber);
+                    kernelProcess->SetInterruptHandler(nullptr);
+                    kernelProcess->SetProcessor(this);
+                    kernelProcess->SetSaveContext(false);
+                    currentProcess = kernelProcess;
+                    kernelFiber = kernelProcess->KernelFiber();
+                }
+                if (kernelFiber)
+                {
+                    kernelProcess->WaitNotInKernel(true);
+                    if (machine->Exiting()) continue;
+                    util::SwitchToFiber(kernelFiber);
+                    kernelProcess->SetNotInKernel();
+                }
+                continue;
+            }
             Scheduler* scheduler = machine->GetScheduler();
-            currentProcess = scheduler->GetRunnableProcess();
-            if (!currentProcess)
+            cmajor::systemx::machine::UserProcess* process = scheduler->GetRunnableProcess(this);
+            if (!process)
             {
-                break;
+                continue;
             }
-            if (!currentProcess->KernelFiber())
             {
-                void* kernelFiber = util::CreateFiber(kernelStackSize, cmajor::systemx::machine::RunKernel, this);
-                currentProcess->SetKernelFiber(kernelFiber);
+                std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+                if (!process->KernelFiber())
+                {
+                    void* kernelFiber = util::CreateFiber(kernelStackSize, cmajor::systemx::machine::RunKernel, process);
+                    process->SetKernelFiber(kernelFiber);
+                }
+                currentProcess = process;
             }
-            currentProcess->RestoreContext(*machine, registers);
-            ProcessState processState = currentProcess->State();
-            currentProcess->SetRunning(this);
-            uint64_t pc = registers.GetPC();
-            if (processState == ProcessState::runnableInKernel)
+            process->WaitNotInKernel(false);
+            ProcessState processState = ProcessState::runnableInUser;
+            Debugger* debugger = process->GetDebugger();
+            uint64_t pc = static_cast<uint64_t>(-1);
             {
-                util::SwitchToFiber(currentProcess->KernelFiber());
+                std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+                process->SetRunning(this);
+                process->RestoreContext(*machine, registers);
                 pc = registers.GetPC();
+                process->SetStartUserTime();
+                processState = process->State();
             }
-            if (currentProcess)
+            while (process && processState == ProcessState::running)
             {
-                currentProcess->SetStartUserTime();
-            }
-            while (currentProcess && currentProcess->State() == ProcessState::running)
-            {
-                Debugger* debugger = currentProcess->GetDebugger();
                 if (debugger)
                 {
                     debugger->Intercept();
@@ -87,7 +112,13 @@ void Processor::Run()
                     Instruction* inst = FetchInstruction(pc, x, y, z);
                     inst->Execute(*this, x, y, z);
                     SetPC(inst, pc, prevPC);
-                    CheckInterrupts();
+                    if (CheckInterrupts())
+                    {
+                        process->SetNotInKernel();
+                        process = nullptr;
+                        processState = ProcessState::runnableInUser;
+                        continue;
+                    }
                     pc = registers.GetPC();
                 }
                 catch (const MemoryError& memoryError)
@@ -132,7 +163,7 @@ void Processor::SetPC(Instruction* inst, uint64_t pc, uint64_t prevPC)
     registers.SetSpecial(rW, prevPC);
 }
 
-void Processor::CheckInterrupts()
+bool Processor::CheckInterrupts()
 {
     uint64_t interruptBits = registers.GetInterruptBits();
     if (interruptBits)
@@ -145,11 +176,20 @@ void Processor::CheckInterrupts()
                 InterruptHandler* handler = GetInterruptHandler(irq);
                 if (handler)
                 {
-                    if (currentProcess)
+                    void* kernelFiber = nullptr;
                     {
+                        std::lock_guard<std::recursive_mutex> lock(machine->Lock());
                         currentProcess->AddUserTime();
-                        currentHandler = handler;
-                        util::SwitchToFiber(currentProcess->KernelFiber());
+                        currentProcess->SetMainFiber(mainFiber);
+                        currentProcess->SetInterruptHandler(handler);
+                        currentProcess->SetSaveContext(true);
+                        kernelFiber = currentProcess->KernelFiber();
+                    }
+                    if (kernelFiber)
+                    {
+                        currentProcess->WaitNotInKernel(true);
+                        util::SwitchToFiber(kernelFiber);
+                        return true;
                     }
                 }
                 else
@@ -159,6 +199,7 @@ void Processor::CheckInterrupts()
             }
         }
     }
+    return false;
 }
 
 void Processor::EnableInterrupts()
@@ -166,8 +207,9 @@ void Processor::EnableInterrupts()
     registers.SetSpecial(rK, ALL_INTERRUPT_BITS);
 }
 
-void Processor::ResetCurrentProcess(bool addSystemTime, bool saveContext)
+void Processor::ResetCurrentProcess(bool addSystemTime, bool saveContext, bool setKernelProcessor)
 {
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     if (addSystemTime)
     {
         currentProcess->AddSystemTime();
@@ -175,6 +217,11 @@ void Processor::ResetCurrentProcess(bool addSystemTime, bool saveContext)
     if (saveContext)
     {
         currentProcess->SaveContext(*machine, registers);
+        currentProcess->SetSaveContext(false);
+    }
+    if (setKernelProcessor)
+    {
+        currentProcess->SetKernelProcessor(this);
     }
     currentProcess->ResetProcessor();
     currentProcess = nullptr;
@@ -188,43 +235,84 @@ void Processor::CheckException()
     }
 }
 
-void Processor::RunKernel()
+void Processor::AddRunnableKernelProcess(UserProcess* runnableKernelProcess)
 {
-    while (!machine->Exiting())
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+    runnableKernelProcesses.push_back(runnableKernelProcess);
+}
+
+UserProcess* Processor::GetRunnableKernelProcess()
+{
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+    if (!runnableKernelProcesses.empty())
     {
-        try
-        {
-            if (currentProcess)
-            {
-                currentProcess->SetStartSystemTime();
-            }
-            currentHandler->HandleInterrupt(*this);
-            if (currentProcess)
-            {
-                currentProcess->AddSystemTime();
-            }
-            if (currentProcess && currentProcess->State() != ProcessState::zombie)
-            {
-                bool exec = currentProcess->State() == ProcessState::exec;
-                machine->GetScheduler()->AddRunnableProcess(currentProcess, ProcessState::runnableInUser);
-                ResetCurrentProcess(false, !exec);
-            }
-            machine->GetScheduler()->CheckRunnable();
-        }
-        catch (...)
-        {
-            exception = std::current_exception();
-            machine->SetHasException();
-        }
-        util::SwitchToFiber(mainFiber);
+        UserProcess* runnableKernelProcess = runnableKernelProcesses.front();
+        runnableKernelProcesses.pop_front();
+        return runnableKernelProcess;
     }
+    return nullptr;
+}
+
+bool Processor::HasRunnableKernelProcess()
+{
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+    return !runnableKernelProcesses.empty();
 }
 
 void RunKernel()
 {
     void* fiberData = util::GetFiberData();
-    Processor* processor = static_cast<Processor*>(fiberData);
-    processor->RunKernel();
+    UserProcess* process = static_cast<UserProcess*>(fiberData);
+    Machine* machine = process->GetMachine();
+    while (!machine->Exiting())
+    {
+        void* processMainFiber = nullptr;
+        try
+        {
+            Processor* processor = nullptr;
+            InterruptHandler* currentHandler = nullptr;
+            {
+                std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+                process->SetStartSystemTime();
+                currentHandler = process->GetInterruptHandler();
+                processor = process->GetProcessor();
+                processMainFiber = process->MainFiber();
+            }
+            if (currentHandler && processor)
+            {
+                currentHandler->HandleInterrupt(*processor);
+            }
+            {
+                std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+                process->AddSystemTime();
+                if (process->State() != ProcessState::zombie && process->GetProcessor() == processor)
+                {
+                    bool saveContext = process->State() != ProcessState::exec && process->DoSaveContext();
+                    processor->ResetCurrentProcess(false, saveContext, false);
+                    machine->GetScheduler()->AddRunnableProcess(process, ProcessState::runnableInUser);
+                }
+            }
+            machine->GetScheduler()->CheckRunnable();
+            if (processMainFiber)
+            {
+                util::SwitchToFiber(processMainFiber);
+            }
+            else
+            {
+                int x = 0;
+            }
+        }
+        catch (...)
+        {
+            Processor* processor = process->GetProcessor();
+            if (processor)
+            {
+                processor->SetException(std::current_exception());
+            }
+            machine->SetHasException();
+            util::SwitchToFiber(processMainFiber);
+        }
+    }
 }
 
 } // namespace cmajor::systemx::machine

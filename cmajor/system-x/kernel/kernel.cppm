@@ -20,7 +20,8 @@ public:
     void Sleep() override;
     void Wakeup(cmajor::systemx::machine::Scheduler* scheduler) override;
     cmajor::systemx::machine::Processor* GetProcessor() const override;
-    void ReleaseProcessor(cmajor::systemx::machine::Processor* processor) override;
+    void ReleaseProcessor() override;
+    void SetProcessor(cmajor::systemx::machine::Processor* processor) override;
     uint64_t GetINodeKeyOfWorkingDir() const override;
     void SetINodeKeyOfWorkingDir(uint64_t inodeKeyAsULong) override;
     int32_t UID() const override { return 0; }
@@ -34,6 +35,12 @@ public:
     int32_t UMask() const override { return 0; }
     void RemoveMessageQueue(int32_t md) override;
     cmajor::systemx::machine::Machine* GetMachine() override;
+    bool InKernel() const override { return true; }
+    void WaitNotInKernel(bool enter) override;
+    void SetInKernel() override;
+    void SetNotInKernel() override;
+    bool DoSaveContext() const override { return false; }
+    void SetSaveContext(bool saveContext_) override;
 };
 
 class Kernel

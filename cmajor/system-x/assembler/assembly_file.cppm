@@ -33,8 +33,10 @@ public:
     AssemblyObject(AssemblyObjectKind kind_);
     virtual ~AssemblyObject();
     virtual void Write(util::CodeFormatter& formatter) = 0;
+    std::thread::id CreatorThreadId() const { return creatorThreadId; }
 private:
     AssemblyObjectKind kind;
+    std::thread::id creatorThreadId;
 };
 
 class AssemblyFunction : public AssemblyObject
@@ -124,11 +126,13 @@ public:
     AssemblyStruct* CreateStructure(const std::string& name);
     AssemblyDebugInfo* CreateDebugInfo();
     void Write(util::CodeFormatter& formatter);
+    std::thread::id CreatorThreadId() const { return creatorThreadId; }
 private:
     AssemblySectionKind kind;
     std::vector<std::unique_ptr<AssemblyObject>> objects;
     AssemblyExternObject* externObject;
     AssemblyLinkOnceObject* linkOnceObject;
+    std::thread::id creatorThreadId;
 };
 
 class AssemblyFile
@@ -142,6 +146,7 @@ public:
     AssemblySection* GetDebugSection();
     AssemblyFunction* CreateFunction(const std::string& name);
     void Write();
+    std::thread::id CreatorThreadId() const { return creatorThreadId; }
 private:
     std::string filePath;
     std::ofstream file;
@@ -150,6 +155,7 @@ private:
     std::unique_ptr<AssemblySection> codeSection;
     std::unique_ptr<AssemblySection> dataSection;
     std::unique_ptr<AssemblySection> debugSection;
+    std::thread::id creatorThreadId;
 };
 
 } // namespace cmajor::systemx::assembler

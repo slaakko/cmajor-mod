@@ -37,11 +37,11 @@ public:
     Instruction(int opCode_);
     Instruction(const Instruction&) = delete;
     Instruction& operator=(const Instruction&) = delete;
-    Symbol* Label() const { return label.get(); }
+    Symbol* Label() const;
     void SetLabel(Symbol* label_);
     OpCode* GetOpCode() const { return opCode.get(); }
     void MakeImmediate();
-    OperandList* GetOperandList() const { return operandList.get(); }
+    OperandList* GetOperandList() const;
     void AddOperand(Node* operand);
     void SetOperands(std::vector<cmajor::systemx::object::Value>&& operands_);
     const std::vector<cmajor::systemx::object::Value>& Operands() const { return operands; }

@@ -924,41 +924,41 @@ void BinaryFile::AddSection(Section* section)
 {
     switch (section->Kind())
     {
-    case SectionKind::fhdr:
-    {
-        headerSection = static_cast<HeaderSection*>(section);
-        break;
-    }
-    case SectionKind::code:
-    {
-        codeSection = static_cast<CodeSection*>(section);
-        break;
-    }
-    case SectionKind::data:
-    {
-        dataSection = static_cast<DataSection*>(section);
-        break;
-    }
-    case SectionKind::rsrc:
-    {
-        resourceSection = static_cast<ResourceSection*>(section);
-        break;
-    }
-    case SectionKind::symb:
-    {
-        symbolSection = static_cast<SymbolSection*>(section);
-        break;
-    }
-    case SectionKind::link:
-    {
-        linkSection = static_cast<LinkSection*>(section);
-        break;
-    }
-    case SectionKind::dbug:
-    {
-        debugSection = static_cast<DebugSection*>(section);
-        break;
-    }
+        case SectionKind::fhdr:
+        {
+            headerSection = static_cast<HeaderSection*>(section);
+            break;
+        }
+        case SectionKind::code:
+        {
+            codeSection = static_cast<CodeSection*>(section);
+            break;
+        }
+        case SectionKind::data:
+        {
+            dataSection = static_cast<DataSection*>(section);
+            break;
+        }
+        case SectionKind::rsrc:
+        {
+            resourceSection = static_cast<ResourceSection*>(section);
+            break;
+        }
+        case SectionKind::symb:
+        {
+            symbolSection = static_cast<SymbolSection*>(section);
+            break;
+        }
+        case SectionKind::link:
+        {
+            linkSection = static_cast<LinkSection*>(section);
+            break;
+        }
+        case SectionKind::dbug:
+        {
+            debugSection = static_cast<DebugSection*>(section);
+            break;
+        }
     }
     sections.push_back(std::unique_ptr<Section>(section));
 }

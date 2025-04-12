@@ -6,13 +6,19 @@
 module cmajor.systemx.assembler.expression;
 
 import cmajor.systemx.assembler.visitor;
+import util;
 
 namespace cmajor::systemx::assembler {
 
 UnaryExpression::UnaryExpression(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* operand_) :
     Node(NodeKind::unaryExprNode, sourcePos_), op(op_), operand(operand_)
 {
-    operand->SetOwner(this);
+#ifdef THREAD_ID_CHECK
+    if (!operand || operand->CreatorThreadId() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
 }
 
 void UnaryExpression::Accept(Visitor& visitor)
@@ -45,14 +51,18 @@ void UnaryExpression::Write(util::CodeFormatter& formatter)
             break;
         }
     }
+#ifdef THREAD_ID_CHECK
+    if (!operand || operand->CreatorThreadId() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     operand->Write(formatter);
 }
 
 BinaryExpression::BinaryExpression(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* left_, Node* right_) :
     Node(NodeKind::binaryExprNode, sourcePos_), op(op_), left(left_), right(right_)
 {
-    left->SetOwner(this);
-    right->SetOwner(this);
 }
 
 void BinaryExpression::Accept(Visitor& visitor)
@@ -127,7 +137,6 @@ void BinaryExpression::Write(util::CodeFormatter& formatter)
 ParenthesizedExpression::ParenthesizedExpression(const soul::ast::SourcePos& sourcePos_, Node* expr_) :
     Node(NodeKind::parenExprNode, sourcePos_), expr(expr_)
 {
-    expr->SetOwner(this);
 }
 
 void ParenthesizedExpression::Accept(Visitor& visitor)

@@ -50,7 +50,10 @@ void EventManager::SleepOn(const cmajor::systemx::machine::Event& evnt, cmajor::
     DebugLock hasDebugLock(lock.mutex(), EVENT_MANAGER, process->Id(), HAS_LOCK | SLEEP, evnt);
 #endif 
     sleepingProcesses[evnt].push_back(process);
-    lock.unlock();
+    if (lock.owns_lock())
+    {
+        lock.unlock();
+    }
     process->Sleep();
 #if (LOCK_DEBUG)
     DebugLock startDebugLock(lock.mutex(), EVENT_MANAGER, process->Id(), HAS_LOCK | SLEEP, evnt);
@@ -80,14 +83,11 @@ void Sleep(const cmajor::systemx::machine::Event& evnt, cmajor::systemx::machine
     cmajor::systemx::machine::Processor* processor = process->GetProcessor();
     if (processor)
     {
-        processor->ResetCurrentProcess(true, true);
+        processor->ResetCurrentProcess(true, process->DoSaveContext(), true);
     }
     Scheduler::Instance().CheckRunnable();
     EventManager::Instance().SleepOn(evnt, process, lock);
-    if (processor)
-    {
-        process->ReleaseProcessor(processor);
-    }
+    process->ReleaseProcessor();
 }
 
 void Wakeup(const cmajor::systemx::machine::Event& evnt)

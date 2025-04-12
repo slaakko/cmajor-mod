@@ -10,7 +10,8 @@ import cmajor.systemx.intermediate.error;
 
 namespace cmajor::systemx::intermediate {
 
-MetadataRef::MetadataRef(const soul::ast::SourcePos& sourcePos_, int32_t nodeId_) : MetadataItem(MetadataItemKind::metadataRef), sourcePos(sourcePos_), nodeId(nodeId_), metadataStruct(nullptr)
+MetadataRef::MetadataRef(const soul::ast::SourcePos& sourcePos_, int32_t nodeId_) : 
+    MetadataItem(MetadataItemKind::metadataRef), sourcePos(sourcePos_), nodeId(nodeId_), metadataStruct(nullptr)
 {
 }
 

@@ -17,7 +17,7 @@ namespace cmajor::systemx::assembler::assembler {
 Assembler::Assembler(const std::string& assemblyFilePath_, const std::string& objectFilePath_) :
     stage(Stage::none), assemblyFilePath(assemblyFilePath_), objectFile(new cmajor::systemx::object::ObjectFile(objectFilePath_)), currentInstruction(nullptr),
     currentSegment(cmajor::systemx::object::Segment::unknown), currentSection(nullptr), currentSymbol(nullptr), currentFunctionSymbol(nullptr), currentStructureSymbol(nullptr),
-    parentIndex(-1), line(1), prevWasEmptyLine(false), currentAlignment(1), inSpec(false), fileMap()
+    parentIndex(-1), line(1), prevWasEmptyLine(false), currentAlignment(1), inSpec(false), fileMap(), creatorThreadId(std::this_thread::get_id())
 {
     objectFile->CreateSections();
     objectFile->GetSymbolTable().InstallDefaultSymbols();
@@ -27,6 +27,12 @@ Assembler::Assembler(const std::string& assemblyFilePath_, const std::string& ob
 
 void Assembler::Assemble()
 {
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     Resolve();
     GenerateCode();
     cmajor::systemx::object::LinkInternal(objectFile.get());
@@ -54,6 +60,12 @@ void Assembler::VisitInstructions()
 {
     for (const auto& instruction : instructions)
     {
+#ifdef THREAD_ID_CHECK
+        if (instruction->CreatorThreadId() != CreatorThreadId())
+        {
+            throw util::UnexpectedExecutorThread();
+        }
+#endif // THREAD_ID_CHECK
         instruction->Accept(*this);
     }
 }
@@ -155,71 +167,71 @@ void Assembler::Visit(UnaryExpression& node)
     {
         switch (node.Op())
         {
-        case Operator::unaryPlus:
-        {
-            break;
-        }
-        case Operator::unaryMinus:
-        {
-            if (value.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+            case Operator::unaryPlus:
             {
-                if (value.Val() == 0)
+                break;
+            }
+            case Operator::unaryMinus:
+            {
+                if (value.GetFlag(cmajor::systemx::object::ValueFlags::pure))
                 {
-                    Error("unary minus operator with operand 0 not defined", node.GetSourcePos());
+                    if (value.Val() == 0)
+                    {
+                        Error("unary minus operator with operand 0 not defined", node.GetSourcePos());
+                    }
+                    else
+                    {
+                        value.SetVal(-value.Val());
+                    }
                 }
                 else
                 {
-                    value.SetVal(-value.Val());
+                    Error("unary minus operator needs pure operand", node.GetSourcePos());
                 }
+                break;
             }
-            else
+            case Operator::complement:
             {
-                Error("unary minus operator needs pure operand", node.GetSourcePos());
-            }
-            break;
-        }
-        case Operator::complement:
-        {
-            if (value.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-            {
-                value.SetVal(~value.Val());
-            }
-            else
-            {
-                Error("complement operator needs pure operand", node.GetSourcePos());
-            }
-            break;
-        }
-        case Operator::reg:
-        {
-            if (value.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-            {
-                if (value.Val() >= 0 && value.Val() < 256)
+                if (value.GetFlag(cmajor::systemx::object::ValueFlags::pure))
                 {
-                    value.ResetFlag(cmajor::systemx::object::ValueFlags::pure);
-                    value.SetFlag(cmajor::systemx::object::ValueFlags::reg);
+                    value.SetVal(~value.Val());
                 }
                 else
                 {
-                    Error("invalid registerize operand (not in range 0...255)", node.GetSourcePos());
+                    Error("complement operator needs pure operand", node.GetSourcePos());
                 }
+                break;
             }
-            else
+            case Operator::reg:
             {
-                Error("registerize operator needs pure operand", node.GetSourcePos());
+                if (value.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+                {
+                    if (value.Val() >= 0 && value.Val() < 256)
+                    {
+                        value.ResetFlag(cmajor::systemx::object::ValueFlags::pure);
+                        value.SetFlag(cmajor::systemx::object::ValueFlags::reg);
+                    }
+                    else
+                    {
+                        Error("invalid registerize operand (not in range 0...255)", node.GetSourcePos());
+                    }
+                }
+                else
+                {
+                    Error("registerize operator needs pure operand", node.GetSourcePos());
+                }
+                break;
             }
-            break;
-        }
-        case Operator::serial:
-        {
-            Error("serial operator not implemented", node.GetSourcePos());
-            break;
-        }
-        default:
-        {
-            Error("unknown unary operator", node.GetSourcePos());
-            break;
-        }
+            case Operator::serial:
+            {
+                Error("serial operator not implemented", node.GetSourcePos());
+                break;
+            }
+            default:
+            {
+                Error("unknown unary operator", node.GetSourcePos());
+                break;
+            }
         }
     }
 }
@@ -242,223 +254,223 @@ void Assembler::Visit(BinaryExpression& node)
     }
     switch (node.Op())
     {
-    case Operator::add:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+        case Operator::add:
         {
-            value = cmajor::systemx::object::Value(left.Val() + right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
-            }
-        }
-        else if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::reg))
-        {
-            value = cmajor::systemx::object::Value(left.Val() + right.Val(), cmajor::systemx::object::ValueFlags::reg);
-            if (value.Val() > 256)
-            {
-                Error("invalid add register operand (not in range 0...255)", node.GetSourcePos());
-            }
-        }
-        else if (left.GetFlag(cmajor::systemx::object::ValueFlags::reg) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() + right.Val(), cmajor::systemx::object::ValueFlags::reg);
-            if (value.Val() > 256)
-            {
-                Error("invalid add register operand (not in range 0...255)", node.GetSourcePos());
-            }
-        }
-        else
-        {
-            Error("add operator needs operands that are both pure or either one is register", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::subtract:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() - right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
-            {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
-            }
-        }
-        else if (left.GetFlag(cmajor::systemx::object::ValueFlags::reg))
-        {
-            if (right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-            {
-                value = cmajor::systemx::object::Value(left.Val() - right.Val(), cmajor::systemx::object::ValueFlags::reg);
-                if (value.Val() > 256)
+                value = cmajor::systemx::object::Value(left.Val() + right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
                 {
-                    Error("invalid subtract register operand (not in range 0...255)", node.GetSourcePos());
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
                 }
             }
-            else if (right.GetFlag(cmajor::systemx::object::ValueFlags::reg))
+            else if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::reg))
             {
-                value = cmajor::systemx::object::Value(left.Val() - right.Val());
+                value = cmajor::systemx::object::Value(left.Val() + right.Val(), cmajor::systemx::object::ValueFlags::reg);
                 if (value.Val() > 256)
                 {
-                    Error("invalid subtract register operand (not in range 0...255)", node.GetSourcePos());
+                    Error("invalid add register operand (not in range 0...255)", node.GetSourcePos());
+                }
+            }
+            else if (left.GetFlag(cmajor::systemx::object::ValueFlags::reg) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+            {
+                value = cmajor::systemx::object::Value(left.Val() + right.Val(), cmajor::systemx::object::ValueFlags::reg);
+                if (value.Val() > 256)
+                {
+                    Error("invalid add register operand (not in range 0...255)", node.GetSourcePos());
+                }
+            }
+            else
+            {
+                Error("add operator needs operands that are both pure or either one is register", node.GetSourcePos());
+            }
+            break;
+        }
+        case Operator::subtract:
+        {
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+            {
+                value = cmajor::systemx::object::Value(left.Val() - right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
+            }
+            else if (left.GetFlag(cmajor::systemx::object::ValueFlags::reg))
+            {
+                if (right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+                {
+                    value = cmajor::systemx::object::Value(left.Val() - right.Val(), cmajor::systemx::object::ValueFlags::reg);
+                    if (value.Val() > 256)
+                    {
+                        Error("invalid subtract register operand (not in range 0...255)", node.GetSourcePos());
+                    }
+                }
+                else if (right.GetFlag(cmajor::systemx::object::ValueFlags::reg))
+                {
+                    value = cmajor::systemx::object::Value(left.Val() - right.Val());
+                    if (value.Val() > 256)
+                    {
+                        Error("invalid subtract register operand (not in range 0...255)", node.GetSourcePos());
+                    }
+                }
+                else
+                {
+                    Error("subtract operator needs operands that are both pure, or left is register number and right is pure or register number", node.GetSourcePos());
                 }
             }
             else
             {
                 Error("subtract operator needs operands that are both pure, or left is register number and right is pure or register number", node.GetSourcePos());
             }
+            break;
         }
-        else
+        case Operator::multiply:
         {
-            Error("subtract operator needs operands that are both pure, or left is register number and right is pure or register number", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::multiply:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() * right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                value = cmajor::systemx::object::Value(left.Val() * right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
             }
-        }
-        else
-        {
-            Error("multiply operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::divide:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            if (right.Val() == 0)
+            else
             {
-                Error("division by zero", node.GetSourcePos());
+                Error("multiply operator needs pure operands", node.GetSourcePos());
             }
-            value = cmajor::systemx::object::Value(left.Val() / right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            break;
+        }
+        case Operator::divide:
+        {
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                if (right.Val() == 0)
+                {
+                    Error("division by zero", node.GetSourcePos());
+                }
+                value = cmajor::systemx::object::Value(left.Val() / right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
             }
-        }
-        else
-        {
-            Error("division operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::modulus:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            if (right.Val() == 0)
+            else
             {
-                Error("modulo by zero", node.GetSourcePos());
+                Error("division operator needs pure operands", node.GetSourcePos());
             }
-            value = cmajor::systemx::object::Value(left.Val() % right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            break;
+        }
+        case Operator::modulus:
+        {
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                if (right.Val() == 0)
+                {
+                    Error("modulo by zero", node.GetSourcePos());
+                }
+                value = cmajor::systemx::object::Value(left.Val() % right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
             }
-        }
-        else
-        {
-            Error("modulo operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::shift_left:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() << right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            else
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                Error("modulo operator needs pure operands", node.GetSourcePos());
             }
+            break;
         }
-        else
+        case Operator::shift_left:
         {
-            Error("left shift operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::shift_right:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() >> right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                value = cmajor::systemx::object::Value(left.Val() << right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
             }
-        }
-        else
-        {
-            Error("right shift operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::bitwise_and:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() & right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            else
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                Error("left shift operator needs pure operands", node.GetSourcePos());
             }
+            break;
         }
-        else
+        case Operator::shift_right:
         {
-            Error("bitwise and operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::bitwise_or:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() | right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                value = cmajor::systemx::object::Value(left.Val() >> right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
             }
-        }
-        else
-        {
-            Error("bitwise or operator needs pure operands", node.GetSourcePos());
-        }
-        break;
-    }
-    case Operator::bitwise_xor:
-    {
-        if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
-        {
-            value = cmajor::systemx::object::Value(left.Val() ^ right.Val());
-            if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+            else
             {
-                value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                Error("right shift operator needs pure operands", node.GetSourcePos());
             }
+            break;
         }
-        else
+        case Operator::bitwise_and:
         {
-            Error("bitwise xor operator needs pure operands", node.GetSourcePos());
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+            {
+                value = cmajor::systemx::object::Value(left.Val() & right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
+            }
+            else
+            {
+                Error("bitwise and operator needs pure operands", node.GetSourcePos());
+            }
+            break;
         }
-        break;
-    }
-    case Operator::fractional_divide:
-    {
-        Error("fractional division operator not implemented", node.GetSourcePos());
-        break;
-    }
-    default:
-    {
-        Error("unknown binary operator", node.GetSourcePos());
-        break;
-    }
+        case Operator::bitwise_or:
+        {
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+            {
+                value = cmajor::systemx::object::Value(left.Val() | right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
+            }
+            else
+            {
+                Error("bitwise or operator needs pure operands", node.GetSourcePos());
+            }
+            break;
+        }
+        case Operator::bitwise_xor:
+        {
+            if (left.GetFlag(cmajor::systemx::object::ValueFlags::pure) && right.GetFlag(cmajor::systemx::object::ValueFlags::pure))
+            {
+                value = cmajor::systemx::object::Value(left.Val() ^ right.Val());
+                if (left.GetFlag(cmajor::systemx::object::ValueFlags::address) || right.GetFlag(cmajor::systemx::object::ValueFlags::address))
+                {
+                    value.SetFlag(cmajor::systemx::object::ValueFlags::address);
+                }
+            }
+            else
+            {
+                Error("bitwise xor operator needs pure operands", node.GetSourcePos());
+            }
+            break;
+        }
+        case Operator::fractional_divide:
+        {
+            Error("fractional division operator not implemented", node.GetSourcePos());
+            break;
+        }
+        default:
+        {
+            Error("unknown binary operator", node.GetSourcePos());
+            break;
+        }
     }
 }
 
@@ -498,53 +510,53 @@ void Assembler::Visit(LocalSymbol& node)
         {
             switch (opc)
             {
-            case ENDF:
-            {
-                Error("ENDF symbol is local", node.GetSourcePos());
-                break;
-            }
-            case ENDS:
-            {
-                Error("ENDS symbol is local", node.GetSourcePos());
-                break;
-            }
-            default:
-            {
-                Error("symbol '" + node.Name() + "' already defined", node.GetSourcePos());
-                break;
-            }
+                case ENDF:
+                {
+                    Error("ENDF symbol is local", node.GetSourcePos());
+                    break;
+                }
+                case ENDS:
+                {
+                    Error("ENDS symbol is local", node.GetSourcePos());
+                    break;
+                }
+                default:
+                {
+                    Error("symbol '" + node.Name() + "' already defined", node.GetSourcePos());
+                    break;
+                }
             }
         }
         else
         {
             switch (opc)
             {
-            case ENDF:
-            {
-                Error("ENDF symbol is local", node.GetSourcePos());
-                break;
-            }
-            case ENDS:
-            {
-                Error("ENDS symbol is local", node.GetSourcePos());
-                break;
-            }
-            default:
-            {
-                if (currentFunctionSymbol)
+                case ENDF:
                 {
-                    symbol = new cmajor::systemx::object::Symbol(cmajor::systemx::object::SymbolKind::local, node.Name(), currentFunctionSymbol->FullName() + node.Name());
+                    Error("ENDF symbol is local", node.GetSourcePos());
+                    break;
                 }
-                else if (currentStructureSymbol)
+                case ENDS:
                 {
-                    symbol = new cmajor::systemx::object::Symbol(cmajor::systemx::object::SymbolKind::local, node.Name(), currentStructureSymbol->FullName() + node.Name());
+                    Error("ENDS symbol is local", node.GetSourcePos());
+                    break;
                 }
-                else
+                default:
                 {
-                    Error("local symbols can be used only inside FUNC or STRUCT", node.GetSourcePos());
+                    if (currentFunctionSymbol)
+                    {
+                        symbol = new cmajor::systemx::object::Symbol(cmajor::systemx::object::SymbolKind::local, node.Name(), currentFunctionSymbol->FullName() + node.Name());
+                    }
+                    else if (currentStructureSymbol)
+                    {
+                        symbol = new cmajor::systemx::object::Symbol(cmajor::systemx::object::SymbolKind::local, node.Name(), currentStructureSymbol->FullName() + node.Name());
+                    }
+                    else
+                    {
+                        Error("local symbols can be used only inside FUNC or STRUCT", node.GetSourcePos());
+                    }
+                    break;
                 }
-                break;
-            }
             }
             if (symbol)
             {
@@ -587,21 +599,21 @@ void Assembler::Visit(GlobalSymbol& node)
         {
             switch (opc)
             {
-            case ENDF:
-            {
-                currentFunctionSymbol = nullptr;
-                break;
-            }
-            case ENDS:
-            {
-                currentStructureSymbol = nullptr;
-                break;
-            }
-            default:
-            {
-                Error("symbol '" + node.Name() + "' already defined", node.GetSourcePos());
-                break;
-            }
+                case ENDF:
+                {
+                    currentFunctionSymbol = nullptr;
+                    break;
+                }
+                case ENDS:
+                {
+                    currentStructureSymbol = nullptr;
+                    break;
+                }
+                default:
+                {
+                    Error("symbol '" + node.Name() + "' already defined", node.GetSourcePos());
+                    break;
+                }
             }
         }
         else
@@ -609,26 +621,26 @@ void Assembler::Visit(GlobalSymbol& node)
             symbol = new cmajor::systemx::object::Symbol(cmajor::systemx::object::SymbolKind::global, std::string(), node.Name());
             switch (opc)
             {
-            case FUNC:
-            {
-                currentFunctionSymbol = symbol;
-                break;
-            }
-            case STRUCT:
-            {
-                currentStructureSymbol = symbol;
-                break;
-            }
-            case ENDF:
-            {
-                Error("no corresponding FUNC '" + node.Name() + "' not seen", node.GetSourcePos());
-                break;
-            }
-            case ENDS:
-            {
-                Error("no corresponding STRUCT '" + node.Name() + "' not seen", node.GetSourcePos());
-                break;
-            }
+                case FUNC:
+                {
+                    currentFunctionSymbol = symbol;
+                    break;
+                }
+                case STRUCT:
+                {
+                    currentStructureSymbol = symbol;
+                    break;
+                }
+                case ENDF:
+                {
+                    Error("no corresponding FUNC '" + node.Name() + "' not seen", node.GetSourcePos());
+                    break;
+                }
+                case ENDS:
+                {
+                    Error("no corresponding STRUCT '" + node.Name() + "' not seen", node.GetSourcePos());
+                    break;
+                }
             }
             symbol->SetSegment(currentSegment);
             symbol->SetLinkage(cmajor::systemx::object::Linkage::internal);
@@ -689,51 +701,51 @@ void Assembler::Visit(Instruction& node)
         node.GetOpCode()->Accept(*this);
         switch (node.GetOpCode()->Value())
         {
-        case LINK:
-        {
-            currentSegment = cmajor::systemx::object::Segment::data;
-            currentSection = objectFile->GetLinkSection();
-            return;
-        }
-        case CODE:
-        {
-            currentSegment = cmajor::systemx::object::Segment::text;
-            currentSection = objectFile->GetCodeSection();
-            return;
-        }
-        case DATA:
-        {
-            currentSegment = cmajor::systemx::object::Segment::data;
-            currentSection = objectFile->GetDataSection();
-            return;
-        }
-        case DEBUG:
-        {
-            currentSegment = cmajor::systemx::object::Segment::data;
-            currentSection = objectFile->GetDebugSection();
-            return;
-        }
+            case LINK:
+            {
+                currentSegment = cmajor::systemx::object::Segment::data;
+                currentSection = objectFile->GetLinkSection();
+                return;
+            }
+            case CODE:
+            {
+                currentSegment = cmajor::systemx::object::Segment::text;
+                currentSection = objectFile->GetCodeSection();
+                return;
+            }
+            case DATA:
+            {
+                currentSegment = cmajor::systemx::object::Segment::data;
+                currentSection = objectFile->GetDataSection();
+                return;
+            }
+            case DEBUG:
+            {
+                currentSegment = cmajor::systemx::object::Segment::data;
+                currentSection = objectFile->GetDebugSection();
+                return;
+            }
         }
         if (node.Label())
         {
             int opc = node.GetOpCode()->Value();
             switch (opc)
             {
-            case EXTERN:
-            case LINKONCE:
-            {
-                Error("no label field allowed for EXTERN or LINKONCE instruction", node.GetSourcePos());
-                break;
-            }
-            case IS:
-            {
-                break;
-            }
-            default:
-            {
-                node.Label()->Accept(*this);
-                break;
-            }
+                case EXTERN:
+                case LINKONCE:
+                {
+                    Error("no label field allowed for EXTERN or LINKONCE instruction", node.GetSourcePos());
+                    break;
+                }
+                case IS:
+                {
+                    break;
+                }
+                default:
+                {
+                    node.Label()->Accept(*this);
+                    break;
+                }
             }
         }
     }
@@ -741,30 +753,30 @@ void Assembler::Visit(Instruction& node)
     {
         switch (node.GetOpCode()->Value())
         {
-        case LINK:
-        {
-            currentSegment = cmajor::systemx::object::Segment::data;
-            currentSection = objectFile->GetLinkSection();
-            return;
-        }
-        case CODE:
-        {
-            currentSegment = cmajor::systemx::object::Segment::text;
-            currentSection = objectFile->GetCodeSection();
-            return;
-        }
-        case DATA:
-        {
-            currentSegment = cmajor::systemx::object::Segment::data;
-            currentSection = objectFile->GetDataSection();
-            return;
-        }
-        case DEBUG:
-        {
-            currentSegment = cmajor::systemx::object::Segment::data;
-            currentSection = objectFile->GetDebugSection();
-            return;
-        }
+            case LINK:
+            {
+                currentSegment = cmajor::systemx::object::Segment::data;
+                currentSection = objectFile->GetLinkSection();
+                return;
+            }
+            case CODE:
+            {
+                currentSegment = cmajor::systemx::object::Segment::text;
+                currentSection = objectFile->GetCodeSection();
+                return;
+            }
+            case DATA:
+            {
+                currentSegment = cmajor::systemx::object::Segment::data;
+                currentSection = objectFile->GetDataSection();
+                return;
+            }
+            case DEBUG:
+            {
+                currentSegment = cmajor::systemx::object::Segment::data;
+                currentSection = objectFile->GetDebugSection();
+                return;
+            }
         }
         currentSymbol = nullptr;
         currentAlignment = 1;
@@ -781,10 +793,51 @@ void Assembler::Visit(Instruction& node)
         {
             switch (opc)
             {
+                case FUNC:
+                case ENDF:
+                case STRUCT:
+                case ENDS:
+                {
+                    AssemblyInstruction* assemblyInstruction = GetAssemblyInstruction(opc);
+                    if (!assemblyInstruction)
+                    {
+                        Error("assembly instruction for opcode " + node.GetOpCode()->Name() + "(" + std::to_string(opc) + ") not found", node.GetSourcePos());
+                    }
+                    assemblyInstruction->Assemble(*this);
+                    break;
+                }
+                default:
+                {
+                    currentSymbol->SetValue(cmajor::systemx::object::Value(currentSection->Address(), cmajor::systemx::object::ValueFlags::pure | cmajor::systemx::object::ValueFlags::address, currentSymbol));
+                    currentSymbol->SetStart(currentSection->BaseAddress() + currentSection->Address());
+                    if (currentAlignment >= 0 && currentAlignment < 256)
+                    {
+                        currentSymbol->SetAlignment(static_cast<uint8_t>(currentAlignment));
+                    }
+                    else
+                    {
+                        Error("invalid alignment", node.GetSourcePos());
+                    }
+                    if (parentIndex != -1)
+                    {
+                        currentSymbol->SetParentIndex(parentIndex);
+                    }
+                    break;
+                }
+            }
+            objectFile->GetSymbolTable().AddSymbolToAddressMap(currentSymbol, true);
+        }
+        node.GetOperandList()->Accept(*this);
+        switch (opc)
+        {
             case FUNC:
             case ENDF:
             case STRUCT:
             case ENDS:
+            {
+                break;
+            }
+            default:
             {
                 AssemblyInstruction* assemblyInstruction = GetAssemblyInstruction(opc);
                 if (!assemblyInstruction)
@@ -794,54 +847,18 @@ void Assembler::Visit(Instruction& node)
                 assemblyInstruction->Assemble(*this);
                 break;
             }
-            default:
-            {
-                currentSymbol->SetValue(cmajor::systemx::object::Value(currentSection->Address(), cmajor::systemx::object::ValueFlags::pure | cmajor::systemx::object::ValueFlags::address, currentSymbol));
-                currentSymbol->SetStart(currentSection->BaseAddress() + currentSection->Address());
-                if (currentAlignment >= 0 && currentAlignment < 256)
-                {
-                    currentSymbol->SetAlignment(static_cast<uint8_t>(currentAlignment));
-                }
-                else
-                {
-                    Error("invalid alignment", node.GetSourcePos());
-                }
-                if (parentIndex != -1)
-                {
-                    currentSymbol->SetParentIndex(parentIndex);
-                }
-                break;
-            }
-            }
-            objectFile->GetSymbolTable().AddSymbolToAddressMap(currentSymbol, true);
-        }
-        node.GetOperandList()->Accept(*this);
-        switch (opc)
-        {
-        case FUNC:
-        case ENDF:
-        case STRUCT:
-        case ENDS:
-        {
-            break;
-        }
-        default:
-        {
-            AssemblyInstruction* assemblyInstruction = GetAssemblyInstruction(opc);
-            if (!assemblyInstruction)
-            {
-                Error("assembly instruction for opcode " + node.GetOpCode()->Name() + "(" + std::to_string(opc) + ") not found", node.GetSourcePos());
-            }
-            assemblyInstruction->Assemble(*this);
-            break;
-        }
         }
     }
 }
 
 void Assembler::AddInstruction(Instruction* instruction)
 {
-    instruction->SetOwner(this);
+#ifdef THREAD_ID_CHECK
+    if (instruction->CreatorThreadId() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     instructions.push_back(std::unique_ptr<Instruction>(instruction));
 }
 

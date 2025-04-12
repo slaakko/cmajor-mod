@@ -65,5 +65,7 @@ void Rename(Process* process, int64_t sourcePathAddr, int64_t targetPathAddr);
 void AddDirChangeNotification(Process* process, int64_t directoryPathsAddr);
 void BindTerminal(Process* process, int32_t md);
 void UnbindTerminal(Process* process);
+void LockIO(cmajor::systemx::machine::UserProcess* process);
+void UnlockIO(cmajor::systemx::machine::UserProcess* process);
 
 } // namespace cmajor::systemx::kernel

@@ -264,177 +264,177 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
             cmajor::systemx::object::Value discriminator = currentInst->Operands()[0];
             switch (discriminator.Val())
             {
-            case FILEINFO:
-            {
-                if (n == 3)
+                case FILEINFO:
                 {
-                    cmajor::systemx::object::Value sourceFileNameValue = currentInst->Operands()[1];
-                    const std::string& sourceFileName = assembler.GetString(sourceFileNameValue.Val(), currentInst->GetSourcePos());
-                    cmajor::systemx::object::Value sourceFileId = currentInst->Operands()[2];
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(new cmajor::systemx::object::FileInfoRecord(sourceFileName, sourceFileId.Val()));
-                }
-                else
-                {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FILEINFO requires three operands", currentInst->GetSourcePos());
-                }
-                break;
-            }
-            case FUNCINFO:
-            {
-                if (n == 5)
-                {
-                    cmajor::systemx::object::Value functionValue = currentInst->Operands()[1];
-                    cmajor::systemx::object::Symbol* symbol = functionValue.GetSymbol();
-                    if (symbol)
+                    if (n == 3)
                     {
-                        if (symbol->Index() != -1)
+                        cmajor::systemx::object::Value sourceFileNameValue = currentInst->Operands()[1];
+                        const std::string& sourceFileName = assembler.GetString(sourceFileNameValue.Val(), currentInst->GetSourcePos());
+                        cmajor::systemx::object::Value sourceFileId = currentInst->Operands()[2];
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(new cmajor::systemx::object::FileInfoRecord(sourceFileName, sourceFileId.Val()));
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FILEINFO requires three operands", currentInst->GetSourcePos());
+                    }
+                    break;
+                }
+                case FUNCINFO:
+                {
+                    if (n == 5)
+                    {
+                        cmajor::systemx::object::Value functionValue = currentInst->Operands()[1];
+                        cmajor::systemx::object::Symbol* symbol = functionValue.GetSymbol();
+                        if (symbol)
                         {
-                            uint32_t functionSymbolIndex = static_cast<uint32_t>(symbol->Index());
-                            cmajor::systemx::object::Value fullNameValue = currentInst->Operands()[2];
-                            const std::string& fullName = assembler.GetString(fullNameValue.Val(), currentInst->GetSourcePos());
-                            if (!fullName.empty())
+                            if (symbol->Index() != -1)
                             {
-                                cmajor::systemx::object::Value sourceFileNameIdValue = currentInst->Operands()[3];
-                                cmajor::systemx::object::Value frameSizeValue = currentInst->Operands()[4];
-                                cmajor::systemx::object::FuncInfoRecord* funcInfoRecord = new cmajor::systemx::object::FuncInfoRecord(
-                                    functionSymbolIndex, fullName, sourceFileNameIdValue.Val(), frameSizeValue.Val());
-                                assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(funcInfoRecord);
+                                uint32_t functionSymbolIndex = static_cast<uint32_t>(symbol->Index());
+                                cmajor::systemx::object::Value fullNameValue = currentInst->Operands()[2];
+                                const std::string& fullName = assembler.GetString(fullNameValue.Val(), currentInst->GetSourcePos());
+                                if (!fullName.empty())
+                                {
+                                    cmajor::systemx::object::Value sourceFileNameIdValue = currentInst->Operands()[3];
+                                    cmajor::systemx::object::Value frameSizeValue = currentInst->Operands()[4];
+                                    cmajor::systemx::object::FuncInfoRecord* funcInfoRecord = new cmajor::systemx::object::FuncInfoRecord(
+                                        functionSymbolIndex, fullName, sourceFileNameIdValue.Val(), frameSizeValue.Val());
+                                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(funcInfoRecord);
+                                }
+                                else
+                                {
+                                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO full function name not defined", currentInst->GetSourcePos());
+                                }
                             }
                             else
                             {
-                                assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO full function name not defined", currentInst->GetSourcePos());
+                                assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO symbol index not defined", currentInst->GetSourcePos());
                             }
                         }
                         else
                         {
-                            assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO symbol index not defined", currentInst->GetSourcePos());
+                            assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO operand 1 must be a symbol", currentInst->GetSourcePos());
                         }
                     }
                     else
                     {
-                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO operand 1 must be a symbol", currentInst->GetSourcePos());
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO requires five operands", currentInst->GetSourcePos());
                     }
+                    break;
                 }
-                else
+                case LINEINFO:
                 {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO requires five operands", currentInst->GetSourcePos());
+                    if (n == 2)
+                    {
+                        cmajor::systemx::object::Value lineValue = currentInst->Operands()[1];
+                        uint32_t offset = static_cast<uint32_t>(
+                            assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
+                        cmajor::systemx::object::LineInfoRecord* lineInfoRecord = new cmajor::systemx::object::LineInfoRecord(offset, static_cast<uint32_t>(lineValue.Val()));
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(lineInfoRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA LINEINFO requires two operands", currentInst->GetSourcePos());
+                    }
+                    break;
                 }
-                break;
-            }
-            case LINEINFO:
-            {
-                if (n == 2)
+                case BEGINTRY:
                 {
-                    cmajor::systemx::object::Value lineValue = currentInst->Operands()[1];
-                    uint32_t offset = static_cast<uint32_t>(
-                        assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
-                    cmajor::systemx::object::LineInfoRecord* lineInfoRecord = new cmajor::systemx::object::LineInfoRecord(offset, static_cast<uint32_t>(lineValue.Val()));
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(lineInfoRecord);
+                    if (n == 3)
+                    {
+                        cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[1];
+                        uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
+                        cmajor::systemx::object::Value parentTryBlockIdValue = currentInst->Operands()[2];
+                        uint32_t parentTryBlockId = static_cast<uint32_t>(parentTryBlockIdValue.Val());
+                        uint32_t offset = static_cast<uint32_t>(
+                            assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
+                        cmajor::systemx::object::BeginTryRecord* beginTryRecord = new cmajor::systemx::object::BeginTryRecord(tryBlockId, parentTryBlockId, offset);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(beginTryRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA BEGINTRY requires three operands", currentInst->GetSourcePos());
+                    }
+                    break;
                 }
-                else
+                case ENDTRY:
                 {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA LINEINFO requires two operands", currentInst->GetSourcePos());
+                    if (n == 2)
+                    {
+                        cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[1];
+                        uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
+                        uint32_t offset = static_cast<uint32_t>(
+                            assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
+                        cmajor::systemx::object::EndTryRecord* endTryRecord = new cmajor::systemx::object::EndTryRecord(tryBlockId, offset);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(endTryRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA ENDTRY requires two operands", currentInst->GetSourcePos());
+                    }
+                    break;
                 }
-                break;
-            }
-            case BEGINTRY:
-            {
-                if (n == 3)
+                case CATCH:
                 {
-                    cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[1];
-                    uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
-                    cmajor::systemx::object::Value parentTryBlockIdValue = currentInst->Operands()[2];
-                    uint32_t parentTryBlockId = static_cast<uint32_t>(parentTryBlockIdValue.Val());
-                    uint32_t offset = static_cast<uint32_t>(
-                        assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
-                    cmajor::systemx::object::BeginTryRecord* beginTryRecord = new cmajor::systemx::object::BeginTryRecord(tryBlockId, parentTryBlockId, offset);
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(beginTryRecord);
+                    if (n == 5)
+                    {
+                        cmajor::systemx::object::Value catchBlockIdValue = currentInst->Operands()[1];
+                        uint32_t catchBlockId = static_cast<uint32_t>(catchBlockIdValue.Val());
+                        cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[2];
+                        uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
+                        cmajor::systemx::object::Value caughtTypeId1Value = currentInst->Operands()[3];
+                        uint64_t caughtTypeId1 = caughtTypeId1Value.Val();
+                        cmajor::systemx::object::Value caughtTypeId2Value = currentInst->Operands()[4];
+                        uint64_t caughtTypeId2 = caughtTypeId2Value.Val();
+                        cmajor::systemx::object::CatchRecord* catchRecord = new cmajor::systemx::object::CatchRecord(catchBlockId, tryBlockId, caughtTypeId1, caughtTypeId2);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(catchRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA CATCH requires five operands", currentInst->GetSourcePos());
+                    }
+                    break;
                 }
-                else
+                case BEGINCLEANUP:
                 {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA BEGINTRY requires three operands", currentInst->GetSourcePos());
+                    if (n == 3)
+                    {
+                        cmajor::systemx::object::Value cleanupBlockIdValue = currentInst->Operands()[1];
+                        uint32_t cleanupBlockId = static_cast<uint32_t>(cleanupBlockIdValue.Val());
+                        cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[2];
+                        uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
+                        uint32_t offset = static_cast<uint32_t>(
+                            assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
+                        cmajor::systemx::object::BeginCleanupRecord* beginCleanupRecord = new cmajor::systemx::object::BeginCleanupRecord(cleanupBlockId, tryBlockId, offset);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(beginCleanupRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA BEGINCLEANUP requires three operands", currentInst->GetSourcePos());
+                    }
+                    break;
                 }
-                break;
-            }
-            case ENDTRY:
-            {
-                if (n == 2)
+                case ENDCLEANUP:
                 {
-                    cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[1];
-                    uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
-                    uint32_t offset = static_cast<uint32_t>(
-                        assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
-                    cmajor::systemx::object::EndTryRecord* endTryRecord = new cmajor::systemx::object::EndTryRecord(tryBlockId, offset);
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(endTryRecord);
+                    if (n == 2)
+                    {
+                        cmajor::systemx::object::Value cleanupBlockIdValue = currentInst->Operands()[1];
+                        uint32_t cleanupBlockId = static_cast<uint32_t>(cleanupBlockIdValue.Val());
+                        uint32_t offset = static_cast<uint32_t>(
+                            assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
+                        cmajor::systemx::object::EndCleanupRecord* endCleanupRecord = new cmajor::systemx::object::EndCleanupRecord(cleanupBlockId, offset);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(endCleanupRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA ENDCLEANUP requires two operands", currentInst->GetSourcePos());
+                    }
+                    break;
                 }
-                else
+                default:
                 {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA ENDTRY requires two operands", currentInst->GetSourcePos());
+                    assembler.Error(currentInst->GetOpCode()->Name() + ": unknown discriminator value", currentInst->GetSourcePos());
+                    break;
                 }
-                break;
-            }
-            case CATCH:
-            {
-                if (n == 5)
-                {
-                    cmajor::systemx::object::Value catchBlockIdValue = currentInst->Operands()[1];
-                    uint32_t catchBlockId = static_cast<uint32_t>(catchBlockIdValue.Val());
-                    cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[2];
-                    uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
-                    cmajor::systemx::object::Value caughtTypeId1Value = currentInst->Operands()[3];
-                    uint64_t caughtTypeId1 = caughtTypeId1Value.Val();
-                    cmajor::systemx::object::Value caughtTypeId2Value = currentInst->Operands()[4];
-                    uint64_t caughtTypeId2 = caughtTypeId2Value.Val();
-                    cmajor::systemx::object::CatchRecord* catchRecord = new cmajor::systemx::object::CatchRecord(catchBlockId, tryBlockId, caughtTypeId1, caughtTypeId2);
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(catchRecord);
-                }
-                else
-                {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA CATCH requires five operands", currentInst->GetSourcePos());
-                }
-                break;
-            }
-            case BEGINCLEANUP:
-            {
-                if (n == 3)
-                {
-                    cmajor::systemx::object::Value cleanupBlockIdValue = currentInst->Operands()[1];
-                    uint32_t cleanupBlockId = static_cast<uint32_t>(cleanupBlockIdValue.Val());
-                    cmajor::systemx::object::Value tryBlockIdValue = currentInst->Operands()[2];
-                    uint32_t tryBlockId = static_cast<uint32_t>(tryBlockIdValue.Val());
-                    uint32_t offset = static_cast<uint32_t>(
-                        assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
-                    cmajor::systemx::object::BeginCleanupRecord* beginCleanupRecord = new cmajor::systemx::object::BeginCleanupRecord(cleanupBlockId, tryBlockId, offset);
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(beginCleanupRecord);
-                }
-                else
-                {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA BEGINCLEANUP requires three operands", currentInst->GetSourcePos());
-                }
-                break;
-            }
-            case ENDCLEANUP:
-            {
-                if (n == 2)
-                {
-                    cmajor::systemx::object::Value cleanupBlockIdValue = currentInst->Operands()[1];
-                    uint32_t cleanupBlockId = static_cast<uint32_t>(cleanupBlockIdValue.Val());
-                    uint32_t offset = static_cast<uint32_t>(
-                        assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
-                    cmajor::systemx::object::EndCleanupRecord* endCleanupRecord = new cmajor::systemx::object::EndCleanupRecord(cleanupBlockId, offset);
-                    assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(endCleanupRecord);
-                }
-                else
-                {
-                    assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA ENDCLEANUP requires two operands", currentInst->GetSourcePos());
-                }
-                break;
-            }
-            default:
-            {
-                assembler.Error(currentInst->GetOpCode()->Name() + ": unknown discriminator value", currentInst->GetSourcePos());
-                break;
-            }
             }
         }
         else

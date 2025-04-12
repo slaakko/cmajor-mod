@@ -38,7 +38,11 @@ cmajor::systemx::machine::Processor* KernelProcess::GetProcessor() const
     return nullptr;
 }
 
-void KernelProcess::ReleaseProcessor(cmajor::systemx::machine::Processor* processor)
+void KernelProcess::ReleaseProcessor()
+{
+}
+
+void KernelProcess::SetProcessor(cmajor::systemx::machine::Processor* processor)
 {
 }
 
@@ -81,6 +85,22 @@ void KernelProcess::RemoveMessageQueue(int32_t md)
 cmajor::systemx::machine::Machine* KernelProcess::GetMachine()
 {
     return Kernel::Instance().GetMachine();
+}
+
+void KernelProcess::WaitNotInKernel(bool enter)
+{
+}
+
+void KernelProcess::SetNotInKernel()
+{
+}
+
+void KernelProcess::SetInKernel()
+{
+}
+
+void KernelProcess::SetSaveContext(bool saveContext_)
+{
 }
 
 std::unique_ptr<Kernel> Kernel::instance;

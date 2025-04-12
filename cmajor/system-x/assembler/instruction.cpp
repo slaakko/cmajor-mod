@@ -20,6 +20,12 @@ OperandList::OperandList(const soul::ast::SourcePos& sourcePos_) :
 
 void OperandList::AddOperand(Node* operand)
 {
+#ifdef THREAD_ID_CHECK
+    if (operand->CreatorThreadId() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     operand->SetOwner(this);
     operands.push_back(std::unique_ptr<Node>(operand));
 }
@@ -39,6 +45,12 @@ void OperandList::Write(util::CodeFormatter& formatter)
             formatter.Write(",");
         }
         Node* operand = GetOperand(i);
+#ifdef THREAD_ID_CHECK
+        if (operand->CreatorThreadId() != CreatorThreadId())
+        {
+            throw util::UnexpectedExecutorThread();
+        }
+#endif // THREAD_ID_CHECK
         operand->Write(formatter);
     }
 }
@@ -55,7 +67,27 @@ Instruction::Instruction(int opCode_) :
 
 void Instruction::SetLabel(Symbol* label_)
 {
+#ifdef THREAD_ID_CHECK
+    if (label_->CreatorThreadId() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     label.reset(label_);
+}
+
+Symbol* Instruction::Label() const
+{
+    if (label)
+    {
+#ifdef THREAD_ID_CHECK
+        if (label->CreatorThreadId() != CreatorThreadId())
+        {
+            throw util::UnexpectedExecutorThread();
+        }
+#endif // THREAD_ID_CHECK
+    }
+    return label.get();
 }
 
 void Instruction::MakeImmediate()
@@ -65,7 +97,24 @@ void Instruction::MakeImmediate()
 
 void Instruction::AddOperand(Node* operand)
 {
+#ifdef THREAD_ID_CHECK
+    if (operand->CreatorThreadId() != CreatorThreadId() || operand->CreatorThreadId() != operandList->CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     operandList->AddOperand(operand);
+}
+
+OperandList* Instruction::GetOperandList() const
+{
+#ifdef THREAD_ID_CHECK
+    if (CreatorThreadId() != operandList->CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
+    return operandList.get();
 }
 
 void Instruction::SetOperands(std::vector<cmajor::systemx::object::Value>&& operands_)

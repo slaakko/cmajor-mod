@@ -85,6 +85,12 @@ void SimpleAssemblyCodeGenerator::GenerateCode()
 
 void SimpleAssemblyCodeGenerator::WriteOutputFile()
 {
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyFile->CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     assemblyFile->Write();
 }
 
@@ -123,6 +129,12 @@ void SimpleAssemblyCodeGenerator::Visit(GlobalVariable& globalVariable)
 
 void SimpleAssemblyCodeGenerator::Emit(cmajor::systemx::assembler::Instruction* assemblyInstruction)
 {
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInstruction->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     if (emitSection == cmajor::systemx::assembler::AssemblySectionKind::code)
     {
         if (leader)
@@ -151,6 +163,12 @@ void SimpleAssemblyCodeGenerator::EmitOcta(uint64_t value)
         cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
         Emit(octaInst);
     }
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInst->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     assemblyInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(value));
 }
 
@@ -161,6 +179,12 @@ void SimpleAssemblyCodeGenerator::EmitTetra(uint32_t value)
         cmajor::systemx::assembler::Instruction* tetraInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::TETRA);
         Emit(tetraInst);
     }
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInst->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     assemblyInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(value));
 }
 
@@ -171,6 +195,12 @@ void SimpleAssemblyCodeGenerator::EmitWyde(uint16_t value)
         cmajor::systemx::assembler::Instruction* wydeInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::WYDE);
         Emit(wydeInst);
     }
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInst->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     assemblyInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(value));
 }
 
@@ -191,6 +221,12 @@ void SimpleAssemblyCodeGenerator::EmitSymbol(const std::string& name)
         cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
         Emit(octaInst);
     }
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInst->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     assemblyInst->AddOperand(cmajor::systemx::assembler::MakeGlobalSymbol(name));
 }
 
@@ -206,6 +242,12 @@ void SimpleAssemblyCodeGenerator::EmitClsId(const std::string& typeId)
         cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
         Emit(octaInst);
     }
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInst->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     assemblyInst->AddOperand(new cmajor::systemx::assembler::ClsIdConstant(soul::ast::SourcePos(), typeId));
 }
 
@@ -215,6 +257,12 @@ void SimpleAssemblyCodeGenerator::EmitDebugInfoInst(cmajor::systemx::assembler::
     {
         debugInfo = assemblyFile->GetDebugSection()->CreateDebugInfo();
     }
+#ifdef THREAD_ID_CHECK
+    if (std::this_thread::get_id() != assemblyInstruction->CreatorThreadId() || std::this_thread::get_id() != CreatorThreadId())
+    {
+        throw util::UnexpectedExecutorThread();
+    }
+#endif // THREAD_ID_CHECK
     debugInfo->AddInstruction(assemblyInstruction);
 }
 

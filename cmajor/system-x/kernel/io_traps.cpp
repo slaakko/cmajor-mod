@@ -832,7 +832,6 @@ uint64_t TrapUnbindTerminalHandler::HandleTrap(cmajor::systemx::machine::Process
     }
 }
 
-
 class TrapConnectHandler : public TrapHandler
 {
 public:
@@ -848,6 +847,50 @@ uint64_t TrapConnectHandler::HandleTrap(cmajor::systemx::machine::Processor& pro
         int64_t nodeAddr = processor.Regs().Get(cmajor::systemx::machine::regAX);
         int64_t serviceddr = processor.Regs().Get(cmajor::systemx::machine::regBX);
         return Connect(process, nodeAddr, serviceddr);
+    }
+    catch (const SystemError& error)
+    {
+        process->SetError(error);
+        return static_cast<uint64_t>(-1);
+    }
+}
+
+class TrapLockIOHandler : public TrapHandler
+{
+public:
+    uint64_t HandleTrap(cmajor::systemx::machine::Processor& processor) override;
+    std::string TrapName() const { return "trap_lock_io"; }
+};
+
+uint64_t TrapLockIOHandler::HandleTrap(cmajor::systemx::machine::Processor& processor)
+{
+    Process* process = static_cast<Process*>(processor.CurrentProcess());
+    try
+    {
+        LockIO(process);
+        return 0;
+    }
+    catch (const SystemError& error)
+    {
+        process->SetError(error);
+        return static_cast<uint64_t>(-1);
+    }
+}
+
+class TrapUnlockIOHandler : public TrapHandler
+{
+public:
+    uint64_t HandleTrap(cmajor::systemx::machine::Processor& processor) override;
+    std::string TrapName() const { return "trap_unlock_io"; }
+};
+
+uint64_t TrapUnlockIOHandler::HandleTrap(cmajor::systemx::machine::Processor& processor)
+{
+    Process* process = static_cast<Process*>(processor.CurrentProcess());
+    try
+    {
+        UnlockIO(process);
+        return 0;
     }
     catch (const SystemError& error)
     {
@@ -894,6 +937,8 @@ void InitIOTraps()
     SetTrapHandler(trap_bind_terminal, new TrapBindTerminalHandler());
     SetTrapHandler(trap_unbind_terminal, new TrapUnbindTerminalHandler());
     SetTrapHandler(trap_connect, new TrapConnectHandler());
+    SetTrapHandler(trap_lock_io, new TrapLockIOHandler());
+    SetTrapHandler(trap_unlock_io, new TrapUnlockIOHandler());
 }
 
 void DoneIOTraps()
@@ -932,6 +977,8 @@ void DoneIOTraps()
     SetTrapHandler(trap_close, nullptr);
     SetTrapHandler(trap_open, nullptr);
     SetTrapHandler(trap_create, nullptr);
+    SetTrapHandler(trap_lock_io, nullptr);
+    SetTrapHandler(trap_unlock_io, nullptr);
 }
 
 } // namespace cmajor::systemx::kernel

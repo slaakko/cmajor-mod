@@ -1,0 +1,58 @@
+using System;
+using System.Collections;
+using System.Os;
+
+void Child(int n)
+{
+    int pid = GetPid();
+    for (int i = 0; i < n; ++i)
+    {
+        ConsoleLock lock;
+        Console.Out() << "Hello from " << pid << endl();
+    }
+    ConsoleLock lock;
+    Console.Out() << "Bye from " << pid << endl();
+}
+
+int main()
+{
+    try
+    {
+        List<int> children;
+        int n = 8;
+        Console.Out() << "starting..." << endl();
+        for (int i = 0; i < n; ++i)
+        {
+            int pid = Fork();
+            if (pid == 0)
+            {
+                Child(10);
+                return 0;
+            }
+            else
+            {
+                children.Add(pid);
+            }
+        }
+        while (true)
+        {
+            byte exitCode = 0u;
+            int result = Wait(&exitCode);
+            if (result == -1)
+            {
+                break;
+            }
+            if (exitCode != 0u)
+            {
+                Console.Out() << "child returned exit code " << exitCode << endl();
+            }
+        }
+        Console.Out() << "exiting..." << endl();
+    }
+    catch (const Exception& ex)
+    {
+        Console.Error() << ex.ToString() << endl();
+        return 1;
+    }
+    return 0;
+}

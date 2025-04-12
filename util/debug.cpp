@@ -10,6 +10,10 @@ module util.debug;
 
 namespace util {
 
+UnexpectedExecutorThread::UnexpectedExecutorThread() : std::runtime_error("unexpected executor thread")
+{
+}
+
 void DebugBreak()
 {
     ::DebugBreak();

@@ -17,7 +17,7 @@ public:
     static void Done();
     static Scheduler& Instance() { return *instance; }
     void SetMachine(cmajor::systemx::machine::Machine* machine_) override;
-    cmajor::systemx::machine::UserProcess* GetRunnableProcess() override;
+    cmajor::systemx::machine::UserProcess* GetRunnableProcess(cmajor::systemx::machine::Processor* processor) override;
     void AddRunnableProcess(cmajor::systemx::machine::UserProcess* runnableProcess, cmajor::systemx::machine::ProcessState processState) override;
     void CheckRunnable() override;
     void Start();

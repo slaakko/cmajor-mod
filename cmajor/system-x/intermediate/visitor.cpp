@@ -11,4 +11,8 @@ Visitor::Visitor(Context* context_) : context(context_)
 {
 }
 
+Visitor::~Visitor()
+{
+}
+
 } // cmajor::systemx::intermediate

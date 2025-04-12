@@ -14,16 +14,16 @@ std::string DebugRecordKindStr(DebugRecordKind kind)
 {
     switch (kind)
     {
-    case DebugRecordKind::fileInfo: return "FILEINFO";
-    case DebugRecordKind::funcInfo: return "FUNCINFO";
-    case DebugRecordKind::startFunc: return "STARTFUNC";
-    case DebugRecordKind::endFunc: return "ENDFUNC";
-    case DebugRecordKind::lineInfo: return "LINEINFO";
-    case DebugRecordKind::beginTry: return "BEGINTRY";
-    case DebugRecordKind::endTry: return "ENDTRY";
-    case DebugRecordKind::catch_: return "CATCH";
-    case DebugRecordKind::beginCleanup: return "BEGINCLEANUP";
-    case DebugRecordKind::endCleanup: return "ENDCLEANUP";
+        case DebugRecordKind::fileInfo: return "FILEINFO";
+        case DebugRecordKind::funcInfo: return "FUNCINFO";
+        case DebugRecordKind::startFunc: return "STARTFUNC";
+        case DebugRecordKind::endFunc: return "ENDFUNC";
+        case DebugRecordKind::lineInfo: return "LINEINFO";
+        case DebugRecordKind::beginTry: return "BEGINTRY";
+        case DebugRecordKind::endTry: return "ENDTRY";
+        case DebugRecordKind::catch_: return "CATCH";
+        case DebugRecordKind::beginCleanup: return "BEGINCLEANUP";
+        case DebugRecordKind::endCleanup: return "ENDCLEANUP";
     }
     return std::string();
 }
@@ -358,16 +358,16 @@ DebugRecord* MakeDebugRecord(DebugRecordKind kind)
 {
     switch (kind)
     {
-    case DebugRecordKind::fileInfo: return new FileInfoRecord();
-    case DebugRecordKind::funcInfo: return new FuncInfoRecord();
-    case DebugRecordKind::startFunc:return new StartFuncRecord();
-    case DebugRecordKind::endFunc: return new EndFuncRecord();
-    case DebugRecordKind::lineInfo: return new LineInfoRecord();
-    case DebugRecordKind::beginTry: return new BeginTryRecord();
-    case DebugRecordKind::endTry: return new EndTryRecord();
-    case DebugRecordKind::catch_: return new CatchRecord();
-    case DebugRecordKind::beginCleanup: return new BeginCleanupRecord();
-    case DebugRecordKind::endCleanup: return new EndCleanupRecord();
+        case DebugRecordKind::fileInfo: return new FileInfoRecord();
+        case DebugRecordKind::funcInfo: return new FuncInfoRecord();
+        case DebugRecordKind::startFunc:return new StartFuncRecord();
+        case DebugRecordKind::endFunc: return new EndFuncRecord();
+        case DebugRecordKind::lineInfo: return new LineInfoRecord();
+        case DebugRecordKind::beginTry: return new BeginTryRecord();
+        case DebugRecordKind::endTry: return new EndTryRecord();
+        case DebugRecordKind::catch_: return new CatchRecord();
+        case DebugRecordKind::beginCleanup: return new BeginCleanupRecord();
+        case DebugRecordKind::endCleanup: return new EndCleanupRecord();
     }
     return nullptr;
 }

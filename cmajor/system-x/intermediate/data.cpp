@@ -33,21 +33,21 @@ bool Value::IsIntegerValue() const
 {
     switch (kind)
     {
-    case ValueKind::sbyteValue:
-    case ValueKind::byteValue:
-    case ValueKind::shortValue:
-    case ValueKind::ushortValue:
-    case ValueKind::intValue:
-    case ValueKind::uintValue:
-    case ValueKind::longValue:
-    case ValueKind::ulongValue:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case ValueKind::sbyteValue:
+        case ValueKind::byteValue:
+        case ValueKind::shortValue:
+        case ValueKind::ushortValue:
+        case ValueKind::intValue:
+        case ValueKind::uintValue:
+        case ValueKind::longValue:
+        case ValueKind::ulongValue:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -55,50 +55,50 @@ int64_t Value::GetIntegerValue() const
 {
     switch (kind)
     {
-    case ValueKind::sbyteValue:
-    {
-        const SByteValue* sbyteValue = static_cast<const SByteValue*>(this);
-        return sbyteValue->GetValue();
-    }
-    case ValueKind::byteValue:
-    {
-        const ByteValue* byteValue = static_cast<const ByteValue*>(this);
-        return byteValue->GetValue();
-    }
-    case ValueKind::shortValue:
-    {
-        const ShortValue* shortValue = static_cast<const ShortValue*>(this);
-        return shortValue->GetValue();
-    }
-    case ValueKind::ushortValue:
-    {
-        const UShortValue* ushortValue = static_cast<const UShortValue*>(this);
-        return ushortValue->GetValue();
-    }
-    case ValueKind::intValue:
-    {
-        const IntValue* intValue = static_cast<const IntValue*>(this);
-        return intValue->GetValue();
-    }
-    case ValueKind::uintValue:
-    {
-        const UIntValue* uintValue = static_cast<const UIntValue*>(this);
-        return uintValue->GetValue();
-    }
-    case ValueKind::longValue:
-    {
-        const LongValue* longValue = static_cast<const LongValue*>(this);
-        return longValue->GetValue();
-    }
-    case ValueKind::ulongValue:
-    {
-        const ULongValue* ulongValue = static_cast<const ULongValue*>(this);
-        return static_cast<int64_t>(ulongValue->GetValue());
-    }
-    default:
-    {
-        return -1;
-    }
+        case ValueKind::sbyteValue:
+        {
+            const SByteValue* sbyteValue = static_cast<const SByteValue*>(this);
+            return sbyteValue->GetValue();
+        }
+        case ValueKind::byteValue:
+        {
+            const ByteValue* byteValue = static_cast<const ByteValue*>(this);
+            return byteValue->GetValue();
+        }
+        case ValueKind::shortValue:
+        {
+            const ShortValue* shortValue = static_cast<const ShortValue*>(this);
+            return shortValue->GetValue();
+        }
+        case ValueKind::ushortValue:
+        {
+            const UShortValue* ushortValue = static_cast<const UShortValue*>(this);
+            return ushortValue->GetValue();
+        }
+        case ValueKind::intValue:
+        {
+            const IntValue* intValue = static_cast<const IntValue*>(this);
+            return intValue->GetValue();
+        }
+        case ValueKind::uintValue:
+        {
+            const UIntValue* uintValue = static_cast<const UIntValue*>(this);
+            return uintValue->GetValue();
+        }
+        case ValueKind::longValue:
+        {
+            const LongValue* longValue = static_cast<const LongValue*>(this);
+            return longValue->GetValue();
+        }
+        case ValueKind::ulongValue:
+        {
+            const ULongValue* ulongValue = static_cast<const ULongValue*>(this);
+            return static_cast<int64_t>(ulongValue->GetValue());
+        }
+        default:
+        {
+            return -1;
+        }
     }
 }
 
@@ -588,107 +588,107 @@ ConstantValue* Data::MakeNumericLiteral(const soul::ast::SourcePos& sourcePos, T
 {
     switch (type->Id())
     {
-    case boolTypeId:
-    {
-        if (strValue == "true")
+        case boolTypeId:
         {
-            return GetTrueValue(types);
+            if (strValue == "true")
+            {
+                return GetTrueValue(types);
+            }
+            else if (strValue == "false")
+            {
+                return GetFalseValue(types);
+            }
+            else
+            {
+                Error("error making literal: Boolean value expected", sourcePos, context);
+            }
         }
-        else if (strValue == "false")
+        case sbyteTypeId:
         {
-            return GetFalseValue(types);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<int8_t>::min() || value > std::numeric_limits<int8_t>::max())
+            {
+                Error("error making literal: range error: sbyte value expected", sourcePos, context);
+            }
+            return GetSByteValue(static_cast<int8_t>(value), types);
         }
-        else
+        case byteTypeId:
         {
-            Error("error making literal: Boolean value expected", sourcePos, context);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<uint8_t>::min() || value > std::numeric_limits<uint8_t>::max())
+            {
+                Error("error making literal: range error: byte value expected", sourcePos, context);
+            }
+            return GetByteValue(static_cast<uint8_t>(value), types);
         }
-    }
-    case sbyteTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<int8_t>::min() || value > std::numeric_limits<int8_t>::max())
+        case shortTypeId:
         {
-            Error("error making literal: range error: sbyte value expected", sourcePos, context);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<int16_t>::min() || value > std::numeric_limits<int16_t>::max())
+            {
+                Error("error making literal: range error: short value expected", sourcePos, context);
+            }
+            return GetShortValue(static_cast<int16_t>(value), types);
         }
-        return GetSByteValue(static_cast<int8_t>(value), types);
-    }
-    case byteTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<uint8_t>::min() || value > std::numeric_limits<uint8_t>::max())
+        case ushortTypeId:
         {
-            Error("error making literal: range error: byte value expected", sourcePos, context);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<uint16_t>::min() || value > std::numeric_limits<uint16_t>::max())
+            {
+                Error("error making literal: range error: ushort value expected", sourcePos, context);
+            }
+            return GetUShortValue(static_cast<uint16_t>(value), types);
         }
-        return GetByteValue(static_cast<uint8_t>(value), types);
-    }
-    case shortTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<int16_t>::min() || value > std::numeric_limits<int16_t>::max())
+        case intTypeId:
         {
-            Error("error making literal: range error: short value expected", sourcePos, context);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<int32_t>::min() || value > std::numeric_limits<int32_t>::max())
+            {
+                Error("error making literal: range error: int value expected", sourcePos, context);
+            }
+            return GetIntValue(static_cast<int32_t>(value), types);
         }
-        return GetShortValue(static_cast<int16_t>(value), types);
-    }
-    case ushortTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<uint16_t>::min() || value > std::numeric_limits<uint16_t>::max())
+        case uintTypeId:
         {
-            Error("error making literal: range error: ushort value expected", sourcePos, context);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<uint32_t>::min() || value > std::numeric_limits<uint32_t>::max())
+            {
+                Error("error making literal: range error: uint value expected", sourcePos, context);
+            }
+            return GetUIntValue(static_cast<uint32_t>(value), types);
         }
-        return GetUShortValue(static_cast<uint16_t>(value), types);
-    }
-    case intTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<int32_t>::min() || value > std::numeric_limits<int32_t>::max())
+        case longTypeId:
         {
-            Error("error making literal: range error: int value expected", sourcePos, context);
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<int64_t>::min() || value > std::numeric_limits<int64_t>::max())
+            {
+                Error("error making literal: range error: long value expected", sourcePos, context);
+            }
+            return GetLongValue(static_cast<int64_t>(value), types);
         }
-        return GetIntValue(static_cast<int32_t>(value), types);
-    }
-    case uintTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<uint32_t>::min() || value > std::numeric_limits<uint32_t>::max())
+        case ulongTypeId:
         {
-            Error("error making literal: range error: uint value expected", sourcePos, context);
+            uint64_t value = std::stoull(strValue);
+            if (value < std::numeric_limits<uint64_t>::min() || value > std::numeric_limits<uint64_t>::max())
+            {
+                Error("error making literal: range error: ulong value expected", sourcePos, context);
+            }
+            return GetULongValue(static_cast<int64_t>(value), types);
         }
-        return GetUIntValue(static_cast<uint32_t>(value), types);
-    }
-    case longTypeId:
-    {
-        int64_t value = std::stoll(strValue);
-        if (value < std::numeric_limits<int64_t>::min() || value > std::numeric_limits<int64_t>::max())
+        case floatTypeId:
         {
-            Error("error making literal: range error: long value expected", sourcePos, context);
+            float value = std::stof(strValue);
+            return GetFloatValue(value, types);
         }
-        return GetLongValue(static_cast<int64_t>(value), types);
-    }
-    case ulongTypeId:
-    {
-        uint64_t value = std::stoull(strValue);
-        if (value < std::numeric_limits<uint64_t>::min() || value > std::numeric_limits<uint64_t>::max())
+        case doubleTypeId:
         {
-            Error("error making literal: range error: ulong value expected", sourcePos, context);
+            double value = std::stod(strValue);
+            return GetDoubleValue(value, types);
         }
-        return GetULongValue(static_cast<int64_t>(value), types);
-    }
-    case floatTypeId:
-    {
-        float value = std::stof(strValue);
-        return GetFloatValue(value, types);
-    }
-    case doubleTypeId:
-    {
-        double value = std::stod(strValue);
-        return GetDoubleValue(value, types);
-    }
-    default:
-    {
-        Error("error making literal: invalid numeric value", sourcePos, context);
-    }
+        default:
+        {
+            Error("error making literal: invalid numeric value", sourcePos, context);
+        }
     }
     return nullptr;
 }

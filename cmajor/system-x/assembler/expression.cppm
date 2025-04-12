@@ -25,6 +25,10 @@ class UnaryExpression : public Node
 {
 public:
     UnaryExpression(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* operand_);
+    UnaryExpression(const UnaryExpression&) = delete;
+    UnaryExpression(UnaryExpression&&) = delete;
+    UnaryExpression& operator=(const UnaryExpression&) = delete;
+    UnaryExpression& operator=(UnaryExpression&&) = delete;
     Operator Op() const { return op; }
     Node* Operand() const { return operand.get(); }
     void Accept(Visitor& visitor) override;

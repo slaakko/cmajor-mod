@@ -831,56 +831,56 @@ void SelectDebugRecord(DebugRecord* debugRecord, ExecutableFile& executable, Obj
 {
     switch (debugRecord->Kind())
     {
-    case DebugRecordKind::fileInfo:
-    {
-        ProcessFileInfoRecord(static_cast<FileInfoRecord*>(debugRecord), fileInfoRecordMap);
-        break;
-    }
-    case DebugRecordKind::funcInfo:
-    {
-        ProcessFuncInfoRecord(static_cast<FuncInfoRecord*>(debugRecord), funcInfoRecordMap);
-        break;
-    }
-    case DebugRecordKind::startFunc:
-    {
-        ProcessStartFuncRecord(static_cast<StartFuncRecord*>(debugRecord), executable, objectFile, collection, processStack, process);
-        break;
-    }
-    case DebugRecordKind::endFunc:
-    {
-        ProcessEndFuncRecord(static_cast<EndFuncRecord*>(debugRecord), collections, collection, processStack, process);
-        break;
-    }
-    case DebugRecordKind::lineInfo:
-    {
-        SelectLineInfoRecord(static_cast<LineInfoRecord*>(debugRecord), collection.get(), process);
-        break;
-    }
-    case DebugRecordKind::beginTry:
-    {
-        SelectBeginTryRecord(static_cast<BeginTryRecord*>(debugRecord), collection.get(), process);
-        break;
-    }
-    case DebugRecordKind::endTry:
-    {
-        SelectEndTryRecord(static_cast<EndTryRecord*>(debugRecord), collection.get(), process);
-        break;
-    }
-    case DebugRecordKind::catch_:
-    {
-        SelectCatchRecord(static_cast<CatchRecord*>(debugRecord), collection.get(), process);
-        break;
-    }
-    case DebugRecordKind::beginCleanup:
-    {
-        SelectBeginCleanupRecord(static_cast<BeginCleanupRecord*>(debugRecord), collection.get(), process);
-        break;
-    }
-    case DebugRecordKind::endCleanup:
-    {
-        SelectEndCleanupRecord(static_cast<EndCleanupRecord*>(debugRecord), collection.get(), process);
-        break;
-    }
+        case DebugRecordKind::fileInfo:
+        {
+            ProcessFileInfoRecord(static_cast<FileInfoRecord*>(debugRecord), fileInfoRecordMap);
+            break;
+        }
+        case DebugRecordKind::funcInfo:
+        {
+            ProcessFuncInfoRecord(static_cast<FuncInfoRecord*>(debugRecord), funcInfoRecordMap);
+            break;
+        }
+        case DebugRecordKind::startFunc:
+        {
+            ProcessStartFuncRecord(static_cast<StartFuncRecord*>(debugRecord), executable, objectFile, collection, processStack, process);
+            break;
+        }
+        case DebugRecordKind::endFunc:
+        {
+            ProcessEndFuncRecord(static_cast<EndFuncRecord*>(debugRecord), collections, collection, processStack, process);
+            break;
+        }
+        case DebugRecordKind::lineInfo:
+        {
+            SelectLineInfoRecord(static_cast<LineInfoRecord*>(debugRecord), collection.get(), process);
+            break;
+        }
+        case DebugRecordKind::beginTry:
+        {
+            SelectBeginTryRecord(static_cast<BeginTryRecord*>(debugRecord), collection.get(), process);
+            break;
+        }
+        case DebugRecordKind::endTry:
+        {
+            SelectEndTryRecord(static_cast<EndTryRecord*>(debugRecord), collection.get(), process);
+            break;
+        }
+        case DebugRecordKind::catch_:
+        {
+            SelectCatchRecord(static_cast<CatchRecord*>(debugRecord), collection.get(), process);
+            break;
+        }
+        case DebugRecordKind::beginCleanup:
+        {
+            SelectBeginCleanupRecord(static_cast<BeginCleanupRecord*>(debugRecord), collection.get(), process);
+            break;
+        }
+        case DebugRecordKind::endCleanup:
+        {
+            SelectEndCleanupRecord(static_cast<EndCleanupRecord*>(debugRecord), collection.get(), process);
+            break;
+        }
     }
 }
 

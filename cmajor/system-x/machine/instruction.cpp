@@ -3646,6 +3646,10 @@ void Calli::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
     uint64_t zz = z;
     uint64_t to = yy + zz;
     uint64_t pc = processor.Regs().GetPC();
+    if (pc == 0x00000000000134E8)
+    {
+        int x = 0;
+    }
     uint64_t ret = pc + 4;
     uint64_t sp = processor.Regs().Get(regSP);
     uint64_t rv = processor.Regs().GetSpecial(rV);

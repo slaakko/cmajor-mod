@@ -334,6 +334,15 @@ void Machine::NotifyObservers()
     }
 }
 
+bool Machine::HasRunnableKernelProcess()
+{
+    for (auto& processor : processors)
+    {
+        if (processor.HasRunnableKernelProcess()) return true;
+    }
+    return false;
+}
+
 MachineObserver::~MachineObserver()
 {
 }

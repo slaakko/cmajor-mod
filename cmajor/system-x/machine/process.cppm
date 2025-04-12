@@ -15,6 +15,7 @@ class Processor;
 class Registers;
 class Scheduler;
 class Debugger;
+class InterruptHandler;
 
 enum class ProcessState
 {
@@ -30,7 +31,8 @@ public:
     virtual void Sleep() = 0;
     virtual void Wakeup(Scheduler* scheduler) = 0;
     virtual Processor* GetProcessor() const = 0;
-    virtual void ReleaseProcessor(Processor* processor) = 0;
+    virtual void ReleaseProcessor() = 0;
+    virtual void SetProcessor(Processor* processor_) = 0;
     virtual uint64_t GetINodeKeyOfWorkingDir() const = 0;
     virtual void SetINodeKeyOfWorkingDir(uint64_t inodeKeyAsULong) = 0;
     virtual int32_t UID() const = 0;
@@ -44,6 +46,13 @@ public:
     virtual int32_t UMask() const = 0;
     virtual Machine* GetMachine() = 0;
     virtual void RemoveMessageQueue(int32_t md) = 0;
+    virtual bool IsUserProcess() const { return false; }
+    virtual bool InKernel() const = 0;
+    virtual void SetInKernel() = 0;
+    virtual void WaitNotInKernel(bool enter) = 0;
+    virtual void SetNotInKernel() = 0;
+    virtual bool DoSaveContext() const = 0;
+    virtual void SetSaveContext(bool saveContext_) = 0;
 };
 
 using ProcessList = std::list<Process*, boost::fast_pool_allocator<Process*>>;
@@ -53,7 +62,7 @@ class UserProcess : public Process
 public:
     void Sleep() override;
     void Wakeup(Scheduler* scheduler) override;
-    void ReleaseProcessor(Processor* processor) override;
+    void ReleaseProcessor() override;
     virtual uint64_t RV() const = 0;
     virtual void SaveContext(Machine& machine, Registers& regs) = 0;
     virtual void RestoreContext(Machine& machine, Registers& regs) = 0;
@@ -61,6 +70,8 @@ public:
     virtual void SetState(ProcessState state) = 0;
     virtual void Exit(uint8_t exitCode) = 0;
     virtual void SetRunning(Processor* processor) = 0;
+    virtual void SetKernelProcessor(Processor* kernelProcessor_) = 0;
+    virtual Processor* KernelProcessor() const = 0;
     virtual void ResetProcessor() = 0;
     virtual Debugger* GetDebugger() const = 0;
     virtual void SetDebugger(Debugger* debugger) = 0;
@@ -75,6 +86,11 @@ public:
     virtual void SetHeapLength(int64_t heapLength) = 0;
     virtual void* KernelFiber() const = 0;
     virtual void SetKernelFiber(void* kernelFiber) = 0;
+    virtual void* MainFiber() const = 0;
+    virtual void SetMainFiber(void* mainFiber) = 0;
+    virtual InterruptHandler* GetInterruptHandler() const = 0;
+    virtual void SetInterruptHandler(InterruptHandler* interruptHandler) = 0;
+    bool IsUserProcess() const override { return true; }
 };
 
 using UserProcessList = std::list<UserProcess*, boost::fast_pool_allocator<UserProcess*>>;

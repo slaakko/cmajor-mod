@@ -83,11 +83,13 @@ public:
     bool InSpec() const { return inSpec; }
     const std::string& GetString(uint64_t val, const soul::ast::SourcePos& sourcePos);
     soul::lexer::FileMap& GetFileMap() { return fileMap; }
+    std::thread::id CreatorThreadId() { return creatorThreadId; }
 private:
     void VisitInstructions();
     void Resolve();
     void GenerateCode();
     void AlignAt();
+    std::thread::id creatorThreadId;
     Stage stage;
     std::string assemblyFilePath;
     std::unique_ptr<cmajor::systemx::object::ObjectFile> objectFile;

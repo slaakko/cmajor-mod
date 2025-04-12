@@ -1,0 +1,3 @@
+project procs;
+target=program;
+source <procs.cm>;

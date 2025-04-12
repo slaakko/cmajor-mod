@@ -6,6 +6,7 @@
 export module cmajor.systemx.machine.processor;
 
 import cmajor.systemx.machine.registers;
+import cmajor.systemx.machine.process;
 import std.core;
 
 export namespace cmajor::systemx::machine {
@@ -28,23 +29,26 @@ public:
     void Run();
     void EnableInterrupts();
     UserProcess* CurrentProcess() const { return currentProcess; }
-    void ResetCurrentProcess(bool addSystemTime, bool saveContext);
+    void ResetCurrentProcess(bool addSystemTime, bool saveContext, bool setKernelProcessor);
     void CheckException();
-    void RunKernel();
     void* MainFiber() const { return mainFiber; }
+    void SetException(std::exception_ptr exception_) { exception = exception_; }
+    void AddRunnableKernelProcess(UserProcess* runnableKernelProcess);
+    UserProcess* GetRunnableKernelProcess();
+    bool HasRunnableKernelProcess();
 private:
     Instruction* FetchInstruction(uint64_t& pc, uint8_t& x, uint8_t& y, uint8_t& z);
     void SetPC(Instruction* inst, uint64_t pc, uint64_t prevPC);
-    void CheckInterrupts();
+    bool CheckInterrupts();
     int id;
-    void* mainFiber;
     Machine* machine;
     Registers registers;
     UserProcess* currentProcess;
-    InterruptHandler* currentHandler;
     std::thread thread;
     std::exception_ptr exception;
     int kernelStackSize;
+    void* mainFiber;
+    UserProcessList runnableKernelProcesses;
 };
 
 } // namespace cmajor::systemx::machine

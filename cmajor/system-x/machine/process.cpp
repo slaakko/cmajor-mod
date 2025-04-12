@@ -27,9 +27,9 @@ void UserProcess::Wakeup(Scheduler* scheduler)
     scheduler->AddRunnableProcess(this, cmajor::systemx::machine::ProcessState::runnableInKernel);
 }
 
-void UserProcess::ReleaseProcessor(Processor* processor)
+void UserProcess::ReleaseProcessor()
 {
-    util::SwitchToFiber(processor->MainFiber());
+    util::SwitchToFiber(MainFiber());
     SetStartSystemTime();
 }
 

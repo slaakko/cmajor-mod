@@ -117,8 +117,22 @@ public:
         assert(regNum < 32);
         globalRegs[regNum] = value;
     }
-    uint64_t GetPC() const { return pc; }
-    void SetPC(uint64_t pc_) { pc = pc_; }
+    uint64_t GetPC() const 
+    { 
+        if (pc == 2)
+        {
+            int x = 0;
+        }
+        return pc; 
+    }
+    void SetPC(uint64_t pc_)  
+    {  
+        if (pc_ == 2)
+        {
+            int x = 0;
+        }
+        pc = pc_;
+    }
     void SetInterrupt(uint64_t interruptBit);
     void ResetInterrupt(uint64_t interruptBit);
     uint64_t GetInterruptBits();

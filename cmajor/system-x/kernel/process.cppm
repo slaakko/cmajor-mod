@@ -57,11 +57,13 @@ public:
     void SaveContext(cmajor::systemx::machine::Machine& machine, cmajor::systemx::machine::Registers& regs) override;
     void RestoreContext(cmajor::systemx::machine::Machine& machine, cmajor::systemx::machine::Registers& regs) override;
     void SetRunning(cmajor::systemx::machine::Processor* processor_) override;
+    void SetKernelProcessor(cmajor::systemx::machine::Processor* kernelProcessor_) override;
+    cmajor::systemx::machine::Processor* KernelProcessor() const override;
     void ResetProcessor() override;
     cmajor::systemx::machine::Debugger* GetDebugger() const override;
     void SetDebugger(cmajor::systemx::machine::Debugger* debugger_) override;
     cmajor::systemx::machine::Processor* GetProcessor() const override { return processor; }
-    void SetProcessor(cmajor::systemx::machine::Processor* processor_) { processor = processor_; }
+    void SetProcessor(cmajor::systemx::machine::Processor* processor_) override;
     void SetStartUserTime() override;
     void SetStartSleepTime() override;
     void SetStartSystemTime() override;
@@ -99,6 +101,8 @@ public:
     void SetCurrentTryRecord(cmajor::systemx::object::TryRecord* tryRecord) { currentTryRecord = tryRecord; }
     void SetKernelFiber(void* kernelFiber_) override { kernelFiber = kernelFiber_; }
     void* KernelFiber() const override { return kernelFiber; }
+    void SetMainFiber(void* mainFiber_) override { mainFiber = mainFiber_; }
+    void* MainFiber() const { return mainFiber; }
     void DeleteKernelFiber();
     uint64_t GetINodeKeyOfWorkingDir() const override { return inodeKeyOfWorkingDirAsULong; }
     void SetINodeKeyOfWorkingDir(uint64_t inodeKeyOfWorkingDirAsULong_) override { inodeKeyOfWorkingDirAsULong = inodeKeyOfWorkingDirAsULong_; }
@@ -110,6 +114,14 @@ public:
     ProcessMessageQueues& MessageQueues() { return messageQueues; }
     void RemoveMessageQueue(int32_t md) override;
     cmajor::systemx::machine::Machine* GetMachine() override;
+    cmajor::systemx::machine::InterruptHandler* GetInterruptHandler() const override { return interruptHandler;  }
+    void SetInterruptHandler(cmajor::systemx::machine::InterruptHandler* interruptHandler_) override { interruptHandler = interruptHandler_; }
+    bool InKernel() const override { return inKernel; }
+    void SetInKernel() override;
+    void SetNotInKernel() override;
+    void WaitNotInKernel(bool enter) override;
+    bool DoSaveContext() const override;
+    void SetSaveContext(bool saveContext_) override;
 private:
     int32_t id;
     uint64_t rv;
@@ -145,6 +157,8 @@ private:
     std::shared_ptr<cmajor::systemx::object::SymbolTable> symbolTable;
     cmajor::systemx::machine::Debugger* debugger;
     cmajor::systemx::machine::Processor* processor;
+    cmajor::systemx::machine::Processor* kernelProcessor;
+    cmajor::systemx::machine::InterruptHandler* interruptHandler;
     RegionTable regionTable;
     ProcessFileTable fileTable;
     std::unique_ptr<cmajor::systemx::object::FunctionTable> functionTable;
@@ -153,9 +167,13 @@ private:
     uint64_t currentExceptionClassId;
     cmajor::systemx::object::TryRecord* currentTryRecord;
     void* kernelFiber;
+    void* mainFiber;
     uint64_t inodeKeyOfWorkingDirAsULong;
     bool directoriesChanged;
     ProcessMessageQueues messageQueues;
+    bool inKernel;
+    bool saveContext;
+    std::condition_variable_any notInKernelVar;
 };
 
 int32_t Fork(Process* parent);

@@ -80,41 +80,34 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileU
     cmajor::systemx::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), intermediateFilePath, intermediateContext,
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
     cmajor::systemx::intermediate::Verify(intermediateContext);
-    std::unique_ptr<cmajor::systemx::intermediate::CodeGenerator> codeGenerator;
-/*/
-    std::string pass = cmajor::symbols::Pass();
-    if (pass.empty())
-    {
-        int optimizationLevel = emitter->EmittingContext()->OptimizationLevel();
-        pass = "opt-" + std::to_string(optimizationLevel);
-    }
-    cmajor::systemx::intermediate::PassManager::Instance().Run(boundCompileUnit.GetModule().LogStreamId(), &intermediateContext, pass, 
-        cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-*/
     std::string objectFilePath = boundCompileUnit.ObjectFilePath();
     std::string assemblyFilePath = util::Path::ChangeExtension(objectFilePath, ".s");
-    std::unique_ptr<cmajor::systemx::assembler::AssemblyFile> assemblyFile(new cmajor::systemx::assembler::AssemblyFile(assemblyFilePath));
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
-        if (cmajor::systemx::optimizer::CurrentOptimizations() != cmajor::systemx::optimizer::Optimizations::o0)
+        std::unique_ptr<cmajor::systemx::intermediate::CodeGenerator> codeGenerator;
         {
-            cmajor::systemx::optimizer::Optimize(&intermediateContext);
-            cmajor::systemx::intermediate::Write(intermediateContext, optimizedIntermediateFilePath);
-            cmajor::systemx::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), optimizedIntermediateFilePath, optimizationContext,
-                cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-            cmajor::systemx::intermediate::Verify(optimizationContext);
-            finalContext = &optimizationContext;
+            std::unique_ptr<cmajor::systemx::assembler::AssemblyFile> assemblyFile(new cmajor::systemx::assembler::AssemblyFile(assemblyFilePath));
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+            {
+                if (cmajor::systemx::optimizer::CurrentOptimizations() != cmajor::systemx::optimizer::Optimizations::o0)
+                {
+                    cmajor::systemx::optimizer::Optimize(&intermediateContext);
+                    cmajor::systemx::intermediate::Write(intermediateContext, optimizedIntermediateFilePath);
+                    cmajor::systemx::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), optimizedIntermediateFilePath, optimizationContext,
+                        cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                    cmajor::systemx::intermediate::Verify(optimizationContext);
+                    finalContext = &optimizationContext;
+                }
+                codeGenerator.reset(new cmajor::systemx::optimizer::OptimizingCodeGenerator(finalContext, assemblyFile.get()));
+            }
+            else
+            {
+                codeGenerator.reset(new cmajor::systemx::intermediate::SimpleAssemblyCodeGenerator(finalContext, assemblyFile.get()));
+            }
+            codeGenerator->GenerateCode();
+            codeGenerator->GenerateDebugInfo();
+            codeGenerator->WriteOutputFile();
         }
-        codeGenerator.reset(new cmajor::systemx::optimizer::OptimizingCodeGenerator(finalContext, assemblyFile.get()));
     }
-    else
-    {
-        codeGenerator.reset(new cmajor::systemx::intermediate::SimpleAssemblyCodeGenerator(finalContext, assemblyFile.get()));
-    }
-    codeGenerator->GenerateCode();
-    codeGenerator->GenerateDebugInfo();
-    codeGenerator->WriteOutputFile();
-    assemblyFile.reset();
     cmajor::systemx::assembler::Assemble(boundCompileUnit.GetModule().LogStreamId(), assemblyFilePath, objectFilePath, 
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
 }

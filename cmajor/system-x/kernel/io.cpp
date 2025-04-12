@@ -14,6 +14,8 @@ import cmajor.systemx.kernel.block.file;
 import cmajor.systemx.kernel.dir.file;
 import cmajor.systemx.kernel.debug;
 import cmajor.systemx.kernel.msg.queue;
+import cmajor.systemx.kernel.event.manager;
+import cmajor.systemx.kernel.scheduler;
 import cmajor.systemx.machine;
 import util;
 
@@ -866,6 +868,46 @@ void UnbindTerminal(Process* process)
 {
     File* terminalFile = GetTerminalFile();
     terminalFile->Unbind();
+}
+
+class IOLock
+{
+public:
+    IOLock() : locked(false) {}
+    bool Locked() const { return locked; }
+    void Lock() { locked = true; }
+    void Unlock() { locked = false; }
+private:
+    bool locked;
+};
+
+IOLock ioLock;
+
+void LockIO(cmajor::systemx::machine::UserProcess* process)
+{
+    std::unique_lock<std::recursive_mutex> lock(process->GetMachine()->Lock());
+    while (ioLock.Locked())
+    {
+        cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::ioLockedEvent, 0);
+        if (!lock.owns_lock())
+        {
+            lock.lock();
+        }
+        Sleep(evnt, process, lock);
+        if (!lock.owns_lock())
+        {
+            lock.lock();
+        }
+    }
+    ioLock.Lock();
+}
+
+void UnlockIO(cmajor::systemx::machine::UserProcess* process)
+{
+    std::unique_lock<std::recursive_mutex> lock(process->GetMachine()->Lock());
+    ioLock.Unlock();
+    cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::ioLockedEvent, 0);
+    Wakeup(evnt);
 }
 
 } // namespace cmajor::systemx::kernel

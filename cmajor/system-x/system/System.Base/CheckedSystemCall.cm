@@ -716,4 +716,22 @@ namespace System.Os
 			ThrowSystemError();
 		}
 	}
+
+    public void LockIO()
+    {
+        int result = lock_io();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+
+    public void UnlockIO()
+    {
+        int result = unlock_io();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
 }

@@ -99,6 +99,8 @@ const uint8_t trap_waitpid = 84;
 const uint8_t trap_start = 85;
 const uint8_t trap_stop = 86;
 const uint8_t trap_get_port = 87;
+const uint8_t trap_lock_io = 88;
+const uint8_t trap_unlock_io = 89;
 
 class TrapHandler
 {

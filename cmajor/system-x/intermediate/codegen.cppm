@@ -66,6 +66,7 @@ class CompileUnit;
 class CodeGenerator
 {
 public:
+    CodeGenerator();
     virtual ~CodeGenerator();
     virtual Context* Ctx() const = 0;
     virtual void GenerateCode() = 0;
@@ -93,6 +94,9 @@ public:
     virtual Function* CurrentFunction() const = 0;
     virtual int CurrentLineNumber() const = 0;
     virtual cmajor::systemx::assembler::AssemblyFile* AssemblyFile() const = 0;
+    std::thread::id CreatorThreadId() const { return creatorThreadId; }
+private:
+    std::thread::id creatorThreadId;
 };
 
 cmajor::systemx::assembler::Node* MakeRegOperand(const Register& reg);

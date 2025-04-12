@@ -14,6 +14,10 @@ import util;
 
 namespace cmajor::systemx::intermediate {
 
+CodeGenerator::CodeGenerator() : creatorThreadId(std::this_thread::get_id())
+{
+}
+
 CodeGenerator::~CodeGenerator()
 {
 }
@@ -22,18 +26,18 @@ cmajor::systemx::assembler::Node* MakeRegOperand(const Register& reg)
 {
     switch (reg.kind)
     {
-    case RegisterKind::local:
-    {
-        return cmajor::systemx::assembler::MakeLocalRegOperand(reg.number);
-    }
-    case RegisterKind::global:
-    {
-        return cmajor::systemx::assembler::MakeGlobalRegOperand(reg.number);
-    }
-    default:
-    {
-        throw std::runtime_error("invalid register");
-    }
+        case RegisterKind::local:
+        {
+            return cmajor::systemx::assembler::MakeLocalRegOperand(reg.number);
+        }
+        case RegisterKind::global:
+        {
+            return cmajor::systemx::assembler::MakeGlobalRegOperand(reg.number);
+        }
+        default:
+        {
+            throw std::runtime_error("invalid register");
+        }
     }
 }
 
@@ -273,115 +277,115 @@ cmajor::systemx::assembler::Node* MakeRegOperand(Value* value, const Register& r
         codeGen.Emit(inst);
         switch (value->Kind())
         {
-        case ValueKind::boolValue:
-        {
-            BoolValue* v = static_cast<BoolValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::sbyteValue:
-        {
-            SByteValue* v = static_cast<SByteValue*>(value);
-            if (v->GetValue() < 0)
+            case ValueKind::boolValue:
             {
-                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
-            }
-            else
-            {
+                BoolValue* v = static_cast<BoolValue*>(value);
                 inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
             }
-            break;
-        }
-        case ValueKind::byteValue:
-        {
-            ByteValue* v = static_cast<ByteValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::shortValue:
-        {
-            ShortValue* v = static_cast<ShortValue*>(value);
-            if (v->GetValue() < 0)
+            case ValueKind::sbyteValue:
             {
-                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                SByteValue* v = static_cast<SByteValue*>(value);
+                if (v->GetValue() < 0)
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                }
+                else
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                }
+                break;
             }
-            else
+            case ValueKind::byteValue:
             {
+                ByteValue* v = static_cast<ByteValue*>(value);
                 inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
             }
-            break;
-        }
-        case ValueKind::ushortValue:
-        {
-            UShortValue* v = static_cast<UShortValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::intValue:
-        {
-            IntValue* v = static_cast<IntValue*>(value);
-            if (v->GetValue() < 0)
+            case ValueKind::shortValue:
             {
-                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                ShortValue* v = static_cast<ShortValue*>(value);
+                if (v->GetValue() < 0)
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                }
+                else
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                }
+                break;
             }
-            else
+            case ValueKind::ushortValue:
             {
+                UShortValue* v = static_cast<UShortValue*>(value);
                 inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
             }
-            break;
-        }
-        case ValueKind::uintValue:
-        {
-            UIntValue* v = static_cast<UIntValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::longValue:
-        {
-            LongValue* v = static_cast<LongValue*>(value);
-            if (v->GetValue() < 0)
+            case ValueKind::intValue:
             {
-                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                IntValue* v = static_cast<IntValue*>(value);
+                if (v->GetValue() < 0)
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                }
+                else
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                }
+                break;
             }
-            else
+            case ValueKind::uintValue:
             {
+                UIntValue* v = static_cast<UIntValue*>(value);
                 inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
             }
-            break;
-        }
-        case ValueKind::ulongValue:
-        {
-            ULongValue* v = static_cast<ULongValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::floatValue:
-        {
-            FloatValue* v = static_cast<FloatValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::doubleValue:
-        {
-            DoubleValue* v = static_cast<DoubleValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
-            break;
-        }
-        case ValueKind::nullValue:
-        {
-            inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(static_cast<uint64_t>(0)));
-            break;
-        }
-        case ValueKind::symbolValue:
-        {
-            SymbolValue* v = static_cast<SymbolValue*>(value);
-            inst->AddOperand(cmajor::systemx::assembler::MakeGlobalSymbol(v->Symbol()));
-            break;
-        }
-        default:
-        {
-            codeGen.Error("error making reg operand: not implemented for value kind " + value->KindStr());
-        }
+            case ValueKind::longValue:
+            {
+                LongValue* v = static_cast<LongValue*>(value);
+                if (v->GetValue() < 0)
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::machine::SignExtend(v->GetValue())));
+                }
+                else
+                {
+                    inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                }
+                break;
+            }
+            case ValueKind::ulongValue:
+            {
+                ULongValue* v = static_cast<ULongValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
+            }
+            case ValueKind::floatValue:
+            {
+                FloatValue* v = static_cast<FloatValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
+            }
+            case ValueKind::doubleValue:
+            {
+                DoubleValue* v = static_cast<DoubleValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
+                break;
+            }
+            case ValueKind::nullValue:
+            {
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(static_cast<uint64_t>(0)));
+                break;
+            }
+            case ValueKind::symbolValue:
+            {
+                SymbolValue* v = static_cast<SymbolValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeGlobalSymbol(v->Symbol()));
+                break;
+            }
+            default:
+            {
+                codeGen.Error("error making reg operand: not implemented for value kind " + value->KindStr());
+            }
         }
     }
     return MakeRegOperand(r);
@@ -411,20 +415,20 @@ cmajor::systemx::assembler::Node* MakeTrapOperand(Value* value, CodeGenerator& c
     {
         switch (value->Kind())
         {
-        case ValueKind::sbyteValue:
-        {
-            SByteValue* v = static_cast<SByteValue*>(value);
-            return cmajor::systemx::assembler::MakeConstantExpr(v->GetValue());
-        }
-        case ValueKind::byteValue:
-        {
-            ByteValue* v = static_cast<ByteValue*>(value);
-            return cmajor::systemx::assembler::MakeConstantExpr(v->GetValue());
-        }
-        default:
-        {
-            codeGen.Error("error making trap operand: not implemented for value kind " + value->KindStr());
-        }
+            case ValueKind::sbyteValue:
+            {
+                SByteValue* v = static_cast<SByteValue*>(value);
+                return cmajor::systemx::assembler::MakeConstantExpr(v->GetValue());
+            }
+            case ValueKind::byteValue:
+            {
+                ByteValue* v = static_cast<ByteValue*>(value);
+                return cmajor::systemx::assembler::MakeConstantExpr(v->GetValue());
+            }
+            default:
+            {
+                codeGen.Error("error making trap operand: not implemented for value kind " + value->KindStr());
+            }
         }
     }
     return nullptr;
@@ -1661,32 +1665,32 @@ void EmitString(StringValue& value, CodeGenerator& codeGen)
     {
         switch (state)
         {
-        case 0:
-        {
-            if (c == '\\')
+            case 0:
             {
-                hex.clear();
-                state = 1;
+                if (c == '\\')
+                {
+                    hex.clear();
+                    state = 1;
+                }
+                else
+                {
+                    codeGen.EmitByte(static_cast<uint8_t>(c));
+                }
+                break;
             }
-            else
+            case 1:
             {
-                codeGen.EmitByte(static_cast<uint8_t>(c));
+                hex.append(1, c);
+                state = 2;
+                break;
             }
-            break;
-        }
-        case 1:
-        {
-            hex.append(1, c);
-            state = 2;
-            break;
-        }
-        case 2:
-        {
-            hex.append(1, c);
-            codeGen.EmitByte(util::ParseHexByte(hex));
-            state = 0;
-            break;
-        }
+            case 2:
+            {
+                hex.append(1, c);
+                codeGen.EmitByte(util::ParseHexByte(hex));
+                state = 0;
+                break;
+            }
         }
     }
     if (state == 1)
@@ -1839,105 +1843,105 @@ void ProcessInstructionMetadata(Instruction* inst, CodeGenerator& codeGen)
                 int64_t nodeType = mdNodeTypeLong->Value();
                 switch (nodeType)
                 {
-                case cmajor::systemx::assembler::LINEINFO:
-                {
-                    MetadataItem* mdLineItem = mdStruct->GetItem("line");
-                    if (mdLineItem && mdLineItem->Kind() == MetadataItemKind::metadataLong)
+                    case cmajor::systemx::assembler::LINEINFO:
                     {
-                        MetadataLong* mdLineLong = static_cast<MetadataLong*>(mdLineItem);
-                        int64_t lineNumber = mdLineLong->Value();
-                        codeGen.SetCurrentLineNumber(static_cast<uint32_t>(lineNumber));
+                        MetadataItem* mdLineItem = mdStruct->GetItem("line");
+                        if (mdLineItem && mdLineItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdLineLong = static_cast<MetadataLong*>(mdLineItem);
+                            int64_t lineNumber = mdLineLong->Value();
+                            codeGen.SetCurrentLineNumber(static_cast<uint32_t>(lineNumber));
+                        }
+                        break;
                     }
-                    break;
-                }
-                case cmajor::systemx::assembler::BEGINTRY:
-                {
-                    int64_t tryBlockId = -1;
-                    int64_t parentTryBlockId = -1;
-                    MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
-                    if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                    case cmajor::systemx::assembler::BEGINTRY:
                     {
-                        MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
-                        tryBlockId = mdTryBlockIdLong->Value();
+                        int64_t tryBlockId = -1;
+                        int64_t parentTryBlockId = -1;
+                        MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
+                        if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
+                            tryBlockId = mdTryBlockIdLong->Value();
+                        }
+                        MetadataItem* parentTryBlockIdItem = mdStruct->GetItem("parentTryBlockId");
+                        if (parentTryBlockIdItem && parentTryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdParentTryBlockIdLong = static_cast<MetadataLong*>(parentTryBlockIdItem);
+                            parentTryBlockId = mdParentTryBlockIdLong->Value();
+                        }
+                        codeGen.BeginTry(static_cast<uint32_t>(tryBlockId), static_cast<uint32_t>(parentTryBlockId));
+                        break;
                     }
-                    MetadataItem* parentTryBlockIdItem = mdStruct->GetItem("parentTryBlockId");
-                    if (parentTryBlockIdItem && parentTryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                    case cmajor::systemx::assembler::ENDTRY:
                     {
-                        MetadataLong* mdParentTryBlockIdLong = static_cast<MetadataLong*>(parentTryBlockIdItem);
-                        parentTryBlockId = mdParentTryBlockIdLong->Value();
+                        int64_t tryBlockId = -1;
+                        MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
+                        if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
+                            tryBlockId = mdTryBlockIdLong->Value();
+                        }
+                        codeGen.EndTry(static_cast<uint32_t>(tryBlockId));
+                        break;
                     }
-                    codeGen.BeginTry(static_cast<uint32_t>(tryBlockId), static_cast<uint32_t>(parentTryBlockId));
-                    break;
-                }
-                case cmajor::systemx::assembler::ENDTRY:
-                {
-                    int64_t tryBlockId = -1;
-                    MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
-                    if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                    case cmajor::systemx::assembler::CATCH:
                     {
-                        MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
-                        tryBlockId = mdTryBlockIdLong->Value();
+                        int64_t catchBlockId = -1;
+                        MetadataItem* catchBlockIdItem = mdStruct->GetItem("catchBlockId");
+                        if (catchBlockIdItem && catchBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdCatchBlockIdLong = static_cast<MetadataLong*>(catchBlockIdItem);
+                            catchBlockId = mdCatchBlockIdLong->Value();
+                        }
+                        int64_t tryBlockId = -1;
+                        MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
+                        if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
+                            tryBlockId = mdTryBlockIdLong->Value();
+                        }
+                        std::string caughtTypeIdStr;
+                        MetadataItem* caughtTypeIdItem = mdStruct->GetItem("caughtTypeId");
+                        if (caughtTypeIdItem && caughtTypeIdItem->Kind() == MetadataItemKind::metadataString)
+                        {
+                            MetadataString* mdCaughtTypeIdString = static_cast<MetadataString*>(caughtTypeIdItem);
+                            caughtTypeIdStr = mdCaughtTypeIdString->Value();
+                        }
+                        codeGen.Catch(static_cast<uint32_t>(catchBlockId), static_cast<uint32_t>(tryBlockId), caughtTypeIdStr);
+                        break;
                     }
-                    codeGen.EndTry(static_cast<uint32_t>(tryBlockId));
-                    break;
-                }
-                case cmajor::systemx::assembler::CATCH:
-                {
-                    int64_t catchBlockId = -1;
-                    MetadataItem* catchBlockIdItem = mdStruct->GetItem("catchBlockId");
-                    if (catchBlockIdItem && catchBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                    case cmajor::systemx::assembler::BEGINCLEANUP:
                     {
-                        MetadataLong* mdCatchBlockIdLong = static_cast<MetadataLong*>(catchBlockIdItem);
-                        catchBlockId = mdCatchBlockIdLong->Value();
+                        int64_t cleanupBlockId = -1;
+                        int64_t tryBlockId = -1;
+                        MetadataItem* cleanupBlockIdItem = mdStruct->GetItem("cleanupBlockId");
+                        if (cleanupBlockIdItem && cleanupBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdCleanupBlockIdLong = static_cast<MetadataLong*>(cleanupBlockIdItem);
+                            cleanupBlockId = mdCleanupBlockIdLong->Value();
+                        }
+                        MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
+                        if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
+                            tryBlockId = mdTryBlockIdLong->Value();
+                        }
+                        codeGen.BeginCleanup(static_cast<uint32_t>(cleanupBlockId), static_cast<uint32_t>(tryBlockId));
+                        break;
                     }
-                    int64_t tryBlockId = -1;
-                    MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
-                    if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                    case cmajor::systemx::assembler::ENDCLEANUP:
                     {
-                        MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
-                        tryBlockId = mdTryBlockIdLong->Value();
+                        int64_t cleanupBlockId = -1;
+                        MetadataItem* cleanupBlockIdItem = mdStruct->GetItem("cleanupBlockId");
+                        if (cleanupBlockIdItem && cleanupBlockIdItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdCleanupBlockIdLong = static_cast<MetadataLong*>(cleanupBlockIdItem);
+                            cleanupBlockId = mdCleanupBlockIdLong->Value();
+                        }
+                        codeGen.EndCleanup(static_cast<uint32_t>(cleanupBlockId));
+                        break;
                     }
-                    std::string caughtTypeIdStr;
-                    MetadataItem* caughtTypeIdItem = mdStruct->GetItem("caughtTypeId");
-                    if (caughtTypeIdItem && caughtTypeIdItem->Kind() == MetadataItemKind::metadataString)
-                    {
-                        MetadataString* mdCaughtTypeIdString = static_cast<MetadataString*>(caughtTypeIdItem);
-                        caughtTypeIdStr = mdCaughtTypeIdString->Value();
-                    }
-                    codeGen.Catch(static_cast<uint32_t>(catchBlockId), static_cast<uint32_t>(tryBlockId), caughtTypeIdStr);
-                    break;
-                }
-                case cmajor::systemx::assembler::BEGINCLEANUP:
-                {
-                    int64_t cleanupBlockId = -1;
-                    int64_t tryBlockId = -1;
-                    MetadataItem* cleanupBlockIdItem = mdStruct->GetItem("cleanupBlockId");
-                    if (cleanupBlockIdItem && cleanupBlockIdItem->Kind() == MetadataItemKind::metadataLong)
-                    {
-                        MetadataLong* mdCleanupBlockIdLong = static_cast<MetadataLong*>(cleanupBlockIdItem);
-                        cleanupBlockId = mdCleanupBlockIdLong->Value();
-                    }
-                    MetadataItem* tryBlockIdItem = mdStruct->GetItem("tryBlockId");
-                    if (tryBlockIdItem && tryBlockIdItem->Kind() == MetadataItemKind::metadataLong)
-                    {
-                        MetadataLong* mdTryBlockIdLong = static_cast<MetadataLong*>(tryBlockIdItem);
-                        tryBlockId = mdTryBlockIdLong->Value();
-                    }
-                    codeGen.BeginCleanup(static_cast<uint32_t>(cleanupBlockId), static_cast<uint32_t>(tryBlockId));
-                    break;
-                }
-                case cmajor::systemx::assembler::ENDCLEANUP:
-                {
-                    int64_t cleanupBlockId = -1;
-                    MetadataItem* cleanupBlockIdItem = mdStruct->GetItem("cleanupBlockId");
-                    if (cleanupBlockIdItem && cleanupBlockIdItem->Kind() == MetadataItemKind::metadataLong)
-                    {
-                        MetadataLong* mdCleanupBlockIdLong = static_cast<MetadataLong*>(cleanupBlockIdItem);
-                        cleanupBlockId = mdCleanupBlockIdLong->Value();
-                    }
-                    codeGen.EndCleanup(static_cast<uint32_t>(cleanupBlockId));
-                    break;
-                }
                 }
             }
         }

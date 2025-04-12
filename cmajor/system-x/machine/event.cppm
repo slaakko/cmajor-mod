@@ -11,7 +11,7 @@ export namespace cmajor::systemx::machine {
 
 enum class EventKind
 {
-    none, childExitEvent, alarmEvent, blockFreeEvent, inodeFreeEvent, ioEvent, pipeNotEmptyEvent, pipeNotFullEvent, terminalInputEvent, msgQEvent
+    none, childExitEvent, alarmEvent, blockFreeEvent, inodeFreeEvent, ioEvent, pipeNotEmptyEvent, pipeNotFullEvent, terminalInputEvent, msgQEvent, ioLockedEvent
 };
 
 std::string EventKindStr(EventKind eventKind);

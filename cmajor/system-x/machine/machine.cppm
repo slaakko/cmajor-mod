@@ -18,7 +18,7 @@ class Scheduler
 public:
     virtual ~Scheduler();
     virtual void SetMachine(Machine* machine_) = 0;
-    virtual UserProcess* GetRunnableProcess() = 0;
+    virtual UserProcess* GetRunnableProcess(Processor* processor) = 0;
     virtual void AddRunnableProcess(UserProcess* process, ProcessState processState) = 0;
     virtual void CheckRunnable() = 0;
     virtual void Stop() = 0;
@@ -55,6 +55,7 @@ public:
     void CheckExceptions();
     void AddObserver(MachineObserver* observer);
     void NotifyObservers();
+    bool HasRunnableKernelProcess();
 private:
     void SetInstruction(Instruction* inst);
     std::vector<Processor> processors;

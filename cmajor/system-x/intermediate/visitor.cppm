@@ -80,6 +80,7 @@ class Visitor
 {
 public:
     Visitor(Context* context_);
+    virtual ~Visitor();
     Context* GetContext() const { return context; }
     virtual void Visit(StructureType& structureType) {}
     virtual void Visit(ArrayType& arrayType) {}

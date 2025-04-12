@@ -22,14 +22,17 @@ Process::Process(int32_t id_) :
     util::IntrusiveListNode<Process>(this), id(id_), rv(static_cast<uint64_t>(-1)), kernelSP(cmajor::systemx::machine::kernelBaseAddress), axAddress(0), bxAddress(0), cxAddress(0),
     state(cmajor::systemx::machine::ProcessState::created), entryPoint(-1), argumentsStartAddress(-1), argumentsLength(0), environmentStartAddress(-1), environmentLength(0),
     heapStartAddress(-1), heapLength(0), stackStartAddress(-1), startUserTime(), startSleepTime(), startSystemTime(), userTime(0), sleepTime(0), systemTime(0),
-    exitCode(0), debugger(nullptr), processor(nullptr), currentExceptionAddress(0), currentExceptionClassId(0), currentTryRecord(nullptr), kernelFiber(nullptr),
-    inodeKeyOfWorkingDirAsULong(-1), uid(0), gid(0), euid(0), egid(0), umask(0), directoriesChanged(false)
+    exitCode(0), debugger(nullptr), processor(nullptr), kernelProcessor(nullptr), interruptHandler(nullptr), currentExceptionAddress(0), currentExceptionClassId(0), 
+    currentTryRecord(nullptr), mainFiber(nullptr), kernelFiber(nullptr), inodeKeyOfWorkingDirAsULong(-1), uid(0), gid(0), euid(0), egid(0), umask(0), directoriesChanged(false),
+    inKernel(false), saveContext(false)
 {
     SetINodeKeyOfWorkingDir(Kernel::Instance().GetINodeKeyOfRootDir());
 }
 
 void Process::SetState(cmajor::systemx::machine::ProcessState state_)
 {
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     state = state_;
 }
 
@@ -191,6 +194,46 @@ void Process::SetEGID(int32_t egid_)
 void Process::SetEGIDTrusted(int32_t egid_)
 {
     egid = egid_;
+}
+
+void Process::WaitNotInKernel(bool enter)
+{
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    notInKernelVar.wait(lock, [&] { return !inKernel || machine->Exiting(); });
+    if (enter)
+    {
+        inKernel = true;
+    }
+}
+
+void Process::SetInKernel()
+{
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    inKernel = true;
+}
+
+void Process::SetNotInKernel()
+{ 
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    inKernel = false;
+    notInKernelVar.notify_all();
+}
+
+bool Process::DoSaveContext() const
+{
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    return saveContext;
+}
+
+void Process::SetSaveContext(bool saveContext_)
+{
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    saveContext = saveContext_;
 }
 
 void Process::Exit(uint8_t exitCode_)
@@ -360,22 +403,51 @@ void Process::RestoreContext(cmajor::systemx::machine::Machine& machine, cmajor:
 
 void Process::SetRunning(cmajor::systemx::machine::Processor* processor_)
 {
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     processor = processor_;
     SetState(cmajor::systemx::machine::ProcessState::running);
 }
 
+void Process::SetKernelProcessor(cmajor::systemx::machine::Processor* kernelProcessor_)
+{
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+    kernelProcessor = kernelProcessor_;
+}
+
+cmajor::systemx::machine::Processor* Process::KernelProcessor() const
+{
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+    return kernelProcessor;
+}
+
 void Process::ResetProcessor()
 {
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     processor = nullptr;
+}
+
+void Process::SetProcessor(cmajor::systemx::machine::Processor* processor_) 
+{ 
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
+    processor = processor_; 
 }
 
 cmajor::systemx::machine::Debugger* Process::GetDebugger() const
 {
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     return debugger;
 }
 
 void Process::SetDebugger(cmajor::systemx::machine::Debugger* debugger_)
 {
+    cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
+    std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     debugger = debugger_;
 }
 

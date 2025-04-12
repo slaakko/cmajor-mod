@@ -90,6 +90,9 @@ public const byte trap_kill = 83u;
 public const byte trap_waitpid = 84u;
 public const byte trap_start = 85u;
 public const byte trap_stop = 86u;
+public const byte trap_get_port = 87u;
+public const byte trap_lock_io = 88u;
+public const byte trap_unlock_io = 89u;
 
 public cdecl nothrow void exit(byte exitCode)
 {
@@ -566,4 +569,14 @@ public cdecl nothrow int start(const char* prog)
 public cdecl nothrow int stop(int prog)
 {
 	return cast<int>(trap(0u, trap_stop, 0u, prog));
+}
+
+public cdecl nothrow int lock_io()
+{
+    return cast<int>(trap(0u, trap_lock_io, 0u));
+}
+
+public cdecl nothrow int unlock_io()
+{
+    return cast<int>(trap(0u, trap_unlock_io, 0u));
 }

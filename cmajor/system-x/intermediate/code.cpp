@@ -92,17 +92,17 @@ bool Instruction::IsTerminator() const
 {
     switch (opCode)
     {
-    case OpCode::jmp:
-    case OpCode::branch:
-    case OpCode::ret:
-    case OpCode::switch_:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::jmp:
+        case OpCode::branch:
+        case OpCode::ret:
+        case OpCode::switch_:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -110,43 +110,43 @@ bool Instruction::IsValueInstruction() const
 {
     switch (opCode)
     {
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    case OpCode::param:
-    case OpCode::local:
-    case OpCode::load:
-    case OpCode::elemaddr:
-    case OpCode::ptroffset:
-    case OpCode::ptrdiff:
-    case OpCode::function_call:
-    case OpCode::trap:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::not_:
+        case OpCode::neg:
+        case OpCode::signextend:
+        case OpCode::zeroextend:
+        case OpCode::truncate:
+        case OpCode::bitcast:
+        case OpCode::inttofloat:
+        case OpCode::floattoint:
+        case OpCode::inttoptr:
+        case OpCode::ptrtoint:
+        case OpCode::add:
+        case OpCode::sub:
+        case OpCode::mul:
+        case OpCode::div_:
+        case OpCode::mod:
+        case OpCode::and_:
+        case OpCode::or_:
+        case OpCode::xor_:
+        case OpCode::shl:
+        case OpCode::shr:
+        case OpCode::equal:
+        case OpCode::less:
+        case OpCode::param:
+        case OpCode::local:
+        case OpCode::load:
+        case OpCode::elemaddr:
+        case OpCode::ptroffset:
+        case OpCode::ptrdiff:
+        case OpCode::function_call:
+        case OpCode::trap:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -154,23 +154,23 @@ bool Instruction::IsUnaryInstruction() const
 {
     switch (opCode)
     {
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::not_:
+        case OpCode::neg:
+        case OpCode::signextend:
+        case OpCode::zeroextend:
+        case OpCode::truncate:
+        case OpCode::bitcast:
+        case OpCode::inttofloat:
+        case OpCode::floattoint:
+        case OpCode::inttoptr:
+        case OpCode::ptrtoint:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -178,25 +178,25 @@ bool Instruction::IsBinaryInstruction() const
 {
     switch (opCode)
     {
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::add:
+        case OpCode::sub:
+        case OpCode::mul:
+        case OpCode::div_:
+        case OpCode::mod:
+        case OpCode::and_:
+        case OpCode::or_:
+        case OpCode::xor_:
+        case OpCode::shl:
+        case OpCode::shr:
+        case OpCode::equal:
+        case OpCode::less:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -204,43 +204,43 @@ bool Instruction::RequiresLocalRegister() const
 {
     switch (opCode)
     {
-    case OpCode::arg:
-    case OpCode::procedure_call:
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    case OpCode::param:
-    case OpCode::load:
-    case OpCode::elemaddr:
-    case OpCode::ptroffset:
-    case OpCode::ptrdiff:
-    case OpCode::function_call:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::arg:
+        case OpCode::procedure_call:
+        case OpCode::not_:
+        case OpCode::neg:
+        case OpCode::signextend:
+        case OpCode::zeroextend:
+        case OpCode::truncate:
+        case OpCode::bitcast:
+        case OpCode::inttofloat:
+        case OpCode::floattoint:
+        case OpCode::inttoptr:
+        case OpCode::ptrtoint:
+        case OpCode::add:
+        case OpCode::sub:
+        case OpCode::mul:
+        case OpCode::div_:
+        case OpCode::mod:
+        case OpCode::and_:
+        case OpCode::or_:
+        case OpCode::xor_:
+        case OpCode::shl:
+        case OpCode::shr:
+        case OpCode::equal:
+        case OpCode::less:
+        case OpCode::param:
+        case OpCode::load:
+        case OpCode::elemaddr:
+        case OpCode::ptroffset:
+        case OpCode::ptrdiff:
+        case OpCode::function_call:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -249,29 +249,29 @@ std::vector<BasicBlock*> Instruction::Successors() const
     std::vector<BasicBlock*> successors;
     switch (opCode)
     {
-    case OpCode::jmp:
-    {
-        const JmpInstruction* jmp = static_cast<const JmpInstruction*>(this);
-        AddPtrToSet(jmp->TargetBasicBlock(), successors);
-        break;
-    }
-    case OpCode::branch:
-    {
-        const BranchInstruction* branch = static_cast<const BranchInstruction*>(this);
-        AddPtrToSet(branch->TrueTargetBasicBlock(), successors);
-        AddPtrToSet(branch->FalseTargetBasicBlock(), successors);
-        break;
-    }
-    case OpCode::switch_:
-    {
-        const SwitchInstruction* switch_ = static_cast<const SwitchInstruction*>(this);
-        AddPtrToSet(switch_->DefaultTargetBlock(), successors);
-        for (const CaseTarget& caseTarget : switch_->CaseTargets())
+        case OpCode::jmp:
         {
-            AddPtrToSet(caseTarget.targetBlock, successors);
+            const JmpInstruction* jmp = static_cast<const JmpInstruction*>(this);
+            AddPtrToSet(jmp->TargetBasicBlock(), successors);
+            break;
         }
-        break;
-    }
+        case OpCode::branch:
+        {
+            const BranchInstruction* branch = static_cast<const BranchInstruction*>(this);
+            AddPtrToSet(branch->TrueTargetBasicBlock(), successors);
+            AddPtrToSet(branch->FalseTargetBasicBlock(), successors);
+            break;
+        }
+        case OpCode::switch_:
+        {
+            const SwitchInstruction* switch_ = static_cast<const SwitchInstruction*>(this);
+            AddPtrToSet(switch_->DefaultTargetBlock(), successors);
+            for (const CaseTarget& caseTarget : switch_->CaseTargets())
+            {
+                AddPtrToSet(caseTarget.targetBlock, successors);
+            }
+            break;
+        }
     }
     return successors;
 }
@@ -582,7 +582,8 @@ std::vector<Instruction*> SwitchInstruction::Uses() const
     return uses;
 }
 
-ValueInstruction::ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_) : Instruction(sourcePos_, result_->GetType(), opCode_), result(result_)
+ValueInstruction::ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_) : 
+    Instruction(sourcePos_, result_->GetType(), opCode_), result(result_)
 {
 }
 
@@ -594,7 +595,8 @@ ValueInstruction::~ValueInstruction()
     }
 }
 
-UnaryInstruction::UnaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_, OpCode opCode_) : ValueInstruction(sourcePos_, result_, opCode_), operand(operand_)
+UnaryInstruction::UnaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_, OpCode opCode_) : 
+    ValueInstruction(sourcePos_, result_, opCode_), operand(operand_)
 {
 }
 
@@ -638,7 +640,8 @@ void NegInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-SignExtendInstruction::SignExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::signextend)
+SignExtendInstruction::SignExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::signextend)
 {
 }
 
@@ -647,7 +650,8 @@ void SignExtendInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ZeroExtendInstruction::ZeroExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::zeroextend)
+ZeroExtendInstruction::ZeroExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::zeroextend)
 {
 }
 
@@ -656,7 +660,8 @@ void ZeroExtendInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-TruncateInstruction::TruncateInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::truncate)
+TruncateInstruction::TruncateInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::truncate)
 {
 }
 
@@ -665,7 +670,8 @@ void TruncateInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-BitcastInstruction::BitcastInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::bitcast)
+BitcastInstruction::BitcastInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::bitcast)
 {
 }
 
@@ -674,7 +680,8 @@ void BitcastInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-IntToFloatInstruction::IntToFloatInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::inttofloat)
+IntToFloatInstruction::IntToFloatInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::inttofloat)
 {
 }
 
@@ -683,7 +690,8 @@ void IntToFloatInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-FloatToIntInstruction::FloatToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::floattoint)
+FloatToIntInstruction::FloatToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::floattoint)
 {
 }
 
@@ -692,7 +700,8 @@ void FloatToIntInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-IntToPtrInstruction::IntToPtrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::inttoptr)
+IntToPtrInstruction::IntToPtrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::inttoptr)
 {
 }
 
@@ -701,7 +710,8 @@ void IntToPtrInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-PtrToIntInstruction::PtrToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::ptrtoint)
+PtrToIntInstruction::PtrToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
+    UnaryInstruction(sourcePos_, result_, operand_, OpCode::ptrtoint)
 {
 }
 
@@ -745,7 +755,8 @@ std::vector<Instruction*> BinaryInstruction::Uses() const
     return uses;
 }
 
-AddInstruction::AddInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::add)
+AddInstruction::AddInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) :
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::add)
 {
 }
 
@@ -754,7 +765,8 @@ void AddInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-SubInstruction::SubInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::sub)
+SubInstruction::SubInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::sub)
 {
 }
 
@@ -763,7 +775,8 @@ void SubInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-MulInstruction::MulInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::mul)
+MulInstruction::MulInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::mul)
 {
 }
 
@@ -772,7 +785,8 @@ void MulInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-DivInstruction::DivInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::div_)
+DivInstruction::DivInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::div_)
 {
 }
 
@@ -781,7 +795,8 @@ void DivInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ModInstruction::ModInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::mod)
+ModInstruction::ModInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::mod)
 {
 }
 
@@ -790,7 +805,8 @@ void ModInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-AndInstruction::AndInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::and_)
+AndInstruction::AndInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::and_)
 {
 }
 
@@ -799,7 +815,8 @@ void AndInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-OrInstruction::OrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::or_)
+OrInstruction::OrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::or_)
 {
 }
 
@@ -808,7 +825,8 @@ void OrInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-XorInstruction::XorInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::xor_)
+XorInstruction::XorInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::xor_)
 {
 }
 
@@ -817,7 +835,8 @@ void XorInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ShlInstruction::ShlInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::shl)
+ShlInstruction::ShlInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::shl)
 {
 }
 
@@ -826,7 +845,8 @@ void ShlInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ShrInstruction::ShrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::shr)
+ShrInstruction::ShrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::shr)
 {
 }
 
@@ -835,7 +855,8 @@ void ShrInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-EqualInstruction::EqualInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::equal)
+EqualInstruction::EqualInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::equal)
 {
 }
 
@@ -844,7 +865,8 @@ void EqualInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-LessInstruction::LessInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::less)
+LessInstruction::LessInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
+    BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::less)
 {
 }
 
@@ -862,7 +884,8 @@ void ParamInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-LocalInstruction::LocalInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Type* localType_) : ValueInstruction(sourcePos_, result_, OpCode::local), localType(localType_)
+LocalInstruction::LocalInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Type* localType_) : 
+    ValueInstruction(sourcePos_, result_, OpCode::local), localType(localType_)
 {
 }
 

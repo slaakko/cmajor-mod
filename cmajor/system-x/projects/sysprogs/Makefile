@@ -70,36 +70,36 @@ install:
 	xcopy /Y /-I /F tab\bin\release\2\tab.x ..\..\bin\tab.x
 
 cu:
-	sxcmc -vs coreutil\coreutil.cms
-	sxcmc -vs -c=release --opt=0 coreutil\coreutil.cms
-	sxcmc -vs -c=release --opt=1 coreutil\coreutil.cms
-	sxcmc -vs -c=release --opt=2 coreutil\coreutil.cms
-	sxcmc -vs -c=release --opt=3 coreutil\coreutil.cms
+	sxcmc -v coreutil\coreutil.cms
+	sxcmc -v -c=release --opt=0 coreutil\coreutil.cms
+	sxcmc -v -c=release --opt=1 coreutil\coreutil.cms
+	sxcmc -v -c=release --opt=2 coreutil\coreutil.cms
+	sxcmc -v -c=release --opt=3 coreutil\coreutil.cms
 
 ed:
-	sxcmc -vs editor\editor.cms
-	sxcmc -vs -c=release --opt=0 editor\editor.cms
-	sxcmc -vs -c=release --opt=1 editor\editor.cms
-	sxcmc -vs -c=release --opt=2 editor\editor.cms
-	sxcmc -vs -c=release --opt=3 editor\editor.cms
+	sxcmc -v editor\editor.cms
+	sxcmc -v -c=release --opt=0 editor\editor.cms
+	sxcmc -v -c=release --opt=1 editor\editor.cms
+	sxcmc -v -c=release --opt=2 editor\editor.cms
+	sxcmc -v -c=release --opt=3 editor\editor.cms
 
 sh:
-	sxcmc -vs shell\sh.cmp
-	sxcmc -vs -c=release --opt=0 shell\sh.cmp
-	sxcmc -vs -c=release --opt=1 shell\sh.cmp
-	sxcmc -vs -c=release --opt=2 shell\sh.cmp
-	sxcmc -vs -c=release --opt=3 shell\sh.cmp
+	sxcmc -v shell\sh.cmp
+	sxcmc -v -c=release --opt=0 shell\sh.cmp
+	sxcmc -v -c=release --opt=1 shell\sh.cmp
+	sxcmc -v -c=release --opt=2 shell\sh.cmp
+	sxcmc -v -c=release --opt=3 shell\sh.cmp
 	
 tb:
-	sxcmc -vs tab/tab.cmp
-	sxcmc -vs -c=release --opt=0 tab\tab.cmp
-	sxcmc -vs -c=release --opt=1 tab\tab.cmp
-	sxcmc -vs -c=release --opt=2 tab\tab.cmp
-	sxcmc -vs -c=release --opt=3 tab\tab.cmp
+	sxcmc -v tab/tab.cmp
+	sxcmc -v -c=release --opt=0 tab\tab.cmp
+	sxcmc -v -c=release --opt=1 tab\tab.cmp
+	sxcmc -v -c=release --opt=2 tab\tab.cmp
+	sxcmc -v -c=release --opt=3 tab\tab.cmp
 	
 s:
-	sxcmc -vs sx\sx.cmp
-	sxcmc -vs -c=release --opt=0 sx\sx.cmp
-	sxcmc -vs -c=release --opt=1 sx\sx.cmp
-	sxcmc -vs -c=release --opt=2 sx\sx.cmp
-	sxcmc -vs -c=release --opt=3 sx\sx.cmp
+	sxcmc -v sx\sx.cmp
+	sxcmc -v -c=release --opt=0 sx\sx.cmp
+	sxcmc -v -c=release --opt=1 sx\sx.cmp
+	sxcmc -v -c=release --opt=2 sx\sx.cmp
+	sxcmc -v -c=release --opt=3 sx\sx.cmp

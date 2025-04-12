@@ -4,6 +4,7 @@
 // =================================
 
 using System.IO;
+using System.Os;
 
 namespace System
 {
@@ -258,5 +259,23 @@ namespace System
     public Endl endl()
     {
         return Endl();
+    }
+
+    public class ConsoleLock
+    {
+        public ConsoleLock() 
+        {
+            LockIO();
+        }
+        public ~ConsoleLock()
+        {
+            try
+            {
+                UnlockIO();
+            }
+            catch (const Exception& ex)
+            {
+            }
+        }
     }
 }

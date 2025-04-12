@@ -1,11 +1,7 @@
-all: Main.o Main.o.txt
+all: Main.o
 
 clean:
-	del Main.o
-	del Main.o.txt
+	del_main.bat
 
 Main.o: 
 	sxas -v Main.s
-
-Main.o.txt: 
-	sxdump -v Main.o

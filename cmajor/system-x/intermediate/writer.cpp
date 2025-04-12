@@ -62,90 +62,90 @@ namespace {
         {
             switch (value->Kind())
             {
-            case ValueKind::boolValue:
-            {
-                BoolValue* boolValue = static_cast<BoolValue*>(value);
-                if (boolValue->GetValue())
+                case ValueKind::boolValue:
                 {
-                    formatter.Write("true");
+                    BoolValue* boolValue = static_cast<BoolValue*>(value);
+                    if (boolValue->GetValue())
+                    {
+                        formatter.Write("true");
+                    }
+                    else
+                    {
+                        formatter.Write("false");
+                    }
+                    break;
                 }
-                else
+                case ValueKind::sbyteValue:
+                case ValueKind::byteValue:
+                case ValueKind::shortValue:
+                case ValueKind::ushortValue:
+                case ValueKind::intValue:
+                case ValueKind::uintValue:
+                case ValueKind::longValue:
                 {
-                    formatter.Write("false");
+                    formatter.Write(std::to_string(value->GetIntegerValue()));
+                    break;
                 }
-                break;
-            }
-            case ValueKind::sbyteValue:
-            case ValueKind::byteValue:
-            case ValueKind::shortValue:
-            case ValueKind::ushortValue:
-            case ValueKind::intValue:
-            case ValueKind::uintValue:
-            case ValueKind::longValue:
-            {
-                formatter.Write(std::to_string(value->GetIntegerValue()));
-                break;
-            }
-            case ValueKind::ulongValue:
-            {
-                ULongValue* ulongValue = static_cast<ULongValue*>(value);
-                formatter.Write(std::to_string(ulongValue->GetValue()));
-                break;
-            }
-            case ValueKind::floatValue:
-            {
-                FloatValue* floatValue = static_cast<FloatValue*>(value);
-                formatter.Write(std::to_string(floatValue->GetValue()));
-                break;
-            }
-            case ValueKind::doubleValue:
-            {
-                DoubleValue* doubleValue = static_cast<DoubleValue*>(value);
-                formatter.Write(std::to_string(doubleValue->GetValue()));
-                break;
-            }
-            case ValueKind::nullValue:
-            {
-                formatter.Write("null");
-                break;
-            }
-            case ValueKind::arrayValue:
-            {
-                formatter.Write("[ARRAY]");
-                break;
-            }
-            case ValueKind::structureValue:
-            {
-                formatter.Write("{STRUCTURE}");
-                break;
-            }
-            case ValueKind::stringValue:
-            {
-                formatter.Write("\"STRING\"");
-                break;
-            }
-            case ValueKind::stringArrayValue:
-            {
-                StringArrayValue* stringArrayValue = static_cast<StringArrayValue*>(value);
-                switch (stringArrayValue->Prefix())
+                case ValueKind::ulongValue:
                 {
-                case 'b': formatter.Write("b");
-                case 'w': formatter.Write("w");
-                case 'u': formatter.Write("u");
+                    ULongValue* ulongValue = static_cast<ULongValue*>(value);
+                    formatter.Write(std::to_string(ulongValue->GetValue()));
+                    break;
                 }
-                formatter.Write("[\"STRING_ARRAY\"]");
-                break;
-            }
-            case ValueKind::conversionValue:
-            {
-                formatter.Write("CONV");
-                break;
-            }
-            case ValueKind::clsIdValue:
-            {
-                formatter.Write("$CLSID");
-                break;
-            }
+                case ValueKind::floatValue:
+                {
+                    FloatValue* floatValue = static_cast<FloatValue*>(value);
+                    formatter.Write(std::to_string(floatValue->GetValue()));
+                    break;
+                }
+                case ValueKind::doubleValue:
+                {
+                    DoubleValue* doubleValue = static_cast<DoubleValue*>(value);
+                    formatter.Write(std::to_string(doubleValue->GetValue()));
+                    break;
+                }
+                case ValueKind::nullValue:
+                {
+                    formatter.Write("null");
+                    break;
+                }
+                case ValueKind::arrayValue:
+                {
+                    formatter.Write("[ARRAY]");
+                    break;
+                }
+                case ValueKind::structureValue:
+                {
+                    formatter.Write("{STRUCTURE}");
+                    break;
+                }
+                case ValueKind::stringValue:
+                {
+                    formatter.Write("\"STRING\"");
+                    break;
+                }
+                case ValueKind::stringArrayValue:
+                {
+                    StringArrayValue* stringArrayValue = static_cast<StringArrayValue*>(value);
+                    switch (stringArrayValue->Prefix())
+                    {
+                        case 'b': formatter.Write("b");
+                        case 'w': formatter.Write("w");
+                        case 'u': formatter.Write("u");
+                    }
+                    formatter.Write("[\"STRING_ARRAY\"]");
+                    break;
+                }
+                case ValueKind::conversionValue:
+                {
+                    formatter.Write("CONV");
+                    break;
+                }
+                case ValueKind::clsIdValue:
+                {
+                    formatter.Write("$CLSID");
+                    break;
+                }
             }
         }
     }

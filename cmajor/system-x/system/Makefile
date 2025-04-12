@@ -9,11 +9,12 @@ clean:
 	$(MAKE) -C Main clean
 
 sys:
-	sxcmc -vs System.cms
-	sxcmc -vs -c=release --opt=0 System.cms
-	sxcmc -vs -c=release --opt=1 System.cms
-	sxcmc -vs -c=release --opt=2 System.cms
-	sxcmc -vs -c=release --opt=3 System.cms
+	sxcmc -v System.cms
+	sxcmc -v -c=release --opt=0 System.cms
+	sxcmc -v -c=release --opt=1 System.cms
+	sxcmc -v -c=release --opt=2 System.cms
+	sxcmc -v -c=release --opt=3 System.cms
 
 mn:
+	$(MAKE) -C Main clean
 	$(MAKE) -C Main
