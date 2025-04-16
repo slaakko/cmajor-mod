@@ -94,6 +94,7 @@ void Processor::Run()
                 process->RestoreContext(*machine, registers);
                 pc = registers.GetPC();
                 process->SetStartUserTime();
+                process->SetSaveContext(true);
                 processState = process->State();
             }
             while (process && processState == ProcessState::running)
@@ -293,14 +294,7 @@ void RunKernel()
                 }
             }
             machine->GetScheduler()->CheckRunnable();
-            if (processMainFiber)
-            {
-                util::SwitchToFiber(processMainFiber);
-            }
-            else
-            {
-                int x = 0;
-            }
+            util::SwitchToFiber(processMainFiber);
         }
         catch (...)
         {

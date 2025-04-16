@@ -5,6 +5,7 @@
 
 module cmajor.systemx.kernel.process;
 
+import cmajor.systemx.kernel.debug;
 import cmajor.systemx.kernel.process.manager;
 import cmajor.systemx.kernel.event.manager;
 import cmajor.systemx.kernel.scheduler;
@@ -24,7 +25,7 @@ Process::Process(int32_t id_) :
     heapStartAddress(-1), heapLength(0), stackStartAddress(-1), startUserTime(), startSleepTime(), startSystemTime(), userTime(0), sleepTime(0), systemTime(0),
     exitCode(0), debugger(nullptr), processor(nullptr), kernelProcessor(nullptr), interruptHandler(nullptr), currentExceptionAddress(0), currentExceptionClassId(0), 
     currentTryRecord(nullptr), mainFiber(nullptr), kernelFiber(nullptr), inodeKeyOfWorkingDirAsULong(-1), uid(0), gid(0), euid(0), egid(0), umask(0), directoriesChanged(false),
-    inKernel(false), saveContext(false)
+    inKernel(false), saveContext(false), regAX(0), useRegAX(false)
 {
     SetINodeKeyOfWorkingDir(Kernel::Instance().GetINodeKeyOfRootDir());
 }
@@ -34,6 +35,13 @@ void Process::SetState(cmajor::systemx::machine::ProcessState state_)
     cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
     std::lock_guard<std::recursive_mutex> lock(machine->Lock());
     state = state_;
+    if (InDebugMode(debugStateMode))
+    {
+        std::string line = "pid=";
+        line.append(util::Format(std::to_string(id), 3, util::FormatWidth::min, util::FormatJustify::right, '0'));
+        line.append(" prog=").append(filePath).append(" state=").append(cmajor::systemx::machine::ProcessStateStr(state));
+        DebugWrite(line);
+    }
 }
 
 void Process::SetFilePath(const std::string& filePath_)
@@ -236,6 +244,20 @@ void Process::SetSaveContext(bool saveContext_)
     saveContext = saveContext_;
 }
 
+void Process::SetRegAX(uint64_t regAX_)
+{
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    regAX = regAX_;
+}
+
+void Process::SetUseRegAX()
+{
+    cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    useRegAX = true;
+}
+
 void Process::Exit(uint8_t exitCode_)
 {
     cmajor::systemx::machine::Machine* machine = ProcessManager::Instance().GetMachine();
@@ -270,7 +292,7 @@ void Process::Exit(uint8_t exitCode_)
     Process* parent = Parent();
     if (parent)
     {
-        cmajor::systemx::kernel::Wakeup(cmajor::systemx::machine::Event(cmajor::systemx::machine::EventKind::childExitEvent, parent->Id()));
+        cmajor::systemx::kernel::Wakeup(this, cmajor::systemx::machine::Event(cmajor::systemx::machine::EventKind::childExitEvent, parent->Id()));
     }
     ProcessManager::Instance().DecrementRunnableProcesses();
 }
@@ -308,6 +330,22 @@ void Process::SaveContext(cmajor::systemx::machine::Machine& machine, cmajor::sy
     mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regEX), cmajor::systemx::machine::Protection::write);
     kernelSP = kernelSP + 8;
     mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regIX), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP0), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP1), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP2), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP3), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP4), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP5), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP6), cmajor::systemx::machine::Protection::write);
+    kernelSP = kernelSP + 8;
+    mem.WriteOcta(rv, kernelSP, regs.Get(cmajor::systemx::machine::regP7), cmajor::systemx::machine::Protection::write);
     kernelSP = kernelSP + 8;
     int numLocalRegs = cmajor::systemx::machine::NumLocalRegs();
     for (int i = 0; i < numLocalRegs; ++i)
@@ -381,6 +419,22 @@ void Process::RestoreContext(cmajor::systemx::machine::Machine& machine, cmajor:
         regs.Set(regNum, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
     }
     kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP7, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP6, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP5, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP4, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP3, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP2, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP1, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
+    regs.Set(cmajor::systemx::machine::regP0, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
+    kernelSP = kernelSP - 8;
     regs.Set(cmajor::systemx::machine::regIX, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
     kernelSP = kernelSP - 8;
     regs.Set(cmajor::systemx::machine::regEX, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
@@ -393,6 +447,11 @@ void Process::RestoreContext(cmajor::systemx::machine::Machine& machine, cmajor:
     kernelSP = kernelSP - 8;
     regs.Set(cmajor::systemx::machine::regAX, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
     kernelSP = kernelSP - 8;
+    if (useRegAX)
+    {
+        regs.Set(cmajor::systemx::machine::regAX, regAX);
+        useRegAX = false;
+    }
     regs.SetPC(mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
     kernelSP = kernelSP - 8;
     regs.Set(cmajor::systemx::machine::regFP, mem.ReadOcta(rv, kernelSP, cmajor::systemx::machine::Protection::read));
@@ -520,7 +579,7 @@ int32_t Fork(Process* parent)
     return child->Id();
 }
 
-int32_t Wait(Process* parent, int32_t pid, int64_t childExitCodeAddress)
+int32_t Wait(Process* parent, int32_t pid, int64_t childExitCodeAddress, SystemError& error)
 {
     while (true)
     {
@@ -581,7 +640,8 @@ int32_t Wait(Process* parent, int32_t pid, int64_t childExitCodeAddress)
             break;
         }
     }
-    throw SystemError(ENOCHILD, "no child in zombie state", __FUNCTION__);
+    error = SystemError(ENOCHILD, "no child in zombie state", __FUNCTION__);
+    return -1;
 }
 
 void Exec(Process* process, int64_t filePathAddress, int64_t argvAddress, int64_t envpAddress)

@@ -6,8 +6,10 @@
 module cmajor.systemx.kernel.event.manager;
 
 import cmajor.systemx.kernel.scheduler;
+import cmajor.systemx.kernel.debug;
 import cmajor.systemx.kernel.debug.help;
 import cmajor.systemx.machine;
+import util;
 
 namespace cmajor::systemx::kernel {
 
@@ -49,18 +51,22 @@ void EventManager::SleepOn(const cmajor::systemx::machine::Event& evnt, cmajor::
 #if (LOCK_DEBUG)
     DebugLock hasDebugLock(lock.mutex(), EVENT_MANAGER, process->Id(), HAS_LOCK | SLEEP, evnt);
 #endif 
-    sleepingProcesses[evnt].push_back(process);
-    if (lock.owns_lock())
+    if (InDebugMode(debugStateMode))
     {
-        lock.unlock();
+        std::string line = "sleep.on ";
+        line.append("pid=");
+        line.append(util::Format(std::to_string(process->Id()), 3, util::FormatWidth::min, util::FormatJustify::right, '0'));
+        line.append(" event=").append(cmajor::systemx::machine::EventKindStr(evnt.kind)).append(".").append(std::to_string(evnt.id));
+        DebugWrite(line);
     }
-    process->Sleep();
+    sleepingProcesses[evnt].push_back(process);
+    process->Sleep(lock);
 #if (LOCK_DEBUG)
-    DebugLock startDebugLock(lock.mutex(), EVENT_MANAGER, process->Id(), HAS_LOCK | SLEEP, evnt);
+    DebugLock startDebugLock(lock.mutex(), EVENT_MANAGER, process->Id(), NO_LOCK | SLEEP, evnt);
 #endif
 }
 
-void EventManager::Wakeup(const cmajor::systemx::machine::Event& evnt)
+void EventManager::Wakeup(cmajor::systemx::machine::Process* process, const cmajor::systemx::machine::Event& evnt)
 {
 #if (LOCK_DEBUG)
     DebugLock startDebugLock(&machine->Lock(), EVENT_MANAGER, 0, NO_LOCK | WAKEUP, evnt);
@@ -69,12 +75,33 @@ void EventManager::Wakeup(const cmajor::systemx::machine::Event& evnt)
     cmajor::systemx::machine::ProcessList processes;
     sleepingProcesses[evnt].swap(processes);
     sleepingProcesses.erase(evnt);
-    for (auto& process : processes)
+    std::string line;
+    if (InDebugMode(debugStateMode) && !processes.empty())
+    {
+        if (process)
+        {
+            line.append("pid=");
+            line.append(util::Format(std::to_string(process->Id()), 3, util::FormatWidth::min, util::FormatJustify::right, '0')).append(1, ' ');
+        }
+        line.append("wake.up ");
+        line.append("event=");
+        line.append(cmajor::systemx::machine::EventKindStr(evnt.kind)).append(".").append(std::to_string(evnt.id));
+    }
+    for (auto& processToWakeUp : processes)
     {
 #if (LOCK_DEBUG)
         DebugLock hasDebugLock(&machine->Lock(), EVENT_MANAGER, process->Id(), HAS_LOCK | WAKEUP, evnt);
 #endif 
-        process->Wakeup(machine->GetScheduler());
+        processToWakeUp->Wakeup(machine->GetScheduler());
+        if (InDebugMode(debugStateMode))
+        {
+            line.append(" pid=");
+            line.append(util::Format(std::to_string(processToWakeUp->Id()), 3, util::FormatWidth::min, util::FormatJustify::right, '0')).append(1, ' ');
+        }
+    }
+    if (InDebugMode(debugStateMode) && !processes.empty())
+    {
+        DebugWrite(line);
     }
 }
 
@@ -90,9 +117,9 @@ void Sleep(const cmajor::systemx::machine::Event& evnt, cmajor::systemx::machine
     process->ReleaseProcessor();
 }
 
-void Wakeup(const cmajor::systemx::machine::Event& evnt)
+void Wakeup(cmajor::systemx::machine::Process* process, const cmajor::systemx::machine::Event& evnt)
 {
-    EventManager::Instance().Wakeup(evnt);
+    EventManager::Instance().Wakeup(process, evnt);
 }
 
 void InitEventManager()

@@ -17,7 +17,7 @@ class KernelProcess : public cmajor::systemx::machine::Process
 public:
     int32_t Id() const { return 0; }
     std::string FilePath() const override { return "KERNEL"; }
-    void Sleep() override;
+    void Sleep(std::unique_lock<std::recursive_mutex>& lock) override;
     void Wakeup(cmajor::systemx::machine::Scheduler* scheduler) override;
     cmajor::systemx::machine::Processor* GetProcessor() const override;
     void ReleaseProcessor() override;
@@ -41,6 +41,8 @@ public:
     void SetNotInKernel() override;
     bool DoSaveContext() const override { return false; }
     void SetSaveContext(bool saveContext_) override;
+    void SetRegAX(uint64_t regAX_) override;
+    void SetUseRegAX() override;
 };
 
 class Kernel
@@ -53,7 +55,7 @@ public:
     cmajor::systemx::machine::Machine* GetMachine() const { return machine; }
     void Start();
     void Stop();
-    void Sleep();
+    void Sleep(std::unique_lock<std::recursive_mutex>& lock);
     void Wakeup();
     cmajor::systemx::machine::Process* GetKernelProcess() const;
     MountTable& GetMountTable() { return *mountTable; }

@@ -84,8 +84,8 @@ public:
     bool IsFull() const { return GetFlag(PipeFlags::full); }
     const cmajor::systemx::machine::Event& NotEmptyEvent() const { return notEmptyEvent; }
     const cmajor::systemx::machine::Event& NotFullEvent() const { return notFullEvent; }
-    std::vector<uint8_t> Read(int64_t count);
-    int64_t Write(const std::vector<uint8_t>& buffer);
+    std::vector<uint8_t> Read(cmajor::systemx::machine::Process* process, int64_t count);
+    int64_t Write(cmajor::systemx::machine::Process* process, const std::vector<uint8_t>& buffer);
 private:
     int32_t id;
     PipeFlags flags;
@@ -105,7 +105,7 @@ Pipe::Pipe(int32_t id_) :
 {
 }
 
-std::vector<uint8_t> Pipe::Read(int64_t count)
+std::vector<uint8_t> Pipe::Read(cmajor::systemx::machine::Process* process, int64_t count)
 {
     std::vector<uint8_t> bytes;
     if (readPos >= writePos)
@@ -139,12 +139,12 @@ std::vector<uint8_t> Pipe::Read(int64_t count)
     if (!bytes.empty())
     {
         ResetFlag(PipeFlags::full);
-        Wakeup(notFullEvent);
+        Wakeup(process, notFullEvent);
     }
     return bytes;
 }
 
-int64_t Pipe::Write(const std::vector<uint8_t>& buffer)
+int64_t Pipe::Write(cmajor::systemx::machine::Process* process, const std::vector<uint8_t>& buffer)
 {
     int64_t bytesWritten = 0;
     int64_t p = 0;
@@ -191,7 +191,7 @@ int64_t Pipe::Write(const std::vector<uint8_t>& buffer)
     if (bytesWritten > 0)
     {
         ResetFlag(PipeFlags::empty);
-        Wakeup(notEmptyEvent);
+        Wakeup(process, notEmptyEvent);
     }
     return bytesWritten;
 }
@@ -258,7 +258,7 @@ void PipeInputFile::Close(cmajor::systemx::kernel::Process* process)
     }
     else
     {
-        Wakeup(pipe->NotFullEvent());
+        Wakeup(process, pipe->NotFullEvent());
     }
 }
 
@@ -289,7 +289,7 @@ std::vector<uint8_t> PipeInputFile::Read(int64_t count, cmajor::systemx::machine
         }
         else
         {
-            return pipe->Read(count);
+            return pipe->Read(process, count);
         }
     }
 }
@@ -356,7 +356,7 @@ void PipeOutputFile::Close(cmajor::systemx::kernel::Process* process)
     }
     else
     {
-        Wakeup(pipe->NotEmptyEvent());
+        Wakeup(process, pipe->NotEmptyEvent());
     }
 }
 
@@ -387,7 +387,7 @@ int64_t PipeOutputFile::Write(const std::vector<uint8_t>& buffer, cmajor::system
         }
         else
         {
-            return pipe->Write(buffer);
+            return pipe->Write(process, buffer);
         }
     }
 }

@@ -54,7 +54,7 @@ void CloseMsgQ(cmajor::systemx::machine::Process* process, int32_t md, bool remo
 void WaitMsgLocked(std::unique_lock<std::recursive_mutex>& lock, cmajor::systemx::machine::Process* process, int32_t md);
 void WaitMsg(cmajor::systemx::machine::Process* process, int32_t md);
 bool IsMsgQOpen(int32_t md);
-void PutMsg(int32_t md, const std::vector<std::uint8_t>& msgData);
+void PutMsg(cmajor::systemx::kernel::Process* process, int32_t md, const std::vector<std::uint8_t>& msgData);
 void PutMsg(cmajor::systemx::kernel::Process* process, int32_t md, int64_t msgDataAddr, int32_t msgSize);
 int32_t GetMsgQueueLength(cmajor::systemx::machine::Process* process, int32_t md);
 int32_t GetMsgSize(cmajor::systemx::machine::Process* process, int32_t md);

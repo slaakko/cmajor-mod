@@ -146,23 +146,23 @@ void IOManager::HandleRequest(IORequest* request)
         hostFile->IncrementOutstandingRequests();
         switch (request->Kind())
         {
-        case RequestKind::read:
-        {
-            OsReadFile(hostFile->FileHandle(), request->GetBlock()->Data(), Block::Size(), overlapped);
-            break;
-        }
-        case RequestKind::write:
-        {
-            OsWriteFile(hostFile->FileHandle(), request->GetBlock()->Data(), Block::Size(), overlapped);
-            break;
-        }
+            case RequestKind::read:
+            {
+                OsReadFile(hostFile->FileHandle(), request->GetBlock()->Data(), Block::Size(), overlapped);
+                break;
+            }
+            case RequestKind::write:
+            {
+                OsWriteFile(hostFile->FileHandle(), request->GetBlock()->Data(), Block::Size(), overlapped);
+                break;
+            }
         }
     }
     catch (const SystemError& error)
     {
         request->SetError(error);
         cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::ioEvent, request->Id());
-        Wakeup(evnt);
+        Wakeup(nullptr, evnt);
     }
 }
 
@@ -205,7 +205,7 @@ void IOManager::RunCompletionHandler()
                     overlappedMap.erase(overlapped);
                     OsDestroyOverlapped(overlapped);
                     cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::ioEvent, request->Id());
-                    Wakeup(evnt);
+                    Wakeup(nullptr, evnt);
                 }
             }
             else
@@ -265,7 +265,7 @@ void IOManager::Exit()
 {
     if (!started) return;
     exiting = true;
-    requestQueueNotEmptyOrExitingVar.notify_one();
+    requestQueueNotEmptyOrExitingVar.notify_all();
     if (requestHandlerThread.joinable())
     {
         requestHandlerThread.join();
@@ -289,7 +289,7 @@ int32_t IOManager::Read(int32_t hostFileId, Block* block)
     IORequest* request = new IORequest(RequestKind::read, nextRequestId++, hostFileId, block);
     requestMap[request->Id()] = request;
     requestQueue.push_back(request->Id());
-    requestQueueNotEmptyOrExitingVar.notify_one();
+    requestQueueNotEmptyOrExitingVar.notify_all();
     return request->Id();
 }
 
@@ -305,7 +305,7 @@ int32_t IOManager::Write(int32_t hostFileId, Block* block)
     IORequest* request = new IORequest(RequestKind::write, nextRequestId++, hostFileId, block);
     requestMap[request->Id()] = request;
     requestQueue.push_back(request->Id());
-    requestQueueNotEmptyOrExitingVar.notify_one();
+    requestQueueNotEmptyOrExitingVar.notify_all();
     return request->Id();
 }
 

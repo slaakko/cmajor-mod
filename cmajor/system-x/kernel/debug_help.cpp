@@ -5,6 +5,7 @@
 
 module cmajor.systemx.kernel.debug.help;
 
+import cmajor.systemx.kernel.debug;
 import cmajor.systemx.kernel.file;
 import cmajor.systemx.kernel.kernel;
 import cmajor.systemx.kernel.mount;
@@ -13,15 +14,6 @@ import cmajor.systemx.machine;
 import std.filesystem;
 
 namespace cmajor::systemx::kernel {
-
-void DebugBreak()
-{
-    std::vector<int> x;
-    if (std::filesystem::exists("foo"))
-    {
-        x.push_back(1);
-    }
-}
 
 std::string SiteStr(int site)
 {
@@ -282,14 +274,15 @@ std::string MakeLogEntry(bool start, int site, int processId, int flags)
 DebugLock::DebugLock(std::recursive_mutex* machineLock_, int site_, int processId_, int flags_, const cmajor::systemx::machine::Event& evnt_) :
     machineLock(machineLock_), site(site_), processId(processId_), flags(flags_), evnt(evnt_), str(), logged(false)
 {
+    if ((GetDebugMode() & debugLockingMode) == 0) return;
     if (evnt.kind != cmajor::systemx::machine::EventKind::blockFreeEvent) return;
     if (evnt.id == 0) return;
     if (HasFlags(flags, SLEEP) || HasFlags(flags, WAKEUP))
     {
         std::string logEntry = MakeLogEntry(true, site, processId, flags);
         logEntry.append(":").append(evnt.ToString());
-        logEntry.append("\n");
-        WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+        //WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+        DebugWrite(logEntry);
         logged = true;
     }
 }
@@ -297,12 +290,13 @@ DebugLock::DebugLock(std::recursive_mutex* machineLock_, int site_, int processI
 DebugLock::DebugLock(std::recursive_mutex* machineLock_, int site_, int processId_, int flags_, const std::string& str_) :
     machineLock(machineLock_), site(site_), processId(processId_), flags(flags_), evnt(), str(str_), logged(false)
 {
+    if ((GetDebugMode() & debugLockingMode) == 0) return;
     if (HasFlags(flags, SLEEP) || HasFlags(flags, WAKEUP))
     {
         std::string logEntry = MakeLogEntry(true, site, processId, flags);
         logEntry.append(":").append(str);
-        logEntry.append("\n");
-        WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+        //WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+        DebugWrite(logEntry);
         logged = true;
     }
 }
@@ -310,18 +304,21 @@ DebugLock::DebugLock(std::recursive_mutex* machineLock_, int site_, int processI
 DebugLock::DebugLock(std::recursive_mutex* machineLock_, int site_, int processId_, int flags_) :
     machineLock(machineLock_), site(site_), processId(processId_), flags(flags_), evnt(), str(), logged(false)
 {
+    if ((GetDebugMode() & debugLockingMode) == 0) return;
     if (evnt.kind != cmajor::systemx::machine::EventKind::blockFreeEvent) return;
     if (HasFlags(flags, SLEEP) || HasFlags(flags, WAKEUP))
     {
         std::string logEntry = MakeLogEntry(true, site, processId, flags);
-        logEntry.append("\n");
-        WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+        //logEntry.append("\n");
+        //WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+        DebugWrite(logEntry);
         logged = true;
     }
 }
 
 DebugLock::~DebugLock()
 {
+    if ((GetDebugMode() & debugLockingMode) == 0) return;
     if (!logged)
     {
         return;
@@ -331,8 +328,9 @@ DebugLock::~DebugLock()
     {
         logEntry.append(":").append(evnt.ToString());
     }
-    logEntry.append("\n");
-    WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+    //logEntry.append("\n");
+    //WriteToTerminal(logEntry, cmajor::systemx::kernel::Kernel::Instance().GetKernelProcess());
+    DebugWrite(logEntry);
 }
 
 } // namespace cmajor::systemx::kernel

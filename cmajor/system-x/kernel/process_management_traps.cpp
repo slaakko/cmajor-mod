@@ -78,7 +78,14 @@ uint64_t TrapWaitHandler::HandleTrap(cmajor::systemx::machine::Processor& proces
         {
             throw SystemError(EPARAM, "child exit code pointer is null", __FUNCTION__);
         }
-        return Wait(process, -1, childExitCodeAddress);
+        SystemError error;
+        int32_t result = Wait(process, -1, childExitCodeAddress, error);
+        if (result == -1)
+        {
+            process->SetError(error);
+            return static_cast<uint64_t>(-1);
+        }
+        return static_cast<uint64_t>(result);
     }
     catch (const SystemError& error)
     {
@@ -437,7 +444,14 @@ uint64_t TrapWaitPidHandler::HandleTrap(cmajor::systemx::machine::Processor& pro
         {
             throw SystemError(EPARAM, "child exit code pointer is null", __FUNCTION__);
         }
-        return Wait(process, pid, childExitCodeAddress);
+        SystemError error;
+        int32_t result = Wait(process, pid, childExitCodeAddress, error);
+        if (result == -1)
+        {
+            process->SetError(error);
+            return static_cast<uint64_t>(-1);
+        }
+        return static_cast<uint64_t>(result);
     }
     catch (const SystemError& error)
     {

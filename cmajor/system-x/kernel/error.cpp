@@ -20,17 +20,17 @@ std::string ErrorCodeStr(int errorCode)
 {
     switch (errorCode)
     {
-    case EFAIL: return "EFAIL";
-    case EBADF: return "EBADF";
-    case EPARAM: return "EINVAL";
-    case EMEMORYACCESS: return "EMEMORYACCESS";
-    case ENOTFOUND: return "ENOTFOUND";
-    case EALREADYEXISTS: return "EALREADYEXISTS";
-    case ELIMITEXCEEDED: return "ELIMITEXCEEDED";
-    case ENOCHILD: return "ENOCHILD";
-    case EHOST: return "EHOST";
-    case EPERMISSION: return "EPERMISSION";
-    case ESOCKET: return "ESOCKET";
+        case EFAIL: return "EFAIL";
+        case EBADF: return "EBADF";
+        case EPARAM: return "EINVAL";
+        case EMEMORYACCESS: return "EMEMORYACCESS";
+        case ENOTFOUND: return "ENOTFOUND";
+        case EALREADYEXISTS: return "EALREADYEXISTS";
+        case ELIMITEXCEEDED: return "ELIMITEXCEEDED";
+        case ENOCHILD: return "ENOCHILD";
+        case EHOST: return "EHOST";
+        case EPERMISSION: return "EPERMISSION";
+        case ESOCKET: return "ESOCKET";
     }
     return std::string();
 }
@@ -39,17 +39,17 @@ std::string ErrorMsg(int errorCode)
 {
     switch (errorCode)
     {
-    case EFAIL: return "Host system failure";
-    case EBADF: return "Bad file descriptor";
-    case EPARAM: return "Invalid parameter";
-    case EMEMORYACCESS: return "Memory access error";
-    case ENOTFOUND: return "Not found";
-    case EALREADYEXISTS: return "Already exists";
-    case ELIMITEXCEEDED: return "Resource limit exceeeded";
-    case ENOCHILD: return "No child";
-    case EHOST: return "Host error";
-    case EPERMISSION: return "Permission denied";
-    case ESOCKET: return "Socket error";
+        case EFAIL: return "Host system failure";
+        case EBADF: return "Bad file descriptor";
+        case EPARAM: return "Invalid parameter";
+        case EMEMORYACCESS: return "Memory access error";
+        case ENOTFOUND: return "Not found";
+        case EALREADYEXISTS: return "Already exists";
+        case ELIMITEXCEEDED: return "Resource limit exceeeded";
+        case ENOCHILD: return "No child";
+        case EHOST: return "Host error";
+        case EPERMISSION: return "Permission denied";
+        case ESOCKET: return "Socket error";
     }
     return std::string();
 }

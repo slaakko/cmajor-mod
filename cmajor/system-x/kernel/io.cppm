@@ -11,6 +11,7 @@ import std.core;
 export namespace cmajor::systemx::kernel {
 
 class Process;
+class SystemError;
 
 enum class IOControlItem : int32_t
 {
@@ -49,7 +50,7 @@ int32_t IOCtl(Process* process, int32_t fd, int32_t item, int64_t argAddr, int64
 void Unlink(Process* process, int64_t pathAddr);
 int64_t Seek(Process* process, int32_t fd, int64_t offset, int32_t whence);
 int64_t Tell(Process* process, int32_t fd);
-void Stat(Process* process, int64_t pathAddr, int64_t statBufAddr, int32_t statBufSize);
+bool Stat(Process* process, int64_t pathAddr, int64_t statBufAddr, int32_t statBufSize, SystemError& error);
 void GetCWD(Process* process, int64_t bufAddr, int64_t bufSize);
 void ChDir(Process* process, int64_t pathAddr);
 void MkDir(Process* process, int64_t pathAddr, int32_t mode);

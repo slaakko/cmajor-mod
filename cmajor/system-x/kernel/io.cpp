@@ -358,19 +358,22 @@ int64_t Tell(Process* process, int32_t fd)
     return file->Tell(process);
 }
 
-void Stat(Process* process, int64_t pathAddr, int64_t statBufAddr, int32_t statBufSize)
+bool Stat(Process* process, int64_t pathAddr, int64_t statBufAddr, int32_t statBufSize, SystemError& error)
 {
     if (pathAddr == 0)
     {
-        throw SystemError(EPARAM, "path is null", __FUNCTION__);
+        error = SystemError(EPARAM, "path is null", __FUNCTION__);
+        return false;
     }
     if (statBufAddr == 0)
     {
-        throw SystemError(EPARAM, "stat buffer is null", __FUNCTION__);
+        error = SystemError(EPARAM, "stat buffer is null", __FUNCTION__);
+        return false;
     }
     if (statBufSize < INode::StatBufSize())
     {
-        throw SystemError(EPARAM, "stat buffer too small", __FUNCTION__);
+        error = SystemError(EPARAM, "stat buffer too small", __FUNCTION__);
+        return false;
     }
     cmajor::systemx::machine::Memory& mem = process->GetProcessor()->GetMachine()->Mem();
     std::string path = ReadString(process, pathAddr, mem);
@@ -378,7 +381,8 @@ void Stat(Process* process, int64_t pathAddr, int64_t statBufAddr, int32_t statB
     INodePtr inode = PathToINode(path, GetFs(rootFSNumber), process, PathToINodeFlags::stat);
     if (!inode.Get())
     {
-        throw SystemError(ENOTFOUND, "path '" + path + "' not found", __FUNCTION__);
+        error = SystemError(ENOTFOUND, "path '" + path + "' not found", __FUNCTION__);
+        return false;
     }
     std::vector<uint8_t> statBuffer(statBufSize, 0);
     util::MemoryWriter writer(statBuffer.data(), statBufSize);
@@ -388,9 +392,11 @@ void Stat(Process* process, int64_t pathAddr, int64_t statBufAddr, int32_t statB
     }
     catch (const std::exception& ex)
     {
-        throw SystemError(EPARAM, "memory writer exception: " + std::string(ex.what()), __FUNCTION__);
+        error = SystemError(EPARAM, "memory writer exception: " + std::string(ex.what()), __FUNCTION__);
+        return false;
     }
     WriteProcessMemory(process, statBufAddr, statBuffer);
+    return true;
 }
 
 void GetCWD(Process* process, int64_t bufAddr, int64_t bufSize)
@@ -907,7 +913,7 @@ void UnlockIO(cmajor::systemx::machine::UserProcess* process)
     std::unique_lock<std::recursive_mutex> lock(process->GetMachine()->Lock());
     ioLock.Unlock();
     cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::ioLockedEvent, 0);
-    Wakeup(evnt);
+    Wakeup(process, evnt);
 }
 
 } // namespace cmajor::systemx::kernel

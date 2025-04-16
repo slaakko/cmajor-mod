@@ -20,7 +20,7 @@ public:
     void Start();
     void Stop();
     void SleepOn(const cmajor::systemx::machine::Event& evnt, cmajor::systemx::machine::Process* process, std::unique_lock<std::recursive_mutex>& lock);
-    void Wakeup(const cmajor::systemx::machine::Event& evnt);
+    void Wakeup(cmajor::systemx::machine::Process* process, const cmajor::systemx::machine::Event& evnt);
 private:
     static std::unique_ptr<EventManager> instance;
     EventManager();
@@ -29,7 +29,7 @@ private:
 };
 
 void Sleep(const cmajor::systemx::machine::Event& evnt, cmajor::systemx::machine::Process* process, std::unique_lock<std::recursive_mutex>& lock);
-void Wakeup(const cmajor::systemx::machine::Event& evnt);
+void Wakeup(cmajor::systemx::machine::Process* process, const cmajor::systemx::machine::Event& evnt);
 void InitEventManager();
 void DoneEventManager();
 

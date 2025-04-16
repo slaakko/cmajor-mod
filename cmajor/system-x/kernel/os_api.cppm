@@ -6,6 +6,7 @@
 export module cmajor.systemx.kernel.os.api;
 
 import std.core;
+import util;
 
 export namespace cmajor::systemx::kernel {
 
@@ -199,6 +200,7 @@ void OsGetConsoleScreenBufferInfo(void* consoleOutputHandle, int32_t* cursorPosX
 void OsSetConsoleCursorPosition(void* consoleOutputHandle, int cursorPosX, int cursorPosY);
 void OsWriteConsole(void* consoleOutputHandle, const char32_t* chars);
 void OsSetConsoleTextAttribute(void* consoleOutputHandle, uint16_t attrs);
+void OsGetFileTimes(const char* filePath, util::DateTime& accessTime, util::DateTime& modifiedTime, util::DateTime& createTime);
 extern const uint32_t fixedDriveType;
 
 } // namespace cmajor::systemx::kernel

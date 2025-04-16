@@ -336,11 +336,11 @@ void PutBlock(Block* block)
 #if (LOCK_DEBUG)
     DebugLock hasDebugLock(&blockManager.GetMachine()->Lock(), BLOCK_MANAGER, 0, HAS_LOCK | PUT_BLOCK);
 #endif 
-    Wakeup(blockManager.GetAnyBlockBecomesFreeEvent());
+    Wakeup(nullptr, blockManager.GetAnyBlockBecomesFreeEvent());
     const cmajor::systemx::machine::Event* blockFreeEvent = blockManager.GetBlockKeyEvent(block->Key());
     if (blockFreeEvent)
     {
-        Wakeup(*blockFreeEvent);
+        Wakeup(nullptr, *blockFreeEvent);
         blockManager.RemoveBlockKeyEvent(block->Key());
     }
     blockManager.PutBlockToFreeList(block);

@@ -668,7 +668,7 @@ void PutINode(INode* inode)
     if (inode->LockCount() == 0)
     {
         cmajor::systemx::machine::Event inodeFreeEvent = inodeManager.GetINodeKeyEvent(inode->Key());
-        Wakeup(inodeFreeEvent);
+        Wakeup(nullptr, inodeFreeEvent);
         inodeManager.RemoveINodeKeyEvent(inode->Key());
         inodeManager.PutINodeToFreeList(inode);
     }

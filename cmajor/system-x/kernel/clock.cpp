@@ -66,13 +66,13 @@ void Clock::Tick()
         alarms.erase(alarms.begin());
         if (alarm.sleep)
         {
-            Wakeup(cmajor::systemx::machine::Event(cmajor::systemx::machine::EventKind::alarmEvent, alarm.id));
+            Wakeup(nullptr, cmajor::systemx::machine::Event(cmajor::systemx::machine::EventKind::alarmEvent, alarm.id));
         }
         else if (alarm.msg)
         {
             if (IsMsgQOpen(alarm.msg->md))
             {
-                PutMsg(alarm.msg->md, alarm.msg->msgData);
+                PutMsg(nullptr, alarm.msg->md, alarm.msg->msgData);
                 delete alarm.msg;
             }
             else

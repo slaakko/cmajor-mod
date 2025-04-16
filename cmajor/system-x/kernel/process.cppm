@@ -122,6 +122,8 @@ public:
     void WaitNotInKernel(bool enter) override;
     bool DoSaveContext() const override;
     void SetSaveContext(bool saveContext_) override;
+    void SetRegAX(uint64_t regAX_) override;
+    void SetUseRegAX() override;
 private:
     int32_t id;
     uint64_t rv;
@@ -172,12 +174,14 @@ private:
     bool directoriesChanged;
     ProcessMessageQueues messageQueues;
     bool inKernel;
-    bool saveContext;
     std::condition_variable_any notInKernelVar;
+    bool saveContext;
+    uint64_t regAX;
+    bool useRegAX;
 };
 
 int32_t Fork(Process* parent);
-int32_t Wait(Process* parent, int32_t pid, int64_t childExitCodeAddress);
+int32_t Wait(Process* parent, int32_t pid, int64_t childExitCodeAddress, SystemError& error);
 void Exec(Process* process, int64_t filePathAddress, int64_t argvAddress, int64_t envpAddress);
 void Kill(Process* parent, Process* process);
 

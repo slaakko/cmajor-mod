@@ -239,19 +239,16 @@ public:
 uint64_t TrapStatHandler::HandleTrap(cmajor::systemx::machine::Processor& processor)
 {
     Process* process = static_cast<Process*>(processor.CurrentProcess());
-    try
-    {
-        int64_t pathAddr = static_cast<int64_t>(processor.Regs().Get(cmajor::systemx::machine::regAX));
-        int64_t statBufAddr = static_cast<int64_t>(processor.Regs().Get(cmajor::systemx::machine::regBX));
-        int32_t statBufSize = static_cast<int32_t>(processor.Regs().Get(cmajor::systemx::machine::regCX));
-        Stat(process, pathAddr, statBufAddr, statBufSize);
-        return 0;
-    }
-    catch (const SystemError& error)
+    int64_t pathAddr = static_cast<int64_t>(processor.Regs().Get(cmajor::systemx::machine::regAX));
+    int64_t statBufAddr = static_cast<int64_t>(processor.Regs().Get(cmajor::systemx::machine::regBX));
+    int32_t statBufSize = static_cast<int32_t>(processor.Regs().Get(cmajor::systemx::machine::regCX));
+    SystemError error;
+    if (!Stat(process, pathAddr, statBufAddr, statBufSize, error))
     {
         process->SetError(error);
         return static_cast<uint64_t>(-1);
     }
+    return 0;
 }
 
 class TrapGetCWDHandler : public TrapHandler

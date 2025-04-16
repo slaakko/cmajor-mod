@@ -48,7 +48,7 @@ void DebugLogWriter::Done()
     instance.reset();
 }
 
-DebugLogWriter::DebugLogWriter() : debugMode(0), port(defaultDebugLogPort), connected(false)
+DebugLogWriter::DebugLogWriter() : debugMode(0) /* port(defaultDebugLogPort), connected(false) */
 {
 }
 
@@ -90,6 +90,11 @@ int GetDebugMode()
     return DebugLogWriter::Instance().GetDebugMode();
 }
 
+bool InDebugMode(int debugMode)
+{
+    return (GetDebugMode() & debugMode) != 0;
+}
+
 void SetDebugLogPort(int port)
 {
     DebugLogWriter::Instance().SetPort(port);
@@ -97,13 +102,18 @@ void SetDebugLogPort(int port)
 
 void DebugWrite(const std::string& debugMessage)
 {
-    DebugLogWriter::Instance().WriteDebugMessage(debugMessage);
+    //DebugLogWriter::Instance().WriteDebugMessage(debugMessage);
+    if (util::DebugLog::Instance().IsOpen())
+    {
+        util::DebugLog::Instance().Write(debugMessage);
+    }
 }
 
 void StartDebug()
 {
     if (GetDebugMode() != 0)
     {
+        util::DebugLog::Instance().Open();
         DebugWrite("kernel.debug: started kernel debugging in mode " + std::to_string(GetDebugMode()));
     }
 }
@@ -113,6 +123,7 @@ void StopDebug()
     if (GetDebugMode() != 0)
     {
         DebugWrite("kernel.debug: stopped kernel debugging in mode " + std::to_string(GetDebugMode()));
+        util::DebugLog::Instance().Close();
     }
 }
 

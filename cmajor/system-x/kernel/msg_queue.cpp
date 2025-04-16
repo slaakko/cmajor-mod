@@ -95,7 +95,7 @@ public:
     int32_t Open(const std::string& name);
     bool IsOpen(int32_t md) const;
     MsgQueue* Get(int32_t md);
-    void Delete(int32_t md);
+    void Delete(cmajor::systemx::machine::Process* process, int32_t md);
 private:
     static std::unique_ptr<MsgQueues> instance;
     std::map<std::string, int32_t> queueMap;
@@ -179,7 +179,7 @@ MsgQueue* MsgQueues::Get(int32_t md)
     }
 }
 
-void MsgQueues::Delete(int32_t md)
+void MsgQueues::Delete(cmajor::systemx::machine::Process* process, int32_t md)
 {
     if (md >= 0 && md < queues.size())
     {
@@ -190,7 +190,7 @@ void MsgQueues::Delete(int32_t md)
         queueMap.erase(queues[md]->Name());
         queues[md].reset();
         cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::msgQEvent, md);
-        Wakeup(evnt);
+        Wakeup(process, evnt);
     }
     else
     {
@@ -230,7 +230,7 @@ void CloseMsgQ(cmajor::systemx::machine::Process* process, int32_t md, bool remo
     queue->DecrementReferenceCount();
     if (queue->ReferenceCount() == 0)
     {
-        MsgQueues::Instance().Delete(md);
+        MsgQueues::Instance().Delete(process, md);
     }
 }
 
@@ -292,7 +292,7 @@ bool IsMsgQOpen(int32_t md)
     return MsgQueues::Instance().IsOpen(md);
 }
 
-void PutMsg(int32_t md, const std::vector<std::uint8_t>& msgData)
+void PutMsg(cmajor::systemx::kernel::Process* process, int32_t md, const std::vector<std::uint8_t>& msgData)
 {
     MsgQueue* queue = MsgQueues::Instance().Get(md);
     queue->Put(Msg(msgData));
@@ -301,7 +301,7 @@ void PutMsg(int32_t md, const std::vector<std::uint8_t>& msgData)
         DebugWrite("kernel.msgq: > put msg '" + queue->Name() + "'");
     }
     cmajor::systemx::machine::Event evnt(cmajor::systemx::machine::EventKind::msgQEvent, md);
-    Wakeup(evnt);
+    Wakeup(process, evnt);
 }
 
 void PutMsg(cmajor::systemx::kernel::Process* process, int32_t md, int64_t msgDataAddr, int32_t msgSize)
@@ -320,7 +320,7 @@ void PutMsg(cmajor::systemx::kernel::Process* process, int32_t md, int64_t msgDa
     }
     cmajor::systemx::machine::Memory& mem = process->GetProcessor()->GetMachine()->Mem();
     std::vector<uint8_t> data = ReadProcessMemory(process, msgDataAddr, msgSize);
-    PutMsg(md, data);
+    PutMsg(process, md, data);
 }
 
 int32_t GetMsgQueueLength(cmajor::systemx::machine::Process* process, int32_t md)

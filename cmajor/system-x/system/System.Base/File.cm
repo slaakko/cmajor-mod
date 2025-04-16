@@ -45,6 +45,19 @@ namespace System.IO
         public DateTime atime;
     }
     
+    public bool Stat(const char* path, FileStatus& status, SystemError& error)
+    {
+        byte[statBufSize] statBuf;
+        int result = stat(path, &statBuf[0], statBufSize);
+        if (result == -1)
+        {
+            error = GetSystemError();
+            return false;
+        }
+        GetFileStatus(&statBuf[0], status);
+        return true;
+    }
+
     public void Stat(const char* path, FileStatus& status)
     {
         byte[statBufSize] statBuf;

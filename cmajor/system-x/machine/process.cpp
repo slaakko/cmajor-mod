@@ -15,10 +15,29 @@ Process::~Process()
 {
 }
 
-void UserProcess::Sleep()
+std::string ProcessStateStr(ProcessState state)
+{
+    switch (state)
+    {
+        case ProcessState::created: return "created";
+        case ProcessState::exec: return "exec";
+        case ProcessState::asleep: return "asleep";
+        case ProcessState::runnableInUser: return "runnableInUser";
+        case ProcessState::runnableInKernel: return "runnableInKernel";
+        case ProcessState::running: return "running";
+        case ProcessState::zombie: return "zombie";
+    }
+    return std::string();
+}
+
+void UserProcess::Sleep(std::unique_lock<std::recursive_mutex>& lock)
 {
     SetState(cmajor::systemx::machine::ProcessState::asleep);
     SetStartSleepTime();
+    if (lock.owns_lock())
+    {
+        lock.unlock();
+    }
 }
 
 void UserProcess::Wakeup(Scheduler* scheduler)

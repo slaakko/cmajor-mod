@@ -8,6 +8,8 @@ module;
 
 export module cmajor.systemx.machine.process;
 
+import std.core;
+
 export namespace cmajor::systemx::machine {
 
 class Machine;
@@ -22,13 +24,15 @@ enum class ProcessState
     created, exec, asleep, runnableInUser, runnableInKernel, running, zombie
 };
 
+std::string ProcessStateStr(ProcessState state);
+
 class Process
 {
 public:
     virtual ~Process();
     virtual int32_t Id() const = 0;
     virtual std::string FilePath() const = 0;
-    virtual void Sleep() = 0;
+    virtual void Sleep(std::unique_lock<std::recursive_mutex>& lock) = 0;
     virtual void Wakeup(Scheduler* scheduler) = 0;
     virtual Processor* GetProcessor() const = 0;
     virtual void ReleaseProcessor() = 0;
@@ -53,6 +57,9 @@ public:
     virtual void SetNotInKernel() = 0;
     virtual bool DoSaveContext() const = 0;
     virtual void SetSaveContext(bool saveContext_) = 0;
+    virtual void SetRegAX(uint64_t regAX_) = 0;
+    virtual void SetUseRegAX() = 0;
+
 };
 
 using ProcessList = std::list<Process*, boost::fast_pool_allocator<Process*>>;
@@ -60,7 +67,7 @@ using ProcessList = std::list<Process*, boost::fast_pool_allocator<Process*>>;
 class UserProcess : public Process
 {
 public:
-    void Sleep() override;
+    void Sleep(std::unique_lock<std::recursive_mutex>& lock) override;
     void Wakeup(Scheduler* scheduler) override;
     void ReleaseProcessor() override;
     virtual uint64_t RV() const = 0;

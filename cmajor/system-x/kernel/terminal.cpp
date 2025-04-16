@@ -180,7 +180,7 @@ void Terminal::Stop()
     terminalEventVar.notify_one();
     if (sleepingOnTerminalInputEvent)
     {
-        Wakeup(terminalInputEvent);
+        Wakeup(nullptr, terminalInputEvent);
     }
     terminalThread.join();
     if ((GetDebugMode() & debugTerminalMode) != 0)
@@ -462,7 +462,7 @@ void Terminal::HandleInputChar(std::unique_lock<std::recursive_mutex>& lock, cha
         {
             DebugWrite("kernel.terminal: > input.wakeup");
         }
-        Wakeup(terminalInputEvent);
+        Wakeup(nullptr, terminalInputEvent);
         if ((GetDebugMode() & debugTerminalMode) != 0)
         {
             DebugWrite("kernel.terminal: < input.wakeup");
@@ -474,82 +474,82 @@ void Terminal::HandleInputChar(std::unique_lock<std::recursive_mutex>& lock, cha
         {
             switch (ch)
             {
-            case '\n':
-            {
-                HandleNewLine();
-                break;
-            }
-            case static_cast<char32_t>(keyBackspace):
-            {
-                HandleBackspace();
-                break;
-            }
-            case static_cast<char32_t>(keyTab):
-            {
-                HandleTab(lock);
-                break;
-            }
-            case static_cast<char32_t>(keyControlD):
-            {
-                HandleEof();
-                break;
-            }
-            case static_cast<char32_t>(keyEscape):
-            {
-                HandleEscape();
-                break;
-            }
+                case '\n':
+                {
+                    HandleNewLine();
+                    break;
+                }
+                case static_cast<char32_t>(keyBackspace):
+                {
+                    HandleBackspace();
+                    break;
+                }
+                case static_cast<char32_t>(keyTab):
+                {
+                    HandleTab(lock);
+                    break;
+                }
+                case static_cast<char32_t>(keyControlD):
+                {
+                    HandleEof();
+                    break;
+                }
+                case static_cast<char32_t>(keyEscape):
+                {
+                    HandleEscape();
+                    break;
+                }
             }
         }
         else if (ch >= specialKeyStart && ch <= specialKeyEnd)
         {
             switch (ch)
             {
-            case static_cast<char32_t>(keyHome):
-            {
-                HandleHome();
-                break;
-            }
-            case static_cast<char32_t>(keyEnd):
-            {
-                HandleEnd();
-                break;
-            }
-            case static_cast<char32_t>(keyLeft):
-            {
-                HandleLeft();
-                break;
-            }
-            case static_cast<char32_t>(keyRight):
-            {
-                HandleRight();
-                break;
-            }
-            case static_cast<char32_t>(keyUp):
-            {
-                HandleUp();
-                break;
-            }
-            case static_cast<char32_t>(keyDown):
-            {
-                HandleDown();
-                break;
-            }
-            case static_cast<char32_t>(keyControlLeft):
-            {
-                HandleControlLeft();
-                break;
-            }
-            case static_cast<char32_t>(keyControlRight):
-            {
-                HandleControlRight();
-                break;
-            }
-            case static_cast<char32_t>(keyDel):
-            {
-                HandleDel();
-                break;
-            }
+                case static_cast<char32_t>(keyHome):
+                {
+                    HandleHome();
+                    break;
+                }
+                case static_cast<char32_t>(keyEnd):
+                {
+                    HandleEnd();
+                    break;
+                }
+                case static_cast<char32_t>(keyLeft):
+                {
+                    HandleLeft();
+                    break;
+                }
+                case static_cast<char32_t>(keyRight):
+                {
+                    HandleRight();
+                    break;
+                }
+                case static_cast<char32_t>(keyUp):
+                {
+                    HandleUp();
+                    break;
+                }
+                case static_cast<char32_t>(keyDown):
+                {
+                    HandleDown();
+                    break;
+                }
+                case static_cast<char32_t>(keyControlLeft):
+                {
+                    HandleControlLeft();
+                    break;
+                }
+                case static_cast<char32_t>(keyControlRight):
+                {
+                    HandleControlRight();
+                    break;
+                }
+                case static_cast<char32_t>(keyDel):
+                {
+                    HandleDel();
+                    break;
+                }
             }
         }
         else
@@ -621,7 +621,7 @@ void Terminal::HandleNewLine()
     {
         terminalInputBuffer.push_back(static_cast<uint8_t>(c));
     }
-    Wakeup(terminalInputEvent);
+    Wakeup(nullptr, terminalInputEvent);
 }
 
 void Terminal::HandleBackspace()
@@ -690,7 +690,7 @@ void Terminal::GetCompletions(std::unique_lock<std::recursive_mutex>& lock)
             writer.Write(cwd);
             writer.Write(ln);
             writer.Write(pos);
-            PutMsg(putTabMd, putTabMsg);
+            PutMsg(process, putTabMd, putTabMsg);
             WaitMsgLocked(lock, Kernel::Instance().GetKernelProcess(), getTabMd);
             std::vector<uint8_t> getTabMsg = GetMsg(getTabMd);
             util::MemoryReader reader(getTabMsg.data(), getTabMsg.size());
@@ -1138,7 +1138,7 @@ void Terminal::PutKeyPressedMessage(char32_t ch)
     writer.Write(systemScreenKeyPressedMessageId);
     writer.Write(static_cast<int32_t>(-1)); // all windows
     writer.Write(static_cast<int32_t>(ch));
-    PutMsg(boundMd, keyPressedMessageData);
+    PutMsg(nullptr, boundMd, keyPressedMessageData);
 }
 
 TerminalFile::TerminalFile() : File("TERMINAL")

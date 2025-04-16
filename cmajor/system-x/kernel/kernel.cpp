@@ -6,6 +6,7 @@
 module cmajor.systemx.kernel.kernel;
 
 import cmajor.systemx.kernel.clock;
+import cmajor.systemx.kernel.debug;
 import cmajor.systemx.kernel.event.manager;
 import cmajor.systemx.kernel.process.manager;
 import cmajor.systemx.kernel.scheduler;
@@ -23,14 +24,30 @@ import cmajor.systemx.kernel.error;
 
 namespace cmajor::systemx::kernel {
 
-void KernelProcess::Sleep()
+void KernelProcess::Sleep(std::unique_lock<std::recursive_mutex>& lock)
 {
-    Kernel::Instance().Sleep();
+    Kernel::Instance().Sleep(lock);
+    if (InDebugMode(debugStateMode))
+    {
+        std::string line = "pid=";
+        line.append("KRN").append(" state=").append(cmajor::systemx::machine::ProcessStateStr(cmajor::systemx::machine::ProcessState::asleep));
+        DebugWrite(line);
+    }
+    if (lock.owns_lock())
+    {
+        lock.unlock();
+    }
 }
 
 void KernelProcess::Wakeup(cmajor::systemx::machine::Scheduler* scheduler)
 {
     Kernel::Instance().Wakeup();
+    if (InDebugMode(debugStateMode))
+    {
+        std::string line = "pid=";
+        line.append("KRN").append(" state=").append(cmajor::systemx::machine::ProcessStateStr(cmajor::systemx::machine::ProcessState::runnableInKernel));
+        DebugWrite(line);
+    }
 }
 
 cmajor::systemx::machine::Processor* KernelProcess::GetProcessor() const
@@ -100,6 +117,14 @@ void KernelProcess::SetInKernel()
 }
 
 void KernelProcess::SetSaveContext(bool saveContext_)
+{
+}
+
+void KernelProcess::SetRegAX(uint64_t regAX_)
+{
+}
+
+void KernelProcess::SetUseRegAX()
 {
 }
 
@@ -176,9 +201,8 @@ void Kernel::Stop()
     StopDebug();
 }
 
-void Kernel::Sleep()
+void Kernel::Sleep(std::unique_lock<std::recursive_mutex>& lock)
 {
-    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
     sleepVar.wait(lock, [this] { return wakeup || machine->Exiting(); });
     wakeup = false;
 }

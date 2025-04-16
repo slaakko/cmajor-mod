@@ -55,7 +55,16 @@ void SoftwareInterruptHandler::HandleInterrupt(cmajor::systemx::machine::Process
         if (trapHandler)
         {
             uint64_t ax = trapHandler->HandleTrap(processor);
-            processor.Regs().Set(cmajor::systemx::machine::regAX, ax);
+            cmajor::systemx::machine::Process* process = processor.CurrentProcess();
+            if (process->DoSaveContext())
+            {
+                processor.Regs().Set(cmajor::systemx::machine::regAX, ax);
+            }
+            else
+            {
+                process->SetRegAX(ax);
+                process->SetUseRegAX();
+            }
         }
         else
         {

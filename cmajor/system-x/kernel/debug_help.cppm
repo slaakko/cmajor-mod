@@ -62,8 +62,6 @@ const int ADD_RUNNABLE_PROCESS = 32 << 1;
 const int CHECK_RUNNABLE = 33 << 1;
 const int SET_FILE_PATH_PROCESS = 34 << 1;
 
-void DebugBreak();
-
 std::string SiteStr(int site);
 
 class DebugLock
