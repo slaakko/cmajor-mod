@@ -30,6 +30,16 @@ Process::Process(int32_t id_) :
     SetINodeKeyOfWorkingDir(Kernel::Instance().GetINodeKeyOfRootDir());
 }
 
+int32_t Process::CoreId() const
+{
+    int coreId = -1;
+    if (processor)
+    {
+        coreId = processor->Id();
+    }
+    return coreId;
+}
+
 void Process::SetState(cmajor::systemx::machine::ProcessState state_)
 {
     cmajor::systemx::machine::Machine* machine = Kernel::Instance().GetMachine();
@@ -37,7 +47,13 @@ void Process::SetState(cmajor::systemx::machine::ProcessState state_)
     state = state_;
     if (InDebugMode(debugStateMode))
     {
-        std::string line = "pid=";
+        std::string line;
+        int coreId = CoreId();
+        if (coreId != -1)
+        {
+            line.append("core=").append(std::to_string(coreId)).append(1, ' ');
+        }
+        line.append("pid=");
         line.append(util::Format(std::to_string(id), 3, util::FormatWidth::min, util::FormatJustify::right, '0'));
         line.append(" prog=").append(filePath).append(" state=").append(cmajor::systemx::machine::ProcessStateStr(state));
         DebugWrite(line);

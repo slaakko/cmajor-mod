@@ -54,6 +54,11 @@ void EventManager::SleepOn(const cmajor::systemx::machine::Event& evnt, cmajor::
     if (InDebugMode(debugStateMode))
     {
         std::string line = "sleep.on ";
+        int coreId = process->CoreId();
+        if (coreId != -1)
+        {
+            line.append("core=").append(std::to_string(coreId)).append(1, ' ');
+        }
         line.append("pid=");
         line.append(util::Format(std::to_string(process->Id()), 3, util::FormatWidth::min, util::FormatJustify::right, '0'));
         line.append(" event=").append(cmajor::systemx::machine::EventKindStr(evnt.kind)).append(".").append(std::to_string(evnt.id));
@@ -80,6 +85,11 @@ void EventManager::Wakeup(cmajor::systemx::machine::Process* process, const cmaj
     {
         if (process)
         {
+            int coreId = process->CoreId();
+            if (coreId != -1)
+            {
+                line.append("core=").append(std::to_string(coreId)).append(1, ' ');
+            }
             line.append("pid=");
             line.append(util::Format(std::to_string(process->Id()), 3, util::FormatWidth::min, util::FormatJustify::right, '0')).append(1, ' ');
         }

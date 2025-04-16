@@ -16,6 +16,7 @@ class KernelProcess : public cmajor::systemx::machine::Process
 {
 public:
     int32_t Id() const { return 0; }
+    int32_t CoreId() const override { return -1; }
     std::string FilePath() const override { return "KERNEL"; }
     void Sleep(std::unique_lock<std::recursive_mutex>& lock) override;
     void Wakeup(cmajor::systemx::machine::Scheduler* scheduler) override;

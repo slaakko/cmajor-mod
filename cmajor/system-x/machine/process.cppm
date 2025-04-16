@@ -31,6 +31,7 @@ class Process
 public:
     virtual ~Process();
     virtual int32_t Id() const = 0;
+    virtual int32_t CoreId() const = 0;
     virtual std::string FilePath() const = 0;
     virtual void Sleep(std::unique_lock<std::recursive_mutex>& lock) = 0;
     virtual void Wakeup(Scheduler* scheduler) = 0;

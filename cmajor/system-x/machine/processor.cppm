@@ -21,6 +21,7 @@ class Processor
 public:
     Processor();
     void SetId(int id_) { id = id_; }
+    int Id() const { return id; }
     Machine* GetMachine() const { return machine; }
     void SetMachine(Machine* machine_) { machine = machine_; }
     Registers& Regs() { return registers; }

@@ -10,7 +10,7 @@
 	numCachedINodes="256" 
 	numINodeHashQueues="16" 
 	numLocalRegs="8" 
-	numProcessors="4" 
+	numProcessors="8" 
 	rootFSMaxFiles="1024" 
 	rootFSNumBlocks="16384" 
 	uid="1" 

@@ -22,6 +22,7 @@ class Process : public util::IntrusiveListNode<Process>, public cmajor::systemx:
 public:
     Process(int32_t id_);
     int32_t Id() const override { return id; }
+    int32_t CoreId() const override;
     uint64_t RV() const override { return rv; }
     void SetRV(uint64_t rv_) { rv = rv_; }
     uint64_t AXAddress() const { return axAddress; }
