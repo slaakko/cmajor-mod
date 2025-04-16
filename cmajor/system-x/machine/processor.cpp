@@ -260,6 +260,24 @@ bool Processor::HasRunnableKernelProcess()
     return !runnableKernelProcesses.empty();
 }
 
+struct RunningKernelGuard
+{
+    RunningKernelGuard(UserProcess* process_) : process(process_) 
+    {
+        prevState = process->State();
+        process->SetState(ProcessState::runningKernel);
+    }
+    ~RunningKernelGuard()
+    {
+        if (process->State() == ProcessState::runningKernel)
+        {
+            process->SetState(prevState);
+        }
+    }
+    UserProcess* process;
+    ProcessState prevState;
+};
+
 void RunKernel()
 {
     void* fiberData = util::GetFiberData();
@@ -281,6 +299,7 @@ void RunKernel()
             }
             if (currentHandler && processor)
             {
+                RunningKernelGuard guard(process);
                 currentHandler->HandleInterrupt(*processor);
             }
             {

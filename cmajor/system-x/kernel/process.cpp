@@ -569,6 +569,7 @@ int32_t Fork(Process* parent)
 #endif 
     Process* child = ProcessManager::Instance().CreateProcess();
     child->SetProcessor(processor);
+    child->SetFilePath(parent->FilePath());
     uint64_t rv = machine->Mem().AllocateTranslationMap();
     child->SetRV(rv);
     child->SetUID(parent->UID());

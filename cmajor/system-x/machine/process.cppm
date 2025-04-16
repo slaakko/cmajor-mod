@@ -21,7 +21,7 @@ class InterruptHandler;
 
 enum class ProcessState
 {
-    created, exec, asleep, runnableInUser, runnableInKernel, running, zombie
+    created, exec, asleep, runnableInUser, runnableInKernel, running, runningKernel, zombie
 };
 
 std::string ProcessStateStr(ProcessState state);

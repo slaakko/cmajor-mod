@@ -25,6 +25,7 @@ std::string ProcessStateStr(ProcessState state)
         case ProcessState::runnableInUser: return "runnableInUser";
         case ProcessState::runnableInKernel: return "runnableInKernel";
         case ProcessState::running: return "running";
+        case ProcessState::runningKernel: return "runningKernel";
         case ProcessState::zombie: return "zombie";
     }
     return std::string();
@@ -50,6 +51,7 @@ void UserProcess::ReleaseProcessor()
 {
     util::SwitchToFiber(MainFiber());
     SetStartSystemTime();
+    SetState(cmajor::systemx::machine::ProcessState::runningKernel);
 }
 
 } // namespace cmajor::systemx::machine
