@@ -31,6 +31,7 @@ std::string CommandKindStr(CommandKind kind)
         case CommandKind::continueCommand: return "continue";
         case CommandKind::nextCommand: return "next";
         case CommandKind::stepCommand: return "step";
+        case CommandKind::outCommand: return "out";
     }
     return std::string();
 }
@@ -90,6 +91,8 @@ CommandMap::CommandMap()
     commandMap["ne"] = CommandKind::nextCommand;
     commandMap["step"] = CommandKind::stepCommand;
     commandMap["st"] = CommandKind::stepCommand;
+    commandMap["out"] = CommandKind::outCommand;
+    commandMap["ou"] = CommandKind::outCommand;
 }
 
 Command* CommandMap::GetCommand(const std::string& commandName) const
@@ -168,6 +171,11 @@ Command* CommandMap::GetCommand(const std::string& commandName) const
             {
                 return new StepCommand();
             }
+            case CommandKind::outCommand:
+            {
+                return new OutCommand();
+            }
+
         }
     }
     throw std::runtime_error("unknown command '" + commandName + "', try 'help'");
@@ -443,6 +451,15 @@ StepCommand::StepCommand() : Command(CommandKind::stepCommand)
 void StepCommand::Execute(Debugger& debugger)
 {
     debugger.Step();
+}
+
+OutCommand::OutCommand() : Command(CommandKind::outCommand)
+{
+}
+
+void OutCommand::Execute(Debugger& debugger)
+{
+    debugger.Out();
 }
 
 } // namespace cmajor::systemx::sxcdb

@@ -189,9 +189,12 @@ void Debugger::PrintHelp()
     commands.push_back("co(ntinue)");
     descriptions.push_back("continue execution");
     commands.push_back("ne(xt)");
-    descriptions.push_back("goto next line");
+    descriptions.push_back("go to next line");
     commands.push_back("st(ep)");
     descriptions.push_back("step inside function calls");
+    commands.push_back("ou(t)");
+    descriptions.push_back("go to out of current function");
+
     int width = 0;
     for (const auto& command : commands)
     {
@@ -350,15 +353,11 @@ void Debugger::PrintFrame(int frameIndex, int width)
     line.append(util::Format(std::to_string(frameIndex), width, util::FormatJustify::right)).append(1, ' ');
     if (!frm.Entry()->FullName().empty())
     {
-        line.append(frm.Entry()->FullName());
+        line.append(frm.Entry()->FullName()).append(1, ' ');
     }
     else
     {
-        line.append("Main");
-    }
-    if (!frm.Entry()->MangledName().empty())
-    {
-        line.append("[").append(frm.Entry()->MangledName()).append("] ");
+        line.append("Main ");
     }
     int32_t sourceFileNameId = frm.Entry()->SourceFileNameId();
     if (sourceFileNameId != -1)
@@ -587,6 +586,22 @@ void Debugger::InsertNextBreakPoints()
     }
 }
 
+void Debugger::InsertOutBreakPoints()
+{
+    if (frames.FrameCount() > 1)
+    {
+        const Frame& prevFrame = frames.GetFrame(1);
+        int prevFrameLineNumber = prevFrame.LineNumber();
+        cmajor::systemx::object::FunctionTableEntry* entry = prevFrame.Entry();
+        if (!entry) return;
+        int64_t pc = entry->SearchPC(prevFrameLineNumber);
+        if (pc != -1)
+        {
+            AddBreakPoint(BreakPoint(static_cast<uint64_t>(pc)));
+        }
+    }
+}
+
 void Debugger::Continue()
 {
     std::string line;
@@ -609,6 +624,15 @@ void Debugger::Step()
     InsertNextBreakPoints();
     std::string line;
     line.append("step...").append(1, '\n');
+    cmajor::systemx::kernel::WriteToTerminal(line, process);
+    cont = true;
+}
+
+void Debugger::Out()
+{
+    InsertOutBreakPoints();
+    std::string line;
+    line.append("out...").append(1, '\n');
     cmajor::systemx::kernel::WriteToTerminal(line, process);
     cont = true;
 }

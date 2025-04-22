@@ -13,7 +13,7 @@ export namespace cmajor::systemx::sxcdb {
 enum class CommandKind : int
 {
     none, exitCommand, helpCommand, filesCommand, fileCommand, listCommand, framesCommand, frameCommand, modesCommand, modeCommand, procsCommand, 
-    breakCommand, breakPointsCommand, deleteCommand, clearCommand, continueCommand, nextCommand, stepCommand
+    breakCommand, breakPointsCommand, deleteCommand, clearCommand, continueCommand, nextCommand, stepCommand, outCommand
 };
 
 class Debugger;
@@ -179,6 +179,13 @@ class StepCommand : public Command
 {
 public:
     StepCommand();
+    void Execute(Debugger& debugger) override;
+};
+
+class OutCommand : public Command
+{
+public:
+    OutCommand();
     void Execute(Debugger& debugger) override;
 };
 

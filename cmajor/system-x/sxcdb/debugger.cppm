@@ -49,10 +49,12 @@ public:
     void ClearBreakPoints();
     void RemoveTemporaryBreakPoints();
     void InsertNextBreakPoints();
+    void InsertOutBreakPoints();
     void SetPrevFrame();
     void Continue();
     void Next();
     void Step();
+    void Out();
     int PageSize() const { return pageSize; }
     int File() const { return file; }
     int CurrentFile() const { return currentFile; }
