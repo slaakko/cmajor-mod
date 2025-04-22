@@ -15,6 +15,7 @@ class ExecutableFile;
 class Section;
 class SymbolTable;
 class LinkTable;
+class FunctionTableEntry;
 
 struct FunctionTableIndexEntry
 {
@@ -40,8 +41,10 @@ public:
     void Read(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     void Write(BinaryFile& binaryFile);
     FunctionTableIndexEntry* SearchEntry(uint64_t pc);
+    uint64_t GetEntryAddress(uint64_t entryId) const;
 private:
     std::vector<FunctionTableIndexEntry> indexEntries;
+    std::map<uint64_t, uint64_t> entryIdMap;
 };
 
 class StringTable
@@ -78,9 +81,68 @@ public:
     void AddEntry(const LineNumberTableEntry& entry);
     void Write(Section* section);
     int64_t Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    const std::vector<LineNumberTableEntry>& Entries() const { return entries; }
     int32_t SearchLineNumber(uint32_t offset) const;
+    uint32_t GetOffset(uint32_t lineNumber) const;
 private:
     std::vector<LineNumberTableEntry> entries;
+};
+
+class SourceFileTable
+{
+public:
+    SourceFileTable();
+    void AddSourceFile(const std::string& sourceFile);
+    void Make(StringTable& stringTable);
+    void Write(Section* section);
+    int Count(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    std::string GetSourceFile(int index, StringTable& stringTable, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    int32_t GetSourceFileIndex(int32_t sourceFileId) const;
+    void Read(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+private:
+    bool read;
+    std::set<std::string> sourceFiles;
+    std::vector<int32_t> sourceFileIds;
+    std::map<int32_t, int32_t> sourceFileIdMap;
+};
+
+struct LineFunctionEntry
+{
+    LineFunctionEntry();
+    LineFunctionEntry(uint32_t lineNumber_, uint32_t functionId_);
+    void Write(Section* section);
+    int64_t Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    uint32_t lineNumber;
+    uint32_t functionId;
+};
+
+bool operator<(const LineFunctionEntry& left, const LineFunctionEntry& right);
+
+class LineFunctionIndex
+{
+public:
+    LineFunctionIndex();
+    void SetSourceFileIndex(int32_t sourceFileIndex_);
+    void AddEntry(const LineFunctionEntry& entry);
+    void Sort();
+    void Write(Section* section);
+    uint32_t GetFunctionId(uint32_t lineNumber, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+private:
+    int32_t sourceFileIndex;
+    std::vector<LineFunctionEntry> entries;
+    bool read;
+    void Read(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+};
+
+class SourceFileLineFunctionIndex
+{
+public:
+    SourceFileLineFunctionIndex();
+    void AddFunction(FunctionTableEntry& functionTableEntry, StringTable& stringTable, SourceFileTable& sourceFileTable);
+    void Write(Section* section);
+    uint32_t GetFunctionId(int32_t sourceFileIndex, uint32_t lineNumber, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+private:
+    std::map<int32_t, LineFunctionIndex> indexMap;
 };
 
 enum class ExceptionTableRecordKind : int32_t
@@ -197,7 +259,7 @@ public:
     ExceptionTable(const ExceptionTable&) = delete;
     ExceptionTable& operator=(const ExceptionTable&) = delete;
     void Write(Section* section);
-    void Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    int64_t Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     void AddRecord(ExceptionTableRecord* record);
     TryRecord* GetTryRecord(uint32_t id) const;
     ExceptionTableRecord* SearchRecord(uint32_t offset) const;
@@ -221,6 +283,8 @@ public:
     void SetFunctionLength(int64_t functionLength_) { functionLength = functionLength_; }
     int64_t FrameSize() const { return frameSize; }
     void SetFrameSize(int64_t frameSize_) { frameSize = frameSize_; }
+    bool IsMain() const { return main; }
+    void SetMain() { main = true; }
     int32_t Id() const { return id; }
     void SetId(int32_t id_) { id = id_; }
     const std::string& FullName() const { return fullName; }
@@ -230,13 +294,19 @@ public:
     const std::string& SourceFileName() const { return sourceFileName; }
     void SetSourceFileName(const std::string& sourceFileName_);
     LineNumberTable& GetLineNumberTable() { return lineNumberTable; }
+    int32_t SourceFileNameId() const { return sourceFileNameId; }
     int32_t SearchLineNumber(uint64_t pc) const;
+    int64_t SearchPC(uint32_t lineNumber) const;
+    uint64_t GetEntryPoint() const;
     ExceptionTable& GetExceptionTable() { return exceptionTable; }
     ExceptionTableRecord* SearchExceptionTableRecord(uint64_t pc) const;
+    void AddToCfg(int32_t prevLine, int32_t nextLine);
+    std::vector<int32_t> Next(int32_t line) const;
 private:
     int64_t functionStart;
     int64_t functionLength;
     int64_t frameSize;
+    bool main;
     int32_t id;
     std::int32_t fullNameId;
     std::int32_t mangledNameId;
@@ -246,6 +316,7 @@ private:
     std::string sourceFileName;
     LineNumberTable lineNumberTable;
     ExceptionTable exceptionTable;
+    std::map<int32_t, std::vector<int32_t>> cfg;
 };
 
 class FunctionTable
@@ -257,12 +328,19 @@ public:
     void AddEntry(FunctionTableEntry* entry);
     void AddEntry(FunctionTableEntry* entry, bool setId);
     FunctionTableEntry* GetEntry(uint64_t pc, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    FunctionTableEntry* GetEntry(int32_t sourceFileIndex, uint32_t lineNumber, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     void Write(BinaryFile& binaryFile);
+    int SourceFileCount(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    std::string GetSourceFileName(int32_t fileIndex, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    int32_t GetSourceFileIndex(int32_t sourceFileId) const;
+    void ReadSourceFileTable(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
 private:
     void ReadIndex(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     bool indexRead;
     FunctionTableIndex index;
     StringTable stringTable;
+    SourceFileTable sourceFileTable;
+    SourceFileLineFunctionIndex sourceFileLineFunctionIndex;
     std::map<int64_t, FunctionTableEntry*> entryMap;
     std::vector<std::unique_ptr<FunctionTableEntry>> entries;
 };

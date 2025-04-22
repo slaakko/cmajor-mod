@@ -10,7 +10,7 @@ module;
 
 module cmajor.systemx.executor.console;
 
-import cmajor.systemx.executor.color;
+import cmajor.systemx.sxutil;
 import cmajor.systemx.kernel;
 import util;
 

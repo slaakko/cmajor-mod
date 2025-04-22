@@ -71,12 +71,13 @@ std::string FileInfoRecord::ToString() const
     return str;
 }
 
-FuncInfoRecord::FuncInfoRecord() : DebugRecord(DebugRecordKind::funcInfo), functionSymbolIndex(), fullName(), sourceFileNameId(), frameSize()
+FuncInfoRecord::FuncInfoRecord() : DebugRecord(DebugRecordKind::funcInfo), functionSymbolIndex(), fullName(), sourceFileNameId(), frameSize(), main(false)
 {
 }
 
-FuncInfoRecord::FuncInfoRecord(uint32_t functionSymbolIndex_, const std::string& fullName_, uint32_t sourceFileNameId_, int64_t frameSize_) :
-    DebugRecord(DebugRecordKind::funcInfo), functionSymbolIndex(functionSymbolIndex_), fullName(fullName_), sourceFileNameId(sourceFileNameId_), frameSize(frameSize_)
+FuncInfoRecord::FuncInfoRecord(uint32_t functionSymbolIndex_, const std::string& fullName_, uint32_t sourceFileNameId_, int64_t frameSize_, bool main_) :
+    DebugRecord(DebugRecordKind::funcInfo), functionSymbolIndex(functionSymbolIndex_), fullName(fullName_), sourceFileNameId(sourceFileNameId_), frameSize(frameSize_), 
+    main(main_)
 {
 }
 
@@ -87,6 +88,16 @@ void FuncInfoRecord::Emit(DebugSection* debugSection)
     debugSection->EmitString(fullName);
     debugSection->EmitTetra(sourceFileNameId);
     debugSection->EmitOcta(frameSize);
+    uint32_t cfgSize = static_cast<uint32_t>(cfg.size());
+    debugSection->EmitTetra(cfgSize);
+    for (uint32_t i = 0; i < cfgSize; ++i)
+    {
+        int32_t prevLine = cfg[i].first;
+        int32_t nextLine = cfg[i].second;
+        debugSection->EmitTetra(prevLine);
+        debugSection->EmitTetra(nextLine);
+    }
+    debugSection->EmitByte(main ? 1 : 0);
 }
 
 void FuncInfoRecord::Read(DebugSection* debugSection)
@@ -96,14 +107,28 @@ void FuncInfoRecord::Read(DebugSection* debugSection)
     fullName = debugSection->ReadString();
     sourceFileNameId = debugSection->ReadTetra();
     frameSize = debugSection->ReadOcta();
+    uint32_t cfgSize = debugSection->ReadTetra();
+    for (uint32_t i = 0; i < cfgSize; ++i)
+    {
+        uint32_t prevLine = debugSection->ReadTetra();
+        uint32_t nextLine = debugSection->ReadTetra();
+        AddToCfg(prevLine, nextLine);
+    }
+    main = debugSection->ReadByte() != 0;
 }
 
 std::string FuncInfoRecord::ToString() const
 {
     std::string str = DebugRecordKindStr(Kind());
     str.append("(").append("functionSymbolIndex=").append(std::to_string(functionSymbolIndex)).append(", fullName=").append(fullName).append(", sourceFileNameId=").append(
-        std::to_string(sourceFileNameId)).append(", frameSize=#").append(util::ToHexString(std::uint64_t(frameSize))).append(")");
+        std::to_string(sourceFileNameId)).append(", frameSize=#").append(util::ToHexString(std::uint64_t(frameSize))).append(", main=").
+        append(main ? "true" : "false").append(")");
     return str;
+}
+
+void FuncInfoRecord::AddToCfg(int32_t prevLine, int32_t nextLine)
+{
+    cfg.push_back(std::make_pair(prevLine, nextLine));
 }
 
 StartFuncRecord::StartFuncRecord() : DebugRecord(DebugRecordKind::startFunc), functionSymbolIndex()

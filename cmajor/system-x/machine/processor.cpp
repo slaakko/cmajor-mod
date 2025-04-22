@@ -99,9 +99,10 @@ void Processor::Run()
             }
             while (process && processState == ProcessState::running)
             {
+                if (machine->Exiting()) break;
                 if (debugger)
                 {
-                    debugger->Intercept();
+                    debugger->Intercept(this);
                 }
                 if (machine->Exiting()) break;
                 uint64_t prevPC = pc;

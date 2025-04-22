@@ -277,6 +277,11 @@ MetadataString* Context::CreateMetadataString(const std::string& value)
     return metadata.CreateMetadataString(value);
 }
 
+MetadataArray* Context::CreateMetadataArray()
+{
+    return metadata.CreateMetadataArray();
+}
+
 MetadataRef* Context::CreateMetadataRef(const soul::ast::SourcePos& sourcePos, int32_t nodeId)
 {
     return metadata.CreateMetadataRef(sourcePos, nodeId);

@@ -11103,6 +11103,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataItem(LexerT& lexer, 
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdBool;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdLong;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdString;
+    std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdArray;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataRef> mdRef;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -11184,10 +11185,35 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataItem(LexerT& lexer, 
             }
             break;
         }
-        case EXCLAMATION:
+        case LBRACKET:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch4 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = IntermediateCodeParser<LexerT>::MetadataArray(lexer, context);
+                mdArray.reset(static_cast<cmajor::systemx::intermediate::MetadataItem*>(match.value));
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataItem");
+                        #endif
+                        return soul::parser::Match(true, mdArray.release());
+                    }
+                }
+                *parentMatch4 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case EXCLAMATION:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch5 = &match;
             {
                 int64_t pos = lexer.GetPos();
                 soul::parser::Match match = IntermediateCodeParser<LexerT>::MetadataRef(lexer, context);
@@ -11201,7 +11227,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataItem(LexerT& lexer, 
                         return soul::parser::Match(true, mdRef.release());
                     }
                 }
-                *parentMatch4 = match;
+                *parentMatch5 = match;
             }
             if (match.hit)
             {
@@ -11411,6 +11437,201 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataString(LexerT& lexer
 }
 
 template<typename LexerT>
+soul::parser::Match IntermediateCodeParser<LexerT>::MetadataArray(LexerT& lexer, cmajor::systemx::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataArray");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469515);
+    cmajor::systemx::intermediate::MetadataArray* array = nullptr;
+    std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> first;
+    std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> next;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == LBRACKET)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    array = context->CreateMetadataArray();
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch3 = &match;
+            {
+                soul::parser::Match match(true);
+                int64_t save = lexer.GetPos();
+                soul::parser::Match* parentMatch4 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch5 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch6 = &match;
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch7 = &match;
+                            {
+                                int64_t pos = lexer.GetPos();
+                                soul::parser::Match match = IntermediateCodeParser<LexerT>::MetadataItem(lexer, context);
+                                first.reset(static_cast<cmajor::systemx::intermediate::MetadataItem*>(match.value));
+                                if (match.hit)
+                                {
+                                    array->AddItem(first.release());
+                                }
+                                *parentMatch7 = match;
+                            }
+                            *parentMatch6 = match;
+                        }
+                        if (match.hit)
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch8 = &match;
+                            {
+                                soul::parser::Match match(true);
+                                soul::parser::Match* parentMatch9 = &match;
+                                {
+                                    while (true)
+                                    {
+                                        int64_t save = lexer.GetPos();
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch10 = &match;
+                                            {
+                                                soul::parser::Match match(false);
+                                                soul::parser::Match* parentMatch11 = &match;
+                                                {
+                                                    soul::parser::Match match(false);
+                                                    if (*lexer == COMMA)
+                                                    {
+                                                        ++lexer;
+                                                        match.hit = true;
+                                                    }
+                                                    *parentMatch11 = match;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    soul::parser::Match match(false);
+                                                    soul::parser::Match* parentMatch12 = &match;
+                                                    {
+                                                        soul::parser::Match match(false);
+                                                        soul::parser::Match* parentMatch13 = &match;
+                                                        {
+                                                            int64_t pos = lexer.GetPos();
+                                                            soul::parser::Match match = IntermediateCodeParser<LexerT>::MetadataItem(lexer, context);
+                                                            next.reset(static_cast<cmajor::systemx::intermediate::MetadataItem*>(match.value));
+                                                            if (match.hit)
+                                                            {
+                                                                array->AddItem(next.release());
+                                                            }
+                                                            *parentMatch13 = match;
+                                                        }
+                                                        *parentMatch12 = match;
+                                                    }
+                                                    *parentMatch11 = match;
+                                                }
+                                                *parentMatch10 = match;
+                                            }
+                                            if (match.hit)
+                                            {
+                                                *parentMatch9 = match;
+                                            }
+                                            else
+                                            {
+                                                lexer.SetPos(save);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                *parentMatch8 = match;
+                            }
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch5 = match;
+                    }
+                    if (match.hit)
+                    {
+                        *parentMatch4 = match;
+                    }
+                    else
+                    {
+                        lexer.SetPos(save);
+                    }
+                }
+                *parentMatch3 = match;
+            }
+            *parentMatch1 = match;
+        }
+        *parentMatch0 = match;
+    }
+    if (match.hit)
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch14 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch15 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == RBRACKET)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataArray");
+                        #endif
+                        return soul::parser::Match(true, array);
+                    }
+                }
+                *parentMatch15 = match;
+            }
+            *parentMatch14 = match;
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataArray");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataArray");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
 soul::parser::Match IntermediateCodeParser<LexerT>::MetadataRef(LexerT& lexer, cmajor::systemx::intermediate::Context* context)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
@@ -11422,7 +11643,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataRef(LexerT& lexer, c
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataRef");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469515);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469516);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {

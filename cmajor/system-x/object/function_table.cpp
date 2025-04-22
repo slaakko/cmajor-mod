@@ -68,6 +68,7 @@ void FunctionTableIndex::Read(SymbolTable& symbolTable, uint64_t rv, cmajor::sys
         {
             FunctionTableIndexEntry entry;
             entry.Read(rv, memory, address);
+            entryIdMap[entry.entryId] = entry.entryAddress;
             indexEntries.push_back(entry);
             address = address + entry.Size();
         }
@@ -112,6 +113,16 @@ FunctionTableIndexEntry* FunctionTableIndex::SearchEntry(uint64_t pc)
         return &(*it);
     }
     return nullptr;
+}
+
+uint64_t FunctionTableIndex::GetEntryAddress(uint64_t entryId) const
+{
+    auto it = entryIdMap.find(entryId);
+    if (it != entryIdMap.end())
+    {
+        return it->second;
+    }
+    return static_cast<uint64_t>(-1);
 }
 
 std::string ReadString(int64_t stringAddress, uint64_t rv, cmajor::systemx::machine::Memory& memory)
@@ -298,6 +309,261 @@ int32_t LineNumberTable::SearchLineNumber(uint32_t offset) const
     }
     return -1;
 }
+ 
+uint32_t LineNumberTable::GetOffset(uint32_t lineNumber) const
+{
+    for (const auto& entry : entries)
+    {
+        if (entry.lineNumber == lineNumber)
+        {
+            return entry.offset;
+        }
+    }
+    return static_cast<uint32_t>(-1);
+}
+
+SourceFileTable::SourceFileTable() : read(false)
+{
+}
+
+void SourceFileTable::AddSourceFile(const std::string& sourceFile)
+{
+    sourceFiles.insert(sourceFile);
+}
+
+void SourceFileTable::Make(StringTable& stringTable)
+{
+    int32_t index = 0;
+    for (const auto& sourceFile : sourceFiles)
+    {
+        int32_t sourceFileId = stringTable.AddString(sourceFile);
+        sourceFileIds.push_back(sourceFileId);
+        sourceFileIdMap[sourceFileId] = index++;
+    }
+}
+
+void SourceFileTable::Write(Section* section)
+{
+    section->Align(4);
+    int64_t start = section->BaseAddress() + section->Address();
+    uint32_t count = sourceFileIds.size();
+    section->EmitTetra(count);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        section->EmitTetra(sourceFileIds[i]);
+    }
+    int64_t end = section->BaseAddress() + section->Address();
+    Symbol* symbol = new Symbol(SymbolKind::global, std::string(), "@source_file_table", Value(count, ValueFlags::pure));
+    symbol->SetStart(start);
+    symbol->SetSegment(Segment::data);
+    symbol->SetLinkage(Linkage::external);
+    symbol->SetLength(end - start);
+    section->File()->GetSymbolTable().AddSymbol(symbol);
+}
+
+void SourceFileTable::Read(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    if (read) return;
+    read = true;
+    Symbol* symbol = symbolTable.GetSymbol("@source_file_table");
+    if (symbol)
+    {
+        uint64_t address = symbol->Start();
+        uint32_t count = memory.ReadTetra(rv, address, cmajor::systemx::machine::Protection::read);
+        uint64_t addr = address + 4;
+        for (uint64_t i = 0; i < count; ++i)
+        {
+            uint32_t sourceFileId = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+            sourceFileIds.push_back(static_cast<int32_t>(sourceFileId));
+            sourceFileIdMap[sourceFileId] = static_cast<int32_t>(i);
+            addr = addr + 4;
+        }
+    }
+    else
+    {
+        throw std::runtime_error("'@source_file_table' symbol not found");
+    }
+}
+
+int SourceFileTable::Count(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    Read(symbolTable, rv, memory);
+    return static_cast<int>(sourceFileIds.size());
+}
+
+std::string SourceFileTable::GetSourceFile(int index, StringTable& stringTable, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    Read(symbolTable, rv, memory);
+    return stringTable.GetString(symbolTable, sourceFileIds[index], rv, memory);
+}
+
+int32_t SourceFileTable::GetSourceFileIndex(int32_t sourceFileId) const
+{
+    auto it = sourceFileIdMap.find(sourceFileId);
+    if (it != sourceFileIdMap.end())
+    {
+        return it->second;
+    }
+    return -1;
+}
+
+LineFunctionEntry::LineFunctionEntry() : lineNumber(0), functionId(0)
+{
+}
+
+LineFunctionEntry::LineFunctionEntry(uint32_t lineNumber_, uint32_t functionId_) : lineNumber(lineNumber_), functionId(functionId_)
+{
+}
+
+void LineFunctionEntry::Write(Section* section)
+{
+    section->Align(4);
+    section->EmitTetra(lineNumber);
+    section->EmitTetra(functionId);
+}
+
+int64_t LineFunctionEntry::Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    lineNumber = memory.ReadTetra(rv, address, cmajor::systemx::machine::Protection::read);
+    functionId = memory.ReadTetra(rv, address + 4, cmajor::systemx::machine::Protection::read);
+    return address + 8;
+}
+
+bool operator<(const LineFunctionEntry& left, const LineFunctionEntry& right)
+{
+    return left.lineNumber < right.lineNumber;
+}
+
+LineFunctionIndex::LineFunctionIndex() : sourceFileIndex(-1), read(false)
+{
+}
+
+void LineFunctionIndex::SetSourceFileIndex(int32_t sourceFileIndex_)
+{
+    sourceFileIndex = sourceFileIndex_;
+}
+
+void LineFunctionIndex::AddEntry(const LineFunctionEntry& entry)
+{
+    entries.push_back(entry);
+}
+
+void LineFunctionIndex::Sort()
+{
+    std::sort(entries.begin(), entries.end());
+}
+
+void LineFunctionIndex::Write(Section* section)
+{
+    section->Align(4);
+    int64_t start = section->BaseAddress() + section->Address();
+    uint32_t count = entries.size();
+    section->EmitTetra(count);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        entries[i].Write(section);
+    }
+    int64_t end = section->BaseAddress() + section->Address();
+    Symbol* symbol = new Symbol(SymbolKind::global, std::string(), "@line_function_index@" + std::to_string(sourceFileIndex), Value(count, ValueFlags::pure));
+    symbol->SetStart(start);
+    symbol->SetSegment(Segment::data);
+    symbol->SetLinkage(Linkage::external);
+    symbol->SetLength(end - start);
+    section->File()->GetSymbolTable().AddSymbol(symbol);
+}
+
+uint32_t LineFunctionIndex::GetFunctionId(uint32_t lineNumber, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    Read(symbolTable, rv, memory);
+    LineFunctionEntry entry(lineNumber, 0);
+    auto it = std::lower_bound(entries.begin(), entries.end(), entry);
+    if (it != entries.begin() && it == entries.end())
+    {
+        --it;
+    }
+    if (it != entries.begin() && it->lineNumber > lineNumber)
+    {
+        --it;
+    }
+    if (it != entries.end())
+    {
+        const LineFunctionEntry& entry = *it;
+        return entry.functionId;
+    }
+    return static_cast<uint32_t>(-1);
+}
+
+void LineFunctionIndex::Read(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    if (read) return;
+    read = true;
+    Symbol* symbol = symbolTable.GetSymbol("@line_function_index@" + std::to_string(sourceFileIndex));
+    if (symbol)
+    {
+        uint64_t address = symbol->Start();
+        uint32_t count = memory.ReadTetra(rv, address, cmajor::systemx::machine::Protection::read);
+        uint64_t addr = address + 4;
+        for (uint64_t i = 0; i < count; ++i)
+        {
+            LineFunctionEntry entry;
+            addr = entry.Read(addr, rv, memory);
+            entries.push_back(entry);
+        }
+    }
+    else
+    {
+        throw std::runtime_error("'@line_function_index@" + std::to_string(sourceFileIndex) + "' symbol not found");
+    }
+}
+
+SourceFileLineFunctionIndex::SourceFileLineFunctionIndex()
+{
+}
+
+void SourceFileLineFunctionIndex::AddFunction(FunctionTableEntry& functionTableEntry, StringTable& stringTable, SourceFileTable& sourceFileTable)
+{
+    if (!functionTableEntry.SourceFileName().empty())
+    {
+        int32_t sourceFileId = stringTable.AddString(functionTableEntry.SourceFileName());
+        int32_t sourceFileIndex = sourceFileTable.GetSourceFileIndex(sourceFileId);
+        if (sourceFileIndex != -1)
+        {
+            LineFunctionIndex& lineFunctionIndex = indexMap[sourceFileIndex];
+            LineNumberTable& lineNumberTable = functionTableEntry.GetLineNumberTable();
+            if (!lineNumberTable.Entries().empty())
+            {
+                const auto& lineNumberTableEntry = lineNumberTable.Entries().front();
+                uint32_t lineNumber = lineNumberTableEntry.lineNumber;
+                LineFunctionEntry entry(lineNumber, static_cast<uint32_t>(functionTableEntry.Id()));
+                lineFunctionIndex.AddEntry(entry);
+            }
+        }
+        else
+        {
+            throw std::runtime_error("source File index for source file id " + std::to_string(sourceFileId) + " not found");
+        }
+    }
+}
+
+void SourceFileLineFunctionIndex::Write(Section* section)
+{
+    for (auto& sourceFileIndexLineFunctionIndexPair : indexMap)
+    {
+        int32_t sourceFileIndex = sourceFileIndexLineFunctionIndexPair.first;
+        LineFunctionIndex& lineFunctionIndex = sourceFileIndexLineFunctionIndexPair.second;
+        lineFunctionIndex.SetSourceFileIndex(sourceFileIndex);
+        lineFunctionIndex.Sort();
+        lineFunctionIndex.Write(section);
+    }
+}
+
+uint32_t SourceFileLineFunctionIndex::GetFunctionId(int32_t sourceFileIndex, uint32_t lineNumber, 
+    SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    LineFunctionIndex& lineFunctionIndex = indexMap[sourceFileIndex];
+    lineFunctionIndex.SetSourceFileIndex(sourceFileIndex);
+    return lineFunctionIndex.GetFunctionId(lineNumber, symbolTable, rv, memory);
+}
 
 ExceptionTableRecord::ExceptionTableRecord(ExceptionTableRecordKind kind_) : kind(kind_), table(nullptr)
 {
@@ -325,18 +591,18 @@ ExceptionTableRecord* MakeExceptionTableRecord(ExceptionTableRecordKind kind)
 {
     switch (kind)
     {
-    case ExceptionTableRecordKind::tryRecord:
-    {
-        return new TryRecord();
-    }
-    case ExceptionTableRecordKind::handlerRecord:
-    {
-        return new HandlerRecord();
-    }
-    case ExceptionTableRecordKind::cleanupRecord:
-    {
-        return new CleanupRecord();
-    }
+        case ExceptionTableRecordKind::tryRecord:
+        {
+            return new TryRecord();
+        }
+        case ExceptionTableRecordKind::handlerRecord:
+        {
+            return new HandlerRecord();
+        }
+        case ExceptionTableRecordKind::cleanupRecord:
+        {
+            return new CleanupRecord();
+        }
     }
     return nullptr;
 }
@@ -515,7 +781,7 @@ void ExceptionTable::Write(Section* section)
     }
 }
 
-void ExceptionTable::Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+int64_t ExceptionTable::Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
 {
     uint32_t count = memory.ReadTetra(rv, address, cmajor::systemx::machine::Protection::read);
     int64_t addr = address + 4;
@@ -534,6 +800,7 @@ void ExceptionTable::Read(int64_t address, uint64_t rv, cmajor::systemx::machine
     {
         record->Setup(this);
     }
+    return addr;
 }
 
 void ExceptionTable::AddRecord(ExceptionTableRecord* record)
@@ -560,31 +827,31 @@ ExceptionTableRecord* ExceptionTable::SearchRecord(uint32_t offset) const
     {
         switch (record->Kind())
         {
-        case ExceptionTableRecordKind::tryRecord:
-        {
-            TryRecord* tryRecord = static_cast<TryRecord*>(record.get());
-            if (offset >= tryRecord->Offset() && offset < tryRecord->Offset() + tryRecord->Length())
+            case ExceptionTableRecordKind::tryRecord:
             {
-                return tryRecord->SearchRecord(offset);
+                TryRecord* tryRecord = static_cast<TryRecord*>(record.get());
+                if (offset >= tryRecord->Offset() && offset < tryRecord->Offset() + tryRecord->Length())
+                {
+                    return tryRecord->SearchRecord(offset);
+                }
+                break;
             }
-            break;
-        }
-        case ExceptionTableRecordKind::cleanupRecord:
-        {
-            CleanupRecord* cleanupRecord = static_cast<CleanupRecord*>(record.get());
-            if (offset >= cleanupRecord->Offset() && offset < cleanupRecord->Offset() + cleanupRecord->Length())
+            case ExceptionTableRecordKind::cleanupRecord:
             {
-                return cleanupRecord;
+                CleanupRecord* cleanupRecord = static_cast<CleanupRecord*>(record.get());
+                if (offset >= cleanupRecord->Offset() && offset < cleanupRecord->Offset() + cleanupRecord->Length())
+                {
+                    return cleanupRecord;
+                }
+                break;
             }
-            break;
-        }
         }
     }
     return nullptr;
 }
 
 FunctionTableEntry::FunctionTableEntry() :
-    functionStart(), functionLength(), id(), fullNameId(), mangledNameId(), sourceFileNameId(), fullName(), mangledName(), sourceFileName(), frameSize()
+    functionStart(), functionLength(), id(-1), fullNameId(-1), mangledNameId(-1), sourceFileNameId(-1), fullName(), mangledName(), sourceFileName(), frameSize(), main(false)
 {
     exceptionTable.SetFunctionTableEntry(this);
 }
@@ -605,6 +872,19 @@ int64_t FunctionTableEntry::Write(StringTable& stringTable, Section* section)
     section->EmitTetra(sourceFileNameId);
     lineNumberTable.Write(section);
     exceptionTable.Write(section);
+    section->EmitTetra(cfg.size());
+    for (const auto& p : cfg)
+    {
+        int32_t line = p.first;
+        const std::vector<int32_t>& next = p.second;
+        section->EmitTetra(line);
+        section->EmitTetra(next.size());
+        for (int32_t nxt : next)
+        {
+            section->EmitTetra(nxt);
+        }
+    }
+    section->EmitByte(main ? 1 : 0);
     return address;
 }
 
@@ -618,7 +898,23 @@ void FunctionTableEntry::Read(StringTable& stringTable, SymbolTable& symbolTable
     mangledNameId = memory.ReadTetra(rv, address + 32, cmajor::systemx::machine::Protection::read);
     sourceFileNameId = memory.ReadTetra(rv, address + 36, cmajor::systemx::machine::Protection::read);
     int64_t addr = lineNumberTable.Read(address + 40, rv, memory);
-    exceptionTable.Read(addr, rv, memory);
+    addr = exceptionTable.Read(addr, rv, memory);
+    uint32_t cfgSize = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    for (uint32_t i = 0; i < cfgSize; ++i)
+    {
+        int32_t line = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+        addr += 4;
+        uint32_t n = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+        addr += 4;
+        for (uint32_t j = 0; j < n; ++j)
+        {
+            int32_t nextLine = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+            addr += 4;
+            cfg[line].push_back(nextLine);
+        }
+    }
+    main = memory.ReadByte(rv, addr, cmajor::systemx::machine::Protection::read) == 1;
     fullName = stringTable.GetString(symbolTable, fullNameId, rv, memory);
     mangledName = stringTable.GetString(symbolTable, mangledNameId, rv, memory);
     sourceFileName = stringTable.GetString(symbolTable, sourceFileNameId, rv, memory);
@@ -645,10 +941,50 @@ int32_t FunctionTableEntry::SearchLineNumber(uint64_t pc) const
     return lineNumberTable.SearchLineNumber(offset);
 }
 
+int64_t FunctionTableEntry::SearchPC(uint32_t lineNumber) const
+{
+    uint32_t offset = lineNumberTable.GetOffset(lineNumber);
+    if (offset != static_cast<uint32_t>(-1))
+    {
+        int64_t pc = functionStart + static_cast<int64_t>(offset);
+        return pc;
+    }
+    return -1;
+}
+
+uint64_t FunctionTableEntry::GetEntryPoint() const
+{
+    if (!lineNumberTable.Entries().empty())
+    {
+        return static_cast<uint64_t>(FunctionStart() + static_cast<int64_t>(lineNumberTable.Entries().front().offset));
+    }
+    return 0u;
+}
+
 ExceptionTableRecord* FunctionTableEntry::SearchExceptionTableRecord(uint64_t pc) const
 {
     uint32_t offset = pc - functionStart;
     return exceptionTable.SearchRecord(offset);
+}
+
+void FunctionTableEntry::AddToCfg(int32_t prevLine, int32_t nextLine)
+{
+    std::vector<int32_t>& next = cfg[prevLine];
+    if (std::find(next.begin(), next.end(), nextLine) == next.end())
+    {
+        next.push_back(nextLine);
+    }
+}
+
+std::vector<int32_t> FunctionTableEntry::Next(int32_t line) const
+{
+    std::vector<int32_t> next;
+    auto it = cfg.find(line);
+    if (it != cfg.end())
+    {
+        next = it->second;
+    }
+    return next;
 }
 
 FunctionTable::FunctionTable() : indexRead(false), index(), stringTable()
@@ -701,6 +1037,7 @@ FunctionTableEntry* FunctionTable::GetEntry(uint64_t pc, SymbolTable& symbolTabl
 
 void FunctionTable::Write(BinaryFile& binaryFile)
 {
+    FunctionTableEntry* mainFunctionEntry = nullptr;
     for (const auto& entry : entries)
     {
         FunctionTableIndexEntry indexEntry;
@@ -710,11 +1047,88 @@ void FunctionTable::Write(BinaryFile& binaryFile)
         int64_t entryAddress = entry->Write(stringTable, binaryFile.GetDataSection());
         indexEntry.entryAddress = entryAddress;
         index.AddEntry(indexEntry);
+        if (!entry->SourceFileName().empty())
+        {
+            sourceFileTable.AddSourceFile(entry->SourceFileName());
+        }
+        if (entry->IsMain())
+        {
+            mainFunctionEntry = entry.get();
+        }
+    }
+    if (mainFunctionEntry)
+    {
+        uint64_t entryPoint = mainFunctionEntry->GetEntryPoint();
+        if (entryPoint != 0u)
+        {
+            Symbol* symbol = new Symbol(SymbolKind::global, std::string(), "@entry_point", Value(entryPoint));
+            symbol->SetStart(entryPoint);
+            symbol->SetSegment(Segment::text);
+            symbol->SetLinkage(Linkage::external);
+            binaryFile.GetSymbolTable().AddSymbol(symbol);
+        }
     }
     index.Sort();
     index.Write(binaryFile);
+    sourceFileTable.Make(stringTable);
+    for (const auto& entry : entries)
+    {
+        sourceFileLineFunctionIndex.AddFunction(*entry, stringTable, sourceFileTable);
+    }
     stringTable.Write(binaryFile);
+    sourceFileTable.Write(binaryFile.GetDataSection());
+    sourceFileLineFunctionIndex.Write(binaryFile.GetDataSection());
     binaryFile.GetDataSection()->Align(8);
+}
+
+int FunctionTable::SourceFileCount(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    return sourceFileTable.Count(symbolTable, rv, memory);
+}
+
+std::string FunctionTable::GetSourceFileName(int32_t fileIndex, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    return sourceFileTable.GetSourceFile(fileIndex, stringTable, symbolTable, rv, memory);
+}
+
+int32_t FunctionTable::GetSourceFileIndex(int32_t sourceFileId) const
+{
+    return sourceFileTable.GetSourceFileIndex(sourceFileId);
+}
+
+void FunctionTable::ReadSourceFileTable(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    sourceFileTable.Read(symbolTable, rv, memory);
+}
+
+FunctionTableEntry* FunctionTable::GetEntry(int32_t sourceFileIndex, uint32_t lineNumber, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    if (!indexRead)
+    {
+        ReadIndex(symbolTable, rv, memory);
+    }
+    uint32_t functionId = sourceFileLineFunctionIndex.GetFunctionId(sourceFileIndex, lineNumber, symbolTable, rv, memory);
+    if (functionId != static_cast<uint32_t>(-1))
+    {
+        FunctionTableEntry* entry = nullptr;
+        auto it = entryMap.find(functionId);
+        if (it != entryMap.end())
+        {
+            entry = it->second;
+        }
+        else
+        {
+            uint64_t entryAddress = index.GetEntryAddress(functionId);
+            if (entryAddress != static_cast<uint64_t>(-1))
+            {
+                entry = new FunctionTableEntry();
+                entry->Read(stringTable, symbolTable, entryAddress, rv, memory);
+                AddEntry(entry, false);
+            }
+        }
+        return entry;
+    }
+    return nullptr;
 }
 
 struct FunctionDebugRecordCollection
@@ -967,36 +1381,36 @@ void ProcessDebugRecord(DebugRecord* debugRecord, FunctionTableEntry* functionTa
 {
     switch (debugRecord->Kind())
     {
-    case DebugRecordKind::lineInfo:
-    {
-        ProcessLineInfoRecord(static_cast<LineInfoRecord*>(debugRecord), functionTableEntry);
-        break;
-    }
-    case DebugRecordKind::beginTry:
-    {
-        ProcessBeginTryRecord(static_cast<BeginTryRecord*>(debugRecord), functionTableEntry, tryRecordMap);
-        break;
-    }
-    case DebugRecordKind::endTry:
-    {
-        ProcessEndTryRecord(static_cast<EndTryRecord*>(debugRecord), tryRecordMap);
-        break;
-    }
-    case DebugRecordKind::catch_:
-    {
-        ProcessCatchRecord(static_cast<CatchRecord*>(debugRecord), functionTableEntry, linkTable, functionExecutableSymbol, executable);
-        break;
-    }
-    case DebugRecordKind::beginCleanup:
-    {
-        ProcessBeginCleanupRecord(static_cast<BeginCleanupRecord*>(debugRecord), functionTableEntry, cleanupRecordMap, functionExecutableSymbol, executable);
-        break;
-    }
-    case DebugRecordKind::endCleanup:
-    {
-        ProcessEndCleanupRecord(static_cast<EndCleanupRecord*>(debugRecord), cleanupRecordMap);
-        break;
-    }
+        case DebugRecordKind::lineInfo:
+        {
+            ProcessLineInfoRecord(static_cast<LineInfoRecord*>(debugRecord), functionTableEntry);
+            break;
+        }
+        case DebugRecordKind::beginTry:
+        {
+            ProcessBeginTryRecord(static_cast<BeginTryRecord*>(debugRecord), functionTableEntry, tryRecordMap);
+            break;
+        }
+        case DebugRecordKind::endTry:
+        {
+            ProcessEndTryRecord(static_cast<EndTryRecord*>(debugRecord), tryRecordMap);
+            break;
+        }
+        case DebugRecordKind::catch_:
+        {
+            ProcessCatchRecord(static_cast<CatchRecord*>(debugRecord), functionTableEntry, linkTable, functionExecutableSymbol, executable);
+            break;
+        }
+        case DebugRecordKind::beginCleanup:
+        {
+            ProcessBeginCleanupRecord(static_cast<BeginCleanupRecord*>(debugRecord), functionTableEntry, cleanupRecordMap, functionExecutableSymbol, executable);
+            break;
+        }
+        case DebugRecordKind::endCleanup:
+        {
+            ProcessEndCleanupRecord(static_cast<EndCleanupRecord*>(debugRecord), cleanupRecordMap);
+            break;
+        }
     }
 }
 
@@ -1008,12 +1422,17 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
     std::string functionFullName;
     std::string sourceFileName;
     int64_t frameSize = 8;
+    bool main = false;
+    std::vector<std::pair<int32_t, int32_t>> cfgVec;
+    const std::vector<std::pair<int32_t, int32_t>>* cfgPtr = &cfgVec;
     auto it = funcInfoRecordMap.find(functionDebugRecordCollection->functionSymbolIndex);
     if (it != funcInfoRecordMap.cend())
     {
         FuncInfoRecord* funcInfoRecord = it->second;
         functionFullName = funcInfoRecord->FullName();
         frameSize = funcInfoRecord->FrameSize();
+        main = funcInfoRecord->IsMain();
+        cfgPtr = &funcInfoRecord->Cfg();
         uint32_t sourceFileNameId = funcInfoRecord->SourceFileNameId();
         auto it2 = fileInfoRecordMap.find(sourceFileNameId);
         if (it2 != fileInfoRecordMap.cend())
@@ -1029,6 +1448,16 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
     functionTableEntry->SetFullName(functionFullName);
     functionTableEntry->SetMangledName(functionExecutableSymbol->FullName());
     functionTableEntry->SetSourceFileName(sourceFileName);
+    for (const auto& linePair : *cfgPtr)
+    {
+        int32_t prevLine = linePair.first;
+        int32_t nextLine = linePair.second;
+        functionTableEntry->AddToCfg(prevLine, nextLine);
+    }
+    if (main)
+    {
+        functionTableEntry->SetMain();
+    }
     functionTable.AddEntry(functionTableEntry);
     std::map<uint32_t, TryRecord*> tryRecordMap;
     std::map<uint32_t, CleanupRecord*> cleanupRecordMap;

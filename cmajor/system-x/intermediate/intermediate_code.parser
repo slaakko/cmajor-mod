@@ -673,6 +673,7 @@ parser IntermediateCodeParser
         ::= MetadataBool(context):mdBool{ return mdBool; }
         |   MetadataLong(context):mdLong{ return mdLong; }
         |   MetadataString(context):mdString{ return mdString; }
+        |   MetadataArray(context):mdArray{ return mdArray; }
         |   MetadataRef(context):mdRef{ return mdRef; }
         ;
 
@@ -687,6 +688,18 @@ parser IntermediateCodeParser
 
     MetadataString(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::MetadataItem*
         ::= STRING{ return context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    MetadataArray(cmajor::systemx::intermediate::Context* context, var cmajor::systemx::intermediate::MetadataArray* array) : cmajor::systemx::intermediate::MetadataItem*
+        ::= LBRACKET{ array = context->CreateMetadataArray(); }
+            (
+                MetadataItem(context):first{ array->AddItem(first); }
+                (
+                    COMMA
+                    MetadataItem(context):next{ array->AddItem(next); }
+                )*
+            )?
+            RBRACKET{ return array; }
         ;
 
     MetadataRef(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::MetadataRef*

@@ -472,7 +472,7 @@ FunctionSymbol::FunctionSymbol(const soul::ast::Span& span_, const std::u32strin
     ContainerSymbol(SymbolType::functionSymbol, span_, name_), functionTemplate(nullptr), master(nullptr),
     functionId(util::nil_uuid()), groupName(), parameters(), localVariables(),
     returnType(), flags(FunctionSymbolFlags::none), index(-1), vmtIndex(-1), imtIndex(-1),
-    nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
+    nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), isUserMain(false), unwindInfoVar(nullptr),
     conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr), 
     checkerVar(nullptr)
 {
@@ -482,7 +482,7 @@ FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::Span& sp
     ContainerSymbol(symbolType_, span_, name_), functionTemplate(nullptr), master(nullptr),
     functionId(util::nil_uuid()), groupName(), parameters(), localVariables(),
     returnType(), flags(FunctionSymbolFlags::none), index(-1), vmtIndex(-1), imtIndex(-1),
-    nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
+    nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), isUserMain(false), unwindInfoVar(nullptr),
     conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr),
     checkerVar(nullptr)
 {

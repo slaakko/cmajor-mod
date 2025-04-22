@@ -167,6 +167,19 @@ void ProcessManager::MachineStateChanged()
     }
 }
 
+std::vector<Process*> ProcessManager::GetProcesses() const
+{
+    std::vector<Process*> processes;
+    for (const auto& process : processTable)
+    {
+        if (process)
+        {
+            processes.push_back(process.get());
+        }
+    }
+    return processes;
+}
+
 void InitProcessManager()
 {
     ProcessManager::Init();

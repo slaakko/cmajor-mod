@@ -221,6 +221,13 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
         functionSymbol->SetConstraint(static_cast<cmajor::ast::WhereConstraintNode*>(functionNode.WhereConstraint()->Clone(cloneContext)));
     }
     functionSymbol->ComputeName(context);
+    if (functionSymbol->GroupName() == U"main")
+    {
+        if (!functionSymbol->IsProgramMain())
+        {
+            functionSymbol->SetUserMain();
+        }
+    }
     cmajor::symbols::SymbolMap* symbolMap = cmajor::symbols::GetSymbolMap();
     if (symbolMap)
     {

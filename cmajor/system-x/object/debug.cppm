@@ -49,19 +49,24 @@ class FuncInfoRecord : public DebugRecord
 {
 public:
     FuncInfoRecord();
-    FuncInfoRecord(uint32_t functionSymbolIndex_, const std::string& fullName_, uint32_t sourceFileNameId, int64_t frameSize_);
+    FuncInfoRecord(uint32_t functionSymbolIndex_, const std::string& fullName_, uint32_t sourceFileNameId, int64_t frameSize_, bool main_);
     uint32_t FunctionSymbolIndex() const { return functionSymbolIndex; }
     const std::string& FullName() const { return fullName; }
     uint32_t SourceFileNameId() const { return sourceFileNameId; }
     int64_t FrameSize() const { return frameSize; }
+    bool IsMain() const { return main; }
     void Emit(DebugSection* debugSection) override;
     void Read(DebugSection* debugSection) override;
     std::string ToString() const override;
+    void AddToCfg(int32_t prevLine, int32_t nextLine);
+    const std::vector<std::pair<int32_t, int32_t>>& Cfg() const { return cfg; }
 private:
     uint32_t functionSymbolIndex;
     std::string fullName;
     uint32_t sourceFileNameId;
     int64_t frameSize;
+    bool main;
+    std::vector<std::pair<int32_t, int32_t>> cfg;
 };
 
 class StartFuncRecord : public DebugRecord

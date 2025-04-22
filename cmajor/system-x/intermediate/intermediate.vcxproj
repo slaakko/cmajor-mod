@@ -243,6 +243,9 @@
     <ProjectReference Include="..\assembler\assembler.vcxproj">
       <Project>{32543a9f-385e-4471-9146-cb8733f0e3c8}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\ir\ir.vcxproj">
+      <Project>{e4442931-3fbb-47e3-8ec8-59fd629b64ef}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\machine\machine.vcxproj">
       <Project>{5af98f03-2215-4a25-b653-733a91e17456}</Project>
     </ProjectReference>

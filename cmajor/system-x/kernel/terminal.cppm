@@ -47,10 +47,12 @@ public:
 };
 
 void SetTerminalMachine(cmajor::systemx::machine::Machine* machine);
+bool TerminalStarted();
 void StartTerminal();
 void StopTerminal();
 void InitTerminal();
 void DoneTerminal();
+std::string ReadLineFromTerminal();
 
 } // namespace cmajor::systemx::kernel
 

@@ -18,7 +18,7 @@ class Context;
 
 enum class MetadataItemKind
 {
-    metadataRef, metadataBool, metadataLong, metadataString
+    metadataRef, metadataBool, metadataLong, metadataString, metadataArray
 };
 
 class MetadataItem
@@ -31,6 +31,7 @@ public:
     bool IsMetadataBool() const { return kind == MetadataItemKind::metadataBool; }
     bool IsMetadataLong() const { return kind == MetadataItemKind::metadataLong; }
     bool IsMetadataString() const { return kind == MetadataItemKind::metadataString; }
+    bool IsMetadataArray() const { return kind == MetadataItemKind::metadataArray; }
 private:
     MetadataItemKind kind;
 };
@@ -76,6 +77,17 @@ private:
     std::string value;
 };
 
+class MetadataArray : public MetadataItem
+{
+public:
+    MetadataArray();
+    void AddItem(MetadataItem* item);
+    int ItemCount() const { return static_cast<int>(items.size()); }
+    MetadataItem* GetItem(int index) const { return items[index]; }
+private:
+    std::vector<MetadataItem*> items;
+};
+
 class MetadataStruct
 {
 public:
@@ -105,6 +117,7 @@ public:
     MetadataBool* CreateMetadataBool(bool value);
     MetadataLong* CreateMetadataLong(int64_t value);
     MetadataString* CreateMetadataString(const std::string& value);
+    MetadataArray* CreateMetadataArray();
     MetadataRef* CreateMetadataRef(const soul::ast::SourcePos& sourcePos, int32_t nodeId);
     void ResolveMetadataReferences(Context* context);
 private:

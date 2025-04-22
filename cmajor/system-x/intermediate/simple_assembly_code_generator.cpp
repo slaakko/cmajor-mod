@@ -271,11 +271,12 @@ void SimpleAssemblyCodeGenerator::SetCurrentLineNumber(uint32_t lineNumber_)
     if (lineNumber == 0)
     {
         lineNumber = lineNumber_;
+        EmitLineNumberInfo(lineNumber, *this);
     }
     else if (lineNumber != lineNumber_)
     {
-        EmitLineNumberInfo(lineNumber, *this);
         lineNumber = lineNumber_;
+        EmitLineNumberInfo(lineNumber, *this);
     }
 }
 
@@ -351,10 +352,12 @@ void SimpleAssemblyCodeGenerator::Visit(Function& function)
         }
     }
     function.VisitBasicBlocks(*this);
+/*
     if (lineNumber != 0)
     {
         EmitLineNumberInfo(lineNumber, *this);
     }
+*/
     assemblyFunction->SetActiveFunctionPart(cmajor::systemx::assembler::FunctionPart::prologue);
     EmitPrologue(*this);
     assemblyFunction->SetActiveFunctionPart(cmajor::systemx::assembler::FunctionPart::epilogue);

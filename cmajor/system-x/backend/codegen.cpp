@@ -36,7 +36,7 @@ SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) :
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
     generateLineNumbers(false), currentTryBlockId(-1), nextTryBlockId(0), currentTryNextBlock(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), newCleanupNeeded(false),
-    inTryBlock(false), prevWasTerminator(false)
+    inTryBlock(false), prevWasTerminator(false), beginLineNumber(0), endLineNumber(0)
 {
     emitter->SetEmittingDelegate(this);
 }
@@ -157,12 +157,14 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         generateLineNumbers = true;
         fullSpan = soul::ast::FullSpan(functionSymbol->ModuleId(), functionSymbol->FileIndex(), boundFunction.Body()->GetSpan());
-        emitter->SetCurrentSourcePos(GetLineNumber(boundFunction.Body()->GetSpan()), 0, 0); 
+        beginLineNumber = GetLineNumber(boundFunction.Body()->GetSpan());
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     else
     {
         generateLineNumbers = false;
         fullSpan = soul::ast::FullSpan();
+        beginLineNumber = 0;
         emitter->SetCurrentSourcePos(0, 0, 0); 
     }
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
@@ -174,8 +176,15 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         util::uuid moduleId = functionSymbol->ModuleId();
         void* mdFile = emitter->GetMDStructRefForSourceFile(cmajor::symbols::GetSourceFilePath(functionSymbol->FileIndex(), moduleId));
         emitter->AddMDItem(mdStruct, "sourceFile", mdFile);
+        emitter->AddMDItem(mdStruct, "main", emitter->CreateMDBool(functionSymbol->IsUserMain()));
+        cfg = emitter->CreateMDArray();
+        emitter->AddMDItem(mdStruct, "cfg", cfg);
         int mdId = emitter->GetMDStructId(mdStruct);
         emitter->SetFunctionMdId(function, mdId);
+    }
+    else
+    {
+        cfg = nullptr;
     }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && functionSymbol->IsInline())
     {
@@ -319,11 +328,15 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
             void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter, context);
+            int endLineNumber = GetLineNumber(boundFunction.Body()->EndSpan());
+            emitter->SetCurrentSourcePos(endLineNumber, 0, 0);
             emitter->CreateRet(defaultValue);
             lastInstructionWasRet = true;
         }
         else
         {
+            int endLineNumber = GetLineNumber(boundFunction.Body()->EndSpan());
+            emitter->SetCurrentSourcePos(endLineNumber, 0, 0);
             emitter->CreateRetVoid();
             lastInstructionWasRet = true;
         }
@@ -334,9 +347,13 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompoundStatement)
 {
+    int blockBeginLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundCompoundStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundCompoundStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        blockBeginLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -349,12 +366,19 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCo
     int n = boundCompoundStatement.Statements().size();
     for (int i = 0; i < n; ++i)
     {
+        int prevLineNumber = endLineNumber;
         cmajor::binder::BoundStatement* statement = boundCompoundStatement.Statements()[i].get();
         statement->Accept(*this);
+        int nextLineNumber = beginLineNumber;
+        AddCFGItem(prevLineNumber, nextLineNumber);
     }
     ExitBlocks(prevBlock);
     blocks.pop_back();
     currentBlock = prevBlock;
+    int lastLineNumber = endLineNumber;
+    beginLineNumber = blockBeginLineNumber;
+    endLineNumber = GetLineNumber(boundCompoundStatement.EndSpan());
+    AddCFGItem(lastLineNumber, endLineNumber);
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSequenceStatement)
@@ -377,7 +401,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundRetu
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundReturnStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundReturnStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -422,7 +448,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGo
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoCaseStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundGotoCaseStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -447,7 +475,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boun
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoDefaultStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundGotoDefaultStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -469,7 +499,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreak
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundBreakStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundBreakStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -490,7 +522,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundCo
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundContinueStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundContinueStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -509,7 +543,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundGotoStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -534,9 +570,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
 {
+    int ifLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundIfStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundIfStatement.GetSpan());
+        ifLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -558,26 +597,34 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatem
     genJumpingBoolCode = true;
     boundIfStatement.Condition()->Accept(*this);
     genJumpingBoolCode = prevGenJumpingBoolCode;
+    int condLineNumber = beginLineNumber;
+    AddCFGItem(ifLineNumber, condLineNumber);
     emitter->SetCurrentBasicBlock(trueBlock);
     boundIfStatement.ThenS()->Accept(*this);
     emitter->CreateBr(nextBlock);
+    AddCFGItem(condLineNumber, beginLineNumber);
     if (boundIfStatement.ElseS())
     {
         emitter->SetCurrentBasicBlock(falseBlock);
         boundIfStatement.ElseS()->Accept(*this);
         emitter->CreateBr(nextBlock);
+        AddCFGItem(condLineNumber, beginLineNumber);
     }
     trueBlock = prevTrueBlock;
     falseBlock = prevFalseBlock;
     emitter->SetCurrentBasicBlock(nextBlock);
     basicBlockOpen = true;
+    beginLineNumber = ifLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStatement)
 {
+    int whileLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundWhileStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundWhileStatement.GetSpan());
+        whileLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -602,8 +649,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhile
     genJumpingBoolCode = true;
     boundWhileStatement.Condition()->Accept(*this);
     genJumpingBoolCode = prevGenJumpingBoolCode;
+    int condLineNumber = beginLineNumber;
+    AddCFGItem(whileLineNumber, condLineNumber);
     emitter->SetCurrentBasicBlock(trueBlock);
     boundWhileStatement.Statement()->Accept(*this);
+    AddCFGItem(condLineNumber, beginLineNumber);
+    AddCFGItem(endLineNumber, condLineNumber);
     emitter->CreateBr(condBlock);
     emitter->SetCurrentBasicBlock(falseBlock);
     breakTargetBlock = prevBreakTargetBlock;
@@ -612,13 +663,18 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhile
     continueTarget = prevContinueTarget;
     trueBlock = prevTrueBlock;
     falseBlock = prevFalseBlock;
+    beginLineNumber = whileLineNumber;
+    endLineNumber = condLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
 {
+    int doLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundDoStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundDoStatement.GetSpan());
+        doLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -641,11 +697,17 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatem
     emitter->CreateBr(doBlock);
     emitter->SetCurrentBasicBlock(doBlock);
     boundDoStatement.Statement()->Accept(*this);
+    AddCFGItem(doLineNumber, beginLineNumber);
+    int doEndLineNumber = endLineNumber;
+    int statementLineNumber = beginLineNumber;
     emitter->CreateBr(condBlock);
     emitter->SetCurrentBasicBlock(condBlock);
     bool prevGenJumpingBoolCode = genJumpingBoolCode;
     genJumpingBoolCode = true;
     boundDoStatement.Condition()->Accept(*this);
+    int condLineNumber = beginLineNumber;
+    AddCFGItem(doEndLineNumber, condLineNumber);
+    AddCFGItem(condLineNumber, statementLineNumber);
     genJumpingBoolCode = prevGenJumpingBoolCode;
     emitter->SetCurrentBasicBlock(falseBlock);
     basicBlockOpen = true;
@@ -655,13 +717,18 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatem
     continueTarget = prevContinueTarget;
     trueBlock = prevTrueBlock;
     falseBlock = prevFalseBlock;
+    beginLineNumber = doLineNumber;
+    endLineNumber = condLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatement)
 {
+    int forLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundForStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundForStatement.GetSpan());
+        forLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -689,12 +756,20 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStat
     genJumpingBoolCode = true;
     boundForStatement.Condition()->Accept(*this);
     genJumpingBoolCode = prevGenJumpingBoolCode;
+    int condLineNumber = beginLineNumber;
+    AddCFGItem(forLineNumber, condLineNumber);
     emitter->SetCurrentBasicBlock(actionBlock);
     boundForStatement.ActionS()->Accept(*this);
+    int actionLineNumber = beginLineNumber;
+    AddCFGItem(condLineNumber, actionLineNumber);
+    int actionEndLineNumber = endLineNumber;
     emitter->CreateBr(loopBlock);
     emitter->SetCurrentBasicBlock(loopBlock);
     boundForStatement.LoopS()->Accept(*this);
     emitter->CreateBr(condBlock);
+    int loopLineNumber = beginLineNumber;
+    AddCFGItem(actionEndLineNumber, loopLineNumber);
+    AddCFGItem(loopLineNumber, condLineNumber);
     emitter->SetCurrentBasicBlock(falseBlock);
     basicBlockOpen = true;
     breakTargetBlock = prevBreakTargetBlock;
@@ -703,13 +778,18 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStat
     continueTarget = prevContinueTarget;
     trueBlock = prevTrueBlock;
     falseBlock = prevFalseBlock;
+    beginLineNumber = forLineNumber;
+    endLineNumber = condLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchStatement)
 {
+    int switchLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundSwitchStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundSwitchStatement.GetSpan());
+        switchLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -719,6 +799,8 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwit
     cmajor::binder::BoundCompoundStatement* prevBreakTargetBlock = breakTargetBlock;
     breakTargetBlock = currentBlock;
     boundSwitchStatement.Condition()->Accept(*this);
+    int condLineNumber = beginLineNumber;
+    AddCFGItem(switchLineNumber, condLineNumber);
     void* condition = emitter->Stack().Pop();
     void* prevDefaultDest = defaultDest;
     void* next = nullptr;
@@ -753,6 +835,8 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwit
     {
         const std::unique_ptr<cmajor::binder::BoundCaseStatement>& caseS = boundSwitchStatement.CaseStatements()[i];
         caseS->Accept(*this);
+        int caseLineNumber = beginLineNumber;
+        AddCFGItem(condLineNumber, caseLineNumber);
         if (basicBlockOpen)
         {
             emitter->CreateBr(next);
@@ -762,6 +846,8 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwit
     if (boundSwitchStatement.DefaultStatement())
     {
         boundSwitchStatement.DefaultStatement()->Accept(*this);
+        int defaultLineNumber = beginLineNumber;
+        AddCFGItem(condLineNumber, defaultLineNumber);
         if (basicBlockOpen)
         {
             emitter->CreateBr(next);
@@ -774,13 +860,17 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwit
     defaultDest = prevDefaultDest;
     breakTargetBlock = prevBreakTargetBlock;
     breakTarget = prevBreakTarget;
+    beginLineNumber = switchLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatement)
 {
+    int caseLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundCaseStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundCaseStatement.GetSpan());
+        caseLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -797,6 +887,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseSt
             if (boundCaseStatement.CompoundStatement())
             {
                 boundCaseStatement.CompoundStatement()->Accept(*this);
+                AddCFGItem(caseLineNumber, beginLineNumber);
             }
         }
         else
@@ -808,14 +899,17 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseSt
     {
         throw cmajor::symbols::Exception("no cases", boundCaseStatement.GetFullSpan());
     }
-
+    beginLineNumber = caseLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaultStatement)
 {
+    int defaultLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundDefaultStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundDefaultStatement.GetSpan());
+        defaultLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -827,19 +921,23 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDef
         if (boundDefaultStatement.CompoundStatement())
         {
             boundDefaultStatement.CompoundStatement()->Accept(*this);
+            AddCFGItem(defaultLineNumber, beginLineNumber);
         }
     }
     else
     {
         throw cmajor::symbols::Exception("no default destination", boundDefaultStatement.GetFullSpan());
     }
+    beginLineNumber = defaultLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundConstructionStatement)
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundConstructionStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundConstructionStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -886,7 +984,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& bound
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundAssignmentStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundAssignmentStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -899,7 +999,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& bound
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundExpressionStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundExpressionStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -916,7 +1018,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& b
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundInitializationStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundInitializationStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -933,7 +1037,9 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmpty
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundEmptyStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundEmptyStatement.GetSpan());
+        endLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -965,7 +1071,8 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrow
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundThrowStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundThrowStatement.GetSpan());
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -976,9 +1083,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrow
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatement)
 {
+    int tryLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundTryStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundTryStatement.GetSpan());
+        tryLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1023,13 +1133,17 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
     currentTryNextBlock = prevTryNextBlock;
     cleanupBlock = prevCleanupBlock;
     basicBlockOpen = true;
+    beginLineNumber = tryLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundCatchStatement& boundCatchStatement)
 {
+    int catchLineNumber = 0;
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundCatchStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundCatchStatement.GetSpan());
+        catchLineNumber = beginLineNumber;
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1051,13 +1165,15 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCatchStatement& boundCatch
     boundCatchStatement.CatchBlock()->Accept(*this);
     emitter->CreateBr(currentTryNextBlock);
     emitter->SetCurrentBasicBlock(currentTryNextBlock);
+    beginLineNumber = catchLineNumber;
 }
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethrowStatement)
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundRethrowStatement.GetSpan()), 0, 0);
+        beginLineNumber = GetLineNumber(boundRethrowStatement.GetSpan());
+        emitter->SetCurrentSourcePos(beginLineNumber, 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1555,6 +1671,22 @@ int SystemXCodeGenerator::GetLineNumber(const soul::ast::Span& span)
 {
     fullSpan.span = span;
     return cmajor::symbols::GetLineNumber(fullSpan);
+}
+
+void SystemXCodeGenerator::AddCFGItem(int prevLineNumber, int nextLineNumber)
+{
+    if (!cfg) return;
+    if (prevLineNumber == 0 || nextLineNumber == 0) return;
+    if (prevLineNumber == nextLineNumber) return;
+    void* mdStruct = emitter->CreateMDStruct();
+    void* prevLineItem = emitter->CreateMDLong(prevLineNumber);
+    void* nextLineItem = emitter->CreateMDLong(nextLineNumber);
+    emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(cfgNodeType)); 
+    emitter->AddMDItem(mdStruct, "prevLine", prevLineItem);
+    emitter->AddMDItem(mdStruct, "nextLine", nextLineItem);
+    int mdStructId = emitter->GetMDStructId(mdStruct);
+    void* mdStructRef = emitter->CreateMDStructRef(mdStructId);
+    emitter->AddMDArrayItem(cfg, mdStructRef);
 }
 
 } // namespace cmajor::systemx::backend

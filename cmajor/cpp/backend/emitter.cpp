@@ -1792,12 +1792,21 @@ void* CppEmitter::CreateMDStruct()
     return nullptr;
 }
 
+void* CppEmitter::CreateMDArray()
+{
+    return nullptr;
+}
+
 void* CppEmitter::CreateMDBasicBlockRef(void* bb)
 {
     return nullptr;
 }
 
 void CppEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
+{
+}
+
+void CppEmitter::AddMDArrayItem(void* mdArray, void* mdItem)
 {
 }
 

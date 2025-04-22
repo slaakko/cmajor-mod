@@ -145,6 +145,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="color.cppm" />
     <ClCompile Include="sxutil.cppm" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="util.cppm" />

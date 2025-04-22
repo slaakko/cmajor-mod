@@ -1755,6 +1755,11 @@ void* MasmEmitter::CreateMDStruct()
     return context->CreateMetadataStruct();
 }
 
+void* MasmEmitter::CreateMDArray()
+{
+    return nullptr;
+}
+
 void* MasmEmitter::CreateMDBasicBlockRef(void* bb)
 {
     //return context->CreateMDBasicBlockRef(bb);
@@ -1764,6 +1769,10 @@ void* MasmEmitter::CreateMDBasicBlockRef(void* bb)
 void MasmEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
 {
     context->AddMetadataStructItem(static_cast<cmajor::masm::ir::MetadataStruct*>(mdStruct), fieldName, static_cast<cmajor::masm::ir::MetadataItem*>(mdItem));
+}
+
+void MasmEmitter::AddMDArrayItem(void* mdArray, void* mdItem)
+{
 }
 
 void MasmEmitter::SetFunctionMdId(void* function, int mdId)

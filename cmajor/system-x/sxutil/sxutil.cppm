@@ -5,4 +5,5 @@
 
 export module cmajor.systemx.sxutil;
 
+export import cmajor.systemx.sxutil.color;
 export import cmajor.systemx.sxutil.util;

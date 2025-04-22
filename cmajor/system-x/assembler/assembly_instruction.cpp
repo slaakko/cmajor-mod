@@ -281,7 +281,7 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                 }
                 case FUNCINFO:
                 {
-                    if (n == 5)
+                    if (n > 6)
                     {
                         cmajor::systemx::object::Value functionValue = currentInst->Operands()[1];
                         cmajor::systemx::object::Symbol* symbol = functionValue.GetSymbol();
@@ -296,8 +296,23 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                                 {
                                     cmajor::systemx::object::Value sourceFileNameIdValue = currentInst->Operands()[3];
                                     cmajor::systemx::object::Value frameSizeValue = currentInst->Operands()[4];
+                                    cmajor::systemx::object::Value mainValue = currentInst->Operands()[5];
+                                    cmajor::systemx::object::Value cfgSizeValue = currentInst->Operands()[6];
+                                    std::vector<std::pair<int32_t, int32_t>> cfg;
+                                    uint64_t cfgSize = cfgSizeValue.Val();
+                                    int operandIndex = 7;
+                                    for (uint64_t i = 0; i < cfgSize; ++i)
+                                    {
+                                        cmajor::systemx::object::Value prevLine = currentInst->Operands()[operandIndex++];
+                                        cmajor::systemx::object::Value nextLine = currentInst->Operands()[operandIndex++];
+                                        cfg.push_back(std::make_pair(static_cast<int32_t>(prevLine.Val()), static_cast<int32_t>(nextLine.Val())));
+                                    }
                                     cmajor::systemx::object::FuncInfoRecord* funcInfoRecord = new cmajor::systemx::object::FuncInfoRecord(
-                                        functionSymbolIndex, fullName, sourceFileNameIdValue.Val(), frameSizeValue.Val());
+                                        functionSymbolIndex, fullName, sourceFileNameIdValue.Val(), frameSizeValue.Val(), mainValue.Val() == 1);
+                                    for (const auto& cfgRecord : cfg)
+                                    {
+                                        funcInfoRecord->AddToCfg(cfgRecord.first, cfgRecord.second);
+                                    }
                                     assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(funcInfoRecord);
                                 }
                                 else
@@ -317,7 +332,7 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                     }
                     else
                     {
-                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO requires five operands", currentInst->GetSourcePos());
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA FUNCINFO requires at least 7 operands", currentInst->GetSourcePos());
                     }
                     break;
                 }

@@ -98,6 +98,34 @@ void MDStruct::AddItem(const std::string& fieldName, MDItem* item)
     items.push_back(std::make_pair(fieldName, item));
 }
 
+MDArray::MDArray() : MDItem(MDItemKind::array)
+{
+}
+
+void MDArray::AddItem(MDItem* item)
+{
+    items.push_back(item);
+}
+
+void MDArray::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write("[");
+    bool first = true;
+    for (const auto& item : items)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            formatter.Write(", ");
+        }
+        item->Write(formatter);
+    }
+    formatter.Write("]");
+}
+
 MDBasicBlockRef::MDBasicBlockRef(void* bb_) : MDItem(MDItemKind::basicBlockRef), bb(bb_)
 {
 }
@@ -138,9 +166,16 @@ MDString* Metadata::CreateMDString(const std::string& value)
     return item;
 }
 
+MDArray* Metadata::CreateMDArray()
+{
+    MDArray* item = new MDArray();
+    AddItem(item);
+    return item;
+}
+
 void Metadata::AddItem(MDItem* item)
 {
-    items.push_back(std::unique_ptr<MDItem>(item));;
+    items.push_back(std::unique_ptr<MDItem>(item));
 }
 
 MDStructRef* Metadata::CreateMDStructRef(int id)

@@ -35,6 +35,15 @@ MetadataString::MetadataString(const std::string& value_) : MetadataItem(Metadat
 {
 }
 
+MetadataArray::MetadataArray() : MetadataItem(MetadataItemKind::metadataArray)
+{
+}
+
+void MetadataArray::AddItem(MetadataItem* item)
+{
+    items.push_back(item);
+}
+
 MetadataStruct::MetadataStruct(const soul::ast::SourcePos& sourcePos_, int32_t id_) : sourcePos(sourcePos_), id(id_)
 {
 }
@@ -140,6 +149,13 @@ MetadataString* Metadata::CreateMetadataString(const std::string& value)
         stringItemMap[val] = metadataString;
         return metadataString;
     }
+}
+
+MetadataArray* Metadata::CreateMetadataArray()
+{
+    MetadataArray* metadataArray = new MetadataArray();
+    metadataItems.push_back(std::unique_ptr<MetadataItem>(metadataArray));
+    return metadataArray;
 }
 
 MetadataRef* Metadata::CreateMetadataRef(const soul::ast::SourcePos& sourcePos, int32_t nodeId)

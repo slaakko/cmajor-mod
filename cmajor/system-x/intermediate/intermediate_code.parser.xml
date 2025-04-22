@@ -1662,24 +1662,29 @@
      </action>
      <token first="{COLON}" name="COLON"/>
     </sequence>
-    <action first="{EXCLAMATION, FALSE, NUMBER, STRING, TRUE}">
-     <nonterminal first="{EXCLAMATION, FALSE, NUMBER, STRING, TRUE}" ruleName="MetadataItem"/>
+    <action first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+     <nonterminal first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}" ruleName="MetadataItem"/>
     </action>
    </sequence>
   </rule>
-  <rule first="{EXCLAMATION, FALSE, NUMBER, STRING, TRUE}" name="MetadataItem">
-   <choice first="{EXCLAMATION, FALSE, NUMBER, STRING, TRUE}">
-    <choice first="{FALSE, NUMBER, STRING, TRUE}">
-     <choice first="{FALSE, NUMBER, TRUE}">
-      <action first="{FALSE, TRUE}">
-       <nonterminal first="{FALSE, TRUE}" ruleName="MetadataBool"/>
-      </action>
-      <action first="{NUMBER}">
-       <nonterminal first="{NUMBER}" ruleName="MetadataLong"/>
+  <rule first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}" name="MetadataItem">
+   <choice first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+    <choice first="{FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+     <choice first="{FALSE, NUMBER, STRING, TRUE}">
+      <choice first="{FALSE, NUMBER, TRUE}">
+       <action first="{FALSE, TRUE}">
+        <nonterminal first="{FALSE, TRUE}" ruleName="MetadataBool"/>
+       </action>
+       <action first="{NUMBER}">
+        <nonterminal first="{NUMBER}" ruleName="MetadataLong"/>
+       </action>
+      </choice>
+      <action first="{STRING}">
+       <nonterminal first="{STRING}" ruleName="MetadataString"/>
       </action>
      </choice>
-     <action first="{STRING}">
-      <nonterminal first="{STRING}" ruleName="MetadataString"/>
+     <action first="{LBRACKET}">
+      <nonterminal first="{LBRACKET}" ruleName="MetadataArray"/>
      </action>
     </choice>
     <action first="{EXCLAMATION}">
@@ -1706,6 +1711,37 @@
    <action first="{STRING}">
     <token first="{STRING}" name="STRING"/>
    </action>
+  </rule>
+  <rule first="{LBRACKET}" name="MetadataArray">
+   <sequence first="{LBRACKET}">
+    <sequence first="{LBRACKET}">
+     <action first="{LBRACKET}">
+      <token first="{LBRACKET}" name="LBRACKET"/>
+     </action>
+     <optional first="{#, EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+      <group first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+       <sequence first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+        <action first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+         <nonterminal first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}" ruleName="MetadataItem"/>
+        </action>
+        <kleene first="{#, COMMA}">
+         <group first="{COMMA}">
+          <sequence first="{COMMA}">
+           <token first="{COMMA}" name="COMMA"/>
+           <action first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}">
+            <nonterminal first="{EXCLAMATION, FALSE, LBRACKET, NUMBER, STRING, TRUE}" ruleName="MetadataItem"/>
+           </action>
+          </sequence>
+         </group>
+        </kleene>
+       </sequence>
+      </group>
+     </optional>
+    </sequence>
+    <action first="{RBRACKET}">
+     <token first="{RBRACKET}" name="RBRACKET"/>
+    </action>
+   </sequence>
   </rule>
   <rule first="{EXCLAMATION}" name="MetadataRef">
    <sequence first="{EXCLAMATION}">

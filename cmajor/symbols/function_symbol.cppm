@@ -283,6 +283,8 @@ public:
     void SetIntrinsic(IntrinsicFunction* intrinsic_) { intrinsic.reset(intrinsic_);  }
     bool IsProgramMain() const { return isProgramMain; }
     void SetProgramMain() { isProgramMain = true; }
+    bool IsUserMain() const { return isUserMain; }
+    void SetUserMain() { isUserMain = true; }
     std::unique_ptr<soul::xml::Element> CreateDomElement(TypeMap& typeMap) override;
     std::u32string Info() const override { return groupName; }
     const char* ClassName() const override { return "FunctionSymbol"; }
@@ -344,6 +346,7 @@ private:
     FunctionGroupSymbol* functionGroup;
     std::unique_ptr<IntrinsicFunction> intrinsic;
     bool isProgramMain;
+    bool isUserMain;
     TypeSymbol* conversionSourceType;
     TypeSymbol* conversionTargetType;
     std::string compileUnitId;

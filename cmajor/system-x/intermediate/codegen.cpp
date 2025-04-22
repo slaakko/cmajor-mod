@@ -8,6 +8,7 @@ module cmajor.systemx.intermediate.codegen;
 import cmajor.systemx.intermediate.code;
 import cmajor.systemx.intermediate.data;
 import cmajor.systemx.intermediate.reg.allocator;
+import cmajor.systemx.ir;
 import cmajor.systemx.machine;
 import cmajor.systemx.assembler;
 import util;
@@ -731,19 +732,19 @@ void EmitNeg(NegInstruction& inst, CodeGenerator& codeGen)
     int machineInst = -1;
     switch (inst.Result()->GetType()->Id())
     {
-    case sbyteTypeId: machineInst = cmajor::systemx::machine::NEG; break;
-    case byteTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
-    case shortTypeId: machineInst = cmajor::systemx::machine::NEG; break;
-    case ushortTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
-    case intTypeId: machineInst = cmajor::systemx::machine::NEG; break;
-    case uintTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
-    case longTypeId: machineInst = cmajor::systemx::machine::NEG; break;
-    case ulongTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
-    case doubleTypeId: machineInst = cmajor::systemx::machine::FSUB; break;
-    default:
-    {
-        codeGen.Error("error emitting neg: invalid result type");
-    }
+        case sbyteTypeId: machineInst = cmajor::systemx::machine::NEG; break;
+        case byteTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
+        case shortTypeId: machineInst = cmajor::systemx::machine::NEG; break;
+        case ushortTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
+        case intTypeId: machineInst = cmajor::systemx::machine::NEG; break;
+        case uintTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
+        case longTypeId: machineInst = cmajor::systemx::machine::NEG; break;
+        case ulongTypeId: machineInst = cmajor::systemx::machine::NEGU; break;
+        case doubleTypeId: machineInst = cmajor::systemx::machine::FSUB; break;
+        default:
+        {
+            codeGen.Error("error emitting neg: invalid result type");
+        }
     }
     cmajor::systemx::assembler::Instruction* negInst = new cmajor::systemx::assembler::Instruction(machineInst);
     negInst->AddOperand(MakeRegOperand(reg));
@@ -769,35 +770,35 @@ void EmitZeroExtension(ZeroExtendInstruction& inst, CodeGenerator& codeGen)
     cmajor::systemx::assembler::Node* maskOperand = nullptr;
     switch (inst.Result()->GetType()->Id())
     {
-    case boolTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0x01), true);
-        break;
-    }
-    case byteTypeId:
-    case sbyteTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFF), true);
-        break;
-    }
-    case ushortTypeId:
-    case shortTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFF), true);
-        break;
-    }
-    case uintTypeId:
-    case intTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFF), true);
-        break;
-    }
-    case ulongTypeId:
-    case longTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFFFFFFFFFF), true);
-        break;
-    }
+        case boolTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0x01), true);
+            break;
+        }
+        case byteTypeId:
+        case sbyteTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFF), true);
+            break;
+        }
+        case ushortTypeId:
+        case shortTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFF), true);
+            break;
+        }
+        case uintTypeId:
+        case intTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFF), true);
+            break;
+        }
+        case ulongTypeId:
+        case longTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFFFFFFFFFF), true);
+            break;
+        }
     }
     if (!maskOperand)
     {
@@ -841,101 +842,101 @@ void EmitBinOpInst(BinaryInstruction& inst, CodeGenerator& codeGen)
     bool mod = false;
     switch (inst.GetOpCode())
     {
-    case OpCode::add:
-    {
-        signedMachineInst = cmajor::systemx::machine::ADD;
-        unsignedMachineInst = cmajor::systemx::machine::ADDU;
-        floatingMachineInst = cmajor::systemx::machine::FADD;
-        break;
-    }
-    case OpCode::sub:
-    {
-        signedMachineInst = cmajor::systemx::machine::SUB;
-        unsignedMachineInst = cmajor::systemx::machine::SUBU;
-        floatingMachineInst = cmajor::systemx::machine::FSUB;
-        break;
-    }
-    case OpCode::mul:
-    {
-        signedMachineInst = cmajor::systemx::machine::MUL;
-        unsignedMachineInst = cmajor::systemx::machine::MULU;
-        floatingMachineInst = cmajor::systemx::machine::FMUL;
-        break;
-    }
-    case OpCode::div_:
-    {
-        signedMachineInst = cmajor::systemx::machine::DIV;
-        unsignedMachineInst = cmajor::systemx::machine::DIVU;
-        floatingMachineInst = cmajor::systemx::machine::FDIV;
-        break;
-    }
-    case OpCode::mod:
-    {
-        signedMachineInst = cmajor::systemx::machine::DIV;
-        unsignedMachineInst = cmajor::systemx::machine::DIVU;
-        floatingMachineInst = cmajor::systemx::machine::FREM;
-        mod = true;
-        break;
-    }
-    case OpCode::and_:
-    {
-        signedMachineInst = cmajor::systemx::machine::AND;
-        unsignedMachineInst = cmajor::systemx::machine::AND;
-        break;
-    }
-    case OpCode::or_:
-    {
-        signedMachineInst = cmajor::systemx::machine::OR;
-        unsignedMachineInst = cmajor::systemx::machine::OR;
-        break;
-    }
-    case OpCode::xor_:
-    {
-        signedMachineInst = cmajor::systemx::machine::XOR;
-        unsignedMachineInst = cmajor::systemx::machine::XOR;
-        break;
-    }
-    case OpCode::shl:
-    {
-        signedMachineInst = cmajor::systemx::machine::SL;
-        unsignedMachineInst = cmajor::systemx::machine::SLU;
-        break;
-    }
-    case OpCode::shr:
-    {
-        signedMachineInst = cmajor::systemx::machine::SR;
-        unsignedMachineInst = cmajor::systemx::machine::SRU;
-        break;
-    }
+        case OpCode::add:
+        {
+            signedMachineInst = cmajor::systemx::machine::ADD;
+            unsignedMachineInst = cmajor::systemx::machine::ADDU;
+            floatingMachineInst = cmajor::systemx::machine::FADD;
+            break;
+        }
+        case OpCode::sub:
+        {
+            signedMachineInst = cmajor::systemx::machine::SUB;
+            unsignedMachineInst = cmajor::systemx::machine::SUBU;
+            floatingMachineInst = cmajor::systemx::machine::FSUB;
+            break;
+        }
+        case OpCode::mul:
+        {
+            signedMachineInst = cmajor::systemx::machine::MUL;
+            unsignedMachineInst = cmajor::systemx::machine::MULU;
+            floatingMachineInst = cmajor::systemx::machine::FMUL;
+            break;
+        }
+        case OpCode::div_:
+        {
+            signedMachineInst = cmajor::systemx::machine::DIV;
+            unsignedMachineInst = cmajor::systemx::machine::DIVU;
+            floatingMachineInst = cmajor::systemx::machine::FDIV;
+            break;
+        }
+        case OpCode::mod:
+        {
+            signedMachineInst = cmajor::systemx::machine::DIV;
+            unsignedMachineInst = cmajor::systemx::machine::DIVU;
+            floatingMachineInst = cmajor::systemx::machine::FREM;
+            mod = true;
+            break;
+        }
+        case OpCode::and_:
+        {
+            signedMachineInst = cmajor::systemx::machine::AND;
+            unsignedMachineInst = cmajor::systemx::machine::AND;
+            break;
+        }
+        case OpCode::or_:
+        {
+            signedMachineInst = cmajor::systemx::machine::OR;
+            unsignedMachineInst = cmajor::systemx::machine::OR;
+            break;
+        }
+        case OpCode::xor_:
+        {
+            signedMachineInst = cmajor::systemx::machine::XOR;
+            unsignedMachineInst = cmajor::systemx::machine::XOR;
+            break;
+        }
+        case OpCode::shl:
+        {
+            signedMachineInst = cmajor::systemx::machine::SL;
+            unsignedMachineInst = cmajor::systemx::machine::SLU;
+            break;
+        }
+        case OpCode::shr:
+        {
+            signedMachineInst = cmajor::systemx::machine::SR;
+            unsignedMachineInst = cmajor::systemx::machine::SRU;
+            break;
+        }
     }
     Type* type = inst.Result()->GetType();
     if (type->IsFundamentalType())
     {
         switch (type->Id())
         {
-        case sbyteTypeId:
-        case shortTypeId:
-        case intTypeId:
-        case longTypeId:
-        {
-            machineInst = signedMachineInst;
-            break;
-        }
-        case boolTypeId:
-        case byteTypeId:
-        case ushortTypeId:
-        case uintTypeId:
-        case ulongTypeId:
-        {
-            machineInst = unsignedMachineInst;
-            break;
-        }
-        case floatTypeId:
-        case doubleTypeId:
-        {
-            machineInst = floatingMachineInst;
-            break;
-        }
+            case sbyteTypeId:
+            case shortTypeId:
+            case intTypeId:
+            case longTypeId:
+            {
+                machineInst = signedMachineInst;
+                break;
+            }
+            case boolTypeId:
+            case byteTypeId:
+            case ushortTypeId:
+            case uintTypeId:
+            case ulongTypeId:
+            {
+                machineInst = unsignedMachineInst;
+                break;
+            }
+            case floatTypeId:
+            case doubleTypeId:
+            {
+                machineInst = floatingMachineInst;
+                break;
+            }
         }
     }
     if (machineInst == -1)
@@ -969,28 +970,28 @@ void EmitEqual(EqualInstruction& inst, CodeGenerator& codeGen)
     {
         switch (type->Id())
         {
-        case sbyteTypeId:
-        case shortTypeId:
-        case intTypeId:
-        case longTypeId:
-        {
-            machineInst = cmajor::systemx::machine::CMP;
-            break;
-        }
-        case boolTypeId:
-        case byteTypeId:
-        case ushortTypeId:
-        case uintTypeId:
-        case ulongTypeId:
-        {
-            machineInst = cmajor::systemx::machine::CMPU;
-            break;
-        }
-        case doubleTypeId:
-        {
-            machineInst = cmajor::systemx::machine::FCMP;
-            break;
-        }
+            case sbyteTypeId:
+            case shortTypeId:
+            case intTypeId:
+            case longTypeId:
+            {
+                machineInst = cmajor::systemx::machine::CMP;
+                break;
+            }
+            case boolTypeId:
+            case byteTypeId:
+            case ushortTypeId:
+            case uintTypeId:
+            case ulongTypeId:
+            {
+                machineInst = cmajor::systemx::machine::CMPU;
+                break;
+            }
+            case doubleTypeId:
+            {
+                machineInst = cmajor::systemx::machine::FCMP;
+                break;
+            }
         }
     }
     else if (type->IsPointerType())
@@ -1030,27 +1031,27 @@ void EmitLess(LessInstruction& inst, CodeGenerator& codeGen)
     {
         switch (type->Id())
         {
-        case sbyteTypeId:
-        case shortTypeId:
-        case intTypeId:
-        case longTypeId:
-        {
-            machineInst = cmajor::systemx::machine::CMP;
-            break;
-        }
-        case byteTypeId:
-        case ushortTypeId:
-        case uintTypeId:
-        case ulongTypeId:
-        {
-            machineInst = cmajor::systemx::machine::CMPU;
-            break;
-        }
-        case doubleTypeId:
-        {
-            machineInst = cmajor::systemx::machine::FCMP;
-            break;
-        }
+            case sbyteTypeId:
+            case shortTypeId:
+            case intTypeId:
+            case longTypeId:
+            {
+                machineInst = cmajor::systemx::machine::CMP;
+                break;
+            }
+            case byteTypeId:
+            case ushortTypeId:
+            case uintTypeId:
+            case ulongTypeId:
+            {
+                machineInst = cmajor::systemx::machine::CMPU;
+                break;
+            }
+            case doubleTypeId:
+            {
+                machineInst = cmajor::systemx::machine::FCMP;
+                break;
+            }
         }
     }
     else if (type->IsPointerType())
@@ -1367,35 +1368,35 @@ void EmitTruncate(TruncateInstruction& inst, CodeGenerator& codeGen)
     cmajor::systemx::assembler::Node* maskOperand = nullptr;
     switch (inst.Result()->GetType()->Id())
     {
-    case boolTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0x01), true);
-        break;
-    }
-    case byteTypeId:
-    case sbyteTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFF), true);
-        break;
-    }
-    case ushortTypeId:
-    case shortTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFF), true);
-        break;
-    }
-    case uintTypeId:
-    case intTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFF), true);
-        break;
-    }
-    case ulongTypeId:
-    case longTypeId:
-    {
-        maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFFFFFFFFFF), true);
-        break;
-    }
+        case boolTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0x01), true);
+            break;
+        }
+        case byteTypeId:
+        case sbyteTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFF), true);
+            break;
+        }
+        case ushortTypeId:
+        case shortTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFF), true);
+            break;
+        }
+        case uintTypeId:
+        case intTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFF), true);
+            break;
+        }
+        case ulongTypeId:
+        case longTypeId:
+        {
+            maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFFFFFFFFFF), true);
+            break;
+        }
     }
     if (!maskOperand)
     {
@@ -1726,6 +1727,8 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
     octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::assembler::FUNCINFO));
     octaInst->AddOperand(cmajor::systemx::assembler::MakeGlobalSymbol(function->Name()));
     std::string functionFullName;
+    bool main = false;
+    std::vector<std::pair<int64_t, int64_t>> cfg;
     MetadataRef* metadataRef = function->GetMetadataRef();
     if (metadataRef)
     {
@@ -1737,6 +1740,54 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
             {
                 MetadataString* fullNameStr = static_cast<MetadataString*>(fullNameItem);
                 functionFullName = fullNameStr->Value();
+            }
+            MetadataItem* mainItem = metadataStruct->GetItem("main");
+            if (mainItem && mainItem->Kind() == MetadataItemKind::metadataBool)
+            {
+                MetadataBool* mainBool = static_cast<MetadataBool*>(mainItem);
+                main = mainBool->Value();
+            }
+            MetadataItem* cfgItem = metadataStruct->GetItem("cfg");
+            if (cfgItem && cfgItem->Kind() == MetadataItemKind::metadataArray)
+            {
+                Context* context = codeGen.Ctx();
+                MetadataArray* cfgArray = static_cast<MetadataArray*>(cfgItem);
+                int32_t numLineStructs = cfgArray->ItemCount();
+                for (int32_t i = 0; i < numLineStructs; ++i)
+                {
+                    MetadataItem* lineStructItemRefItem = cfgArray->GetItem(i);
+                    if (lineStructItemRefItem->IsMetadataRef())
+                    {
+                        MetadataRef* lineStructMDRef = static_cast<MetadataRef*>(lineStructItemRefItem);
+                        MetadataStruct* mdStruct = lineStructMDRef->GetMetadataStruct();
+                        MetadataItem* nodeTypeItem = mdStruct->GetItem("nodeType");
+                        if (nodeTypeItem && nodeTypeItem->IsMetadataLong())
+                        {
+                            MetadataLong* nodeType = static_cast<MetadataLong*>(nodeTypeItem);
+                            if (nodeType->Value() == cmajor::systemx::ir::cfgNodeType)
+                            {
+                                int64_t prevLine = 0;
+                                int64_t nextLine = 0;
+                                MetadataItem* prevLineItem = mdStruct->GetItem("prevLine");
+                                if (prevLineItem && prevLineItem->IsMetadataLong())
+                                {
+                                    MetadataLong* prevLineLong = static_cast<MetadataLong*>(prevLineItem);
+                                    prevLine = prevLineLong->Value();
+                                }
+                                MetadataItem* nextLineItem = mdStruct->GetItem("nextLine");
+                                if (nextLineItem && nextLineItem->IsMetadataLong())
+                                {
+                                    MetadataLong* nextLineLong = static_cast<MetadataLong*>(nextLineItem);
+                                    nextLine = nextLineLong->Value();
+                                }
+                                if (prevLine != 0 && nextLine != 0)
+                                {
+                                    cfg.push_back(std::make_pair(prevLine, nextLine));
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -1759,6 +1810,14 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
         }
     }
     octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(frameSize));
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(main));
+    int64_t cfgSize = cfg.size();
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cfgSize));
+    for (const auto& linePair : cfg)
+    {
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(linePair.first));
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(linePair.second));
+    }
     codeGen.EmitDebugInfoInst(octaInst);
     codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
 }

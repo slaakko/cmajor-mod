@@ -96,6 +96,7 @@ struct IntermediateCodeParser
     static soul::parser::Match MetadataBool(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match MetadataLong(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match MetadataString(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
+    static soul::parser::Match MetadataArray(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match MetadataRef(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
 };
 

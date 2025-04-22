@@ -149,8 +149,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="color.cpp" />
-    <ClCompile Include="color.cppm" />
     <ClCompile Include="console.cpp" />
     <ClCompile Include="console.cppm" />
     <ClCompile Include="main.cpp" />

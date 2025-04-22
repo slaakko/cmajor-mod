@@ -125,20 +125,20 @@ int main(int argc, const char** argv)
                     {
                         switch (o)
                         {
-                        case 'h':
-                        {
-                            PrintHelp();
-                            return 1;
-                        }
-                        case 'v':
-                        {
-                            verbose = true;
-                            break;
-                        }
-                        default:
-                        {
-                            throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
-                        }
+                            case 'h':
+                            {
+                                PrintHelp();
+                                return 1;
+                            }
+                            case 'v':
+                            {
+                                verbose = true;
+                                break;
+                            }
+                            default:
+                            {
+                                throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
+                            }
                         }
                     }
                 }

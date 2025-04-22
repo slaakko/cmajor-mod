@@ -1755,6 +1755,11 @@ void* SystemXEmitter::CreateMDStruct()
     return context->CreateMDStruct();
 }
 
+void* SystemXEmitter::CreateMDArray()
+{
+    return context->CreateMDArray();
+}
+
 void* SystemXEmitter::CreateMDBasicBlockRef(void* bb)
 {
     return context->CreateMDBasicBlockRef(bb);
@@ -1763,6 +1768,11 @@ void* SystemXEmitter::CreateMDBasicBlockRef(void* bb)
 void SystemXEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
 {
     context->AddMDStructItem(static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct), fieldName, static_cast<cmajor::systemx::ir::MDItem*>(mdItem));
+}
+
+void SystemXEmitter::AddMDArrayItem(void* mdArray, void* mdItem)
+{
+    context->AddMDArrayITem(static_cast<cmajor::systemx::ir::MDArray*>(mdArray), static_cast<cmajor::systemx::ir::MDItem*>(mdItem));
 }
 
 void SystemXEmitter::SetFunctionMdId(void* function, int mdId)

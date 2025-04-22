@@ -73,6 +73,7 @@ public:
     MetadataBool* CreateMetadataBool(bool value);
     MetadataLong* CreateMetadataLong(int64_t value);
     MetadataString* CreateMetadataString(const std::string& value);
+    MetadataArray* CreateMetadataArray();
     MetadataRef* CreateMetadataRef(const soul::ast::SourcePos& sourcePos, int32_t nodeId);
     void ResolveMetadataReferences();
     RegisterPool& GetRegisterPool() { return registerPool; }

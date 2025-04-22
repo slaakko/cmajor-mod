@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.systemx.executor.color;
+export module cmajor.systemx.sxutil.color;
 
 import std.core;
 
-export namespace cmajor::systemx::executor {
+export namespace cmajor::systemx {
 
 enum class ConsoleColor : uint8_t
 {
@@ -18,4 +18,4 @@ enum class ConsoleColor : uint8_t
 std::u32string SetColors(ConsoleColor fgColor, ConsoleColor bgColor);
 std::u32string ResetColors();
 
-} // namespace cmajor::systemx::executor
+} // namespace cmajor::systemx

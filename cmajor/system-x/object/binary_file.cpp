@@ -125,38 +125,38 @@ std::string Section::Name() const
 {
     switch (kind)
     {
-    case SectionKind::fhdr:
-    {
-        return "header";
-    }
-    case SectionKind::code:
-    {
-        return "code";
-    }
-    case SectionKind::data:
-    {
-        return "data";
-    }
-    case SectionKind::symb:
-    {
-        return "symbol";
-    }
-    case SectionKind::link:
-    {
-        return "link";
-    }
-    case SectionKind::dbug:
-    {
-        return "debug";
-    }
-    case SectionKind::rsrc:
-    {
-        return "resource";
-    }
-    default:
-    {
-        return "unknown";
-    }
+        case SectionKind::fhdr:
+        {
+            return "header";
+        }
+        case SectionKind::code:
+        {
+            return "code";
+        }
+        case SectionKind::data:
+        {
+            return "data";
+        }
+        case SectionKind::symb:
+        {
+            return "symbol";
+        }
+        case SectionKind::link:
+        {
+            return "link";
+        }
+        case SectionKind::dbug:
+        {
+            return "debug";
+        }
+        case SectionKind::rsrc:
+        {
+            return "resource";
+        }
+        default:
+        {
+            return "unknown";
+        }
     }
 }
 
@@ -164,41 +164,41 @@ void Section::Write(util::BinaryStreamWriter& writer)
 {
     switch (kind)
     {
-    case SectionKind::fhdr:
-    {
-        writer.Write("FHDR", false);
-        break;
-    }
-    case SectionKind::code:
-    {
-        writer.Write("CODE", false);
-        break;
-    }
-    case SectionKind::data:
-    {
-        writer.Write("DATA", false);
-        break;
-    }
-    case SectionKind::symb:
-    {
-        writer.Write("SYMB", false);
-        break;
-    }
-    case SectionKind::link:
-    {
-        writer.Write("LINK", false);
-        break;
-    }
-    case SectionKind::dbug:
-    {
-        writer.Write("DBUG", false);
-        break;
-    }
-    case SectionKind::rsrc:
-    {
-        writer.Write("RSRC", false);
-        break;
-    }
+        case SectionKind::fhdr:
+        {
+            writer.Write("FHDR", false);
+            break;
+        }
+        case SectionKind::code:
+        {
+            writer.Write("CODE", false);
+            break;
+        }
+        case SectionKind::data:
+        {
+            writer.Write("DATA", false);
+            break;
+        }
+        case SectionKind::symb:
+        {
+            writer.Write("SYMB", false);
+            break;
+        }
+        case SectionKind::link:
+        {
+            writer.Write("LINK", false);
+            break;
+        }
+        case SectionKind::dbug:
+        {
+            writer.Write("DBUG", false);
+            break;
+        }
+        case SectionKind::rsrc:
+        {
+            writer.Write("RSRC", false);
+            break;
+        }
     }
     writer.Write(Length());
     writer.Write(BaseAddress());
@@ -517,21 +517,21 @@ void HeaderSection::Write(util::BinaryStreamWriter& writer)
 {
     switch (File()->Kind())
     {
-    case BinaryFileKind::objectFile:
-    {
-        writer.Write("CMSXOBJ", false);
-        break;
-    }
-    case BinaryFileKind::archiveFile:
-    {
-        writer.Write("CMSXLIB", false);
-        break;
-    }
-    case BinaryFileKind::executableFile:
-    {
-        writer.Write("CMSXEXE", false);
-        break;
-    }
+        case BinaryFileKind::objectFile:
+        {
+            writer.Write("CMSXOBJ", false);
+            break;
+        }
+        case BinaryFileKind::archiveFile:
+        {
+            writer.Write("CMSXLIB", false);
+            break;
+        }
+        case BinaryFileKind::executableFile:
+        {
+            writer.Write("CMSXEXE", false);
+            break;
+        }
     }
     writer.Write(static_cast<uint8_t>(current_binary_file_version));
     writer.Write(util::Path::GetFileName(File()->FilePath()));

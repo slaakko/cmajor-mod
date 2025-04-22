@@ -19,9 +19,10 @@ export namespace cmajor::systemx::backend {
 const int64_t fileInfoNodeType = 0;
 const int64_t funcInfoNodeType = 1;
 const int64_t lineInfoNodeType = 2;
-const int64_t beginTryNodeType = 3;
-const int64_t endTryNodeType = 4;
-const int64_t catchNodeType = 5;
+const int64_t cfgNodeType = 3;
+const int64_t beginTryNodeType = 4;
+const int64_t endTryNodeType = 5;
+const int64_t catchNodeType = 6;
 
 struct Cleanup
 {
@@ -109,6 +110,7 @@ public:
     int Install(const std::u16string& str) override;
     int Install(const std::u32string& str) override;
     int GetLineNumber(const soul::ast::Span& span);
+    void AddCFGItem(int prevLineNumber, int nextLineNumber);
 private:
     cmajor::ir::Emitter* emitter;
     cmajor::symbols::Context* context;
@@ -155,6 +157,9 @@ private:
     void* cleanupBlock;
     bool newCleanupNeeded;
     bool inTryBlock;
+    int beginLineNumber;
+    int endLineNumber;
+    void* cfg;
 };
 
 } // namespace cmajor::systemx::backend

@@ -65,8 +65,10 @@ public:
     void PopLines();
     std::vector<uint8_t> Read(int64_t count, cmajor::systemx::machine::Process* process);
     int64_t Write(const std::vector<uint8_t>& buffer, cmajor::systemx::machine::Process* process);
+    std::string ReadLine();
     void SetMachine(cmajor::systemx::machine::Machine* machine_) { machine = machine_; }
     void Start();
+    bool Started() const { return started; }
     void Stop();
     void Run();
     void Bind(int32_t md_);
@@ -106,6 +108,7 @@ private:
     cmajor::systemx::machine::Machine* machine;
     static std::unique_ptr<Terminal> instance;
     static bool initialized;
+    bool readingLine;
     void* consoleInputHandle;
     void* consoleOutputHandle;
     void* consoleErrorHandle;
@@ -128,6 +131,8 @@ private:
     bool sleepingOnTerminalInputEvent;
     bool terminalInputReady;
     bool exiting;
+    bool lineReady;
+    std::condition_variable_any lineReadyEventVar;
     std::condition_variable_any terminalEventVar;
     bool started;
     bool stopped;
@@ -171,10 +176,12 @@ void Terminal::Start()
 void Terminal::Stop()
 {
     if (!started) return;
+    started = false;
     stopped = true;
     if (waitHandle)
     {
         OsUnregisterConsoleCallBack(waitHandle);
+        waitHandle = nullptr;
     }
     exiting = true;
     terminalEventVar.notify_one();
@@ -354,6 +361,7 @@ void Terminal::Done()
 }
 
 Terminal::Terminal() :
+    readingLine(false),
     consoleInputHandle(OsGetStdHandle(0)),
     consoleOutputHandle(OsGetStdHandle(1)),
     consoleErrorHandle(OsGetStdHandle(2)),
@@ -371,6 +379,7 @@ Terminal::Terminal() :
     terminalInputEvent(cmajor::systemx::machine::EventKind::terminalInputEvent, 0),
     sleepingOnTerminalInputEvent(false),
     terminalInputReady(false),
+    lineReady(false),
     exiting(false),
     started(false),
     stopped(false),
@@ -621,7 +630,15 @@ void Terminal::HandleNewLine()
     {
         terminalInputBuffer.push_back(static_cast<uint8_t>(c));
     }
-    Wakeup(nullptr, terminalInputEvent);
+    if (readingLine)
+    {
+        lineReady = true;
+        lineReadyEventVar.notify_all();
+    }
+    else
+    {
+        Wakeup(nullptr, terminalInputEvent);
+    }
 }
 
 void Terminal::HandleBackspace()
@@ -1127,6 +1144,36 @@ int64_t Terminal::Write(const std::vector<uint8_t>& buffer, cmajor::systemx::mac
     return buffer.size();
 }
 
+std::string Terminal::ReadLine()
+{
+    TerminalMode prevMode = mode;
+    SetCooked();
+    readingLine = true;
+    std::string line;
+    std::list<uint8_t> prevInpuBuffer = std::move(terminalInputBuffer);
+    std::unique_lock<std::recursive_mutex> lock(machine->Lock());
+    lineReady = false;
+    lineReadyEventVar.wait(lock, [this] { return machine->Exiting() || lineReady;  });
+    if (machine->Exiting())
+    {
+        mode = prevMode;
+        return std::string();
+    }
+    while (!terminalInputBuffer.empty())
+    {
+        char c = static_cast<char>(terminalInputBuffer.front());
+        terminalInputBuffer.pop_front();
+        if (c != '\n')
+        {
+            line.append(1, c);
+        }
+    }
+    terminalInputBuffer = std::move(prevInpuBuffer);
+    readingLine = false;
+    mode = prevMode;
+    return line;
+}
+
 void Terminal::PutKeyPressedMessage(char32_t ch)
 {
     if ((GetDebugMode() & debugTerminalMode) != 0)
@@ -1271,6 +1318,11 @@ void StopTerminal()
     }
 }
 
+bool TerminalStarted()
+{
+    return Terminal::Instance().Started();
+}
+
 void InitTerminal()
 {
     Terminal::Init();
@@ -1279,6 +1331,11 @@ void InitTerminal()
 void DoneTerminal()
 {
     Terminal::Done();
+}
+
+std::string ReadLineFromTerminal()
+{
+    return Terminal::Instance().ReadLine();
 }
 
 } // namespace cmajor::systemx::kernel

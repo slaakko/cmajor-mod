@@ -36,11 +36,12 @@ const int numInsts = ESPEC + 1;
 const uint64_t FILEINFO = 0;
 const uint64_t FUNCINFO = 1;
 const uint64_t LINEINFO = 2;
-const uint64_t BEGINTRY = 3;
-const uint64_t ENDTRY = 4;
-const uint64_t CATCH = 5;
-const uint64_t BEGINCLEANUP = 6;
-const uint64_t ENDCLEANUP = 7;
+const uint64_t CFG = 3;
+const uint64_t BEGINTRY = 4;
+const uint64_t ENDTRY = 5;
+const uint64_t CATCH = 6;
+const uint64_t BEGINCLEANUP = 7;
+const uint64_t ENDCLEANUP = 8;
 
 class OpCode : public Node
 {

@@ -31,6 +31,7 @@ public:
     void DecrementRunnableProcesses();
     void WaitForProcessesExit();
     void MachineStateChanged() override;
+    std::vector<Process*> GetProcesses() const;
 private:
     ProcessManager();
     static std::unique_ptr<ProcessManager> instance;

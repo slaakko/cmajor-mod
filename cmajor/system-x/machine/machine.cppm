@@ -56,8 +56,10 @@ public:
     void AddObserver(MachineObserver* observer);
     void NotifyObservers();
     bool HasRunnableKernelProcess();
+    bool Started() const { return started; }
 private:
     void SetInstruction(Instruction* inst);
+    bool started;
     std::vector<Processor> processors;
     Clock clock;
     Scheduler* scheduler;

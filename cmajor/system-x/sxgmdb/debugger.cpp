@@ -117,7 +117,7 @@ void Debugger::Continue()
     Release();
 }
 
-void Debugger::Intercept()
+void Debugger::Intercept(cmajor::systemx::machine::Processor* processor)
 {
     switch (state)
     {
@@ -131,7 +131,6 @@ void Debugger::Intercept()
     {
         if (!breakpoints.empty())
         {
-            cmajor::systemx::machine::Processor* processor = process->GetProcessor();
             uint64_t pc = processor->Regs().GetPC();
             if (breakpoints.find(pc) != breakpoints.cend())
             {

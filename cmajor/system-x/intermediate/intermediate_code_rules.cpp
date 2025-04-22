@@ -82,7 +82,8 @@ std::map<int64_t, std::string>* GetRuleNameMapPtr()
         { 4396680239057469512, "IntermediateCodeParser.MetadataBool" },
         { 4396680239057469513, "IntermediateCodeParser.MetadataLong" },
         { 4396680239057469514, "IntermediateCodeParser.MetadataString" },
-        { 4396680239057469515, "IntermediateCodeParser.MetadataRef" }
+        { 4396680239057469515, "IntermediateCodeParser.MetadataArray" },
+        { 4396680239057469516, "IntermediateCodeParser.MetadataRef" }
     };
     return &ruleNameMap;
 }

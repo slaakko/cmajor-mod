@@ -10,7 +10,7 @@ import cmajor.systemx.machine.config;
 
 namespace cmajor::systemx::machine {
 
-Machine::Machine() : clock(), scheduler(nullptr), processors(), memory(*this), insts(), exiting(false), hasException(false)
+Machine::Machine() : clock(), scheduler(nullptr), processors(), memory(*this), insts(), exiting(false), hasException(false), started(false)
 {
     clock.SetMachine(this);
     int numProcessors = NumProcessors();
@@ -265,6 +265,7 @@ void Machine::SetInstruction(Instruction* inst)
 
 void Machine::Start()
 {
+    started = true;
     for (auto& processor : processors)
     {
         processor.Start();

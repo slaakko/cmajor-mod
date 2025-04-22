@@ -346,8 +346,10 @@ public:
     void* CreateMDStructRef(int id) override;
     int GetMDStructId(void* mdStruct) override;
     void* CreateMDStruct() override;
+    void* CreateMDArray() override;
     void* CreateMDBasicBlockRef(void* bb) override;
     void AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem) override;
+    void AddMDArrayItem(void* mdArray, void* mdItem) override;
     void SetFunctionMdId(void* function, int mdId) override;
     void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) override;
     void* GetMDStructRefForSourceFile(const std::string& sourceFileName) override;

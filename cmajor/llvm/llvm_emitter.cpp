@@ -2455,6 +2455,11 @@ void* LLVMEmitter::CreateMDStruct()
     return nullptr;
 }
 
+void* LLVMEmitter::CreateMDArray()
+{
+    return nullptr;
+}
+
 void* LLVMEmitter::CreateMDBasicBlockRef(void* bb)
 {
     return nullptr;
@@ -2466,6 +2471,10 @@ int LLVMEmitter::GetMDStructId(void* mdStruct)
 }
 
 void LLVMEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
+{
+}
+
+void LLVMEmitter::AddMDArrayItem(void* mdArray, void* mdItem)
 {
 }
 

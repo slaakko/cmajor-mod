@@ -475,6 +475,11 @@ void Context::AddMDStructItem(MDStruct* mdStruct, const std::string& fieldName, 
     mdStruct->AddItem(fieldName, item);
 }
 
+void Context::AddMDArrayITem(MDArray* mdArray, MDItem* item)
+{
+    mdArray->AddItem(item);
+}
+
 void Context::SetCurrentLineNumber(int lineNumber)
 {
     if (lineNumber != -1)

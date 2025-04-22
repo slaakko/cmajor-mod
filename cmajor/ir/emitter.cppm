@@ -378,9 +378,11 @@ public:
     virtual void* CreateMDString(const std::string& value) = 0;
     virtual void* CreateMDStructRef(int id) = 0;
     virtual void* CreateMDStruct() = 0;
+    virtual void* CreateMDArray() = 0;
     virtual void* CreateMDBasicBlockRef(void* bb) = 0;
     virtual int GetMDStructId(void* mdStruct) = 0;
     virtual void AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem) = 0;
+    virtual void AddMDArrayItem(void* mdArray, void* mdItem) = 0;
     virtual void SetFunctionMdId(void* function, int mdId) = 0;
     virtual void* GetMDStructRefForSourceFile(const std::string& sourceFileName) = 0;
     virtual void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) = 0;
