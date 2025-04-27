@@ -110,9 +110,9 @@ void FuncInfoRecord::Read(DebugSection* debugSection)
     uint32_t cfgSize = debugSection->ReadTetra();
     for (uint32_t i = 0; i < cfgSize; ++i)
     {
-        uint32_t prevLine = debugSection->ReadTetra();
-        uint32_t nextLine = debugSection->ReadTetra();
-        AddToCfg(prevLine, nextLine);
+        uint32_t prev = debugSection->ReadTetra();
+        uint32_t next = debugSection->ReadTetra();
+        AddToCfg(prev, next);
     }
     main = debugSection->ReadByte() != 0;
 }
@@ -126,9 +126,9 @@ std::string FuncInfoRecord::ToString() const
     return str;
 }
 
-void FuncInfoRecord::AddToCfg(int32_t prevLine, int32_t nextLine)
+void FuncInfoRecord::AddToCfg(int32_t prev, int32_t next)
 {
-    cfg.push_back(std::make_pair(prevLine, nextLine));
+    cfg.push_back(std::make_pair(prev, next));
 }
 
 StartFuncRecord::StartFuncRecord() : DebugRecord(DebugRecordKind::startFunc), functionSymbolIndex()
@@ -185,12 +185,12 @@ std::string EndFuncRecord::ToString() const
     return str;
 }
 
-LineInfoRecord::LineInfoRecord() : DebugRecord(DebugRecordKind::lineInfo), offset(), lineNumber()
+LineInfoRecord::LineInfoRecord() : DebugRecord(DebugRecordKind::lineInfo), offset(), lineColLen(), index(-1)
 {
 }
 
-LineInfoRecord::LineInfoRecord(uint32_t offset_, uint32_t lineNumber_) :
-    DebugRecord(DebugRecordKind::lineInfo), offset(offset_), lineNumber(lineNumber_)
+LineInfoRecord::LineInfoRecord(uint32_t offset_, const soul::ast::LineColLen& lineColLen_, int32_t index_) :
+    DebugRecord(DebugRecordKind::lineInfo), offset(offset_), lineColLen(lineColLen_), index(index_)
 {
 }
 
@@ -198,20 +198,29 @@ void LineInfoRecord::Emit(DebugSection* debugSection)
 {
     DebugRecord::Emit(debugSection);
     debugSection->EmitTetra(offset);
-    debugSection->EmitTetra(lineNumber);
+    debugSection->EmitTetra(index);
+    debugSection->EmitTetra(lineColLen.line);
+    debugSection->EmitTetra(lineColLen.col);
+    debugSection->EmitTetra(lineColLen.len);
 }
 
 void LineInfoRecord::Read(DebugSection* debugSection)
 {
     DebugRecord::Read(debugSection);
     offset = debugSection->ReadTetra();
-    lineNumber = debugSection->ReadTetra();
+    index = debugSection->ReadTetra();
+    int32_t lineNumber = debugSection->ReadTetra();
+    int32_t col = debugSection->ReadTetra();
+    int32_t len = debugSection->ReadTetra();
+    lineColLen = soul::ast::LineColLen(lineNumber, col, len);
 }
 
 std::string LineInfoRecord::ToString() const
 {
     std::string str = DebugRecordKindStr(Kind());
-    str.append("(offset=#").append(util::ToHexString(offset)).append(", lineNumber=").append(std::to_string(lineNumber)).append(")");
+    str.append("(offset=#").append(util::ToHexString(offset)).append(", lineNumber=").
+        append(std::to_string(lineColLen.line)).
+        append(", col=").append(std::to_string(lineColLen.col)).append(", len=").append(std::to_string(lineColLen.len)).append(")");
     return str;
 }
 

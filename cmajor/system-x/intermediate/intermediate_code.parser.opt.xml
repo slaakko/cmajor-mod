@@ -210,35 +210,42 @@
    </action>
   </rule>
   <rule first="{LBRACE}" name="StructureType">
-   <sequence first="{LBRACE}">
-    <sequence first="{LBRACE}">
-     <action first="{LBRACE}">
-      <token first="{LBRACE}" name="LBRACE"/>
-     </action>
-     <optional first="{#, BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
-      <group first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
-       <sequence first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
-        <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
-         <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
+   <action first="{LBRACE}">
+    <group first="{LBRACE}">
+     <sequence first="{LBRACE}">
+      <sequence first="{LBRACE}">
+       <sequence first="{LBRACE}">
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
         </action>
-        <kleene first="{#, COMMA}">
-         <group first="{COMMA}">
-          <sequence first="{COMMA}">
-           <token first="{COMMA}" name="COMMA"/>
+        <optional first="{#, BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+         <group first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+          <sequence first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
            <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
             <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
            </action>
+           <kleene first="{#, COMMA}">
+            <group first="{COMMA}">
+             <sequence first="{COMMA}">
+              <token first="{COMMA}" name="COMMA"/>
+              <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+               <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
+              </action>
+             </sequence>
+            </group>
+           </kleene>
           </sequence>
          </group>
-        </kleene>
+        </optional>
        </sequence>
-      </group>
-     </optional>
-    </sequence>
-    <action first="{RBRACE}">
-     <token first="{RBRACE}" name="RBRACE"/>
-    </action>
-   </sequence>
+       <token first="{RBRACE}" name="RBRACE"/>
+      </sequence>
+      <optional first="{#, EXCLAMATION}">
+       <nonterminal first="{EXCLAMATION}" ruleName="MetadataRef"/>
+      </optional>
+     </sequence>
+    </group>
+   </action>
   </rule>
   <rule first="{LBRACKET}" name="ArrayType">
    <sequence first="{LBRACKET}">

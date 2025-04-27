@@ -637,6 +637,8 @@ public:
     void WriteXmlDocument(const std::string& filePath);
     void SetNextRegNumber(int32_t nextRegNumber_) { nextRegNumber = nextRegNumber_; }
     int32_t NextRegNumber() const { return nextRegNumber; }
+    bool IndexSeen(int32_t index) const;
+    void AddIndex(int32_t index);
 private:
     FunctionFlags flags;
     soul::ast::SourcePos sourcePos;
@@ -650,6 +652,7 @@ private:
     std::vector<std::unique_ptr<RegValue>> regValues;
     std::vector<BasicBlock*> retBlocks;
     int32_t nextRegNumber;
+    std::set<int32_t> indexSet;
 };
 
 class Code : public util::Component

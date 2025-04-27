@@ -386,10 +386,15 @@ public:
     virtual void SetFunctionMdId(void* function, int mdId) = 0;
     virtual void* GetMDStructRefForSourceFile(const std::string& sourceFileName) = 0;
     virtual void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) = 0;
+    virtual void SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen) = 0;
+    virtual int32_t GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const = 0;
     bool GenerateLocationInfo() const { return generateLocationInfo; }
     void SetGenerateLocationInfo(bool generateLocationInfo_) { generateLocationInfo = generateLocationInfo_; }
     virtual void SetSpan(const soul::ast::Span& span) {}
     virtual void SetMetadataRef(void* inst, void* mdStructRef) = 0;
+    virtual void SetMetadataRefForStructType(void* structType, void* mdRef) = 0;
+    virtual void* GetMetadataRefForStructType(void* structType) const = 0;
+    virtual int GetTypeId(void* type) const = 0;
     virtual void FinalizeFunction(void* function, bool hasCleanup) = 0;
     virtual int Install(const std::string& str) = 0;
     virtual int Install(const std::u16string& str) = 0;

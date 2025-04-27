@@ -1739,7 +1739,7 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
     {
         cmajor::ast::CompoundStatementNode* action = static_cast<cmajor::ast::CompoundStatementNode*>(rangeForStatementNode.Action());
     }
-    soul::ast::Span initSpan = rangeForStatementNode.TypeExpr()->GetSpan();
+    soul::ast::Span initSpan = rangeForStatementNode.InitSpan();
     soul::ast::Span containerSpan = rangeForStatementNode.Container()->GetSpan();
     std::unique_ptr<BoundExpression> container = BindExpression(rangeForStatementNode.Container(), boundCompileUnit, currentFunction, containerScope, this);
     cmajor::symbols::TypeSymbol* plainContainerType = container->GetType()->PlainType(context);
@@ -1761,49 +1761,66 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
         iteratorTypeNode.reset(new cmajor::ast::IdentifierNode(span, U"Iterator"));
     }
     cmajor::ast::CloneContext cloneContext;
-    std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode(new cmajor::ast::CompoundStatementNode(span));
-    if (rangeForStatementNode.Action()->GetNodeType() == cmajor::ast::NodeType::compoundStatementNode)
+    std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode(new cmajor::ast::CompoundStatementNode(rangeForStatementNode.ForSpan()));
+    if (rangeForStatementNode.Parent()->IsCompoundStatementNode())
     {
-        cmajor::ast::CompoundStatementNode* action = static_cast<cmajor::ast::CompoundStatementNode*>(rangeForStatementNode.Action());
+        cmajor::ast::CompoundStatementNode* parentCompound = static_cast<cmajor::ast::CompoundStatementNode*>(rangeForStatementNode.Parent());
+        compoundStatementNode->SetEndSpan(parentCompound->EndSpan());
     }
     compoundStatementNode->SetParent(rangeForStatementNode.Parent());
-    cmajor::ast::ConstructionStatementNode* constructEndIteratorStatement = new cmajor::ast::ConstructionStatementNode(span,
-        new cmajor::ast::DotNode(span, containerTypeNode->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))), 
-        new cmajor::ast::IdentifierNode(span, U"@end"));
+    cmajor::ast::ConstructionStatementNode* constructEndIteratorStatement = new cmajor::ast::ConstructionStatementNode(rangeForStatementNode.ForSpan(),
+        new cmajor::ast::DotNode(rangeForStatementNode.ForSpan(), containerTypeNode->Clone(cloneContext), 
+            static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))),
+        new cmajor::ast::IdentifierNode(rangeForStatementNode.ForSpan(), U"@end"));
     if (container->GetType()->IsConstType())
     {
-        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(span, U"CEnd"))));
+        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(rangeForStatementNode.ForSpan(), 
+            new cmajor::ast::DotNode(rangeForStatementNode.ForSpan(), rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(rangeForStatementNode.ForSpan(), U"CEnd"))));
     }
     else
     {
-        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(span, U"End"))));
+        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(rangeForStatementNode.ForSpan(), 
+            new cmajor::ast::DotNode(rangeForStatementNode.ForSpan(), rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(rangeForStatementNode.ForSpan(), U"End"))));
     }
     compoundStatementNode->AddStatement(constructEndIteratorStatement);
-    cmajor::ast::ConstructionStatementNode* constructIteratorStatement = new cmajor::ast::ConstructionStatementNode(initSpan,
-        new cmajor::ast::DotNode(span, containerTypeNode->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))), 
-        new cmajor::ast::IdentifierNode(span, U"@it"));
+    cmajor::ast::ConstructionStatementNode* constructIteratorStatement = new cmajor::ast::ConstructionStatementNode(rangeForStatementNode.ForSpan(),
+        new cmajor::ast::DotNode(rangeForStatementNode.ForSpan(), containerTypeNode->Clone(cloneContext), 
+            static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))),
+        new cmajor::ast::IdentifierNode(rangeForStatementNode.ForSpan(), U"@it"));
     if (container->GetType()->IsConstType())
     {
-        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(span, U"CBegin"))));
+        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(rangeForStatementNode.ForSpan(), 
+            new cmajor::ast::DotNode(rangeForStatementNode.ForSpan(), rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(rangeForStatementNode.ForSpan(), U"CBegin"))));
     }
     else
     {
-        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(span, U"Begin"))));
+        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(rangeForStatementNode.ForSpan(), 
+            new cmajor::ast::DotNode(rangeForStatementNode.ForSpan(), rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(rangeForStatementNode.ForSpan(), U"Begin"))));
     }
-    cmajor::ast::Node* itNotEndCond = new cmajor::ast::NotEqualNode(span, new cmajor::ast::IdentifierNode(span, U"@it"), new cmajor::ast::IdentifierNode(span, U"@end"));
+    cmajor::ast::Node* itNotEndCond = new cmajor::ast::NotEqualNode(rangeForStatementNode.ColonSpan(), 
+        new cmajor::ast::IdentifierNode(rangeForStatementNode.ColonSpan(), U"@it"), new cmajor::ast::IdentifierNode(rangeForStatementNode.ColonSpan(), U"@end"));
     cmajor::ast::StatementNode* incrementItStatement = new cmajor::ast::ExpressionStatementNode(containerSpan, new cmajor::ast::PrefixIncrementNode(containerSpan, 
         new cmajor::ast::IdentifierNode(containerSpan, U"@it")));
-    cmajor::ast::CompoundStatementNode* actionStatement = new cmajor::ast::CompoundStatementNode(span);
-    cmajor::ast::ConstructionStatementNode* constructLoopVarStatement = new cmajor::ast::ConstructionStatementNode(span,
+    soul::ast::Span endSpan = rangeForStatementNode.InitSpan();
+    if (rangeForStatementNode.Action()->IsCompoundStatementNode())
+    {
+        cmajor::ast::CompoundStatementNode* compoundStatement = static_cast<cmajor::ast::CompoundStatementNode*>(rangeForStatementNode.Action());
+        endSpan = compoundStatement->EndSpan();
+    }
+    cmajor::ast::CompoundStatementNode* actionStatement = new cmajor::ast::CompoundStatementNode(rangeForStatementNode.InitSpan());
+    actionStatement->SetEndSpan(endSpan);
+    cmajor::ast::ConstructionStatementNode* constructLoopVarStatement = new cmajor::ast::ConstructionStatementNode(rangeForStatementNode.InitSpan(),
         rangeForStatementNode.TypeExpr()->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(rangeForStatementNode.Id()->Clone(cloneContext)));
-    constructLoopVarStatement->AddArgument(new cmajor::ast::DerefNode(span, new cmajor::ast::IdentifierNode(span, U"@it")));
+    constructLoopVarStatement->AddArgument(new cmajor::ast::DerefNode(rangeForStatementNode.InitSpan(), 
+        new cmajor::ast::IdentifierNode(rangeForStatementNode.InitSpan(), U"@it")));
     actionStatement->AddStatement(constructLoopVarStatement);
     actionStatement->AddStatement(static_cast<cmajor::ast::StatementNode*>(rangeForStatementNode.Action()->Clone(cloneContext)));
-    cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(span, constructIteratorStatement, itNotEndCond, incrementItStatement, actionStatement);
+    cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(rangeForStatementNode.ForSpan(), 
+        constructIteratorStatement, itNotEndCond, incrementItStatement, actionStatement);
     compoundStatementNode->AddStatement(forStatement);
 
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());

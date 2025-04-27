@@ -235,11 +235,11 @@ std::string StringTable::GetString(SymbolTable& symbolTable, int32_t stringId, u
     return std::string();
 }
 
-LineNumberTableEntry::LineNumberTableEntry() : offset(), lineNumber()
+LineNumberTableEntry::LineNumberTableEntry() : offset(), lineColLen(), index(-1)
 {
 }
 
-LineNumberTableEntry::LineNumberTableEntry(uint32_t offset_, uint32_t lineNumber_) : offset(offset_), lineNumber(lineNumber_)
+LineNumberTableEntry::LineNumberTableEntry(uint32_t offset_, const soul::ast::LineColLen& lineColLen_, int32_t index_) : offset(offset_), lineColLen(lineColLen_), index(index_)
 {
 }
 
@@ -247,13 +247,27 @@ void LineNumberTableEntry::Write(Section* section)
 {
     section->Align(4);
     section->EmitTetra(offset);
-    section->EmitTetra(lineNumber);
+    section->EmitTetra(index);
+    section->EmitTetra(lineColLen.line);
+    section->EmitTetra(lineColLen.col);
+    section->EmitTetra(lineColLen.len);
 }
 
-void LineNumberTableEntry::Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+int64_t LineNumberTableEntry::Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
 {
-    offset = memory.ReadTetra(rv, address, cmajor::systemx::machine::Protection::read);
-    lineNumber = memory.ReadTetra(rv, address + 4, cmajor::systemx::machine::Protection::read);
+    int64_t addr = address;
+    offset = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    index = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    int32_t lineNumber = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    int32_t col = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    int32_t len = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    lineColLen = soul::ast::LineColLen(lineNumber, col, len);
+    return addr;
 }
 
 LineNumberTable::LineNumberTable()
@@ -262,7 +276,11 @@ LineNumberTable::LineNumberTable()
 
 void LineNumberTable::AddEntry(const LineNumberTableEntry& entry)
 {
-    entries.push_back(entry);
+    while (entry.index >= entries.size())
+    {
+        entries.push_back(LineNumberTableEntry());
+    }
+    entries[entry.index] = entry;
 }
 
 void LineNumberTable::Write(Section* section)
@@ -276,6 +294,14 @@ void LineNumberTable::Write(Section* section)
     }
 }
 
+struct ByOffset
+{
+    bool operator()(LineNumberTableEntry* left, LineNumberTableEntry* right) const
+    {
+        return left->offset < right->offset;
+    }
+};
+
 int64_t LineNumberTable::Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
 {
     uint32_t entryCount = memory.ReadTetra(rv, address, cmajor::systemx::machine::Protection::read);
@@ -283,43 +309,80 @@ int64_t LineNumberTable::Read(int64_t address, uint64_t rv, cmajor::systemx::mac
     for (uint32_t i = 0; i < entryCount; ++i)
     {
         LineNumberTableEntry entry;
-        entry.Read(addr, rv, memory);
-        AddEntry(entry);
-        addr = addr + entry.Size();
+        addr = entry.Read(addr, rv, memory);
+        entries.push_back(entry);
     }
+    for (uint32_t i = 0; i < entryCount; ++i)
+    {
+        entriesByOffset.push_back(&entries[i]);
+    }
+    std::sort(entriesByOffset.begin(), entriesByOffset.end(), ByOffset());
     return addr;
 }
 
-int32_t LineNumberTable::SearchLineNumber(uint32_t offset) const
+soul::ast::LineColLen LineNumberTable::SearchLineColLen(uint32_t offset, int32_t& index) const
 {
-    if (entries.empty())
+    index = -1;
+    if (entriesByOffset.empty())
     {
-        return -1;
+        return soul::ast::LineColLen();
     }
-    if (offset <= entries[0].offset)
+    LineNumberTableEntry* first = entriesByOffset.front();
+    if (offset < first->offset)
     {
-        return entries[0].lineNumber;
+        index = first->index;
+        return first->lineColLen;
     }
-    for (int i = 1; i < entries.size(); ++i)
+    LineNumberTableEntry entry;
+    entry.offset = offset;
+    auto it = std::lower_bound(entriesByOffset.begin(), entriesByOffset.end(), &entry, ByOffset());
+    if (it != entriesByOffset.begin() && it == entriesByOffset.end())
     {
-        if (offset >= entries[i - 1].offset && offset <= entries[i].offset)
-        {
-            return entries[i].lineNumber;
-        }
+        --it;
     }
-    return -1;
+    if (it != entriesByOffset.begin() && it != entriesByOffset.end() && (*it)->offset > offset)
+    {
+        --it;
+    }
+    if (it != entriesByOffset.end())
+    {
+        LineNumberTableEntry* found = (*it);
+        index = found->index;
+        return found->lineColLen;
+    }
+    else 
+    {
+        LineNumberTableEntry* found = entriesByOffset.back();
+        index = found->index;
+        return found->lineColLen;
+    }
+    return soul::ast::LineColLen();
 }
  
-uint32_t LineNumberTable::GetOffset(uint32_t lineNumber) const
+uint32_t LineNumberTable::GetOffset(int32_t index) const
 {
+    if (index >= 0 && index < entries.size())
+    {
+        const LineNumberTableEntry& entry = entries[index];
+        return entry.offset;
+    }
+    else
+    {
+        return static_cast<uint32_t>(-1);
+    }
+}
+
+std::vector<uint32_t> LineNumberTable::GetOffsets(int32_t lineNumber) const
+{
+    std::vector<uint32_t> offsets;
     for (const auto& entry : entries)
     {
-        if (entry.lineNumber == lineNumber)
+        if (entry.lineColLen.line == lineNumber)
         {
-            return entry.offset;
+            offsets.push_back(entry.offset);
         }
     }
-    return static_cast<uint32_t>(-1);
+    return offsets;
 }
 
 SourceFileTable::SourceFileTable() : read(false)
@@ -533,7 +596,7 @@ void SourceFileLineFunctionIndex::AddFunction(FunctionTableEntry& functionTableE
             if (!lineNumberTable.Entries().empty())
             {
                 const auto& lineNumberTableEntry = lineNumberTable.Entries().front();
-                uint32_t lineNumber = lineNumberTableEntry.lineNumber;
+                uint32_t lineNumber = lineNumberTableEntry.lineColLen.line;
                 LineFunctionEntry entry(lineNumber, static_cast<uint32_t>(functionTableEntry.Id()));
                 lineFunctionIndex.AddEntry(entry);
             }
@@ -875,9 +938,9 @@ int64_t FunctionTableEntry::Write(StringTable& stringTable, Section* section)
     section->EmitTetra(cfg.size());
     for (const auto& p : cfg)
     {
-        int32_t line = p.first;
+        int32_t prev = p.first;
         const std::vector<int32_t>& next = p.second;
-        section->EmitTetra(line);
+        section->EmitTetra(prev);
         section->EmitTetra(next.size());
         for (int32_t nxt : next)
         {
@@ -903,15 +966,15 @@ void FunctionTableEntry::Read(StringTable& stringTable, SymbolTable& symbolTable
     addr += 4;
     for (uint32_t i = 0; i < cfgSize; ++i)
     {
-        int32_t line = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+        int32_t prev = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
         addr += 4;
         uint32_t n = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
         addr += 4;
         for (uint32_t j = 0; j < n; ++j)
         {
-            int32_t nextLine = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+            int32_t next = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
             addr += 4;
-            cfg[line].push_back(nextLine);
+            cfg[prev].push_back(next);
         }
     }
     main = memory.ReadByte(rv, addr, cmajor::systemx::machine::Protection::read) == 1;
@@ -935,21 +998,33 @@ void FunctionTableEntry::SetSourceFileName(const std::string& sourceFileName_)
     sourceFileName = sourceFileName_;
 }
 
-int32_t FunctionTableEntry::SearchLineNumber(uint64_t pc) const
+soul::ast::LineColLen FunctionTableEntry::SearchLineColLen(uint64_t pc, int32_t& index) const
 {
     uint32_t offset = pc - functionStart;
-    return lineNumberTable.SearchLineNumber(offset);
+    return lineNumberTable.SearchLineColLen(offset, index);
 }
 
-int64_t FunctionTableEntry::SearchPC(uint32_t lineNumber) const
+int64_t FunctionTableEntry::SearchPC(int32_t index) const
 {
-    uint32_t offset = lineNumberTable.GetOffset(lineNumber);
-    if (offset != static_cast<uint32_t>(-1))
+    uint32_t offset = lineNumberTable.GetOffset(index);
+    if (offset == static_cast<uint32_t>(-1))
+    {
+        return -1;
+    }
+    int64_t pc = functionStart + static_cast<int64_t>(offset);
+    return pc;
+}
+
+std::vector<int64_t> FunctionTableEntry::SearchPCs(int32_t lineNumber) const
+{
+    std::vector<int64_t> pcs;
+    std::vector<uint32_t> offsets = lineNumberTable.GetOffsets(lineNumber);
+    for (uint32_t offset : offsets)
     {
         int64_t pc = functionStart + static_cast<int64_t>(offset);
-        return pc;
+        pcs.push_back(pc);
     }
-    return -1;
+    return pcs;
 }
 
 uint64_t FunctionTableEntry::GetEntryPoint() const
@@ -967,19 +1042,19 @@ ExceptionTableRecord* FunctionTableEntry::SearchExceptionTableRecord(uint64_t pc
     return exceptionTable.SearchRecord(offset);
 }
 
-void FunctionTableEntry::AddToCfg(int32_t prevLine, int32_t nextLine)
+void FunctionTableEntry::AddToCfg(int32_t prev, int32_t next)
 {
-    std::vector<int32_t>& next = cfg[prevLine];
-    if (std::find(next.begin(), next.end(), nextLine) == next.end())
+    std::vector<int32_t>& nxt = cfg[prev];
+    if (std::find(nxt.begin(), nxt.end(), next) == nxt.end())
     {
-        next.push_back(nextLine);
+        nxt.push_back(next);
     }
 }
 
-std::vector<int32_t> FunctionTableEntry::Next(int32_t line) const
+std::vector<int32_t> FunctionTableEntry::Next(int32_t index) const
 {
     std::vector<int32_t> next;
-    auto it = cfg.find(line);
+    auto it = cfg.find(index);
     if (it != cfg.end())
     {
         next = it->second;
@@ -1300,7 +1375,7 @@ void SelectDebugRecord(DebugRecord* debugRecord, ExecutableFile& executable, Obj
 
 void ProcessLineInfoRecord(LineInfoRecord* lineInfoRecord, FunctionTableEntry* functionTableEntry)
 {
-    functionTableEntry->GetLineNumberTable().AddEntry(LineNumberTableEntry(lineInfoRecord->Offset(), lineInfoRecord->LineNumber()));
+    functionTableEntry->GetLineNumberTable().AddEntry(LineNumberTableEntry(lineInfoRecord->Offset(), lineInfoRecord->LineColLen(), lineInfoRecord->Index()));
 }
 
 void ProcessBeginTryRecord(BeginTryRecord* beginTryRecord, FunctionTableEntry* functionTableEntry, std::map<uint32_t, TryRecord*>& tryRecordMap)
@@ -1448,11 +1523,11 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
     functionTableEntry->SetFullName(functionFullName);
     functionTableEntry->SetMangledName(functionExecutableSymbol->FullName());
     functionTableEntry->SetSourceFileName(sourceFileName);
-    for (const auto& linePair : *cfgPtr)
+    for (const auto& indexPair : *cfgPtr)
     {
-        int32_t prevLine = linePair.first;
-        int32_t nextLine = linePair.second;
-        functionTableEntry->AddToCfg(prevLine, nextLine);
+        int32_t prev = indexPair.first;
+        int32_t next = indexPair.second;
+        functionTableEntry->AddToCfg(prev, next);
     }
     if (main)
     {

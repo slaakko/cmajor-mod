@@ -12,7 +12,7 @@ import util;
 namespace cmajor::systemx::sxcdb {
 
 Debugger::Debugger(cmajor::systemx::machine::Machine* machine_, cmajor::systemx::kernel::Process* process_) : 
-    pageSize(16), file(-1), currentFile(-1), currentLine(-1), nextBreakPointId(0), frame(-1), machine(machine_), process(process_), bp(nullptr), exit(false), cont(false), 
+    pageSize(16), file(-1), currentFile(-1), currentLineColLen(), nextBreakPointId(0), frame(-1), machine(machine_), process(process_), bp(nullptr), exit(false), cont(false), 
     mode(Mode::all), prevFrameCount(-1)
 {
 }
@@ -106,7 +106,7 @@ bool Debugger::PrintLocation()
     if (frames.FrameCount() > 0)
     {
         const Frame& currentFrame = frames.GetFrame(frame);
-        if (currentFrame.LineNumber() != -1)
+        if (currentFrame.LineColLen().IsValid())
         {
             cmajor::systemx::object::FunctionTableEntry* entry = currentFrame.Entry();
             cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
@@ -118,7 +118,7 @@ bool Debugger::PrintLocation()
             {
                 file = currentFile;
                 SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(file, *symbolTable, process->RV(), process->GetMachine()->Mem()));
-                currentLine = currentFrame.LineNumber();
+                currentLineColLen = currentFrame.LineColLen();
                 sourceFile.PrintCurrent(process, *this);
                 return true;
             }
@@ -373,9 +373,9 @@ void Debugger::PrintFrame(int frameIndex, int width)
     {
         line.append(frm.Entry()->SourceFileName());
     }
-    if (frm.LineNumber() != -1)
+    if (frm.LineColLen().IsValid())
     {
-        line.append(" line ").append(std::to_string(frm.LineNumber()));
+        line.append(" line ").append(std::to_string(frm.LineColLen().line));
     }
     if (frameIndex == frame)
     {
@@ -454,30 +454,33 @@ void Debugger::Break(int breakFile, int breakLine)
     {
         throw std::runtime_error("invalid breakpoint line " + std::to_string(breakLine));
     }
-    int64_t pc = entry->SearchPC(breakLine);
-    if (pc == -1)
+    std::vector<int64_t> pcs = entry->SearchPCs(breakLine);
+    if (pcs.empty())
     {
         throw std::runtime_error("function '" + entry->FullName() + "' has no code associated with line " + std::to_string(breakLine));
     }
-    auto it = bpMap.find(pc);
-    if (it != bpMap.end() && it->second.Id() != -1)
+    for (int64_t pc : pcs)
     {
-        const BreakPoint& breakPoint = it->second;
-        std::string line;
-        line.append("breakpoint " + std::to_string(breakPoint.Id()) + " set to function '" + entry->FullName() + "' line " + std::to_string(breakLine) +
-            " address #" + util::ToHexString(static_cast<uint64_t>(pc)));
-        line.append(1, '\n');
-        cmajor::systemx::kernel::WriteToTerminal(line, process);
-    }
-    else
-    {
-        BreakPoint breakPoint(pc, nextBreakPointId++, entry, breakLine);
-        AddBreakPoint(breakPoint);
-        std::string line;
-        line.append("breakpoint " + std::to_string(breakPoint.Id()) + " set to function '" + entry->FullName() + "' line " + std::to_string(breakLine) +
-            " address #" + util::ToHexString(static_cast<uint64_t>(pc)));
-        line.append(1, '\n');
-        cmajor::systemx::kernel::WriteToTerminal(line, process);
+        auto it = bpMap.find(pc);
+        if (it != bpMap.end() && it->second.Id() != -1)
+        {
+            const BreakPoint& breakPoint = it->second;
+            std::string line;
+            line.append("breakpoint " + std::to_string(breakPoint.Id()) + " set to function '" + entry->FullName() + "' line " + std::to_string(breakLine) +
+                " address #" + util::ToHexString(static_cast<uint64_t>(pc)));
+            line.append(1, '\n');
+            cmajor::systemx::kernel::WriteToTerminal(line, process);
+        }
+        else
+        {
+            BreakPoint breakPoint(pc, nextBreakPointId++, entry, breakLine);
+            AddBreakPoint(breakPoint);
+            std::string line;
+            line.append("breakpoint " + std::to_string(breakPoint.Id()) + " set to function '" + entry->FullName() + "' line " + std::to_string(breakLine) +
+                " address #" + util::ToHexString(static_cast<uint64_t>(pc)));
+            line.append(1, '\n');
+            cmajor::systemx::kernel::WriteToTerminal(line, process);
+        }
     }
 }
 
@@ -560,13 +563,13 @@ void Debugger::InsertNextBreakPoints()
 {
     if (frames.FrameCount() == 0) return;
     const Frame& currentFrame = frames.GetFrame(0);
-    int currentLineNumber = currentFrame.LineNumber();
+    int32_t currentIndex = currentFrame.Idx();
     cmajor::systemx::object::FunctionTableEntry* entry = currentFrame.Entry();
     if (!entry) return;
-    std::vector<int32_t> next = entry->Next(currentLineNumber);
-    for (int32_t nextLine : next)
+    std::vector<int32_t> next = entry->Next(currentIndex);
+    for (int32_t nextIndex : next)
     {
-        int64_t pc = entry->SearchPC(nextLine);
+        int64_t pc = entry->SearchPC(nextIndex);
         if (pc != -1)
         {
             AddBreakPoint(BreakPoint(static_cast<uint64_t>(pc)));
@@ -575,10 +578,10 @@ void Debugger::InsertNextBreakPoints()
     if (frames.FrameCount() > 1)
     {
         const Frame& prevFrame = frames.GetFrame(1);
-        int prevFrameLineNumber = prevFrame.LineNumber();
+        int32_t prevFrameIndex = prevFrame.Idx();
         cmajor::systemx::object::FunctionTableEntry* entry = prevFrame.Entry();
         if (!entry) return;
-        int64_t pc = entry->SearchPC(prevFrameLineNumber);
+        int64_t pc = entry->SearchPC(prevFrameIndex);
         if (pc != -1)
         {
             AddBreakPoint(BreakPoint(static_cast<uint64_t>(pc)));
@@ -591,10 +594,10 @@ void Debugger::InsertOutBreakPoints()
     if (frames.FrameCount() > 1)
     {
         const Frame& prevFrame = frames.GetFrame(1);
-        int prevFrameLineNumber = prevFrame.LineNumber();
+        int32_t prevFrameIndex = prevFrame.Idx();
         cmajor::systemx::object::FunctionTableEntry* entry = prevFrame.Entry();
         if (!entry) return;
-        int64_t pc = entry->SearchPC(prevFrameLineNumber);
+        int64_t pc = entry->SearchPC(prevFrameIndex);
         if (pc != -1)
         {
             AddBreakPoint(BreakPoint(static_cast<uint64_t>(pc)));

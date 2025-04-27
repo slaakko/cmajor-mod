@@ -1,0 +1,3 @@
+project while_continue;
+target=program;
+source <while_continue.cm>;

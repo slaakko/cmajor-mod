@@ -261,7 +261,7 @@ TypeRef::TypeRef(const soul::ast::SourcePos& sourcePos_, int32_t id_) : sourcePo
 }
 
 StructureType::StructureType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, const std::vector<TypeRef>& fieldTypeRefs_) :
-    Type(sourcePos_, TypeKind::structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false)
+    Type(sourcePos_, TypeKind::structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false), metadataRef(nullptr)
 {
 }
 
@@ -439,9 +439,11 @@ Types::Types() : context(nullptr)
 {
 }
 
-void Types::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs)
+void Types::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* metadataRef)
 {
-    types.push_back(std::unique_ptr<Type>(new StructureType(sourcePos, typeId, fieldTypeRefs)));
+    StructureType* structureType = new StructureType(sourcePos, typeId, fieldTypeRefs);
+    structureType->SetMetadataRef(metadataRef);
+    types.push_back(std::unique_ptr<Type>(structureType));
 }
 
 void Types::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef)

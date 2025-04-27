@@ -14,7 +14,7 @@ import util;
 namespace cmajor::systemx::ir {
 
 Function::Function(const std::string& name_, FunctionType* type_, Context& context) : 
-    Value(), name(name_), type(type_), nextResultNumber(0), linkOnce(false), main(false), mdId(-1), nextBBNumber(0)
+    Value(), name(name_), type(type_), nextResultNumber(0), linkOnce(false), main(false), mdId(-1), nextBBNumber(0), nextIndex(0)
 {
     entryBlock.reset(new BasicBlock(nextBBNumber++));
     for (Type* paramType : type->ParamTypes())
@@ -109,6 +109,28 @@ void Function::Write(util::CodeFormatter& formatter, Context& context)
     }
     formatter.DecIndent();
     formatter.WriteLine("}");
+}
+
+void Function::MapLineColLen(const soul::ast::LineColLen& lineColLen)
+{
+    auto it = lineColLenIndexMap.find(lineColLen);
+    if (it == lineColLenIndexMap.end())
+    {
+        lineColLenIndexMap[lineColLen] = nextIndex++;
+    }
+}
+
+int32_t Function::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    auto it = lineColLenIndexMap.find(lineColLen);
+    if (it != lineColLenIndexMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 } // namespace cmajor::systemx::ir

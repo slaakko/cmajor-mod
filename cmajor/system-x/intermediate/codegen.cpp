@@ -1766,23 +1766,23 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
                             MetadataLong* nodeType = static_cast<MetadataLong*>(nodeTypeItem);
                             if (nodeType->Value() == cmajor::systemx::ir::cfgNodeType)
                             {
-                                int64_t prevLine = 0;
-                                int64_t nextLine = 0;
-                                MetadataItem* prevLineItem = mdStruct->GetItem("prevLine");
-                                if (prevLineItem && prevLineItem->IsMetadataLong())
+                                int64_t prev = -1;
+                                int64_t next = -1;
+                                MetadataItem* prevItem = mdStruct->GetItem("prev");
+                                if (prevItem && prevItem->IsMetadataLong())
                                 {
-                                    MetadataLong* prevLineLong = static_cast<MetadataLong*>(prevLineItem);
-                                    prevLine = prevLineLong->Value();
+                                    MetadataLong* prevLong = static_cast<MetadataLong*>(prevItem);
+                                    prev = prevLong->Value();
                                 }
-                                MetadataItem* nextLineItem = mdStruct->GetItem("nextLine");
-                                if (nextLineItem && nextLineItem->IsMetadataLong())
+                                MetadataItem* nextItem = mdStruct->GetItem("next");
+                                if (nextItem && nextItem->IsMetadataLong())
                                 {
-                                    MetadataLong* nextLineLong = static_cast<MetadataLong*>(nextLineItem);
-                                    nextLine = nextLineLong->Value();
+                                    MetadataLong* nextLong = static_cast<MetadataLong*>(nextItem);
+                                    next = nextLong->Value();
                                 }
-                                if (prevLine != 0 && nextLine != 0)
+                                if (prev != -1 && next != -1)
                                 {
-                                    cfg.push_back(std::make_pair(prevLine, nextLine));
+                                    cfg.push_back(std::make_pair(prev, next));
                                 }
                             }
                         }
@@ -1813,21 +1813,24 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
     octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(main));
     int64_t cfgSize = cfg.size();
     octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cfgSize));
-    for (const auto& linePair : cfg)
+    for (const auto& indexPair : cfg)
     {
-        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(linePair.first));
-        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(linePair.second));
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(indexPair.first));
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(indexPair.second));
     }
     codeGen.EmitDebugInfoInst(octaInst);
     codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
 }
 
-void EmitLineNumberInfo(uint32_t currentLineNumber, CodeGenerator& codeGen)
+void EmitLineNumberInfo(const soul::ast::LineColLen& currentLineColLen, int32_t index, CodeGenerator& codeGen)
 {
     codeGen.Emit(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BSPEC));
     cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
     octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::assembler::LINEINFO));
-    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(currentLineNumber));
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(index));
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(currentLineColLen.line));
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(currentLineColLen.col));
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(currentLineColLen.len));
     codeGen.Emit(octaInst);
     codeGen.Emit(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
 }
@@ -1904,12 +1907,33 @@ void ProcessInstructionMetadata(Instruction* inst, CodeGenerator& codeGen)
                 {
                     case cmajor::systemx::assembler::LINEINFO:
                     {
+                        int64_t index = -1;
+                        MetadataItem* mdIndexItem = mdStruct->GetItem("index");
+                        if (mdIndexItem && mdIndexItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdIndexLong = static_cast<MetadataLong*>(mdIndexItem);
+                            index = mdIndexLong->Value();
+                        }
                         MetadataItem* mdLineItem = mdStruct->GetItem("line");
+                        int64_t columnNumber = 0;
+                        int64_t len = 0;
+                        MetadataItem* mdColItem = mdStruct->GetItem("col");
+                        if (mdColItem && mdColItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdColLong = static_cast<MetadataLong*>(mdColItem);
+                            columnNumber = mdColLong->Value();
+                        }
+                        MetadataItem* mdLenItem = mdStruct->GetItem("len");
+                        if (mdLenItem && mdLenItem->Kind() == MetadataItemKind::metadataLong)
+                        {
+                            MetadataLong* mdLenLong = static_cast<MetadataLong*>(mdLenItem);
+                            len = mdLenLong->Value();
+                        }
                         if (mdLineItem && mdLineItem->Kind() == MetadataItemKind::metadataLong)
                         {
                             MetadataLong* mdLineLong = static_cast<MetadataLong*>(mdLineItem);
                             int64_t lineNumber = mdLineLong->Value();
-                            codeGen.SetCurrentLineNumber(static_cast<uint32_t>(lineNumber));
+                            codeGen.SetCurrentLineColLen(soul::ast::LineColLen(lineNumber, columnNumber, len), index);
                         }
                         break;
                     }

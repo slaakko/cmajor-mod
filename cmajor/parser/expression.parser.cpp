@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/parser/expression.parser' using soul parser generator spg version 5.0.0
+// this file has been automatically generated from 'D:/work/cmajor-mod/cmajor/parser/expression.parser' using soul parser generator spg version 5.0.0
 
 module cmajor.expression.parser;
 
@@ -3086,6 +3086,7 @@ soul::parser::Match ExpressionParser<LexerT>::Postfix(LexerT& lexer, cmajor::par
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831573);
     std::unique_ptr<cmajor::ast::Node> expr = std::unique_ptr<cmajor::ast::Node>();
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> primary;
     std::unique_ptr<cmajor::ast::IdentifierNode> dotMember;
     std::unique_ptr<cmajor::ast::IdentifierNode> arrowMember;
@@ -3148,7 +3149,9 @@ soul::parser::Match ExpressionParser<LexerT>::Postfix(LexerT& lexer, cmajor::par
                                                 }
                                                 if (match.hit)
                                                 {
+                                                    a = lexer.GetSpan(pos);
                                                     expr.reset(new cmajor::ast::PostfixIncrementNode(s, expr.release()));
+                                                    expr->Union(a);
                                                 }
                                                 *parentMatch8 = match;
                                             }
@@ -3172,7 +3175,9 @@ soul::parser::Match ExpressionParser<LexerT>::Postfix(LexerT& lexer, cmajor::par
                                                 }
                                                 if (match.hit)
                                                 {
+                                                    a = lexer.GetSpan(pos);
                                                     expr.reset(new cmajor::ast::PostfixDecrementNode(s, expr.release()));
+                                                    expr->Union(a);
                                                 }
                                                 *parentMatch9 = match;
                                             }
@@ -3330,7 +3335,9 @@ soul::parser::Match ExpressionParser<LexerT>::Postfix(LexerT& lexer, cmajor::par
                                                         }
                                                         if (match.hit)
                                                         {
+                                                            a = lexer.GetSpan(pos);
                                                             expr.reset(new cmajor::ast::IndexingNode(s, expr.release(), index.release()));
+                                                            expr->Union(a);
                                                         }
                                                         *parentMatch22 = match;
                                                     }
@@ -3349,22 +3356,68 @@ soul::parser::Match ExpressionParser<LexerT>::Postfix(LexerT& lexer, cmajor::par
                                             soul::parser::Match match(false);
                                             soul::parser::Match* parentMatch23 = &match;
                                             {
+                                                int64_t pos = lexer.GetPos();
                                                 soul::parser::Match match(false);
                                                 soul::parser::Match* parentMatch24 = &match;
                                                 {
                                                     soul::parser::Match match(false);
                                                     soul::parser::Match* parentMatch25 = &match;
                                                     {
-                                                        int64_t pos = lexer.GetPos();
                                                         soul::parser::Match match(false);
-                                                        if (*lexer == LPAREN)
+                                                        soul::parser::Match* parentMatch26 = &match;
                                                         {
-                                                            ++lexer;
-                                                            match.hit = true;
+                                                            soul::parser::Match match(false);
+                                                            soul::parser::Match* parentMatch27 = &match;
+                                                            {
+                                                                int64_t pos = lexer.GetPos();
+                                                                soul::parser::Match match(false);
+                                                                if (*lexer == LPAREN)
+                                                                {
+                                                                    ++lexer;
+                                                                    match.hit = true;
+                                                                }
+                                                                if (match.hit)
+                                                                {
+                                                                    expr.reset(new cmajor::ast::InvokeNode(s, expr.release()));
+                                                                }
+                                                                *parentMatch27 = match;
+                                                            }
+                                                            *parentMatch26 = match;
                                                         }
                                                         if (match.hit)
                                                         {
-                                                            expr.reset(new cmajor::ast::InvokeNode(s, expr.release()));
+                                                            soul::parser::Match match(false);
+                                                            soul::parser::Match* parentMatch28 = &match;
+                                                            {
+                                                                soul::parser::Match match = ExpressionParser<LexerT>::ArgumentList(lexer, context, expr.get());
+                                                                *parentMatch28 = match;
+                                                            }
+                                                            *parentMatch26 = match;
+                                                        }
+                                                        *parentMatch25 = match;
+                                                    }
+                                                    if (match.hit)
+                                                    {
+                                                        soul::parser::Match match(false);
+                                                        soul::parser::Match* parentMatch29 = &match;
+                                                        {
+                                                            soul::parser::Match match(false);
+                                                            soul::parser::Match* parentMatch30 = &match;
+                                                            {
+                                                                int64_t pos = lexer.GetPos();
+                                                                soul::parser::Match match(false);
+                                                                if (*lexer == RPAREN)
+                                                                {
+                                                                    ++lexer;
+                                                                    match.hit = true;
+                                                                }
+                                                                if (match.hit)
+                                                                {
+                                                                    a = lexer.GetSpan(pos);
+                                                                }
+                                                                *parentMatch30 = match;
+                                                            }
+                                                            *parentMatch29 = match;
                                                         }
                                                         *parentMatch25 = match;
                                                     }
@@ -3372,28 +3425,7 @@ soul::parser::Match ExpressionParser<LexerT>::Postfix(LexerT& lexer, cmajor::par
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    soul::parser::Match match(false);
-                                                    soul::parser::Match* parentMatch26 = &match;
-                                                    {
-                                                        soul::parser::Match match = ExpressionParser<LexerT>::ArgumentList(lexer, context, expr.get());
-                                                        *parentMatch26 = match;
-                                                    }
-                                                    *parentMatch24 = match;
-                                                }
-                                                *parentMatch23 = match;
-                                            }
-                                            if (match.hit)
-                                            {
-                                                soul::parser::Match match(false);
-                                                soul::parser::Match* parentMatch27 = &match;
-                                                {
-                                                    soul::parser::Match match(false);
-                                                    if (*lexer == RPAREN)
-                                                    {
-                                                        ++lexer;
-                                                        match.hit = true;
-                                                    }
-                                                    *parentMatch27 = match;
+                                                    expr->Union(a);
                                                 }
                                                 *parentMatch23 = match;
                                             }
@@ -3463,6 +3495,7 @@ soul::parser::Match ExpressionParser<LexerT>::Primary(LexerT& lexer, cmajor::par
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831574);
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> expr;
     std::unique_ptr<cmajor::ast::Node> literal;
     std::unique_ptr<cmajor::ast::Node> basicType;
@@ -3574,11 +3607,14 @@ soul::parser::Match ExpressionParser<LexerT>::Primary(LexerT& lexer, cmajor::par
                                                                 }
                                                                 if (match.hit)
                                                                 {
+                                                                    a = lexer.GetSpan(pos);
+                                                                    cmajor::ast::Node *n = new cmajor::ast::ParenthesizedExpressionNode(s, expr.release());
+                                                                    n->Union(a);
                                                                     {
                                                                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                                                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Primary");
                                                                         #endif
-                                                                        return soul::parser::Match(true, new cmajor::ast::ParenthesizedExpressionNode(s, expr.release()));
+                                                                        return soul::parser::Match(true, n);
                                                                     }
                                                                 }
                                                                 *parentMatch16 = match;
@@ -4183,6 +4219,7 @@ soul::parser::Match ExpressionParser<LexerT>::SizeOfExpr(LexerT& lexer, cmajor::
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831577);
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> expr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -4254,10 +4291,20 @@ soul::parser::Match ExpressionParser<LexerT>::SizeOfExpr(LexerT& lexer, cmajor::
                 soul::parser::Match* parentMatch8 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RPAREN)
+                    soul::parser::Match* parentMatch9 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RPAREN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            a = lexer.GetSpan(pos);
+                        }
+                        *parentMatch9 = match;
                     }
                     *parentMatch8 = match;
                 }
@@ -4267,11 +4314,13 @@ soul::parser::Match ExpressionParser<LexerT>::SizeOfExpr(LexerT& lexer, cmajor::
         }
         if (match.hit)
         {
+            cmajor::ast::Node *n = new cmajor::ast::SizeOfNode(s, expr.release());
+            n->Union(a);
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SizeOfExpr");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::SizeOfNode(s, expr.release()));
+                return soul::parser::Match(true, n);
             }
         }
         *parentMatch0 = match;
@@ -4304,6 +4353,7 @@ soul::parser::Match ExpressionParser<LexerT>::TypeNameExpr(LexerT& lexer, cmajor
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831578);
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> expr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -4375,10 +4425,20 @@ soul::parser::Match ExpressionParser<LexerT>::TypeNameExpr(LexerT& lexer, cmajor
                 soul::parser::Match* parentMatch8 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RPAREN)
+                    soul::parser::Match* parentMatch9 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RPAREN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            a = lexer.GetSpan(pos);
+                        }
+                        *parentMatch9 = match;
                     }
                     *parentMatch8 = match;
                 }
@@ -4388,11 +4448,13 @@ soul::parser::Match ExpressionParser<LexerT>::TypeNameExpr(LexerT& lexer, cmajor
         }
         if (match.hit)
         {
+            cmajor::ast::Node *n = new cmajor::ast::TypeNameNode(s, expr.release());
+            n->Union(a);
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "TypeNameExpr");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::TypeNameNode(s, expr.release()));
+                return soul::parser::Match(true, n);
             }
         }
         *parentMatch0 = match;
@@ -4425,6 +4487,7 @@ soul::parser::Match ExpressionParser<LexerT>::TypeIdExpr(LexerT& lexer, cmajor::
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831579);
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> expr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -4496,10 +4559,20 @@ soul::parser::Match ExpressionParser<LexerT>::TypeIdExpr(LexerT& lexer, cmajor::
                 soul::parser::Match* parentMatch8 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RPAREN)
+                    soul::parser::Match* parentMatch9 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RPAREN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            a = lexer.GetSpan(pos);
+                        }
+                        *parentMatch9 = match;
                     }
                     *parentMatch8 = match;
                 }
@@ -4509,11 +4582,13 @@ soul::parser::Match ExpressionParser<LexerT>::TypeIdExpr(LexerT& lexer, cmajor::
         }
         if (match.hit)
         {
+            cmajor::ast::Node *n = new cmajor::ast::TypeIdNode(s, expr.release());
+            n->Union(a);
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "TypeIdExpr");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::TypeIdNode(s, expr.release()));
+                return soul::parser::Match(true, n);
             }
         }
         *parentMatch0 = match;
@@ -4546,6 +4621,7 @@ soul::parser::Match ExpressionParser<LexerT>::CastExpr(LexerT& lexer, cmajor::pa
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831580);
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> typeExpr;
     std::unique_ptr<cmajor::ast::Node> expr;
     soul::parser::Match match(false);
@@ -4674,10 +4750,20 @@ soul::parser::Match ExpressionParser<LexerT>::CastExpr(LexerT& lexer, cmajor::pa
                 soul::parser::Match* parentMatch14 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RPAREN)
+                    soul::parser::Match* parentMatch15 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RPAREN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            a = lexer.GetSpan(pos);
+                        }
+                        *parentMatch15 = match;
                     }
                     *parentMatch14 = match;
                 }
@@ -4687,11 +4773,13 @@ soul::parser::Match ExpressionParser<LexerT>::CastExpr(LexerT& lexer, cmajor::pa
         }
         if (match.hit)
         {
+            cmajor::ast::Node *n = new cmajor::ast::CastNode(s, typeExpr.release(), expr.release());
+            n->Union(a);
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "CastExpr");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::CastNode(s, typeExpr.release(), expr.release()));
+                return soul::parser::Match(true, n);
             }
         }
         *parentMatch0 = match;
@@ -4725,6 +4813,7 @@ soul::parser::Match ExpressionParser<LexerT>::ConstructExpr(LexerT& lexer, cmajo
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831581);
     std::unique_ptr<cmajor::ast::Node> expr = std::unique_ptr<cmajor::ast::Node>();
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> typeExpr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -4866,10 +4955,20 @@ soul::parser::Match ExpressionParser<LexerT>::ConstructExpr(LexerT& lexer, cmajo
                 soul::parser::Match* parentMatch16 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RPAREN)
+                    soul::parser::Match* parentMatch17 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RPAREN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            a = lexer.GetSpan(pos);
+                        }
+                        *parentMatch17 = match;
                     }
                     *parentMatch16 = match;
                 }
@@ -4879,6 +4978,7 @@ soul::parser::Match ExpressionParser<LexerT>::ConstructExpr(LexerT& lexer, cmajo
         }
         if (match.hit)
         {
+            expr->Union(a);
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ConstructExpr");
@@ -4917,6 +5017,7 @@ soul::parser::Match ExpressionParser<LexerT>::NewExpr(LexerT& lexer, cmajor::par
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831582);
     std::unique_ptr<cmajor::ast::Node> expr = std::unique_ptr<cmajor::ast::Node>();
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> typeExpr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -5016,10 +5117,20 @@ soul::parser::Match ExpressionParser<LexerT>::NewExpr(LexerT& lexer, cmajor::par
                                 soul::parser::Match* parentMatch13 = &match;
                                 {
                                     soul::parser::Match match(false);
-                                    if (*lexer == RPAREN)
+                                    soul::parser::Match* parentMatch14 = &match;
                                     {
-                                        ++lexer;
-                                        match.hit = true;
+                                        int64_t pos = lexer.GetPos();
+                                        soul::parser::Match match(false);
+                                        if (*lexer == RPAREN)
+                                        {
+                                            ++lexer;
+                                            match.hit = true;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            a = lexer.GetSpan(pos);
+                                        }
+                                        *parentMatch14 = match;
                                     }
                                     *parentMatch13 = match;
                                 }
@@ -5044,6 +5155,10 @@ soul::parser::Match ExpressionParser<LexerT>::NewExpr(LexerT& lexer, cmajor::par
         }
         if (match.hit)
         {
+            if (a.IsValid())
+            {
+                expr->Union(a);
+            }
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "NewExpr");
@@ -5082,6 +5197,7 @@ soul::parser::Match ExpressionParser<LexerT>::InvokeExpr(LexerT& lexer, cmajor::
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831583);
     std::unique_ptr<cmajor::ast::Node> expr = std::unique_ptr<cmajor::ast::Node>();
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span a = soul::ast::Span();
     std::unique_ptr<cmajor::ast::TemplateIdNode> templateId;
     std::unique_ptr<cmajor::ast::IdentifierNode> id;
     std::unique_ptr<cmajor::ast::IdentifierNode> dotMemberId;
@@ -5261,10 +5377,20 @@ soul::parser::Match ExpressionParser<LexerT>::InvokeExpr(LexerT& lexer, cmajor::
                         soul::parser::Match* parentMatch20 = &match;
                         {
                             soul::parser::Match match(false);
-                            if (*lexer == RPAREN)
+                            soul::parser::Match* parentMatch21 = &match;
                             {
-                                ++lexer;
-                                match.hit = true;
+                                int64_t pos = lexer.GetPos();
+                                soul::parser::Match match(false);
+                                if (*lexer == RPAREN)
+                                {
+                                    ++lexer;
+                                    match.hit = true;
+                                }
+                                if (match.hit)
+                                {
+                                    a = lexer.GetSpan(pos);
+                                }
+                                *parentMatch21 = match;
                             }
                             *parentMatch20 = match;
                         }
@@ -5274,6 +5400,7 @@ soul::parser::Match ExpressionParser<LexerT>::InvokeExpr(LexerT& lexer, cmajor::
                 }
                 if (match.hit)
                 {
+                    expr->Union(a);
                     {
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "InvokeExpr");

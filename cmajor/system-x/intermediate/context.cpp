@@ -47,9 +47,9 @@ void Context::SetCompileUnitInfo(const std::string& compileUnitId_, MetadataRef*
     compileUnit.SetInfo(compileUnitId_, metadataRef);
 }
 
-void Context::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs)
+void Context::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* metadataRef)
 {
-    types.AddStructureType(sourcePos, typeId, fieldTypeRefs);
+    types.AddStructureType(sourcePos, typeId, fieldTypeRefs, metadataRef);
 }
 
 void Context::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef)

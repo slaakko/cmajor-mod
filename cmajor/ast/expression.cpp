@@ -21,6 +21,8 @@ DotNode::DotNode(const soul::ast::Span& span_) : UnaryNode(NodeType::dotNode, sp
 DotNode::DotNode(const soul::ast::Span& span_, Node* subject_, IdentifierNode* memberId_) : 
     UnaryNode(NodeType::dotNode, span_, subject_), memberId(memberId_)
 {
+    Union(Subject());
+    Union(memberId.get());
     memberId->SetParent(this);
 }
 
@@ -60,6 +62,8 @@ ArrowNode::ArrowNode(const soul::ast::Span& span_) : UnaryNode(NodeType::arrowNo
 ArrowNode::ArrowNode(const soul::ast::Span& span_, Node* subject_, IdentifierNode* memberId_) :
     UnaryNode(NodeType::arrowNode, span_, subject_), memberId(memberId_)
 {
+    Union(Subject());
+    Union(memberId.get());
     memberId->SetParent(this);
 }
 
@@ -99,6 +103,8 @@ EquivalenceNode::EquivalenceNode(const soul::ast::Span& span_) : BinaryNode(Node
 EquivalenceNode::EquivalenceNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::equivalenceNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* EquivalenceNode::Clone(CloneContext& cloneContext) const
@@ -124,6 +130,8 @@ ImplicationNode::ImplicationNode(const soul::ast::Span& span_) : BinaryNode(Node
 ImplicationNode::ImplicationNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::implicationNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* ImplicationNode::Clone(CloneContext& cloneContext) const
@@ -149,6 +157,8 @@ DisjunctionNode::DisjunctionNode(const soul::ast::Span& span_) : BinaryNode(Node
 DisjunctionNode::DisjunctionNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::disjunctionNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* DisjunctionNode::Clone(CloneContext& cloneContext) const
@@ -174,6 +184,8 @@ ConjunctionNode::ConjunctionNode(const soul::ast::Span& span_) : BinaryNode(Node
 ConjunctionNode::ConjunctionNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::conjunctionNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* ConjunctionNode::Clone(CloneContext& cloneContext) const
@@ -198,6 +210,8 @@ BitOrNode::BitOrNode(const soul::ast::Span& span_) : BinaryNode(NodeType::bitOrN
 
 BitOrNode::BitOrNode(const soul::ast::Span& span_, Node* left_, Node* right_) : BinaryNode(NodeType::bitOrNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* BitOrNode::Clone(CloneContext& cloneContext) const
@@ -223,6 +237,8 @@ BitXorNode::BitXorNode(const soul::ast::Span& span_) : BinaryNode(NodeType::bitX
 BitXorNode::BitXorNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::bitXorNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* BitXorNode::Clone(CloneContext& cloneContext) const
@@ -248,6 +264,8 @@ BitAndNode::BitAndNode(const soul::ast::Span& span_) : BinaryNode(NodeType::bitA
 BitAndNode::BitAndNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::bitAndNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* BitAndNode::Clone(CloneContext& cloneContext) const
@@ -273,6 +291,8 @@ EqualNode::EqualNode(const soul::ast::Span& span_) : BinaryNode(NodeType::equalN
 EqualNode::EqualNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::equalNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* EqualNode::Clone(CloneContext& cloneContext) const
@@ -297,6 +317,8 @@ NotEqualNode::NotEqualNode(const soul::ast::Span& span_) : BinaryNode(NodeType::
 
 NotEqualNode::NotEqualNode(const soul::ast::Span& span_, Node* left_, Node* right_) : BinaryNode(NodeType::notEqualNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* NotEqualNode::Clone(CloneContext& cloneContext) const
@@ -321,6 +343,8 @@ LessNode::LessNode(const soul::ast::Span& span_) : BinaryNode(NodeType::lessNode
 
 LessNode::LessNode(const soul::ast::Span& span_, Node* left_, Node* right_) : BinaryNode(NodeType::lessNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* LessNode::Clone(CloneContext& cloneContext) const
@@ -345,6 +369,8 @@ GreaterNode::GreaterNode(const soul::ast::Span& span_) : BinaryNode(NodeType::gr
 
 GreaterNode::GreaterNode(const soul::ast::Span& span_, Node* left_, Node* right_) : BinaryNode(NodeType::greaterNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* GreaterNode::Clone(CloneContext& cloneContext) const
@@ -370,6 +396,8 @@ LessOrEqualNode::LessOrEqualNode(const soul::ast::Span& span_) : BinaryNode(Node
 LessOrEqualNode::LessOrEqualNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::lessOrEqualNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* LessOrEqualNode::Clone(CloneContext& cloneContext) const
@@ -395,6 +423,8 @@ GreaterOrEqualNode::GreaterOrEqualNode(const soul::ast::Span& span_) : BinaryNod
 GreaterOrEqualNode::GreaterOrEqualNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::greaterOrEqualNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* GreaterOrEqualNode::Clone(CloneContext& cloneContext) const
@@ -420,6 +450,8 @@ ShiftLeftNode::ShiftLeftNode(const soul::ast::Span& span_) : BinaryNode(NodeType
 ShiftLeftNode::ShiftLeftNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::shiftLeftNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* ShiftLeftNode::Clone(CloneContext& cloneContext) const
@@ -445,6 +477,8 @@ ShiftRightNode::ShiftRightNode(const soul::ast::Span& span_) : BinaryNode(NodeTy
 ShiftRightNode::ShiftRightNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::shiftRightNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* ShiftRightNode::Clone(CloneContext& cloneContext) const
@@ -469,6 +503,8 @@ AddNode::AddNode(const soul::ast::Span& span_) : BinaryNode(NodeType::addNode, s
 
 AddNode::AddNode(const soul::ast::Span& span_, Node* left_, Node* right_) : BinaryNode(NodeType::addNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* AddNode::Clone(CloneContext& cloneContext) const
@@ -494,6 +530,8 @@ SubNode::SubNode(const soul::ast::Span& span_) : BinaryNode(NodeType::subNode, s
 SubNode::SubNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::subNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* SubNode::Clone(CloneContext& cloneContext) const
@@ -519,6 +557,8 @@ MulNode::MulNode(const soul::ast::Span& span_) : BinaryNode(NodeType::mulNode, s
 MulNode::MulNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::mulNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* MulNode::Clone(CloneContext& cloneContext) const
@@ -544,6 +584,8 @@ DivNode::DivNode(const soul::ast::Span& span_) : BinaryNode(NodeType::divNode, s
 DivNode::DivNode(const soul::ast::Span& span_, Node* left_, Node* right_) :
     BinaryNode(NodeType::divNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* DivNode::Clone(CloneContext& cloneContext) const
@@ -568,6 +610,8 @@ RemNode::RemNode(const soul::ast::Span& span_) : BinaryNode(NodeType::remNode, s
 
 RemNode::RemNode(const soul::ast::Span& span_, Node* left_, Node* right_) : BinaryNode(NodeType::remNode, span_, left_, right_)
 {
+    Union(Left());
+    Union(Right());
 }
 
 Node* RemNode::Clone(CloneContext& cloneContext) const
@@ -592,6 +636,7 @@ NotNode::NotNode(const soul::ast::Span& span_) : UnaryNode(NodeType::notNode, sp
 
 NotNode::NotNode(const soul::ast::Span& span_, Node* subject_) : UnaryNode(NodeType::notNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* NotNode::Clone(CloneContext& cloneContext) const
@@ -616,6 +661,7 @@ UnaryPlusNode::UnaryPlusNode(const soul::ast::Span& span_) : UnaryNode(NodeType:
 
 UnaryPlusNode::UnaryPlusNode(const soul::ast::Span& span_, Node* subject_) : UnaryNode(NodeType::unaryPlusNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* UnaryPlusNode::Clone(CloneContext& cloneContext) const
@@ -640,6 +686,7 @@ UnaryMinusNode::UnaryMinusNode(const soul::ast::Span& span_) : UnaryNode(NodeTyp
 
 UnaryMinusNode::UnaryMinusNode(const soul::ast::Span& span_, Node* subject_) : UnaryNode(NodeType::unaryMinusNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* UnaryMinusNode::Clone(CloneContext& cloneContext) const
@@ -665,6 +712,7 @@ PrefixIncrementNode::PrefixIncrementNode(const soul::ast::Span& span_) : UnaryNo
 PrefixIncrementNode::PrefixIncrementNode(const soul::ast::Span& span_, Node* subject_) :
     UnaryNode(NodeType::prefixIncrementNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* PrefixIncrementNode::Clone(CloneContext& cloneContext) const
@@ -690,6 +738,7 @@ PrefixDecrementNode::PrefixDecrementNode(const soul::ast::Span& span_) : UnaryNo
 PrefixDecrementNode::PrefixDecrementNode(const soul::ast::Span& span_, Node* subject_) :
     UnaryNode(NodeType::prefixDecrementNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* PrefixDecrementNode::Clone(CloneContext& cloneContext) const
@@ -714,6 +763,7 @@ ComplementNode::ComplementNode(const soul::ast::Span& span_) : UnaryNode(NodeTyp
 
 ComplementNode::ComplementNode(const soul::ast::Span& span_, Node* subject_) : UnaryNode(NodeType::complementNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* ComplementNode::Clone(CloneContext& cloneContext) const
@@ -738,6 +788,7 @@ DerefNode::DerefNode(const soul::ast::Span& span_) : UnaryNode(NodeType::derefNo
 
 DerefNode::DerefNode(const soul::ast::Span& span_, Node* subject_) : UnaryNode(NodeType::derefNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* DerefNode::Clone(CloneContext& cloneContext) const
@@ -763,6 +814,7 @@ AddrOfNode::AddrOfNode(const soul::ast::Span& span_) : UnaryNode(NodeType::addrO
 AddrOfNode::AddrOfNode(const soul::ast::Span& span_, Node* subject_) :
     UnaryNode(NodeType::addrOfNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* AddrOfNode::Clone(CloneContext& cloneContext) const
@@ -790,6 +842,8 @@ IsNode::IsNode(const soul::ast::Span& span_, Node* expr_, Node* targetTypeExpr_)
 {
     expr->SetParent(this);
     targetTypeExpr->SetParent(this);
+    Union(expr.get());
+    Union(targetTypeExpr.get());
 }
 
 Node* IsNode::Clone(CloneContext& cloneContext) const
@@ -832,6 +886,8 @@ AsNode::AsNode(const soul::ast::Span& span_, Node* expr_, Node* targetTypeExpr_)
 {
     expr->SetParent(this);
     targetTypeExpr->SetParent(this);
+    Union(expr.get());
+    Union(targetTypeExpr.get());
 }
 
 Node* AsNode::Clone(CloneContext& cloneContext) const
@@ -875,6 +931,8 @@ IndexingNode::IndexingNode(const soul::ast::Span& span_, Node* subject_, Node* i
 {
     subject->SetParent(this);
     index->SetParent(this);
+    Union(subject.get());
+    Union(index.get());
 }
 
 Node* IndexingNode::Clone(CloneContext& cloneContext) const
@@ -917,6 +975,7 @@ InvokeNode::InvokeNode(const soul::ast::Span& span_, Node* subject_) :
     Node(NodeType::invokeNode, span_), subject(subject_), arguments()
 {
     subject->SetParent(this);
+    Union(subject.get());
 }
 
 Node* InvokeNode::Clone(CloneContext& cloneContext) const
@@ -954,6 +1013,7 @@ void InvokeNode::Read(AstReader& reader)
 
 void InvokeNode::AddArgument(Node* argument)
 {
+    Union(argument);
     argument->SetParent(this);
     arguments.Add(argument);
 }
@@ -982,6 +1042,7 @@ PostfixIncrementNode::PostfixIncrementNode(const soul::ast::Span& span_) : Unary
 PostfixIncrementNode::PostfixIncrementNode(const soul::ast::Span& span_, Node* subject_) :
     UnaryNode(NodeType::postfixIncrementNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* PostfixIncrementNode::Clone(CloneContext& cloneContext) const
@@ -1006,6 +1067,7 @@ PostfixDecrementNode::PostfixDecrementNode(const soul::ast::Span& span_) : Unary
 
 PostfixDecrementNode::PostfixDecrementNode(const soul::ast::Span& span_, Node* subject_) : UnaryNode(NodeType::postfixDecrementNode, span_, subject_)
 {
+    Union(Subject());
 }
 
 Node* PostfixDecrementNode::Clone(CloneContext& cloneContext) const
@@ -1032,6 +1094,7 @@ SizeOfNode::SizeOfNode(const soul::ast::Span& span_, Node* expression_) :
     Node(NodeType::sizeOfNode, span_), expression(expression_)
 {
     expression->SetParent(this);
+    Union(expression.get());
 }
 
 Node* SizeOfNode::Clone(CloneContext& cloneContext) const
@@ -1071,6 +1134,7 @@ TypeNameNode::TypeNameNode(const soul::ast::Span& span_, Node* expression_) :
     Node(NodeType::typeNameNode, span_), expression(expression_), static_(false)
 {
     expression->SetParent(this);
+    Union(expression.get());
 }
 
 Node* TypeNameNode::Clone(CloneContext& cloneContext) const
@@ -1115,6 +1179,7 @@ TypeIdNode::TypeIdNode(const soul::ast::Span& span_) : Node(NodeType::typeIdNode
 TypeIdNode::TypeIdNode(const soul::ast::Span& span_, Node* expression_) : Node(NodeType::typeIdNode, span_), expression(expression_)
 {
     expression->SetParent(this);
+    Union(expression.get());
 }
 
 Node* TypeIdNode::Clone(CloneContext& cloneContext) const
@@ -1155,6 +1220,8 @@ CastNode::CastNode(const soul::ast::Span& span_, Node* targetTypeExpr_, Node* so
 {
     targetTypeExpr->SetParent(this);
     sourceExpr->SetParent(this);
+    Union(targetTypeExpr.get());
+    Union(sourceExpr.get());
 }
 
 Node* CastNode::Clone(CloneContext& cloneContext) const
@@ -1197,6 +1264,7 @@ ConstructNode::ConstructNode(const soul::ast::Span& span_, Node* typeExpr_) :
     Node(NodeType::constructNode, span_), typeExpr(typeExpr_), arguments()
 {
     typeExpr->SetParent(this);
+    Union(typeExpr.get());
 }
 
 Node* ConstructNode::Clone(CloneContext& cloneContext) const
@@ -1234,6 +1302,7 @@ void ConstructNode::Read(AstReader& reader)
 
 void ConstructNode::AddArgument(Node* argument)
 {
+    Union(argument);
     argument->SetParent(this);
     arguments.Add(argument);
 }
@@ -1262,6 +1331,7 @@ NewNode::NewNode(const soul::ast::Span& span_, Node* typeExpr_) :
     Node(NodeType::newNode, span_), typeExpr(typeExpr_), arguments()
 {
     typeExpr->SetParent(this);
+    Union(typeExpr.get());
 }
 
 Node* NewNode::Clone(CloneContext& cloneContext) const
@@ -1299,6 +1369,7 @@ void NewNode::Read(AstReader& reader)
 
 void NewNode::AddArgument(Node* argument)
 {
+    Union(argument);
     argument->SetParent(this);
     arguments.Add(argument);
 }
@@ -1368,6 +1439,7 @@ ParenthesizedExpressionNode::ParenthesizedExpressionNode(const soul::ast::Span& 
 ParenthesizedExpressionNode::ParenthesizedExpressionNode(const soul::ast::Span& span_, Node* child_) :
     UnaryNode(NodeType::parenthesizedExpressionNode, span_, child_)
 {
+    Union(Subject());
 }
 
 Node* ParenthesizedExpressionNode::Clone(CloneContext& cloneContext) const

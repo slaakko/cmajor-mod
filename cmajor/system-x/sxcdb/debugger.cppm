@@ -12,6 +12,7 @@ import cmajor.systemx.sxcdb.source_file;
 import cmajor.systemx.sxcdb.break_point;
 import cmajor.systemx.machine;
 import cmajor.systemx.kernel;
+import soul.ast.span;
 import util;
 import std.core;
 
@@ -58,7 +59,7 @@ public:
     int PageSize() const { return pageSize; }
     int File() const { return file; }
     int CurrentFile() const { return currentFile; }
-    int CurrentLine() const { return currentLine; }
+    const soul::ast::LineColLen& CurrentLineColLen() const { return currentLineColLen; }
     void ReadCommand();
     std::string ReadLine();
 private:
@@ -67,7 +68,7 @@ private:
     int pageSize;
     int file;
     int currentFile;
-    int currentLine;
+    soul::ast::LineColLen currentLineColLen;
     int frame;
     int nextBreakPointId;
     Mode mode;

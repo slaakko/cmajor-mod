@@ -58,4 +58,18 @@ int LineColLenToPos(const LineColLen& lineColLen, const std::vector<int>& lineSt
     return pos;
 }
 
+bool operator==(const LineColLen& left, const LineColLen& right)
+{
+    return left.line == right.line && left.col == right.col && left.len == right.len;
+}
+
+bool operator<(const LineColLen& left, const LineColLen& right)
+{
+    if (left.line < right.line) return true;
+    if (left.line > right.line) return false;
+    if (left.col < right.col) return true;
+    if (left.col > right.col) return false;
+    return left.len < right.len;
+}
+
 } // namespace soul::ast

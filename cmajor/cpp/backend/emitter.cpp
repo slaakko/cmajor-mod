@@ -1819,6 +1819,15 @@ void CppEmitter::SetCurrentSourcePos(int32_t line, int16_t scol, int16_t ecol)
     context->SetCurrentSourceSpan(cmajor::debug::SourceSpan(line, scol, ecol));
 }
 
+void CppEmitter::SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen)
+{
+}
+
+int32_t CppEmitter::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    return -1;
+}
+
 void* CppEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName)
 {
     return nullptr;
@@ -1826,6 +1835,20 @@ void* CppEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName)
 
 void CppEmitter::SetMetadataRef(void* inst, void* mdStructRef)
 {
+}
+
+void CppEmitter::SetMetadataRefForStructType(void* structType, void* mdRef)
+{
+}
+
+void* CppEmitter::GetMetadataRefForStructType(void* structType) const
+{
+    return nullptr;
+}
+
+int CppEmitter::GetTypeId(void* type) const
+{
+    return -1;
 }
 
 void CppEmitter::FinalizeFunction(void* function, bool hasCleanup)

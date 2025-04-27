@@ -2491,6 +2491,20 @@ void LLVMEmitter::SetMetadataRef(void* inst, void* mdStructRef)
 {
 }
 
+void LLVMEmitter::SetMetadataRefForStructType(void* structType, void* mdRef)
+{
+}
+
+void* LLVMEmitter::GetMetadataRefForStructType(void* structType) const
+{
+    return nullptr;
+}
+
+int LLVMEmitter::GetTypeId(void* type) const
+{
+    return -1;
+}
+
 void LLVMEmitter::FinalizeFunction(void* function, bool hasCleanup)
 {
 }
@@ -2616,6 +2630,15 @@ void* LLVMEmitter::GetBoundCompileUnit() const
 
 void LLVMEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
+}
+
+void LLVMEmitter::SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen)
+{
+}
+
+int32_t LLVMEmitter::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    return -1;
 }
 
 std::string LLVMEmitter::GetSourceFilePath(int fileIndex, const util::uuid& moduleId)

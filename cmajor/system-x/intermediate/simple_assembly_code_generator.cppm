@@ -36,7 +36,7 @@ public:
     int ExitLabelId() const override;
     void EmitClsId(const std::string& typeId) override;
     void EmitDebugInfoInst(cmajor::systemx::assembler::Instruction* assemblyInstruction) override;
-    void SetCurrentLineNumber(uint32_t lineNumber_) override;
+    void SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen, int32_t index) override;
     void BeginTry(uint32_t tryBlockId, uint32_t parentTryBlockId) override;
     void EndTry(uint32_t tryBlockId) override;
     void Catch(uint32_t catchBlockId, uint32_t tryBlockId, const std::string& caughtTypeIdStr) override;
@@ -104,7 +104,7 @@ public:
     void Visit(SymbolValue& value) override;
     Function* CurrentFunction() const override { return currentFunction; };
     cmajor::systemx::assembler::AssemblyFile* AssemblyFile() const override { return assemblyFile; }
-    int CurrentLineNumber() const override { return lineNumber; }
+    const soul::ast::LineColLen& CurrentLineColLen() const override { return currentLineColLen; }
 private:
     cmajor::systemx::assembler::AssemblySectionKind emitSection;
     cmajor::systemx::assembler::AssemblyFile* assemblyFile;
@@ -120,7 +120,7 @@ private:
     std::vector<Function*> debugInfoFunctions;
     std::map<std::string, int64_t > sourceFileNameMap;
     std::map<Function*, int64_t> frameSizeMap;
-    int lineNumber;
+    soul::ast::LineColLen currentLineColLen;
     int64_t currentOffset;
 };
 

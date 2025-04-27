@@ -8,6 +8,7 @@ module;
 
 module cmajor.systemx.ir.type;
 
+import cmajor.systemx.ir.metadata;
 import util;
 
 namespace cmajor::systemx::ir {
@@ -120,7 +121,7 @@ std::string PtrType::Name() const
     return baseType->Name() + "*";
 }
 
-StructureType::StructureType(int id_) : Type(id_)
+StructureType::StructureType(int id_) : Type(id_), mdRef(nullptr)
 {
 }
 
@@ -147,6 +148,11 @@ void StructureType::WriteDeclaration(util::CodeFormatter& formatter)
         memberType->Write(formatter);
     }
     formatter.Write(" }");
+    if (mdRef)
+    {
+        formatter.Write(" ");
+        mdRef->Write(formatter);
+    }
 }
 
 Type* StructureType::GetMemberType(uint64_t index) const
@@ -242,6 +248,18 @@ size_t FunctionTypeKeyEqual::operator()(const FunctionTypeKey& left, const Funct
 
 TypeRepository::TypeRepository()
 {
+    typeMap[&voidType] = voidType.Id();
+    typeMap[&boolType] = boolType.Id();
+    typeMap[&sbyteType] = sbyteType.Id();
+    typeMap[&byteType] = byteType.Id();
+    typeMap[&shortType] = shortType.Id();
+    typeMap[&ushortType] = ushortType.Id();
+    typeMap[&intType] = intType.Id();
+    typeMap[&uintType] = uintType.Id();
+    typeMap[&longType] = longType.Id();
+    typeMap[&ulongType] = ulongType.Id();
+    typeMap[&floatType] = floatType.Id();
+    typeMap[&doubleType] = doubleType.Id();
 }
 
 void TypeRepository::Write(util::CodeFormatter& formatter)
@@ -270,6 +288,7 @@ Type* TypeRepository::GetPtrType(Type* baseType)
     else
     {
         PtrType* ptrType = new PtrType(baseType);
+        typeMap[ptrType] = ptrType->Id();
         ptrTypeMap[baseType] = ptrType;
         ptrTypes.push_back(std::unique_ptr<PtrType>(ptrType));
         return ptrType;
@@ -286,6 +305,7 @@ Type* TypeRepository::GetStructureType(const std::vector<Type*>& memberTypes)
     else
     {
         StructureType* structureType = new StructureType(types.size());
+        typeMap[structureType] = structureType->Id();
         structureType->SetMemberTypes(memberTypes);
         structureTypeMap[memberTypes] = structureType;
         types.push_back(std::unique_ptr<Type>(structureType));
@@ -296,6 +316,7 @@ Type* TypeRepository::GetStructureType(const std::vector<Type*>& memberTypes)
 Type* TypeRepository::CreateStructureType()
 {
     StructureType* structureType = new StructureType(types.size());
+    typeMap[structureType] = structureType->Id();
     types.push_back(std::unique_ptr<Type>(structureType));
     return structureType;
 }
@@ -312,6 +333,7 @@ Type* TypeRepository::GetArrayType(Type* elementType, uint64_t size)
     {
         ArrayType* arrayType = new ArrayType(types.size(), elementType, size);
         arrayTypeMap[key] = arrayType;
+        typeMap[arrayType] = arrayType->Id();
         types.push_back(std::unique_ptr<Type>(arrayType));
         return arrayType;
     }
@@ -323,14 +345,29 @@ Type* TypeRepository::GetFunctionType(Type* returnType, const std::vector<Type*>
     auto it = functionTypeMap.find(key);
     if (it != functionTypeMap.cend())
     {
-        return it->second;
+        Type* type = it->second;
+        return type;
     }
     else
     {
         FunctionType* functionType = new FunctionType(types.size(), returnType, paramTypes);
         functionTypeMap[key] = functionType;
         types.push_back(std::unique_ptr<Type>(functionType));
+        typeMap[functionType] = functionType->Id();
         return functionType;
+    }
+}
+
+int TypeRepository::GetTypeId(Type* type) const
+{
+    auto it = typeMap.find(type);
+    if (it != typeMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return -1;
     }
 }
 

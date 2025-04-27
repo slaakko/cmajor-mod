@@ -1782,13 +1782,25 @@ void MasmEmitter::SetFunctionMdId(void* function, int mdId)
 
 void* MasmEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName)
 {
-    //return context->GetMDStructRefForSourceFile(sourceFileName);
     return nullptr;
 }
 
 void MasmEmitter::SetMetadataRef(void* inst, void* mdStructRef)
 {
-    //context->SetMetadataRef(static_cast<cmajor::masm::ir::Instruction*>(inst), static_cast<cmajor::systemx::ir::MDStructRef*>(mdStructRef));
+}
+
+void MasmEmitter::SetMetadataRefForStructType(void* structType, void* mdRef)
+{
+}
+
+void* MasmEmitter::GetMetadataRefForStructType(void* structType) const
+{
+    return nullptr;
+}
+
+int MasmEmitter::GetTypeId(void* type) const
+{
+    return -1;
 }
 
 void MasmEmitter::FinalizeFunction(void* function, bool hasCleanup)
@@ -1865,6 +1877,14 @@ void MasmEmitter::EndSubstituteLineNumber()
 void MasmEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
     context->SetCurrentLineNumber(lineNumber);
+}
+
+void MasmEmitter::SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen)
+{
+}
+int32_t MasmEmitter::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    return -1;
 }
 
 void MasmEmitter::SetSpan(const soul::ast::Span& span)

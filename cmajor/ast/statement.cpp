@@ -183,6 +183,7 @@ ReturnStatementNode::ReturnStatementNode(const soul::ast::Span& span_, Node* exp
     if (expression)
     {
         expression->SetParent(this);
+        Union(expression.get());
     }
 }
 
@@ -233,6 +234,7 @@ IfStatementNode::IfStatementNode(const soul::ast::Span& span_, Node* condition_,
     StatementNode(NodeType::ifStatementNode, span_), condition(condition_), thenS(thenS_), elseS(elseS_)
 {
     condition->SetParent(this);
+    Union(condition.get());
     thenS->SetParent(this);
     if (elseS)
     {
@@ -293,6 +295,7 @@ WhileStatementNode::WhileStatementNode(const soul::ast::Span& span_, Node* condi
     StatementNode(NodeType::whileStatementNode, span_), condition(condition_), statement(statement_)
 {
     condition->SetParent(this);
+    Union(condition.get());
     statement->SetParent(this);
 }
 
@@ -371,6 +374,7 @@ ForStatementNode::ForStatementNode(const soul::ast::Span& span_, StatementNode* 
     StatementNode(NodeType::forStatementNode, span_), initS(initS_), condition(condition_), loopS(loopS_), actionS(actionS_)
 {
     initS->SetParent(this);
+    Union(initS.get());
     if (condition)
     {
         condition->SetParent(this);
@@ -505,9 +509,11 @@ ConstructionStatementNode::ConstructionStatementNode(const soul::ast::Span& span
     StatementNode(NodeType::constructionStatementNode, span_), typeExpr(typeExpr_), id(id_), arguments(), assignment(false), empty(false)
 {
     typeExpr->SetParent(this);
+    Union(typeExpr.get());
     if (id)
     {
         id->SetParent(this);
+        Union(id.get());
     }
 }
 
@@ -556,6 +562,7 @@ void ConstructionStatementNode::AddArgument(Node* argument)
 {
     if (argument)
     {
+        Union(argument);
         argument->SetParent(this);
         arguments.Add(argument);
     }
@@ -569,6 +576,7 @@ DeleteStatementNode::DeleteStatementNode(const soul::ast::Span& span_, Node* exp
     StatementNode(NodeType::deleteStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
+    Union(expression.get());
 }
 
 Node* DeleteStatementNode::Clone(CloneContext& cloneContext) const
@@ -604,6 +612,7 @@ DestroyStatementNode::DestroyStatementNode(const soul::ast::Span& span_, Node* e
     StatementNode(NodeType::destroyStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
+    Union(expression.get());
 }
 
 Node* DestroyStatementNode::Clone(CloneContext& cloneContext) const
@@ -639,7 +648,9 @@ AssignmentStatementNode::AssignmentStatementNode(const soul::ast::Span& span_, N
     StatementNode(NodeType::assignmentStatementNode, span_), targetExpr(targetExpr_), sourceExpr(sourceExpr_)
 {
     targetExpr->SetParent(this);
+    Union(targetExpr.get());
     sourceExpr->SetParent(this);
+    Union(sourceExpr.get());
 }
 
 Node* AssignmentStatementNode::Clone(CloneContext& cloneContext) const
@@ -678,6 +689,7 @@ ExpressionStatementNode::ExpressionStatementNode(const soul::ast::Span& span_, N
     StatementNode(NodeType::expressionStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
+    Union(expression.get());
 }
 
 Node* ExpressionStatementNode::Clone(CloneContext& cloneContext) const
@@ -727,6 +739,8 @@ RangeForStatementNode::RangeForStatementNode(const soul::ast::Span& span_) :
 RangeForStatementNode::RangeForStatementNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNode* id_, Node* container_, StatementNode* action_) :
     StatementNode(NodeType::rangeForStatementNode, span_), typeExpr(typeExpr_), id(id_), container(container_), action(action_)
 {
+    initSpan = typeExpr->GetSpan();
+    initSpan.Union(id->GetSpan());
     typeExpr->SetParent(this);
     id->SetParent(this);
     container->SetParent(this);
@@ -776,6 +790,7 @@ SwitchStatementNode::SwitchStatementNode(const soul::ast::Span& span_, Node* con
     StatementNode(NodeType::switchStatementNode, span_), condition(condition_), cases(), defaultS()
 {
     condition->SetParent(this);
+    Union(condition.get());
 }
 
 Node* SwitchStatementNode::Clone(CloneContext& cloneContext) const
@@ -882,6 +897,7 @@ void CaseStatementNode::Read(AstReader& reader)
 
 void CaseStatementNode::AddCaseExpr(Node* caseExpr)
 {
+    Union(caseExpr);
     caseExpr->SetParent(this);
     caseExprs.Add(caseExpr);
 }
@@ -939,6 +955,7 @@ GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::Span& span_) :
 GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::Span& span_, Node* caseExpr_) :
     StatementNode(NodeType::gotoCaseStatementNode, span_), caseExpr(caseExpr_)
 {
+    Union(caseExpr.get());
     caseExpr->SetParent(this);
 }
 
@@ -990,6 +1007,7 @@ ThrowStatementNode::ThrowStatementNode(const soul::ast::Span& span_, Node* expre
 {
     if (expression)
     {
+        Union(expression.get());
         expression->SetParent(this);
     }
 }
@@ -1040,8 +1058,10 @@ CatchNode::CatchNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNo
     Node(NodeType::catchNode, span_), typeExpr(typeExpr_), id(id_), catchBlock(catchBlock_)
 {
     typeExpr->SetParent(this);
+    Union(typeExpr.get());
     if (id)
     {
+        Union(id.get());
         id->SetParent(this);
     }
     catchBlock->SetParent(this);
@@ -1148,6 +1168,7 @@ AssertStatementNode::AssertStatementNode(const soul::ast::Span& span_) :
 AssertStatementNode::AssertStatementNode(const soul::ast::Span& span_, Node* assertExpr_) :
     StatementNode(NodeType::assertStatementNode, span_), assertExpr(assertExpr_)
 {
+    Union(assertExpr.get());
     assertExpr->SetParent(this);
 }
 

@@ -373,6 +373,10 @@ public:
     Node* Container() { return container.get(); }
     const StatementNode* Action() const { return action.get(); }
     StatementNode* Action() { return action.get(); }
+    const soul::ast::Span& ForSpan() const { return forSpan; }
+    void SetForSpan(const soul::ast::Span& forSpan_) { forSpan = forSpan_; }
+    const soul::ast::Span& InitSpan() const { return initSpan; }
+    void SetInitSpan(const soul::ast::Span& initSpan_) { initSpan = initSpan_; }
     const soul::ast::Span& LParenSpan() const { return lparenSpan; }
     void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
     const soul::ast::Span& RParenSpan() const { return rparenSpan; }
@@ -384,6 +388,8 @@ private:
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> container;
     std::unique_ptr<StatementNode> action;
+    soul::ast::Span forSpan;
+    soul::ast::Span initSpan;
     soul::ast::Span lparenSpan;
     soul::ast::Span rparenSpan;
     soul::ast::Span colonSpan;

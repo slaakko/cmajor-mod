@@ -23,6 +23,8 @@ const int64_t cfgNodeType = 3;
 const int64_t beginTryNodeType = 4;
 const int64_t endTryNodeType = 5;
 const int64_t catchNodeType = 6;
+const int64_t structInfoNodeType = 7;
+const int64_t fieldInfoNodeType = 8;
 
 struct Cleanup
 {
@@ -109,8 +111,9 @@ public:
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;
     int Install(const std::u32string& str) override;
-    int GetLineNumber(const soul::ast::Span& span);
-    void AddCFGItem(int prevLineNumber, int nextLineNumber);
+    soul::ast::LineColLen GetLineColLen(const soul::ast::Span& span);
+    void AddCFGItem(int index, int next);
+    void CreateMetadataForClassType(cmajor::symbols::ClassTypeSymbol* classTypeSymbol);
 private:
     cmajor::ir::Emitter* emitter;
     cmajor::symbols::Context* context;
@@ -129,6 +132,8 @@ private:
     void* falseBlock;
     void* breakTarget;
     void* continueTarget;
+    int32_t continueTargetIndex;
+    int32_t breakSourceIndex;
     cmajor::binder::BoundStatement* sequenceSecond;
     cmajor::binder::BoundFunction* currentFunction;
     cmajor::binder::BoundCompoundStatement* currentBlock;
@@ -157,8 +162,8 @@ private:
     void* cleanupBlock;
     bool newCleanupNeeded;
     bool inTryBlock;
-    int beginLineNumber;
-    int endLineNumber;
+    soul::ast::LineColLen beginLineColLen;
+    soul::ast::LineColLen endLineColLen;
     void* cfg;
 };
 

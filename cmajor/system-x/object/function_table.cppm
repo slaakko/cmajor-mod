@@ -5,6 +5,7 @@
 
 export module cmajor.systemx.object.function.table;
 
+import soul.ast.span;
 import cmajor.systemx.machine.memory;
 import std.core;
 
@@ -66,12 +67,12 @@ private:
 struct LineNumberTableEntry
 {
     LineNumberTableEntry();
-    LineNumberTableEntry(uint32_t offset_, uint32_t lineNumber_);
-    uint64_t Size() const { return 2 * 4; }
+    LineNumberTableEntry(uint32_t offset_, const soul::ast::LineColLen& lineColLen_, int32_t index_);
     void Write(Section* section);
-    void Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    int64_t Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     uint32_t offset;
-    uint32_t lineNumber;
+    int32_t index;
+    soul::ast::LineColLen lineColLen;
 };
 
 class LineNumberTable
@@ -82,10 +83,12 @@ public:
     void Write(Section* section);
     int64_t Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     const std::vector<LineNumberTableEntry>& Entries() const { return entries; }
-    int32_t SearchLineNumber(uint32_t offset) const;
-    uint32_t GetOffset(uint32_t lineNumber) const;
+    soul::ast::LineColLen SearchLineColLen(uint32_t offset, int32_t& index) const;
+    uint32_t GetOffset(int32_t index) const;
+    std::vector<uint32_t> GetOffsets(int32_t lineNumber) const;
 private:
     std::vector<LineNumberTableEntry> entries;
+    std::vector<LineNumberTableEntry*> entriesByOffset;
 };
 
 class SourceFileTable
@@ -295,13 +298,14 @@ public:
     void SetSourceFileName(const std::string& sourceFileName_);
     LineNumberTable& GetLineNumberTable() { return lineNumberTable; }
     int32_t SourceFileNameId() const { return sourceFileNameId; }
-    int32_t SearchLineNumber(uint64_t pc) const;
-    int64_t SearchPC(uint32_t lineNumber) const;
+    soul::ast::LineColLen SearchLineColLen(uint64_t pc, int32_t& index) const;
+    int64_t SearchPC(int32_t index) const;
+    std::vector<int64_t> SearchPCs(int32_t lineNumber) const;
     uint64_t GetEntryPoint() const;
     ExceptionTable& GetExceptionTable() { return exceptionTable; }
     ExceptionTableRecord* SearchExceptionTableRecord(uint64_t pc) const;
-    void AddToCfg(int32_t prevLine, int32_t nextLine);
-    std::vector<int32_t> Next(int32_t line) const;
+    void AddToCfg(int32_t prev, int32_t next);
+    std::vector<int32_t> Next(int32_t index) const;
 private:
     int64_t functionStart;
     int64_t functionLength;

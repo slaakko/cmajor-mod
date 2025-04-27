@@ -64,6 +64,10 @@ struct LineColLen
     int len;
 };
 
+bool operator==(const LineColLen& left, const LineColLen& right);
+inline bool operator!=(const LineColLen& left, const LineColLen& right) { return !(left == right); }
+bool operator<(const LineColLen& left, const LineColLen& right);
+
 LineColLen SpanToLineColLen(const Span& span, const std::vector<int>& lineStarts);
 int LineColLenToPos(const LineColLen& lineColLen, const std::vector<int>& lineStarts);
 

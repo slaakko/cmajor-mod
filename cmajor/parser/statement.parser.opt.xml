@@ -665,7 +665,9 @@
              <token first="{LPAREN}" name="LPAREN"/>
              <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, COMMA, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ArgumentList"/>
             </sequence>
-            <token first="{RPAREN}" name="RPAREN"/>
+            <action first="{RPAREN}">
+             <token first="{RPAREN}" name="RPAREN"/>
+            </action>
            </sequence>
           </case>
          </switch>

@@ -91,12 +91,16 @@ parser IntermediateCodeParser
         ;
 
     StructureType(cmajor::systemx::intermediate::Context* context, int32_t typeId, var soul::ast::SourcePos sp, var std::vector<cmajor::systemx::intermediate::TypeRef> fieldTypeRefs)
-        ::= LBRACE{ sp = lexer.GetSourcePos(pos); } 
+        ::= 
+        (
+            LBRACE{ sp = lexer.GetSourcePos(pos); } 
             (TypeRef:first{ fieldTypeRefs.push_back(first); } 
             (COMMA TypeRef:next{ fieldTypeRefs.push_back(next); })*)? 
             RBRACE
+            MetadataRef(context):mdref?
+        )
         {
-            context->AddStructureType(sp, typeId, fieldTypeRefs);
+            context->AddStructureType(sp, typeId, fieldTypeRefs, mdref);
         }
         ;
 

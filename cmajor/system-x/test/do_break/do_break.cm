@@ -1,0 +1,16 @@
+using System;
+
+void main()
+{
+    int index = 0;
+    do
+    {
+        Console.WriteLine(index);
+        if (index == 1)
+        {
+            break;
+        }
+        ++index;
+    }
+    while (index < 10);
+}

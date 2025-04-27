@@ -1556,6 +1556,16 @@ void Function::WriteXmlDocument(const std::string& filePath)
     document.Write(formatter);
 }
 
+bool Function::IndexSeen(int32_t index) const
+{
+    return indexSet.find(index) != indexSet.end();
+}
+
+void Function::AddIndex(int32_t index)
+{
+    indexSet.insert(index);
+}
+
 Code::Code() : context(nullptr), currentFunction(nullptr), functions(this)
 {
 }

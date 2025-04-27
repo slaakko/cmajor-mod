@@ -97,7 +97,7 @@ void EmitOptSwitch(SwitchInstruction& inst, CodeGenerator& codeGen)
         bpInst->AddOperand(cmajor::systemx::assembler::MakeLocalSymbol(inst.DefaultTargetBlock()->Id()));
         codeGen.Emit(bpInst);
 
-        std::string jumpTableStructName = "jmptab@" + codeGen.CurrentFunction()->Name() + "@" + std::to_string(codeGen.CurrentLineNumber());
+        std::string jumpTableStructName = "jmptab@" + codeGen.CurrentFunction()->Name() + "@" + std::to_string(codeGen.CurrentLineColLen().line);
 
         cmajor::systemx::assembler::Instruction* ldoInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::machine::LDOU);
         ldoInst->AddOperand(cmajor::systemx::assembler::MakeGlobalRegOperand(cmajor::systemx::machine::regEX));

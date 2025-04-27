@@ -74,15 +74,23 @@ void SourceFile::Print(int start, cmajor::systemx::kernel::Process* process, Deb
     {
         width = std::max(width, util::Log10(lineNumber));
     }
+    soul::ast::LineColLen currentLineColLen = debugger.CurrentLineColLen();
     for (int lineNumber = start; lineNumber <= end; ++lineNumber)
     {
         std::string line;
-        if (file == debugger.CurrentFile() && lineNumber == debugger.CurrentLine())
+        if (file == debugger.CurrentFile() && lineNumber == currentLineColLen.line)
         {
             line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
-            line.append(util::Format(std::to_string(lineNumber), width, util::FormatJustify::right)).append(1, ' ');
-            line.append(GetLine(lineNumber));
-            line.append(util::ToUtf8(cmajor::systemx::ResetColors())).append(1, '\n');
+            line.append(util::Format(std::to_string(lineNumber), width, util::FormatJustify::right));
+            line.append(util::ToUtf8(cmajor::systemx::ResetColors()));
+            line.append(1, ' ');
+            std::string ln = GetLine(lineNumber);
+            line.append(ln.substr(0, currentLineColLen.col - 1));
+            line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
+            line.append(ln.substr(currentLineColLen.col - 1, currentLineColLen.len));
+            line.append(util::ToUtf8(cmajor::systemx::ResetColors()));
+            line.append(ln.substr(currentLineColLen.col - 1 + currentLineColLen.len));
+            line.append(1, '\n');
         }
         else
         {
@@ -99,7 +107,7 @@ void SourceFile::Print(int start, cmajor::systemx::kernel::Process* process, Deb
 
 void SourceFile::PrintCurrent(cmajor::systemx::kernel::Process* process, Debugger& debugger)
 {
-    int start = std::max(1, debugger.CurrentLine() - debugger.PageSize() / 2);
+    int start = std::max(1, debugger.CurrentLineColLen().line - debugger.PageSize() / 2);
     Print(start, process, debugger, debugger.CurrentFile(), false);
 }
 

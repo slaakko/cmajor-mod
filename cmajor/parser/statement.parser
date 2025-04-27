@@ -195,6 +195,7 @@ parser StatementParser
         )
         {
             cmajor::ast::RangeForStatementNode* rangeForStatementNode = new cmajor::ast::RangeForStatementNode(s, type, id, container, stmt);
+            rangeForStatementNode->SetForSpan(s);
             rangeForStatementNode->SetLParenSpan(lparenSpan);
             rangeForStatementNode->SetColonSpan(colonSpan);
             rangeForStatementNode->SetRParenSpan(rparenSpan);
@@ -397,7 +398,7 @@ parser StatementParser
         }
         ;
 
-    ConstructionStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, 
+    ConstructionStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span a,
         var std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructionStatementNode) : cmajor::ast::StatementNode*
         ::= 
         (
@@ -407,7 +408,7 @@ parser StatementParser
                 constructionStatementNode.reset(new cmajor::ast::ConstructionStatementNode(s, type, id));
             }
             (   ASSIGN Expression(context):value{ constructionStatementNode->AddArgument(value); constructionStatementNode->SetAssignment(); }
-            |   LPAREN ArgumentList(context, constructionStatementNode.get()):args RPAREN
+            |   LPAREN ArgumentList(context, constructionStatementNode.get()):args RPAREN{ a = lexer.GetSpan(pos); constructionStatementNode->Union(a); }
             |   empty{ constructionStatementNode->SetEmpty(); }
             )
             SEMICOLON

@@ -333,18 +333,28 @@ parser ExpressionParser
         |   AMP{ return Operator::addrOf; }
         ;
 
-    Postfix(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s) : cmajor::ast::Node*
+    Postfix(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
             Primary(context):primary{ s = lexer.GetSpan(pos); expr.reset(primary); }
-            (   PLUSPLUS{ expr.reset(new cmajor::ast::PostfixIncrementNode(s, expr.release())); }
-            |   MINUSMINUS{ expr.reset(new cmajor::ast::PostfixDecrementNode(s, expr.release())); }
+            (   PLUSPLUS{ a = lexer.GetSpan(pos); expr.reset(new cmajor::ast::PostfixIncrementNode(s, expr.release())); expr->Union(a); }
+            |   MINUSMINUS{ a = lexer.GetSpan(pos); expr.reset(new cmajor::ast::PostfixDecrementNode(s, expr.release())); expr->Union(a); }
             |   DOT Identifier(context):dotMember{ expr.reset(new cmajor::ast::DotNode(s, expr.release(), dotMember)); }
             |   ARROW Identifier(context):arrowMember{ expr.reset(new cmajor::ast::ArrowNode(s, expr.release(), arrowMember)); }
             |   LBRACKET{ context->PushParsingLvalue(false); context->PushParsingExpressionStatement(false); }
                 Expression(context):index{ context->PopParsingExpressionStatement(); context->PopParsingLvalue(); }
-                RBRACKET{ expr.reset(new cmajor::ast::IndexingNode(s, expr.release(), index)); }
-            |   LPAREN{ expr.reset(new cmajor::ast::InvokeNode(s, expr.release())); } ArgumentList(context, expr.get()):args RPAREN
+                RBRACKET
+                { 
+                    a = lexer.GetSpan(pos);
+                    expr.reset(new cmajor::ast::IndexingNode(s, expr.release(), index)); 
+                    expr->Union(a);
+                }
+            |   (
+                    LPAREN{ expr.reset(new cmajor::ast::InvokeNode(s, expr.release())); } ArgumentList(context, expr.get()):args RPAREN{ a = lexer.GetSpan(pos); }
+                )
+                {
+                    expr->Union(a);
+                }
             )*
         )
         {
@@ -352,8 +362,16 @@ parser ExpressionParser
         }
         ;
 
-    Primary(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
-        ::= LPAREN{ s = lexer.GetSpan(pos); } Expression(context):expr RPAREN{ return new cmajor::ast::ParenthesizedExpressionNode(s, expr); }
+    Primary(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
+        ::= LPAREN{ s = lexer.GetSpan(pos); } 
+            Expression(context):expr 
+            RPAREN
+            { 
+                a = lexer.GetSpan(pos); 
+                cmajor::ast::Node* n = new cmajor::ast::ParenthesizedExpressionNode(s, expr); 
+                n->Union(a);
+                return n;
+            }
         |   Literal(context):literal{ return literal; }
         |   BasicType(context):basicType{ return basicType; }
         |   TemplateId(context):templateId{ return templateId; }
@@ -386,48 +404,56 @@ parser ExpressionParser
         }
         ;
 
-    SizeOfExpr(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
+    SizeOfExpr(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
-            SIZEOF{ s = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN
+            SIZEOF{ s = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN{ a = lexer.GetSpan(pos); }
         )
         {
-            return new cmajor::ast::SizeOfNode(s, expr);
+            cmajor::ast::Node* n = new cmajor::ast::SizeOfNode(s, expr);
+            n->Union(a);
+            return n;
         }
         ;
 
-    TypeNameExpr(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
+    TypeNameExpr(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
-            TYPENAME{ s = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN
+            TYPENAME{ s = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN{ a = lexer.GetSpan(pos); }
         )
         {
-            return new cmajor::ast::TypeNameNode(s, expr);
+            cmajor::ast::Node* n = new cmajor::ast::TypeNameNode(s, expr);
+            n->Union(a);
+            return n;
         }
         ;
 
-    TypeIdExpr(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
+    TypeIdExpr(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
-            TYPEID{ s = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN
+            TYPEID{ s = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN{ a = lexer.GetSpan(pos); }
         )
         {
-            return new cmajor::ast::TypeIdNode(s, expr);
+            cmajor::ast::Node* n = new cmajor::ast::TypeIdNode(s, expr);
+            n->Union(a);
+            return n;
         }
         ;
 
-    CastExpr(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
+    CastExpr(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
             CAST{ s = lexer.GetSpan(pos); }
-            LANGLE TypeExpr(context):typeExpr RANGLE LPAREN Expression(context):expr RPAREN
+            LANGLE TypeExpr(context):typeExpr RANGLE LPAREN Expression(context):expr RPAREN{ a = lexer.GetSpan(pos); }
         )
         {
-            return new cmajor::ast::CastNode(s, typeExpr, expr);
+            cmajor::ast::Node* n = new cmajor::ast::CastNode(s, typeExpr, expr);
+            n->Union(a);
+            return n;
         }
         ;
 
-    ConstructExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s) : cmajor::ast::Node*
+    ConstructExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
             CONSTRUCT{ s = lexer.GetSpan(pos); }
@@ -437,26 +463,33 @@ parser ExpressionParser
             {
                 expr.reset(new cmajor::ast::ConstructNode(s, typeExpr));
             }
-            LPAREN ExpressionList(context, expr.get()):exprList RPAREN
+            LPAREN ExpressionList(context, expr.get()):exprList RPAREN{ a = lexer.GetSpan(pos); }
         )
         {
+            expr->Union(a);
             return expr.release();
         }
         ;
 
-    NewExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s) : cmajor::ast::Node*
+    NewExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (
             NEW{ s = lexer.GetSpan(pos); }
             TypeExpr(context):typeExpr{ expr.reset(new cmajor::ast::NewNode(s, typeExpr)); }
-            (LPAREN ArgumentList(context, expr.get()):args RPAREN)?
+            (
+                LPAREN ArgumentList(context, expr.get()):args RPAREN{ a = lexer.GetSpan(pos); }
+            )?
         )
         {
+            if (a.IsValid())
+            {
+                expr->Union(a);
+            }
             return expr.release();
         }
         ;
 
-    InvokeExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s) : cmajor::ast::Node*
+    InvokeExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::Span s, var soul::ast::Span a) : cmajor::ast::Node*
         ::= 
         (   TemplateId(context):templateId{ s = lexer.GetSpan(pos); expr.reset(templateId); }
         |   Identifier(context):id{ s = lexer.GetSpan(pos); expr.reset(id); }
@@ -467,9 +500,10 @@ parser ExpressionParser
         (
             LPAREN{ expr.reset(new cmajor::ast::InvokeNode(s, expr.release())); }
             ArgumentList(context, expr.get()):args
-            RPAREN
+            RPAREN{ a = lexer.GetSpan(pos); }
         )
         {
+            expr->Union(a);
             return expr.release();
         }
         ;

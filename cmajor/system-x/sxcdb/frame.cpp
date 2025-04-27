@@ -5,13 +5,16 @@
 
 module cmajor.systemx.sxcdb.frame;
 
+import soul.ast.span;
+
 namespace cmajor::systemx::sxcdb {
 
-Frame::Frame() : index(-1), pc(0), entry(nullptr), lineNumber(0)
+Frame::Frame() : index(-1), pc(0), entry(nullptr), lineColLen(), idx(-1)
 {
 }
 
-Frame::Frame(int index_, uint64_t pc_, cmajor::systemx::object::FunctionTableEntry* entry_, int lineNumber_) : index(index_), pc(pc_), entry(entry_), lineNumber(lineNumber_)
+Frame::Frame(int index_, uint64_t pc_, cmajor::systemx::object::FunctionTableEntry* entry_, soul::ast::LineColLen lineColLen_, int32_t idx_) : 
+    index(index_), pc(pc_), entry(entry_), lineColLen(lineColLen_), idx(idx_)
 {
 }
 
@@ -37,8 +40,9 @@ Frames GetFrames(cmajor::systemx::kernel::Process* process)
         cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(pc, *symbolTable, process->RV(), processor->GetMachine()->Mem());
         if (entry)
         {
-            int lineNumber = entry->SearchLineNumber(pc);
-            frames.AddFrame(Frame(index, pc, entry, lineNumber));
+            int32_t idx = -1;
+            soul::ast::LineColLen lineColLen = entry->SearchLineColLen(pc, idx);
+            frames.AddFrame(Frame(index, pc, entry, lineColLen, idx));
             ++index;
         }
         uint64_t fp = processor->Regs().Get(cmajor::systemx::machine::regFP);
@@ -49,8 +53,9 @@ Frames GetFrames(cmajor::systemx::kernel::Process* process)
             cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(pc, *symbolTable, process->RV(), processor->GetMachine()->Mem());
             if (entry)
             {
-                int32_t lineNumber = entry->SearchLineNumber(pc);
-                frames.AddFrame(Frame(index, pc, entry, lineNumber));
+                int32_t idx = -1;
+                soul::ast::LineColLen lineColLen = entry->SearchLineColLen(pc, idx);
+                frames.AddFrame(Frame(index, pc, entry, lineColLen, idx));
                 ++index;
             }
             fp = processor->GetMachine()->Mem().ReadOcta(process->RV(), fp, cmajor::systemx::machine::Protection::read);

@@ -1,0 +1,12 @@
+using System;
+
+void main()
+{
+    int index = 0;
+    do 
+    {
+        ++index;
+        if (index == 2) continue;
+    }
+    while (index < 3);
+}

@@ -7,10 +7,11 @@ module cmajor.systemx.ir.context;
 
 import cmajor.systemx.ir.instruction;
 import cmajor.systemx.ir.basic.block;
+import cmajor.systemx.ir.function;
 
 namespace cmajor::systemx::ir {
 
-Context::Context() : currentFunction(nullptr), currentBasicBlock(nullptr), metadata(), currentLineNumber(0)
+Context::Context() : currentFunction(nullptr), currentBasicBlock(nullptr), metadata(), currentLineColLen()
 {
 }
 
@@ -446,6 +447,7 @@ Instruction* Context::CreateTrap(const std::vector<Value*>& args)
 Instruction* Context::CreateNop()
 {
     Instruction* inst = new NoOperationInstruction();
+    AddLineInfo(inst);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -480,21 +482,27 @@ void Context::AddMDArrayITem(MDArray* mdArray, MDItem* item)
     mdArray->AddItem(item);
 }
 
-void Context::SetCurrentLineNumber(int lineNumber)
+void Context::SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen)
 {
-    if (lineNumber != -1)
+    if (lineColLen.IsValid())
     {
-        currentLineNumber = lineNumber;
+        currentLineColLen = lineColLen;
+        currentFunction->MapLineColLen(lineColLen);
     }
+}
+
+int32_t Context::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    return currentFunction->GetLineColLenIndex(lineColLen);
 }
 
 void Context::AddLineInfo(Instruction* inst)
 {
-    if (currentLineNumber != 0 && !inst->IsNoOperation())
+    if (currentLineColLen.IsValid())
     {
         MDStructRef* lineNumberInfo = nullptr;
-        auto it = lineNumberInfoMap.find(currentLineNumber);
-        if (it != lineNumberInfoMap.cend())
+        auto it = lineColLenInfoMap.find(currentLineColLen);
+        if (it != lineColLenInfoMap.cend())
         {
             lineNumberInfo = it->second;
         }
@@ -502,9 +510,12 @@ void Context::AddLineInfo(Instruction* inst)
         {
             MDStruct* lineNumberStruct = metadata.CreateMDStruct();
             lineNumberStruct->AddItem("nodeType", metadata.CreateMDLong(lineInfoNodeType));
-            lineNumberStruct->AddItem("line", metadata.CreateMDLong(currentLineNumber));
+            lineNumberStruct->AddItem("index", metadata.CreateMDLong(GetLineColLenIndex(currentLineColLen)));
+            lineNumberStruct->AddItem("line", metadata.CreateMDLong(currentLineColLen.line));
+            lineNumberStruct->AddItem("col", metadata.CreateMDLong(currentLineColLen.col));
+            lineNumberStruct->AddItem("len", metadata.CreateMDLong(currentLineColLen.len));
             lineNumberInfo = metadata.CreateMDStructRef(lineNumberStruct->Id());
-            lineNumberInfoMap[currentLineNumber] = lineNumberInfo;
+            lineColLenInfoMap[currentLineColLen] = lineNumberInfo;
         }
         inst->SetMetadataRef(lineNumberInfo);
     }

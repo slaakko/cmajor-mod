@@ -46,7 +46,9 @@ std::string GetStackTrace(Process* process)
         cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(pc, *symbolTable, process->RV(), processor->GetMachine()->Mem());
         if (entry)
         {
-            int32_t lineNumber = entry->SearchLineNumber(pc);
+            int32_t idx = -1;
+            soul::ast::LineColLen lineColLen = entry->SearchLineColLen(pc, idx);
+            int32_t lineNumber = lineColLen.line;
             AddStackTraceEntry(stackTrace, entry, lineNumber, index);
             ++index;
         }
@@ -58,7 +60,9 @@ std::string GetStackTrace(Process* process)
             cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(pc, *symbolTable, process->RV(), processor->GetMachine()->Mem());
             if (entry)
             {
-                int32_t lineNumber = entry->SearchLineNumber(pc);
+                int32_t idx = -1;
+                soul::ast::LineColLen lineColLen = entry->SearchLineColLen(pc, idx);
+                int32_t lineNumber = lineColLen.line;
                 AddStackTraceEntry(stackTrace, entry, lineNumber, index);
                 ++index;
             }

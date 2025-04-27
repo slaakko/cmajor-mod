@@ -1545,6 +1545,7 @@ void SystemXEmitter::SetFunctionCallConventionToStdCall(void* function)
 void SystemXEmitter::SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId)
 {
     currentFunction = static_cast<cmajor::systemx::ir::Function*>(function_);
+    context->SetCurrentFunction(currentFunction);
 }
 
 void SystemXEmitter::SetFunctionName(const std::string& functionName)
@@ -1790,6 +1791,25 @@ void SystemXEmitter::SetMetadataRef(void* inst, void* mdStructRef)
     context->SetMetadataRef(static_cast<cmajor::systemx::ir::Instruction*>(inst), static_cast<cmajor::systemx::ir::MDStructRef*>(mdStructRef));
 }
 
+void SystemXEmitter::SetMetadataRefForStructType(void* structType, void* mdRef)
+{
+    cmajor::systemx::ir::StructureType* structureType = static_cast<cmajor::systemx::ir::StructureType*>(structType);
+    cmajor::systemx::ir::MDStructRef* metadataRef = static_cast<cmajor::systemx::ir::MDStructRef*>(mdRef);
+    structureType->SetMetadataRef(metadataRef);
+}
+
+void* SystemXEmitter::GetMetadataRefForStructType(void* structType) const
+{
+    cmajor::systemx::ir::StructureType* structureType = static_cast<cmajor::systemx::ir::StructureType*>(structType);
+    return structureType->MetadataRef();
+}
+
+int SystemXEmitter::GetTypeId(void* type) const
+{
+    cmajor::systemx::ir::Type* tp = static_cast<cmajor::systemx::ir::Type*>(type);
+    return context->GetTypeRepository().GetTypeId(tp);
+}
+
 void SystemXEmitter::FinalizeFunction(void* function, bool hasCleanup)
 {
     static_cast<cmajor::systemx::ir::Function*>(function)->Finalize();
@@ -1860,7 +1880,16 @@ void SystemXEmitter::EndSubstituteLineNumber()
 
 void SystemXEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
-    context->SetCurrentLineNumber(lineNumber);
+}
+
+void SystemXEmitter::SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen)
+{
+    context->SetCurrentLineColLen(lineColLen);
+}
+
+int32_t SystemXEmitter::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    return context->GetLineColLenIndex(lineColLen);
 }
 
 void SystemXEmitter::PrintModule()

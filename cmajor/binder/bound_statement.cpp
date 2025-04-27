@@ -126,6 +126,23 @@ void BoundCompoundStatement::AddStatement(std::unique_ptr<BoundStatement>&& stat
     statements.push_back(std::move(statement));
 }
 
+soul::ast::Span BoundCompoundStatement::NextSpan(BoundStatement* statement) const
+{
+    BoundStatement* prev = nullptr;
+    for (const auto& stmt : statements)
+    {
+        if (stmt.get() == statement)
+        {
+            prev = stmt.get();
+        }
+        else if (prev)
+        {
+            return stmt->GetSpan();
+        }
+    }
+    return endSpan;
+}
+
 BoundReturnStatement::BoundReturnStatement(std::unique_ptr<BoundFunctionCall>&& returnFunctionCall_, const soul::ast::Span& span_) :
     BoundStatement(span_, BoundNodeType::boundReturnStatement), returnFunctionCall(std::move(returnFunctionCall_))
 {

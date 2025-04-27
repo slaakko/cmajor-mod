@@ -7,6 +7,7 @@ export module cmajor.systemx.sxcdb.frame;
 
 import cmajor.systemx.object;
 import cmajor.systemx.kernel;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::systemx::sxcdb {
@@ -15,16 +16,18 @@ class Frame
 {
 public:
     Frame();
-    Frame(int index_, uint64_t pc_, cmajor::systemx::object::FunctionTableEntry* entry_, int lineNumber_);
+    Frame(int index_, uint64_t pc_, cmajor::systemx::object::FunctionTableEntry* entry_, soul::ast::LineColLen lineColLen_, int32_t idx_);
     int Index() const { return index; }
     uint64_t PC() const { return pc; }
     cmajor::systemx::object::FunctionTableEntry* Entry() const { return entry; }
-    int LineNumber() const { return lineNumber; }
+    const soul::ast::LineColLen& LineColLen() const { return lineColLen; }
+    int32_t Idx() const { return idx; }
 private:
     int index;
     uint64_t pc;
     cmajor::systemx::object::FunctionTableEntry* entry;
-    int lineNumber;
+    soul::ast::LineColLen lineColLen;
+    int32_t idx;
 };
 
 class Frames

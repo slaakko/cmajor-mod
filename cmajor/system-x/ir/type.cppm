@@ -11,6 +11,8 @@ import std.core;
 
 export namespace cmajor::systemx::ir {
 
+class MDStructRef;
+
 const int voidTypeId = -1;
 const int boolTypeId = -2;
 const int sbyteTypeId = -3;
@@ -176,10 +178,13 @@ public:
     const std::vector<Type*>& MemberTypes() const { return memberTypes; }
     void SetMemberTypes(const std::vector<Type*>& memberTypes_);
     void WriteDeclaration(util::CodeFormatter& formatter) override;
-    bool IsStructureType() const { return true; }
+    bool IsStructureType() const override { return true; }
     Type* GetMemberType(uint64_t index) const;
+    void SetMetadataRef(MDStructRef* mdRef_) { mdRef = mdRef_; }
+    MDStructRef* MetadataRef() const { return mdRef; }
 private:
     std::vector<Type*> memberTypes;
+    MDStructRef* mdRef;
 };
 
 struct StructureTypeHash
@@ -275,6 +280,7 @@ public:
     Type* CreateStructureType();
     Type* GetArrayType(Type* elementType, uint64_t size);
     Type* GetFunctionType(Type* returnType, const std::vector<Type*>& paramTypes);
+    int GetTypeId(Type* type) const;
 private:
     VoidType voidType;
     BoolType boolType;
@@ -294,6 +300,7 @@ private:
     std::unordered_map<ArrayTypeKey, ArrayType*, ArrayTypeKeyHash, ArrayTypeKeyEqual> arrayTypeMap;
     std::unordered_map<FunctionTypeKey, FunctionType*, FunctionTypeKeyHash, FunctionTypeKeyEqual> functionTypeMap;
     std::vector<std::unique_ptr<Type>> types;
+    std::map<Type*, int> typeMap;
 };
 
 } // cmajor::systemx::ir

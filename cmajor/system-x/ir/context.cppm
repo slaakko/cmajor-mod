@@ -9,6 +9,7 @@ import cmajor.systemx.ir.type;
 import cmajor.systemx.ir.data;
 import cmajor.systemx.ir.metadata;
 import cmajor.systemx.ir.value;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::systemx::ir {
@@ -122,10 +123,12 @@ public:
     MDBasicBlockRef* CreateMDBasicBlockRef(void* bb) { return metadata.CreateMDBasicBlockRef(bb); }
     void AddMDStructItem(MDStruct* mdStruct, const std::string& fieldName, MDItem* item);
     void AddMDArrayITem(MDArray* mdArray, MDItem* item);
-    void SetCurrentLineNumber(int lineNumber);
+    void SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen);
+    int32_t GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const;
     void AddLineInfo(Instruction* inst);
     MDStructRef* GetMDStructRefForSourceFile(const std::string& sourceFileName);
     void SetMetadataRef(Instruction* inst, MDStructRef* metadataRef);
+    void SetCurrentFunction(Function* function) { currentFunction = function; }
 private:
     TypeRepository typeRepository;
     DataRepository dataRepository;
@@ -133,8 +136,8 @@ private:
     std::vector<std::unique_ptr<Value>> values;
     Function* currentFunction;
     BasicBlock* currentBasicBlock;
-    int currentLineNumber;
-    std::unordered_map<int, MDStructRef*> lineNumberInfoMap;
+    soul::ast::LineColLen currentLineColLen;
+    std::map<soul::ast::LineColLen, MDStructRef*> lineColLenInfoMap;
     std::unordered_map<std::string, MDStructRef*> sourceFileMap;
 };
 

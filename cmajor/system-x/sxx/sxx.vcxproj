@@ -154,6 +154,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\soul\ast\ast.vcxproj">
+      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\soul\xml\xpath\xpath.vcxproj">
       <Project>{99d0a844-4ee3-4c0a-9eeb-45eb9fedca05}</Project>
     </ProjectReference>

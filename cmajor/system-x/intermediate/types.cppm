@@ -18,6 +18,7 @@ class Types;
 class Visitor;
 class ArrayType;
 class StructureType;
+class MetadataRef;
 
 const int32_t voidTypeId = 0;
 const int32_t boolTypeId = 1;
@@ -271,12 +272,15 @@ public:
     const std::vector<TypeRef>& FieldTypeRefs() const { return fieldTypeRefs; }
     Type* FieldType(int i) const { return fieldTypeRefs[i].GetType(); }
     int64_t GetFieldOffset(int64_t index) const;
+    void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
+    MetadataRef* GetMetadataRef() const { return metadataRef; }
 private:
     void ComputeSizeAndOffsets() const;
     std::vector<TypeRef> fieldTypeRefs;
     mutable bool sizeAndOffsetsComputed;
     mutable int64_t size;
     mutable std::vector<int64_t> fieldOffsets;
+    MetadataRef* metadataRef;
 };
 
 class ArrayType : public Type
@@ -344,7 +348,7 @@ public:
     Types& operator=(const Types&) = delete;
     Context* GetContext() const { return context; }
     void SetContext(Context* context_) { context = context_; }
-    void AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs);
+    void AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* metadataRef);
     void AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef);
     void AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs);
     void Resolve(Context* context);

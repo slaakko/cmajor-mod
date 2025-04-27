@@ -78,6 +78,7 @@ public:
     virtual bool IsFunctionNode() const { return false; }
     virtual bool IsIntrinsicConceptNode() const { return false; }
     virtual bool IsConditionalCompilationExpressionNode() const { return false; }
+    bool IsCompoundStatementNode() const { return nodeType == NodeType::compoundStatementNode; }
     bool IsNamespaceNode() const { return nodeType == NodeType::namespaceNode; }
     bool IsTypedefNode() const { return nodeType == NodeType::typedefNode; }
     bool IsAliasNode() const { return nodeType == NodeType::aliasNode; }
@@ -94,6 +95,8 @@ public:
     virtual int FileIndex() const;
     void SetLexerFlags(soul::lexer::LexerFlags lexerFlags_) { lexerFlags = lexerFlags_; }
     soul::lexer::LexerFlags GetLexerFlags() const { return lexerFlags; }
+    void Union(Node* that) { span.Union(that->GetSpan()); }
+    void Union(const soul::ast::Span& s) { span.Union(s); }
 private:
     NodeType nodeType;
     soul::ast::Span span;

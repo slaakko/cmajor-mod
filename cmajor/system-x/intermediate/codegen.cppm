@@ -7,6 +7,7 @@ export module cmajor.systemx.intermediate.codegen;
 
 import cmajor.systemx.assembler;
 import soul.ast.source.pos;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::systemx::intermediate {
@@ -85,14 +86,14 @@ public:
     virtual void Error(const std::string& message) = 0;
     virtual void AddSourceFileInfo(CompileUnit& compileUnit) = 0;
     virtual void GenerateDebugInfo() = 0;
-    virtual void SetCurrentLineNumber(uint32_t lineNumber) = 0;
+    virtual void SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen, int32_t index) = 0;
     virtual void BeginTry(uint32_t tryBlockId, uint32_t parentTryBlockId) = 0;
     virtual void EndTry(uint32_t tryBlockId) = 0;
     virtual void Catch(uint32_t catchBlockId, uint32_t tryBlockId, const std::string& caughtTypeIdStr) = 0;
     virtual void BeginCleanup(uint32_t cleanupBlockId, uint32_t tryBlockId) = 0;
     virtual void EndCleanup(uint32_t cleanupBlockId) = 0;
     virtual Function* CurrentFunction() const = 0;
-    virtual int CurrentLineNumber() const = 0;
+    virtual const soul::ast::LineColLen& CurrentLineColLen() const = 0;
     virtual cmajor::systemx::assembler::AssemblyFile* AssemblyFile() const = 0;
     std::thread::id CreatorThreadId() const { return creatorThreadId; }
 private:
@@ -161,7 +162,7 @@ void EmitString(StringValue& value, CodeGenerator& codeGen);
 void EmitClsId(const std::string& typeId, CodeGenerator& codeGen);
 void EmitSourceFileNameDebugInfo(const std::string& sourceFileName, int64_t id, CodeGenerator& codeGen);
 void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator& codeGen);
-void EmitLineNumberInfo(uint32_t currentLineNumber, CodeGenerator& codeGen);
+void EmitLineNumberInfo(const soul::ast::LineColLen& currentLineColLen, int32_t index, CodeGenerator& codeGen);
 void EmitBeginTry(uint32_t tryBlockId, uint32_t parentTryBlockId, CodeGenerator& codeGen);
 void EmitEndTry(uint32_t tryBlockId, CodeGenerator& codeGen);
 void EmitCatch(uint32_t catchBlockId, uint32_t tryBlockId, uint64_t caughtTypeId1, uint64_t caughtTypeId2, CodeGenerator& codeGen);

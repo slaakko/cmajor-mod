@@ -1,0 +1,3 @@
+project for_continue;
+target=program;
+source <for_continue.cm>;

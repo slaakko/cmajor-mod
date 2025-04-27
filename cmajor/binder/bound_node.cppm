@@ -44,7 +44,9 @@ public:
     BoundNode* Parent() const { return parent; }
     void SetParent(BoundNode* parent_) { parent = parent_; }
     virtual bool IsBoundStatement() const { return false; }
+    bool IsCompoundStatement() const { return boundNodeType == BoundNodeType::boundCompoundStatement; }
     bool IsBreakStatement() const { return boundNodeType == BoundNodeType::boundBreakStatement; }
+    bool IsContinueStatement() const { return boundNodeType == BoundNodeType::boundContinueStatement; }
     bool IsSwitchStatement() const { return boundNodeType == BoundNodeType::boundSwitchStatement;  }
     bool IsWhileStatement() const { return boundNodeType == BoundNodeType::boundWhileStatement; }
     bool IsDoStatement() const { return boundNodeType == BoundNodeType::boundDoStatement; }

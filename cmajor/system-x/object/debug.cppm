@@ -5,6 +5,7 @@
 
 export module cmajor.systemx.object.debug;
 
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::systemx::object {
@@ -58,7 +59,7 @@ public:
     void Emit(DebugSection* debugSection) override;
     void Read(DebugSection* debugSection) override;
     std::string ToString() const override;
-    void AddToCfg(int32_t prevLine, int32_t nextLine);
+    void AddToCfg(int32_t prev, int32_t next);
     const std::vector<std::pair<int32_t, int32_t>>& Cfg() const { return cfg; }
 private:
     uint32_t functionSymbolIndex;
@@ -99,15 +100,17 @@ class LineInfoRecord : public DebugRecord
 {
 public:
     LineInfoRecord();
-    LineInfoRecord(uint32_t offset_, uint32_t lineNumber_);
+    LineInfoRecord(uint32_t offset_, const soul::ast::LineColLen& lineColLen_, int32_t index_);
     uint32_t Offset() const { return offset; }
-    uint32_t LineNumber() const { return lineNumber; }
+    int32_t Index() const { return index; }
+    const soul::ast::LineColLen& LineColLen() const { return lineColLen; }
     void Emit(DebugSection* debugSection) override;
     void Read(DebugSection* debugSection) override;
     std::string ToString() const override;
 private:
     uint32_t offset;
-    uint32_t lineNumber;
+    soul::ast::LineColLen lineColLen;
+    int32_t index;
 };
 
 class BeginTryRecord : public DebugRecord

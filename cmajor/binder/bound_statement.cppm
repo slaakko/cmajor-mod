@@ -96,6 +96,7 @@ public:
     const soul::ast::Span& EndSpan() const { return endSpan; }
     bool IsDestroyed() const { return destroyed; }
     void SetDestroyed() { destroyed = true; }
+    soul::ast::Span NextSpan(BoundStatement* statement) const;
 private:
     std::vector<std::unique_ptr<BoundStatement>> statements;
     soul::ast::Span endSpan;

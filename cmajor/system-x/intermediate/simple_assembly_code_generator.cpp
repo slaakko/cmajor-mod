@@ -21,7 +21,7 @@ namespace cmajor::systemx::intermediate {
 SimpleAssemblyCodeGenerator::SimpleAssemblyCodeGenerator(Context* context_, cmajor::systemx::assembler::AssemblyFile* assemblyFile_) :
     Visitor(context_), assemblyFile(assemblyFile_), emitSection(cmajor::systemx::assembler::AssemblySectionKind::code),
     assemblyFunction(nullptr), assemblyStructure(nullptr), assemblyInst(nullptr), currentInst(nullptr), currentFunction(nullptr),
-    registerAllocator(nullptr), leader(false), debugInfo(nullptr), lineNumber(0), currentOffset(0)
+    registerAllocator(nullptr), leader(false), debugInfo(nullptr), currentLineColLen(), currentOffset(0)
 {
 }
 
@@ -266,17 +266,25 @@ void SimpleAssemblyCodeGenerator::EmitDebugInfoInst(cmajor::systemx::assembler::
     debugInfo->AddInstruction(assemblyInstruction);
 }
 
-void SimpleAssemblyCodeGenerator::SetCurrentLineNumber(uint32_t lineNumber_)
+void SimpleAssemblyCodeGenerator::SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen, int32_t index)
 {
-    if (lineNumber == 0)
+    if (currentFunction)
     {
-        lineNumber = lineNumber_;
-        EmitLineNumberInfo(lineNumber, *this);
+        if (currentFunction->IndexSeen(index))
+        {
+            return;
+        }
+        currentFunction->AddIndex(index);
     }
-    else if (lineNumber != lineNumber_)
+    if (!currentLineColLen.IsValid())
     {
-        lineNumber = lineNumber_;
-        EmitLineNumberInfo(lineNumber, *this);
+        currentLineColLen = lineColLen;
+        EmitLineNumberInfo(currentLineColLen, index, *this);
+    }
+    else if (currentLineColLen != lineColLen)
+    {
+        currentLineColLen = lineColLen;
+        EmitLineNumberInfo(currentLineColLen, index, *this);
     }
 }
 
@@ -323,7 +331,7 @@ void SimpleAssemblyCodeGenerator::Visit(Function& function)
 {
     if (!function.IsDefined()) return;
     currentFunction = &function;
-    lineNumber = 0;
+    currentLineColLen = soul::ast::LineColLen();
     if (function.GetFlag(FunctionFlags::once))
     {
         assemblyFile->GetLinkSection()->GetOrCreateLinkOnceObject()->AddLinkOnceSymbol(cmajor::systemx::assembler::MakeGlobalSymbol(function.Name()));
@@ -352,12 +360,6 @@ void SimpleAssemblyCodeGenerator::Visit(Function& function)
         }
     }
     function.VisitBasicBlocks(*this);
-/*
-    if (lineNumber != 0)
-    {
-        EmitLineNumberInfo(lineNumber, *this);
-    }
-*/
     assemblyFunction->SetActiveFunctionPart(cmajor::systemx::assembler::FunctionPart::prologue);
     EmitPrologue(*this);
     assemblyFunction->SetActiveFunctionPart(cmajor::systemx::assembler::FunctionPart::epilogue);

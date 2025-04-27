@@ -30,7 +30,15 @@ std::string Version()
 
 void PrintHelp()
 {
-    std::cout << "System X command line debugger version " << Version() << std::endl;
+    std::cout << "System X command line debugger version " << Version() << "\n";
+    std::cout << "Usage: sxcdb [options] FILE.x" << "\n";
+    std::cout << "Debug program FILE.x" << "\n";
+    std::cout << "options:" << "\n";
+    std::cout << "--help | -h" << "\n";
+    std::cout << "  Print help and exit." << "\n";
+    std::cout << "--verbose | -v" << "\n";
+    std::cout << "  Be verbose." << "\n";
+    std::cout << std::endl;
 }
 
 int main(int argc, const char** argv)

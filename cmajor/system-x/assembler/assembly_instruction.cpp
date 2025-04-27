@@ -5,6 +5,7 @@
 
 module cmajor.systemx.assembler.assembly.instruction;
 
+import soul.ast.span;
 import cmajor.systemx.assembler.assembler;
 import cmajor.systemx.object;
 import cmajor.systemx.machine;
@@ -303,9 +304,9 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                                     int operandIndex = 7;
                                     for (uint64_t i = 0; i < cfgSize; ++i)
                                     {
-                                        cmajor::systemx::object::Value prevLine = currentInst->Operands()[operandIndex++];
-                                        cmajor::systemx::object::Value nextLine = currentInst->Operands()[operandIndex++];
-                                        cfg.push_back(std::make_pair(static_cast<int32_t>(prevLine.Val()), static_cast<int32_t>(nextLine.Val())));
+                                        cmajor::systemx::object::Value prev = currentInst->Operands()[operandIndex++];
+                                        cmajor::systemx::object::Value next = currentInst->Operands()[operandIndex++];
+                                        cfg.push_back(std::make_pair(static_cast<int32_t>(prev.Val()), static_cast<int32_t>(next.Val())));
                                     }
                                     cmajor::systemx::object::FuncInfoRecord* funcInfoRecord = new cmajor::systemx::object::FuncInfoRecord(
                                         functionSymbolIndex, fullName, sourceFileNameIdValue.Val(), frameSizeValue.Val(), mainValue.Val() == 1);
@@ -338,12 +339,17 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                 }
                 case LINEINFO:
                 {
-                    if (n == 2)
+                    if (n == 5)
                     {
-                        cmajor::systemx::object::Value lineValue = currentInst->Operands()[1];
+                        cmajor::systemx::object::Value indexValue = currentInst->Operands()[1];
+                        cmajor::systemx::object::Value lineValue = currentInst->Operands()[2];
+                        cmajor::systemx::object::Value colValue = currentInst->Operands()[3];
+                        cmajor::systemx::object::Value lenValue = currentInst->Operands()[4];
+                        soul::ast::LineColLen lineColLen(static_cast<int32_t>(lineValue.Val()), static_cast<int32_t>(colValue.Val()), static_cast<int32_t>(lenValue.Val()));
                         uint32_t offset = static_cast<uint32_t>(
                             assembler.CurrentSection()->BaseAddress() + assembler.CurrentSection()->Address() - assembler.CurrentFunctionSymbol()->Start());
-                        cmajor::systemx::object::LineInfoRecord* lineInfoRecord = new cmajor::systemx::object::LineInfoRecord(offset, static_cast<uint32_t>(lineValue.Val()));
+                        cmajor::systemx::object::LineInfoRecord* lineInfoRecord = new cmajor::systemx::object::LineInfoRecord(
+                            offset, lineColLen, indexValue.Val());
                         assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(lineInfoRecord);
                     }
                     else

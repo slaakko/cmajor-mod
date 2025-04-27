@@ -352,8 +352,13 @@ public:
     void AddMDArrayItem(void* mdArray, void* mdItem) override;
     void SetFunctionMdId(void* function, int mdId) override;
     void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) override;
+    void SetCurrentLineColLen(const soul::ast::LineColLen& lineColLen) override;
+    int32_t GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const override;
     void* GetMDStructRefForSourceFile(const std::string& sourceFileName) override;
     void SetMetadataRef(void* inst, void* mdStructRef) override;
+    void SetMetadataRefForStructType(void* structType, void* mdRef) override;
+    void* GetMetadataRefForStructType(void* structType) const override;
+    int GetTypeId(void* type) const override;
     void FinalizeFunction(void* function, bool hasCleanup) override;
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;

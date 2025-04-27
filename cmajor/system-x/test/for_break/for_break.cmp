@@ -1,0 +1,3 @@
+project for_break;
+target=program;
+source <for_break.cm>;

@@ -1,0 +1,14 @@
+using System;
+
+void main()
+{
+    bool foo = true;
+    while (true)
+    {
+        if (foo)
+        {
+            break;
+        }
+    }
+    Console.WriteLine("foo");
+}
