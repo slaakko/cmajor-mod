@@ -5,10 +5,11 @@
 
 module cmajor.systemx.intermediate.codegen;
 
+import cmajor.systemx.intermediate.types;
+import cmajor.systemx.intermediate.value;
 import cmajor.systemx.intermediate.code;
 import cmajor.systemx.intermediate.data;
 import cmajor.systemx.intermediate.reg.allocator;
-import cmajor.systemx.ir;
 import cmajor.systemx.machine;
 import cmajor.systemx.assembler;
 import util;
@@ -1764,7 +1765,7 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
                         if (nodeTypeItem && nodeTypeItem->IsMetadataLong())
                         {
                             MetadataLong* nodeType = static_cast<MetadataLong*>(nodeTypeItem);
-                            if (nodeType->Value() == cmajor::systemx::ir::cfgNodeType)
+                            if (nodeType->Value() == cmajor::systemx::intermediate::cfgNodeType)
                             {
                                 int64_t prev = -1;
                                 int64_t next = -1;

@@ -206,6 +206,8 @@
     <ClCompile Include="types.cpp" />
     <ClCompile Include="types.cppm" />
     <ClCompile Include="util.cppm" />
+    <ClCompile Include="value.cpp" />
+    <ClCompile Include="value.cppm" />
     <ClCompile Include="verify.cpp" />
     <ClCompile Include="verify.cppm" />
     <ClCompile Include="visit.cpp" />

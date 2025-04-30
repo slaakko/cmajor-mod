@@ -15,21 +15,6 @@ import util;
 
 namespace cmajor::systemx::backend {
 
-struct NativeModule
-{
-    NativeModule(cmajor::ir::Emitter* emitter_, const std::string& moduleFilePath_) : emitter(emitter_)
-    {
-        module = emitter->CreateModule(moduleFilePath_);
-        emitter->SetModule(module);
-    }
-    ~NativeModule()
-    {
-        emitter->DestroyModule(module);
-    }
-    cmajor::ir::Emitter* emitter;
-    void* module;
-};
-
 SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) : 
     emitter(emitter_), symbolTable(nullptr), context(nullptr), module(nullptr), compileUnit(nullptr), fullSpan(),
     nativeCompileUnit(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false), destructorCallGenerated(false), genJumpingBoolCode(false),
@@ -46,17 +31,17 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileU
     context = boundCompileUnit.GetContext();
     emitter->SetContext(context);
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
+    emitter->SetFilePath(intermediateFilePath);
     std::string optimizedIntermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".opt.i");
-    NativeModule nativeModule(emitter, intermediateFilePath);
     compileUnitId = boundCompileUnit.Id();
     emitter->SetCompileUnitId(compileUnitId);
+    void* sourceFileMetadataRef = emitter->GetMDStructRefForSourceFile(boundCompileUnit.SourceFilePath());
+    emitter->SetCompileUnitMetadataRef(sourceFileMetadataRef);
     generateLineNumbers = false;
     symbolTable = &boundCompileUnit.GetSymbolTable();
     module = &boundCompileUnit.GetModule();
     compileUnit = &boundCompileUnit;
-    nativeCompileUnit = static_cast<cmajor::systemx::ir::CompileUnit*>(nativeModule.module);
-    nativeCompileUnit->SetId(compileUnitId);
-    nativeCompileUnit->SetSourceFilePath(boundCompileUnit.SourceFilePath());
+    nativeCompileUnit = static_cast<cmajor::systemx::intermediate::CompileUnit*>(emitter->GetCompileUnit());
     cmajor::binder::ConstantArrayRepository& constantArrayRepository = boundCompileUnit.GetConstantArrayRepository();
     for (cmajor::symbols::ConstantSymbol* constantSymbol : constantArrayRepository.ConstantArrays())
     {

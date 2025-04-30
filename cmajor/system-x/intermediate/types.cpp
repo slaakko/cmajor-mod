@@ -12,6 +12,23 @@ import util;
 
 namespace cmajor::systemx::intermediate {
 
+const char* fundamentalTypeName[] =
+{
+    "void", "bool", "sbyte", "byte", "short", "ushort", "int", "uint", "long", "ulong", "float", "double"
+};
+
+std::string TypeName(int typeId)
+{
+    if (IsFundamentalTypeId(typeId))
+    {
+        return fundamentalTypeName[typeId];
+    }
+    else
+    {
+        return "$T" + std::to_string(MakeUserTypeId(typeId));
+    }
+}
+
 Type::Type(const soul::ast::SourcePos& sourcePos_, TypeKind kind_, int32_t id_) : sourcePos(sourcePos_), kind(kind_), id(id_)
 {
 }
@@ -64,28 +81,28 @@ bool Type::IsFloatingPointType() const
 {
     switch (id)
     {
-    case floatTypeId:
-    case doubleTypeId:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case floatTypeId:
+        case doubleTypeId:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
-Type* Type::AddPointer(Context* context) const
+Type* Type::AddPointer(Context* context) 
 {
     if (IsPointerType())
     {
-        const PointerType* pointerType = static_cast<const PointerType*>(this);
-        return context->GetTypes().MakePointerType(GetSourcePos(), GetBaseTypeId(pointerType->Id()), GetPointerCount(pointerType->Id()) + 1, context);
+        PointerType* pointerType = static_cast<PointerType*>(this);
+        return context->GetTypes().MakePointerType(soul::ast::SourcePos(), GetBaseTypeId(pointerType->Id()), GetPointerCount(pointerType->Id()) + 1, context);
     }
     else
     {
-        return context->GetTypes().MakePointerType(GetSourcePos(), Id(), 1, context);
+        return context->GetTypes().MakePointerType(soul::ast::SourcePos(), Id(), 1, context);
     }
 }
 
@@ -159,11 +176,32 @@ cmajor::systemx::assembler::Instruction* Type::MakeAssemblyInst(Context* context
     return nullptr;
 }
 
+ConstantValue* Type::DefaultValue()
+{
+    return nullptr;
+}
+
+void Type::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(Name());
+}
+
+std::string Type::Name() const
+{
+    return TypeName(id);
+}
+
+void Type::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    formatter.Write(Name());
+    formatter.Write(" = type ");
+}
+
 VoidType::VoidType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, voidTypeId)
 {
 }
 
-BoolType::BoolType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, boolTypeId)
+BoolType::BoolType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, boolTypeId), defaultValue(false, this)
 {
 }
 
@@ -172,7 +210,7 @@ cmajor::systemx::assembler::Instruction* BoolType::MakeAssemblyInst(Context* con
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BYTE);
 }
 
-SByteType::SByteType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, sbyteTypeId)
+SByteType::SByteType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, sbyteTypeId), defaultValue(0, this)
 {
 }
 
@@ -181,7 +219,7 @@ cmajor::systemx::assembler::Instruction* SByteType::MakeAssemblyInst(Context* co
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BYTE);
 }
 
-ByteType::ByteType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, byteTypeId)
+ByteType::ByteType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, byteTypeId), defaultValue(0, this)
 {
 }
 
@@ -190,7 +228,7 @@ cmajor::systemx::assembler::Instruction* ByteType::MakeAssemblyInst(Context* con
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BYTE);
 }
 
-ShortType::ShortType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, shortTypeId)
+ShortType::ShortType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, shortTypeId), defaultValue(0, this)
 {
 }
 
@@ -199,7 +237,7 @@ cmajor::systemx::assembler::Instruction* ShortType::MakeAssemblyInst(Context* co
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::WYDE);
 }
 
-UShortType::UShortType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, ushortTypeId)
+UShortType::UShortType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, ushortTypeId), defaultValue(0, this)
 {
 }
 
@@ -208,7 +246,7 @@ cmajor::systemx::assembler::Instruction* UShortType::MakeAssemblyInst(Context* c
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::WYDE);
 }
 
-IntType::IntType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, intTypeId)
+IntType::IntType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, intTypeId), defaultValue(0, this)
 {
 }
 
@@ -217,7 +255,7 @@ cmajor::systemx::assembler::Instruction* IntType::MakeAssemblyInst(Context* cont
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::TETRA);
 }
 
-UIntType::UIntType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, uintTypeId)
+UIntType::UIntType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, uintTypeId), defaultValue(0, this)
 {
 }
 
@@ -226,7 +264,7 @@ cmajor::systemx::assembler::Instruction* UIntType::MakeAssemblyInst(Context* con
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::TETRA);
 }
 
-LongType::LongType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, longTypeId)
+LongType::LongType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, longTypeId), defaultValue(0, this)
 {
 }
 
@@ -235,7 +273,7 @@ cmajor::systemx::assembler::Instruction* LongType::MakeAssemblyInst(Context* con
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
 }
 
-ULongType::ULongType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, ulongTypeId)
+ULongType::ULongType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, ulongTypeId), defaultValue(0, this)
 {
 }
 
@@ -244,11 +282,11 @@ cmajor::systemx::assembler::Instruction* ULongType::MakeAssemblyInst(Context* co
     return new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
 }
 
-FloatType::FloatType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, floatTypeId)
+FloatType::FloatType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, floatTypeId), defaultValue(0.0f, this)
 {
 }
 
-DoubleType::DoubleType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, doubleTypeId)
+DoubleType::DoubleType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, doubleTypeId), defaultValue(0.0, this)
 {
 }
 
@@ -262,6 +300,22 @@ TypeRef::TypeRef(const soul::ast::SourcePos& sourcePos_, int32_t id_) : sourcePo
 
 StructureType::StructureType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, const std::vector<TypeRef>& fieldTypeRefs_) :
     Type(sourcePos_, TypeKind::structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false), metadataRef(nullptr)
+{
+}
+
+StructureType::StructureType(int32_t typeId_, const std::vector<Type*>& memberTypes) : 
+    Type(soul::ast::SourcePos(), TypeKind::structureType, typeId_), sizeAndOffsetsComputed(false), metadataRef(nullptr)
+{
+    for (Type* memberType : memberTypes)
+    {
+        TypeRef fieldTypeRef;
+        fieldTypeRef.SetType(memberType);
+        fieldTypeRefs.push_back(fieldTypeRef);
+    }
+}
+
+StructureType::StructureType(int32_t typeId_) : 
+    Type(soul::ast::SourcePos(), TypeKind::structureType, typeId_), sizeAndOffsetsComputed(false), metadataRef(nullptr)
 {
 }
 
@@ -342,9 +396,55 @@ int64_t StructureType::GetFieldOffset(int64_t index) const
     return fieldOffsets[index];
 }
 
+void StructureType::SetMemberTypes(const std::vector<Type*>& memberTypes)
+{
+    fieldTypeRefs.clear();
+    for (Type* memberType : memberTypes)
+    {
+        TypeRef fieldTypeRef;
+        fieldTypeRef.SetType(memberType);
+        fieldTypeRefs.push_back(fieldTypeRef);
+    }
+}
+
+void StructureType::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    Type::WriteDeclaration(formatter);
+    formatter.Write("{ ");
+    int n = FieldCount();
+    for (int i = 0; i < n; ++i)
+    {
+        Type* fieldType = FieldType(i);
+        if (i > 0)
+        {
+            formatter.Write(", ");
+        }
+        fieldType->Write(formatter);
+    }
+    formatter.Write(" }");
+    if (metadataRef)
+    {
+        formatter.Write(" ");
+        metadataRef->Write(formatter);
+    }
+}
+
+bool operator<(const ArrayTypeKey& left, const ArrayTypeKey& right)
+{
+    if (left.elementType < right.elementType) return true;
+    if (left.elementType > right.elementType) return false;
+    return left.size < right.size;
+}
+
 ArrayType::ArrayType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, int64_t elementCount_, const TypeRef& elementTypeRef_) :
     Type(sourcePos_, TypeKind::arrayType, typeId_), elementCount(elementCount_), elementTypeRef(elementTypeRef_)
 {
+}
+
+ArrayType::ArrayType(int32_t typeId_, int64_t elementCount_, Type* elementType_) : 
+    Type(soul::ast::SourcePos(), TypeKind::arrayType, typeId_), elementCount(elementCount_)
+{
+    elementTypeRef.SetType(elementType_);
 }
 
 void ArrayType::Accept(Visitor& visitor)
@@ -377,9 +477,43 @@ bool ArrayType::IsWeakType() const
     return true;
 }
 
+void ArrayType::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    Type::WriteDeclaration(formatter);
+    formatter.Write("[");
+    formatter.Write(std::to_string(elementCount));
+    formatter.Write(" x ");
+    ElementType()->Write(formatter);
+    formatter.Write("]");
+}
+
+FunctionTypeKey::FunctionTypeKey(Type* returnType_, const std::vector<Type*>& paramTypes_) : returnType(returnType_), paramTypes(paramTypes_)
+{
+}
+
+bool operator<(const FunctionTypeKey& left, const FunctionTypeKey& right)
+{
+    if (left.returnType < right.returnType) return true;
+    if (left.returnType > right.returnType) return false;
+    return left.paramTypes < right.paramTypes;
+}
+
 FunctionType::FunctionType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, const TypeRef& returnTypeRef_, const std::vector<TypeRef>& paramTypeRefs_) :
     Type(sourcePos_, TypeKind::functionType, typeId_), returnTypeRef(returnTypeRef_), paramTypeRefs(paramTypeRefs_)
 {
+}
+
+FunctionType::FunctionType(int32_t typeId_, Type* returnType_, const std::vector<Type*>& paramTypes_) : 
+    Type(soul::ast::SourcePos(), TypeKind::functionType, typeId_)
+{
+    returnTypeRef.SetType(returnType_);
+    int n = paramTypes_.size();
+    for (int i = 0; i < n; ++i)
+    {
+        TypeRef typeRef;
+        typeRef.SetType(paramTypes_[i]);
+        paramTypeRefs.push_back(typeRef);
+    }
 }
 
 void FunctionType::Accept(Visitor& visitor)
@@ -420,8 +554,26 @@ bool FunctionType::IsWeakType() const
     return true;
 }
 
+void FunctionType::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    Type::WriteDeclaration(formatter);
+    formatter.Write("function ");
+    ReturnType()->Write(formatter);
+    formatter.Write("(");
+    int n = Arity();
+    for (int i = 0; i < n; ++i)
+    {
+        if (i > 0)
+        {
+            formatter.Write(", ");
+        }
+        ParamType(i)->Write(formatter);
+    }
+    formatter.Write(")");
+}
+
 PointerType::PointerType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, int8_t pointerCount_, int32_t baseTypeId_) :
-    Type(sourcePos_, TypeKind::pointerType, typeId_), pointerCount(pointerCount_), baseTypeRef(sourcePos_, baseTypeId_)
+    Type(sourcePos_, TypeKind::pointerType, typeId_), pointerCount(pointerCount_), baseTypeRef(sourcePos_, baseTypeId_), defaultValue(this)
 {
 }
 
@@ -448,12 +600,14 @@ void Types::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t type
 
 void Types::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef)
 {
-    types.push_back(std::unique_ptr<Type>(new ArrayType(sourcePos, typeId, size, elementTypeRef)));
+    Type* arrayType = new ArrayType(sourcePos, typeId, size, elementTypeRef);
+    types.push_back(std::unique_ptr<Type>(arrayType));
 }
 
 void Types::AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs)
 {
-    types.push_back(std::unique_ptr<Type>(new FunctionType(sourcePos, typeId, returnTypeRef, paramTypeRefs)));
+    Type* functionType = new FunctionType(sourcePos, typeId, returnTypeRef, paramTypeRefs);
+    types.push_back(std::unique_ptr<Type>(functionType));
 }
 
 void Types::Add(Type* type, Context* context)
@@ -464,7 +618,7 @@ void Types::Add(Type* type, Context* context)
         Error("error adding type id " + std::to_string(type->Id()) + ": type id not unique", type->GetSourcePos(), context, prev->GetSourcePos());
     }
     Map(type);
-    declaratedTypes.push_back(type);
+    declaredTypes.push_back(type);
 }
 
 Type* Types::Get(int32_t id) const
@@ -511,10 +665,16 @@ void Types::Map(Type* type)
 
 void Types::VisitTypeDeclarations(Visitor& visitor)
 {
-    for (Type* declaredType : declaratedTypes)
+    for (Type* declaredType : declaredTypes)
     {
         declaredType->Accept(visitor);
     }
+}
+
+Type* Types::GetPointerType(Type* baseType)
+{
+    Map(baseType);
+    return baseType->AddPointer(context);
 }
 
 PointerType* Types::MakePointerType(const soul::ast::SourcePos& sourcePos, int32_t baseTypeId, int8_t pointerCount, Context* context)
@@ -542,6 +702,71 @@ PointerType* Types::MakePointerType(const soul::ast::SourcePos& sourcePos, int32
     Map(type);
     pointerTypeMap[std::make_pair(baseTypeId, pointerCount)] = type;
     return type;
+}
+
+StructureType* Types::CreateStructureType()
+{
+    StructureType* structureType = new StructureType(userTypeId + types.size());
+    types.push_back(std::unique_ptr<Type>(structureType));
+    declaredTypes.push_back(structureType);
+    Map(structureType);
+    return structureType;
+}
+
+Type* Types::GetStructureType(const std::vector<Type*>& memberTypes)
+{
+    auto it = structureTypeMap.find(memberTypes);
+    if (it != structureTypeMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        StructureType* structureType = new StructureType(userTypeId + types.size(), memberTypes);
+        structureTypeMap[memberTypes] = structureType;
+        types.push_back(std::unique_ptr<Type>(structureType));
+        declaredTypes.push_back(structureType);
+        Map(structureType);
+        return structureType;
+    }
+}
+
+Type* Types::GetFunctionType(Type* returnType, const std::vector<Type*>& paramTypes)
+{
+    FunctionTypeKey key(returnType, paramTypes);
+    auto it = functionTypeMap.find(key);
+    if (it != functionTypeMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        FunctionType* functionType = new FunctionType(userTypeId + types.size(), returnType, paramTypes);
+        functionTypeMap[key] = functionType;
+        types.push_back(std::unique_ptr<Type>(functionType));
+        declaredTypes.push_back(functionType);
+        Map(functionType);
+        return functionType;
+    }
+}
+
+Type* Types::GetArrayType(int64_t size, Type* elementType)
+{
+    ArrayTypeKey key(elementType, size);
+    auto it = arrayTypeMap.find(key);
+    if (it != arrayTypeMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        ArrayType* arrayType = new ArrayType(userTypeId + types.size(), size, elementType);
+        arrayTypeMap[key] = arrayType;
+        types.push_back(std::unique_ptr<Type>(arrayType));
+        declaredTypes.push_back(arrayType);
+        Map(arrayType);
+        return arrayType;
+    }
 }
 
 void Types::Resolve(Context* context)
@@ -576,6 +801,22 @@ void Types::ResolveType(TypeRef& typeRef, Context* context)
         Error("error resolving type: type id " + std::to_string(typeRef.Id()) + " not found", typeRef.GetSourcePos(), context);
     }
     typeRef.SetType(type);
+}
+
+void Types::Write(util::CodeFormatter& formatter)
+{
+    if (types.empty()) return;
+    formatter.WriteLine("types");
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    for (const auto& type : declaredTypes)
+    {
+        type->WriteDeclaration(formatter);
+        formatter.WriteLine();
+    }
+    formatter.DecIndent();
+    formatter.WriteLine("}");
+    formatter.WriteLine();
 }
 
 } // cmajor::systemx::intermediate

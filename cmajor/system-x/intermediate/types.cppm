@@ -5,8 +5,10 @@
 
 export module cmajor.systemx.intermediate.types;
 
+import cmajor.systemx.intermediate.value;
 import cmajor.systemx.assembler;
 import soul.ast.source.pos;
+import util;
 import std.core;
 
 export namespace cmajor::systemx::intermediate {
@@ -15,6 +17,7 @@ export namespace types {}
 
 class Context;
 class Types;
+class ConstantValue;
 class Visitor;
 class ArrayType;
 class StructureType;
@@ -33,7 +36,7 @@ const int32_t ulongTypeId = 9;
 const int32_t floatTypeId = 10;
 const int32_t doubleTypeId = 11;
 const int32_t userTypeId = 12;
-const int32_t pointerTypeId = int32_t(1) << 31;
+const int32_t pointerTypeId = int32_t(1) << 30;
 
 constexpr bool IsFundamentalTypeId(int32_t typeId) { return typeId >= 0 && typeId < userTypeId; }
 constexpr bool IsPointerTypeId(int32_t typeId) { return (typeId & pointerTypeId) != 0; }
@@ -67,12 +70,12 @@ constexpr int32_t MakeTypeId(int32_t baseTypeId, int32_t pointerCount)
 
 constexpr int32_t GetBaseTypeId(int32_t typeId)
 {
-    return typeId & (~(pointerTypeId | (int32_t(0x7F) << (32 - 8))) | 0x00FFFFFF);
+    return typeId & (~(pointerTypeId | (int32_t(0x3F) << (32 - 8))) | 0x00FFFFFF);
 }
 
 constexpr int8_t GetPointerCount(int32_t typeId)
 {
-    return (typeId & (int32_t(0x7F) << (32 - 8))) >> (32 - 8);
+    return (typeId & (int32_t(0x3F) << (32 - 8))) >> (32 - 8);
 }
 
 enum class TypeKind : int
@@ -85,6 +88,7 @@ class Type
 public:
     Type(const soul::ast::SourcePos& sourcePos_, TypeKind kind_, int32_t id_);
     virtual ~Type();
+    virtual std::string Name() const;
     virtual void Accept(Visitor& visitor) {}
     virtual int64_t Size() const = 0;
     virtual int64_t Alignment() const = 0;
@@ -100,9 +104,8 @@ public:
     bool IsFloatType() const { return id == floatTypeId; }
     bool IsDoubleType() const { return id == doubleTypeId; }
     bool IsPointerType() const { return kind == TypeKind::pointerType; }
-    Type* AddPointer(Context* context) const;
+    Type* AddPointer(Context* context);
     Type* RemovePointer(const soul::ast::SourcePos& sourcePos, Context* context) const;
-    virtual std::string Name() const = 0;
     bool IsStructureType() const { return kind == TypeKind::structureType; }
     StructureType* GetStructurePointeeType(const soul::ast::SourcePos& sourcePos, Context* context) const;
     ArrayType* GetArrayPointeeType(const soul::ast::SourcePos& sourcePos, Context* context) const;
@@ -111,9 +114,12 @@ public:
     virtual bool IsWeakType() const { return true; }
     virtual void Add(Types* types, Context* context);
     virtual void Resolve(Types* types, Context* context);
+    virtual ConstantValue* DefaultValue();
     virtual cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const;
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     int32_t Id() const { return id; }
+    void Write(util::CodeFormatter& formatter);
+    virtual void WriteDeclaration(util::CodeFormatter& formatter);
 private:
     soul::ast::SourcePos sourcePos;
     TypeKind kind;
@@ -124,7 +130,6 @@ class VoidType : public Type
 {
 public:
     VoidType();
-    std::string Name() const override { return "void"; }
     int64_t Size() const override { return -1; }
     int64_t Alignment() const override { return -1; }
 };
@@ -133,108 +138,130 @@ class BoolType : public Type
 {
 public:
     BoolType();
-    std::string Name() const override { return "bool"; }
     int64_t Size() const override { return 1; }
     int64_t Alignment() const override { return 1; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    BoolValue defaultValue;
 };
 
 class SByteType : public Type
 {
 public:
     SByteType();
-    std::string Name() const override { return "sbyte"; }
     int64_t Size() const override { return 1; }
     int64_t Alignment() const override { return 1; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    SByteValue defaultValue;
 };
 
 class ByteType : public Type
 {
 public:
     ByteType();
-    std::string Name() const override { return "byte"; }
     int64_t Size() const override { return 1; }
     int64_t Alignment() const override { return 1; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    ByteValue defaultValue;
 };
 
 class ShortType : public Type
 {
 public:
     ShortType();
-    std::string Name() const override { return "short"; }
     int64_t Size() const override { return 2; }
     int64_t Alignment() const override { return 2; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    ShortValue defaultValue;
 };
 
 class UShortType : public Type
 {
 public:
     UShortType();
-    std::string Name() const override { return "ushort"; }
     int64_t Size() const override { return 2; }
     int64_t Alignment() const override { return 2; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    UShortValue defaultValue;
 };
 
 class IntType : public Type
 {
 public:
     IntType();
-    std::string Name() const override { return "int"; }
     int64_t Size() const override { return 4; }
     int64_t Alignment() const override { return 4; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    IntValue defaultValue;
 };
 
 class UIntType : public Type
 {
 public:
     UIntType();
-    std::string Name() const override { return "uint"; }
     int64_t Size() const override { return 4; }
     int64_t Alignment() const override { return 4; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    UIntValue defaultValue;
 };
 
 class LongType : public Type
 {
 public:
     LongType();
-    std::string Name() const override { return "long"; }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    LongValue defaultValue;
 };
 
 class ULongType : public Type
 {
 public:
     ULongType();
-    std::string Name() const override { return "ulong"; }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    ULongValue defaultValue;
 };
 
 class FloatType : public Type
 {
 public:
     FloatType();
-    std::string Name() const override { return "float"; }
     int64_t Size() const override { return 4; }
     int64_t Alignment() const override { return 4; }
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    FloatValue defaultValue;
 };
 
 class DoubleType : public Type
 {
 public:
     DoubleType();
-    std::string Name() const override { return "double"; }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    DoubleValue defaultValue;
 };
 
 class TypeRef
@@ -261,19 +288,22 @@ class StructureType : public Type
 {
 public:
     StructureType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, const std::vector<TypeRef>& fieldTypeRefs_);
+    StructureType(int32_t typeId_, const std::vector<Type*>& memberTypes);
+    StructureType(int32_t typeId_);
     void Accept(Visitor& visitor) override;
     void Add(Types* types, Context* context) override;
     void Resolve(Types* types, Context* context) override;
     int64_t Size() const override;
     int64_t Alignment() const override { return 8; }
-    std::string Name() const override { return "struct " + std::to_string(Id()); }
     bool IsWeakType() const override;
     int FieldCount() const { return fieldTypeRefs.size(); }
     const std::vector<TypeRef>& FieldTypeRefs() const { return fieldTypeRefs; }
     Type* FieldType(int i) const { return fieldTypeRefs[i].GetType(); }
     int64_t GetFieldOffset(int64_t index) const;
+    void SetMemberTypes(const std::vector<Type*>& memberTypes);
     void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
     MetadataRef* GetMetadataRef() const { return metadataRef; }
+    void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     void ComputeSizeAndOffsets() const;
     std::vector<TypeRef> fieldTypeRefs;
@@ -283,29 +313,49 @@ private:
     MetadataRef* metadataRef;
 };
 
+struct ArrayTypeKey
+{
+    ArrayTypeKey(Type* elementType_, uint64_t size_) : elementType(elementType_), size(size_) {}
+    Type* elementType;
+    uint64_t size;
+};
+
+bool operator<(const ArrayTypeKey& left, const ArrayTypeKey& right);
+
 class ArrayType : public Type
 {
 public:
     ArrayType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, int64_t elementCount_, const TypeRef& elementTypeRef_);
+    ArrayType(int32_t typeId_, int64_t elementCount_, Type* elementType_);
     void Accept(Visitor& visitor) override;
     void Add(Types* types, Context* context) override;
     void Resolve(Types* types, Context* context) override;
     int64_t Size() const override;
     int64_t Alignment() const override { return 8; }
-    std::string Name() const override { return "array " + std::to_string(Id()); }
     bool IsWeakType() const override;
     int64_t ElementCount() const { return elementCount; }
     const TypeRef& ElementTypeRef() const { return elementTypeRef; }
     Type* ElementType() const { return elementTypeRef.GetType(); }
+    void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     int64_t elementCount;
     TypeRef elementTypeRef;
 };
 
+struct FunctionTypeKey
+{
+    FunctionTypeKey(Type* returnType_, const std::vector<Type*>& paramTypes_);
+    Type* returnType;
+    std::vector<Type*> paramTypes;
+};
+
+bool operator<(const FunctionTypeKey& left, const FunctionTypeKey& right);
+
 class FunctionType : public Type
 {
 public:
     FunctionType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, const TypeRef& returnTypeRef_, const std::vector<TypeRef>& paramTypeRefs_);
+    FunctionType(int32_t typeId_, Type* returnType_, const std::vector<Type*>& paramTypes_);
     void Accept(Visitor& visitor) override;
     void Add(Types* types, Context* context) override;
     void Resolve(Types* types, Context* context) override;
@@ -313,11 +363,11 @@ public:
     int Arity() const { return paramTypeRefs.size(); }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
-    std::string Name() const override { return "function " + std::to_string(Id()); }
     const TypeRef& ReturnTypeRef() const { return returnTypeRef; }
     Type* ReturnType() const { return returnTypeRef.GetType(); }
     const std::vector<TypeRef>& ParamTypeRefs() const { return paramTypeRefs; }
     Type* ParamType(int index) const { return paramTypeRefs[index].GetType(); }
+    void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     TypeRef returnTypeRef;
     std::vector<TypeRef> paramTypeRefs;
@@ -335,9 +385,11 @@ public:
     TypeRef& BaseTypeRef() { return baseTypeRef; }
     Type* BaseType() const { return baseTypeRef.GetType(); }
     cmajor::systemx::assembler::Instruction* MakeAssemblyInst(Context* context) const override;
+    ConstantValue* DefaultValue() override { return &defaultValue; }
 private:
     int8_t pointerCount;
     TypeRef baseTypeRef;
+    NullValue defaultValue;
 };
 
 class Types
@@ -369,14 +421,23 @@ public:
     ULongType* GetULongType() const { return const_cast<ULongType*>(&ulongType); }
     FloatType* GetFloatType() const { return const_cast<FloatType*>(&floatType); }
     DoubleType* GetDoubleType() const { return const_cast<DoubleType*>(&doubleType); }
+    Type* GetPointerType(Type* baseType);
     PointerType* MakePointerType(const soul::ast::SourcePos& sourcePos, int32_t baseTypeId, int8_t pointerCount, Context* context);
+    StructureType* CreateStructureType();
+    Type* GetStructureType(const std::vector<Type*>& memberTypes);
+    Type* GetFunctionType(Type* returnType, const std::vector<Type*>& paramTypes);
+    Type* GetArrayType(int64_t size, Type* elementType);
+    void Write(util::CodeFormatter& formatter);
 private:
     Type* GetFundamentalType(int32_t id) const;
     Context* context;
     std::vector<std::unique_ptr<Type>> types;
-    std::vector<Type*> declaratedTypes;
+    std::vector<Type*> declaredTypes;
     std::map<int32_t, Type*> typeMap;
     std::map<std::pair<int32_t, int8_t>, PointerType*> pointerTypeMap;
+    std::map<std::vector<Type*>, StructureType*> structureTypeMap;
+    std::map<FunctionTypeKey, FunctionType*> functionTypeMap;
+    std::map<ArrayTypeKey, ArrayType*> arrayTypeMap;
     VoidType voidType;
     BoolType boolType;
     SByteType sbyteType;

@@ -2084,8 +2084,16 @@ void BoundFunctionPtr::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationF
 {
     // MangledName changed to InstantiatedName
     cmajor::symbols::Context* context = static_cast<cmajor::symbols::Context*>(emitter.Context());
-    void* irObject = emitter.GetOrInsertFunction(util::ToUtf8(function->InstantiatedName()), function->IrType(emitter, context), function->DontThrow());
-    emitter.Stack().Push(irObject);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
+    {
+        void* irObject = emitter.MakeSymbolValue(function->IrType(emitter, context), util::ToUtf8(function->InstantiatedName()));
+        emitter.Stack().Push(irObject);
+    }
+    else
+    {
+        void* irObject = emitter.GetOrInsertFunction(util::ToUtf8(function->InstantiatedName()), function->IrType(emitter, context), function->DontThrow());
+        emitter.Stack().Push(irObject);
+    }
     DestroyTemporaries(emitter);
 }
 

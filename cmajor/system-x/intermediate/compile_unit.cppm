@@ -6,6 +6,7 @@
 export module cmajor.systemx.intermediate.compile.unit;
 
 import cmajor.systemx.intermediate.metadata;
+import util;
 import std.core;
 
 export namespace cmajor::systemx::intermediate {
@@ -21,6 +22,8 @@ public:
     const std::string& Id() const { return id; }
     void SetInfo(const std::string& id_, MetadataRef* metadataRef_);
     MetadataRef* GetMetadataRef() const { return metadataRef; }
+    void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
+    void Write();
 private:
     Context* context;
     std::string filePath;

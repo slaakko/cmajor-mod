@@ -6,7 +6,7 @@
 export module cmajor.systemx.backend.emitter;
 
 import cmajor.systemx.backend.value.stack;
-import cmajor.systemx.ir;
+import cmajor.systemx.intermediate;
 import cmajor.ir;
 import util;
 
@@ -18,6 +18,9 @@ public:
     SystemXEmitter(cmajor::ir::EmittingContext* emittingContext_);
     cmajor::ir::EmittingContext* EmittingContext() const override { return emittingContext; }
     void SetEmittingDelegate(cmajor::ir::EmittingDelegate* emittingDelegate_) override;
+    void* GetCompileUnit() override;
+    void SetFilePath(const std::string& filePath) override;
+    void SetCompileUnitMetadataRef(void* metadataRef) override;
     void* GetIrTypeForBool() override;
     void* GetIrTypeForSByte() override;
     void* GetIrTypeForByte() override;
@@ -210,6 +213,7 @@ public:
     void* GetOrInsertAnyComdat(const std::string& name, void* global) override;
     void* GetOrInsertAnyFunctionComdat(const std::string& name, void* function) override;
     void* GetOrInsertFunction(const std::string& name, void* type, bool nothrow) override;
+    void* MakeSymbolValue(void* type, const std::string& name) override;
     void SetInitializer(void* global, void* initializer) override;
     void SetPrivateLinkage(void* global) override;
     bool IsVmtObjectCreated(void* symbol) const override;
@@ -379,17 +383,16 @@ private:
     cmajor::ir::EmittingContext* emittingContext;
     cmajor::ir::EmittingDelegate* emittingDelegate;
     ValueStack stack;
-    cmajor::systemx::ir::CompileUnit* compileUnit;
-    cmajor::systemx::ir::Context* context;
-    std::unordered_map<void*, cmajor::systemx::ir::FunctionType*> functionIrTypeMap;
-    std::unordered_map<util::uuid, cmajor::systemx::ir::Type*, util::UuidHash> irTypeTypeIdMap;
-    cmajor::systemx::ir::Function* currentFunction;
-    std::unordered_map<void*, cmajor::systemx::ir::Value*> irObjectMap;
+    cmajor::systemx::intermediate::Context* context;
+    std::unordered_map<void*, cmajor::systemx::intermediate::FunctionType*> functionIrTypeMap;
+    std::unordered_map<util::uuid, cmajor::systemx::intermediate::Type*, util::UuidHash> irTypeTypeIdMap;
+    cmajor::systemx::intermediate::Function* currentFunction;
+    std::unordered_map<void*, cmajor::systemx::intermediate::Value*> irObjectMap;
     std::unordered_set<void*> vmtObjectCreatedSet;
     std::unordered_set<void*> staticObjectCreatedSet;
-    std::unordered_map<void*, cmajor::systemx::ir::StructureType*> staticTypeMap;
+    std::unordered_map<void*, cmajor::systemx::intermediate::StructureType*> staticTypeMap;
     std::unordered_map<void*, std::string> staticObjectNameMap;
-    cmajor::systemx::ir::Value* objectPointer;
+    cmajor::systemx::intermediate::Value* objectPointer;
 };
 
 } // namespace cmajor::systemx::backend

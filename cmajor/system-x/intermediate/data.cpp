@@ -11,228 +11,13 @@ import cmajor.systemx.intermediate.visitor;
 
 namespace cmajor::systemx::intermediate {
 
-const char* valueKindStr[]
-{
-    "boolValue", "sbyteValue", "byteValue", "shortValue", "ushortValue", "intValue", "uintValue", "longValue", "ulongValue", "floatValue", "doubleValue", "nullValue",
-    "addressValue",
-    "arrayValue", "structureValue", "stringValue", "stringArrayValue", "conversionValue", "clsIdValue", "symbolValue",
-    "globalVariable",
-    "regValue",
-    "instruction"
-};
-
-Value::Value(const soul::ast::SourcePos& sourcePos_, ValueKind kind_, Type* type_) : sourcePos(sourcePos_), kind(kind_), type(type_)
-{
-}
-
-Value::~Value()
-{
-}
-
-bool Value::IsIntegerValue() const
-{
-    switch (kind)
-    {
-        case ValueKind::sbyteValue:
-        case ValueKind::byteValue:
-        case ValueKind::shortValue:
-        case ValueKind::ushortValue:
-        case ValueKind::intValue:
-        case ValueKind::uintValue:
-        case ValueKind::longValue:
-        case ValueKind::ulongValue:
-        {
-            return true;
-        }
-        default:
-        {
-            return false;
-        }
-    }
-}
-
-int64_t Value::GetIntegerValue() const
-{
-    switch (kind)
-    {
-        case ValueKind::sbyteValue:
-        {
-            const SByteValue* sbyteValue = static_cast<const SByteValue*>(this);
-            return sbyteValue->GetValue();
-        }
-        case ValueKind::byteValue:
-        {
-            const ByteValue* byteValue = static_cast<const ByteValue*>(this);
-            return byteValue->GetValue();
-        }
-        case ValueKind::shortValue:
-        {
-            const ShortValue* shortValue = static_cast<const ShortValue*>(this);
-            return shortValue->GetValue();
-        }
-        case ValueKind::ushortValue:
-        {
-            const UShortValue* ushortValue = static_cast<const UShortValue*>(this);
-            return ushortValue->GetValue();
-        }
-        case ValueKind::intValue:
-        {
-            const IntValue* intValue = static_cast<const IntValue*>(this);
-            return intValue->GetValue();
-        }
-        case ValueKind::uintValue:
-        {
-            const UIntValue* uintValue = static_cast<const UIntValue*>(this);
-            return uintValue->GetValue();
-        }
-        case ValueKind::longValue:
-        {
-            const LongValue* longValue = static_cast<const LongValue*>(this);
-            return longValue->GetValue();
-        }
-        case ValueKind::ulongValue:
-        {
-            const ULongValue* ulongValue = static_cast<const ULongValue*>(this);
-            return static_cast<int64_t>(ulongValue->GetValue());
-        }
-        default:
-        {
-            return -1;
-        }
-    }
-}
-
-void Value::SetType(Type* type_)
-{
-    if (!type)
-    {
-        type = type_;
-    }
-    if (type != type_)
-    {
-        throw std::runtime_error("type conflict");
-    }
-}
-
-std::string Value::KindStr() const
-{
-    return valueKindStr[static_cast<int>(kind)];
-}
-
-ConstantValue::ConstantValue(const soul::ast::SourcePos& sourcePos_, ValueKind kind_, Type* type_) : Value(sourcePos_, kind_, type_)
-{
-}
-
-BoolValue::BoolValue(bool value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::boolValue, type_), value(value_)
-{
-}
-
-void BoolValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-SByteValue::SByteValue(int8_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::sbyteValue, type_), value(value_)
-{
-}
-
-void SByteValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-ByteValue::ByteValue(uint8_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::byteValue, type_), value(value_)
-{
-}
-
-void ByteValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-ShortValue::ShortValue(int16_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::shortValue, type_), value(value_)
-{
-}
-
-void ShortValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-UShortValue::UShortValue(uint16_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::ushortValue, type_), value(value_)
-{
-}
-
-void UShortValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-IntValue::IntValue(int32_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::intValue, type_), value(value_)
-{
-}
-
-void IntValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-UIntValue::UIntValue(uint32_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::uintValue, type_), value(value_)
-{
-}
-
-void UIntValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-LongValue::LongValue(int64_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::longValue, type_), value(value_)
-{
-}
-
-void LongValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-ULongValue::ULongValue(uint64_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::ulongValue, type_), value(value_)
-{
-}
-
-void ULongValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-FloatValue::FloatValue(float value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::floatValue, type_), value(value_)
-{
-}
-
-void FloatValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-DoubleValue::DoubleValue(double value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::doubleValue, type_), value(value_)
-{
-}
-
-void DoubleValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-NullValue::NullValue(Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::nullValue, type_)
-{
-}
-
-void NullValue::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
 AddressValue::AddressValue(const soul::ast::SourcePos& sourcePos_, GlobalVariable* globalVariable_, Type* type) :
     ConstantValue(sourcePos_, ValueKind::addressValue, type), globalVariable(globalVariable_)
+{
+}
+
+AddressValue::AddressValue(const soul::ast::SourcePos& sourcePos_, const std::string& id_, Type* type) : 
+    ConstantValue(sourcePos_, ValueKind::addressValue, type), id(id_), globalVariable(nullptr)
 {
 }
 
@@ -241,8 +26,13 @@ void AddressValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ArrayValue::ArrayValue(const soul::ast::SourcePos& sourcePos_, const std::vector<ConstantValue*>& elements_) :
-    ConstantValue(sourcePos_, ValueKind::arrayValue, nullptr), elements(elements_)
+std::string AddressValue::ToString() const
+{
+    return globalVariable->Name();
+}
+
+ArrayValue::ArrayValue(const soul::ast::SourcePos& sourcePos_, const std::vector<ConstantValue*>& elements_, const std::string& prefix_) :
+    ConstantValue(sourcePos_, ValueKind::arrayValue, nullptr), elements(elements_), prefix(prefix_)
 {
 }
 
@@ -266,6 +56,33 @@ void ArrayValue::SetType(Type* type)
 void ArrayValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string ArrayValue::ToString() const
+{
+    std::string s = prefix + "[ ";
+    bool first = true;
+    for (Value* element : elements)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            s.append(", ");
+        }
+        if (element->IsAggregateValue())
+        {
+            s.append(element->ToString());
+        }
+        else
+        {
+            s.append(element->GetType()->Name()).append(" ").append(element->ToString());
+        }
+    }
+    s.append(" ]");
+    return s;
 }
 
 StructureValue::StructureValue(const soul::ast::SourcePos& sourcePos_, const std::vector<ConstantValue*>& fieldValues_) :
@@ -297,6 +114,33 @@ void StructureValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string StructureValue::ToString() const
+{
+    std::string s = "{ ";
+    bool first = true;
+    for (Value* field : fieldValues)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            s.append(", ");
+        }
+        if (field->IsAggregateValue())
+        {
+            s.append(field->ToString());
+        }
+        else
+        {
+            s.append(field->GetType()->Name()).append(" ").append(field->ToString());
+        }
+    }
+    s.append(" }");
+    return s;
+}
+
 StringValue::StringValue(const soul::ast::SourcePos& sourcePos_, const std::string& value_) :
     ConstantValue(sourcePos_, ValueKind::stringValue, nullptr), value(value_)
 {
@@ -307,14 +151,57 @@ void StringValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-StringArrayValue::StringArrayValue(const soul::ast::SourcePos& sourcePos_, char prefix_, const std::vector<ConstantValue*>& strings_) :
-    ConstantValue(sourcePos_, ValueKind::stringArrayValue, nullptr), prefix(prefix_), strings(strings_)
+std::string StringValue::ToString() const
+{
+    std::string s("\"");
+    for (char c : value)
+    {
+        if (c == '"' || c == '\\')
+        {
+            s.append(util::ToHexString(static_cast<uint8_t>(c)));
+        }
+        else if (static_cast<uint8_t>(c) >= 32 && static_cast<uint8_t>(c) < 127)
+        {
+            s.append(1, c);
+        }
+        else
+        {
+            s.append(util::ToHexString(static_cast<uint8_t>(c)));
+        }
+    }
+    s.append("\\").append(util::ToHexString(static_cast<uint8_t>(0)));
+    s.append("\"");
+    return s;
+}
+
+StringArrayValue::StringArrayValue(const soul::ast::SourcePos& sourcePos_, char prefix_, const std::vector<ConstantValue*>& elements_) :
+    ConstantValue(sourcePos_, ValueKind::stringArrayValue, nullptr), prefix(prefix_), elements(elements_)
 {
 }
 
 void StringArrayValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string StringArrayValue::ToString() const
+{
+    std::string s = std::string(1, prefix) + "[ ";
+    bool first = true;
+    for (Value* element : elements)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            s.append(", ");
+        }
+        s.append(element->GetType()->Name()).append(" ").append(element->ToString());
+    }
+    s.append(" ]");
+    return s;
 }
 
 ConversionValue::ConversionValue(const soul::ast::SourcePos& sourcePos_, Type* type_, ConstantValue* from_) :
@@ -327,6 +214,13 @@ void ConversionValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string ConversionValue::ToString() const
+{
+    std::string s = "conv(";
+    s.append(from->GetType()->Name()).append(1, ' ').append(from->ToString()).append(1, ')');
+    return s;
+}
+
 ClsIdValue::ClsIdValue(const soul::ast::SourcePos& sourcePos_, Type* type_, const std::string& typeId_) :
     ConstantValue(sourcePos_, ValueKind::clsIdValue, type_), typeId(typeId_)
 {
@@ -335,6 +229,12 @@ ClsIdValue::ClsIdValue(const soul::ast::SourcePos& sourcePos_, Type* type_, cons
 void ClsIdValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string ClsIdValue::ToString() const
+{
+    std::string s = "clsid(" + typeId + ")";
+    return s;
 }
 
 SymbolValue::SymbolValue(const soul::ast::SourcePos& sourcePos_, Type* type_, const std::string& symbol_) :
@@ -347,13 +247,19 @@ void SymbolValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string SymbolValue::ToString() const
+{
+    return "@" + symbol;
+}
+
 GlobalVariable::GlobalVariable(const soul::ast::SourcePos& sourcePos_, Type* type_, const std::string& name_, ConstantValue* initializer_, bool once_) :
     Value(sourcePos_, ValueKind::globalVariable, type_), name(name_), initializer(initializer_), once(once_)
 {
-    if (initializer)
-    {
-        initializer->SetType(GetType());
-    }
+}
+
+GlobalVariable::GlobalVariable(Type* type_, const std::string& name_) : 
+    Value(soul::ast::SourcePos(), ValueKind::globalVariable, type_), name(name_), initializer(nullptr), once(false)
+{
 }
 
 void GlobalVariable::Accept(Visitor& visitor)
@@ -361,23 +267,97 @@ void GlobalVariable::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-Data::Data() : context(nullptr)
+std::string GlobalVariable::ToString() const
+{
+    return name;
+}
+
+void GlobalVariable::Write(util::CodeFormatter& formatter)
+{
+    Type* type = GetType();
+    if (type->IsPointerType())
+    {
+        PointerType* pointerType = static_cast<PointerType*>(type);
+        type = pointerType->BaseType();
+    }
+    formatter.Write(type->Name());
+    formatter.Write(" ");
+    formatter.Write(name);
+    if (initializer)
+    {
+        formatter.Write(" = ");
+        if (initializer->IsAggregateValue() || initializer->IsStringValue() || initializer->IsStringArrayValue())
+        {
+            formatter.Write(initializer->ToString());
+        }
+        else
+        {
+            formatter.Write(initializer->GetType()->Name());
+            formatter.Write(" ");
+            formatter.Write(initializer->ToString());
+        }
+    }
+    else
+    {
+        formatter.Write(";");
+    }
+}
+
+Data::Data() : context(nullptr), nextStringId(0)
 {
 }
 
-void Data::AddGlobalVariable(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& variableName, ConstantValue* initializer, bool once, Context* context)
+GlobalVariable* Data::AddGlobalVariable(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& variableName, ConstantValue* initializer, bool once)
 {
     try
     {
-        GlobalVariable* globalVariable = new GlobalVariable(sourcePos, type, variableName, initializer, once);
+        if (initializer)
+        {
+            initializer->SetType(type);
+        }
+        GlobalVariable* globalVariable = new GlobalVariable(sourcePos, type->AddPointer(context), variableName, initializer, once);
         values.push_back(std::unique_ptr<Value>(globalVariable));
-        globalVariableMap[variableName] = globalVariable;
         globalVariables.push_back(globalVariable);
+        globalVariableMap[variableName] = globalVariable;
+        return globalVariable;
     }
     catch (const std::exception& ex)
     {
         Error("error adding global variable: " + std::string(ex.what()), sourcePos, context);
     }
+    return nullptr;
+}
+
+GlobalVariable* Data::AddGlobalStringPtr(const std::string& stringValue)
+{
+    auto it = stringValueMap.find(stringValue);
+    if (it != stringValueMap.end())
+    {
+        return it->second;
+    }
+    std::string variableName = "string" + std::to_string(nextStringId++) + "_" + context->GetCompileUnit().Id();
+    GlobalVariable* globalVariable = new GlobalVariable(soul::ast::SourcePos(), context->GetTypes().GetByteType()->AddPointer(context), variableName,
+        context->GetData().MakeStringValue(soul::ast::SourcePos(), stringValue, false), false);
+    values.push_back(std::unique_ptr<Value>(globalVariable));
+    globalVariables.push_back(globalVariable);
+    globalVariableMap[variableName] = globalVariable;
+    stringValueMap[stringValue] = globalVariable;
+    return globalVariable;
+}
+
+GlobalVariable* Data::GetOrInsertGlobal(const std::string& name, Type* type)
+{
+    auto it = globalVariableMap.find(name);
+    if (it != globalVariableMap.cend())
+    {
+        return it->second;
+    }
+    context->GetTypes().Map(type);
+    GlobalVariable* globalVariable = new GlobalVariable(type->AddPointer(context), name);
+    values.push_back(std::unique_ptr<GlobalVariable>(globalVariable));
+    globalVariables.push_back(globalVariable);
+    globalVariableMap[name] = globalVariable;
+    return globalVariable;
 }
 
 ConstantValue* Data::GetTrueValue(const Types& types)
@@ -534,9 +514,9 @@ ConstantValue* Data::MakeValue(double value, const Types& types)
     return constantValue;
 }
 
-ConstantValue* Data::MakeArrayValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& elements)
+ConstantValue* Data::MakeArrayValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& elements, const std::string& prefix)
 {
-    ArrayValue* arrayValue = new ArrayValue(sourcePos, elements);
+    ArrayValue* arrayValue = new ArrayValue(sourcePos, elements, prefix);
     values.push_back(std::unique_ptr<Value>(arrayValue));
     return arrayValue;
 }
@@ -548,9 +528,51 @@ ConstantValue* Data::MakeStructureValue(const soul::ast::SourcePos& sourcePos, c
     return structureValue;
 }
 
-ConstantValue* Data::MakeStringValue(const soul::ast::SourcePos& sourcePos, const std::string& value)
+ConstantValue* Data::MakeStringValue(const soul::ast::SourcePos& sourcePos, const std::string& value, bool crop)
 {
-    StringValue* stringValue = new StringValue(sourcePos, value.substr(1, value.length() - 2));
+    std::string val = value;
+    if (crop)
+    {
+        val = value.substr(1, value.length() - 2);
+    }
+    std::string s;
+    std::string hex;
+    int state = 0;
+    for (char c : val)
+    {
+        switch (state)
+        {
+            case 0:
+            {
+                if (c == '\\')
+                {
+                    hex.clear();
+                    state = 1;
+                }
+                else
+                {
+                    s.append(1, c);
+                }
+                break;
+            }
+            case 1:
+            {
+                hex.append(1, c);
+                state = 2;
+                break;
+            }
+            case 2:
+            {
+                hex.append(1, c);
+                uint8_t x = util::ParseHexByte(hex);
+                char ch = static_cast<char>(x);
+                s.append(1, ch);
+                state = 0;
+                break;
+            }
+        }
+    }
+    StringValue* stringValue = new StringValue(sourcePos, s);
     values.push_back(std::unique_ptr<Value>(stringValue));
     return stringValue;
 }
@@ -569,9 +591,13 @@ ConstantValue* Data::MakeConversionValue(const soul::ast::SourcePos& sourcePos, 
     return conversionValue;
 }
 
-ConstantValue* Data::MakeClsIdValue(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& clsIdStr)
+ConstantValue* Data::MakeClsIdValue(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& clsIdStr, bool crop)
 {
-    std::string typeId = clsIdStr.substr(6, clsIdStr.length() - 6 - 1);
+    std::string typeId = clsIdStr;
+    if (crop)
+    {
+        typeId = clsIdStr.substr(6, clsIdStr.length() - 6 - 1);
+    }
     ClsIdValue* clsIdValue = new ClsIdValue(sourcePos, type, typeId);
     values.push_back(std::unique_ptr<Value>(clsIdValue));
     return clsIdValue;
@@ -579,6 +605,10 @@ ConstantValue* Data::MakeClsIdValue(const soul::ast::SourcePos& sourcePos, Type*
 
 ConstantValue* Data::MakeSymbolValue(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& symbol)
 {
+    if (type->IsFunctionType())
+    {
+        type = type->AddPointer(context);
+    }
     SymbolValue* symbolValue = new SymbolValue(sourcePos, type, symbol);
     values.push_back(std::unique_ptr<Value>(symbolValue));
     return symbolValue;
@@ -693,21 +723,39 @@ ConstantValue* Data::MakeNumericLiteral(const soul::ast::SourcePos& sourcePos, T
     return nullptr;
 }
 
-ConstantValue* Data::MakeAddressLiteral(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& id, Context* context)
+ConstantValue* Data::MakeAddressLiteral(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& id, Context* context, bool resolve)
 {
-    auto it = globalVariableMap.find(id);
-    if (it != globalVariableMap.cend())
+    AddressValue* addressValue = new AddressValue(sourcePos, id, type);
+    values.push_back(std::unique_ptr<Value>(addressValue));
+    addressValues.push_back(addressValue);
+    if (resolve)
+    {
+        ResolveAddressValue(addressValue);
+    }
+    return addressValue;
+}
+
+void Data::ResolveAddressValue(AddressValue* addressValue)
+{
+    auto it = globalVariableMap.find(addressValue->Id());
+    if (it != globalVariableMap.end())
     {
         GlobalVariable* globalVariable = it->second;
-        AddressValue* addressValue = new AddressValue(sourcePos, globalVariable, globalVariable->GetType()->AddPointer(context));
-        values.push_back(std::unique_ptr<Value>(addressValue));
-        return addressValue;
+        addressValue->SetValue(globalVariable);
     }
     else
     {
-        Error("error making address literal: global variable id '" + id + "' not found", sourcePos, context);
+        Error("error resolving address value '" + addressValue->Id() + "': no such global variable found", addressValue->GetSourcePos(), context);
     }
-    return nullptr;
+}
+
+void Data::Resolve()
+{
+    for (AddressValue* addressValue : addressValues)
+    {
+        ResolveAddressValue(addressValue);
+    }
+    addressValues.clear();
 }
 
 void Data::VisitGlobalVariables(Visitor& visitor)
@@ -716,6 +764,22 @@ void Data::VisitGlobalVariables(Visitor& visitor)
     {
         globalVariable->Accept(visitor);
     }
+}
+
+void Data::Write(util::CodeFormatter& formatter)
+{
+    if (globalVariables.empty()) return;
+    formatter.WriteLine("data");
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    for (const auto& globalVariable : globalVariables)
+    {
+        globalVariable->Write(formatter);
+        formatter.WriteLine();
+    }
+    formatter.DecIndent();
+    formatter.WriteLine("}");
+    formatter.WriteLine();
 }
 
 } // cmajor::systemx::intermediate

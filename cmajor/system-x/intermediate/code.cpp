@@ -27,6 +27,11 @@ RegValue::RegValue(const soul::ast::SourcePos& sourcePos_, Type* type_, int32_t 
 {
 }
 
+std::string RegValue::ToString() const
+{
+    return "$" + std::to_string(inst->RegValueIndex());
+}
+
 void AddUser(Instruction* user, Value* value)
 {
     if (value)
@@ -367,6 +372,18 @@ std::vector<Instruction*> StoreInstruction::Uses() const
     return uses;
 }
 
+void StoreInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("store ", 8));
+    formatter.Write(value->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(value->ToString());
+    formatter.Write(", ");
+    formatter.Write(ptr->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(ptr->ToString());
+}
+
 ArgInstruction::ArgInstruction(const soul::ast::SourcePos& sourcePos_, Value* arg_) : Instruction(sourcePos_, nullptr, OpCode::arg), arg(arg_), argIndex(0)
 {
 }
@@ -398,6 +415,14 @@ std::vector<Instruction*> ArgInstruction::Uses() const
     return uses;
 }
 
+void ArgInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("arg ", 8));
+    formatter.Write(arg->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(arg->ToString());
+}
+
 JmpInstruction::JmpInstruction(const soul::ast::SourcePos& sourcePos_, int32_t targetLabelId_) :
     Instruction(sourcePos_, nullptr, OpCode::jmp), targetLabelId(targetLabelId_), targetBasicBlock(nullptr)
 {
@@ -406,6 +431,12 @@ JmpInstruction::JmpInstruction(const soul::ast::SourcePos& sourcePos_, int32_t t
 void JmpInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void JmpInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("jmp ", 8));
+    formatter.Write("@" + std::to_string(targetBasicBlock->Id()));
 }
 
 BranchInstruction::BranchInstruction(const soul::ast::SourcePos& sourcePos_, Value* cond_, int32_t trueTargetLabelId_, int32_t falseTargetLabelId_) :
@@ -439,6 +470,18 @@ std::vector<Instruction*> BranchInstruction::Uses() const
     std::vector<Instruction*> uses;
     AddToUsesVec(uses, cond);
     return uses;
+}
+
+void BranchInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("branch ", 8));
+    formatter.Write(cond->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(cond->ToString());
+    formatter.Write(", ");
+    formatter.Write("@" + std::to_string(trueTargetBasicBlock->Id()));
+    formatter.Write(", ");
+    formatter.Write("@" + std::to_string(falseTargetBasicBlock->Id()));
 }
 
 ProcedureCallInstruction::ProcedureCallInstruction(const soul::ast::SourcePos& sourcePos_, Value* callee_) : Instruction(sourcePos_, nullptr, OpCode::procedure_call), callee(callee_)
@@ -494,6 +537,14 @@ std::vector<Instruction*> ProcedureCallInstruction::Uses() const
     return uses;
 }
 
+void ProcedureCallInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("call ", 8));
+    formatter.Write(callee->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(callee->ToString());
+}
+
 RetInstruction::RetInstruction(const soul::ast::SourcePos& sourcePos_, Value* returnValue_) : Instruction(sourcePos_, nullptr, OpCode::ret), returnValue(returnValue_)
 {
 }
@@ -528,6 +579,21 @@ std::vector<Instruction*> RetInstruction::Uses() const
     return uses;
 }
 
+void RetInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("ret ", 8));
+    if (returnValue)
+    {
+        formatter.Write(returnValue->GetType()->Name());
+        formatter.Write(" ");
+        formatter.Write(returnValue->ToString());
+    }
+    else
+    {
+        formatter.Write("void");
+    }
+}
+
 SwitchInstruction::SwitchInstruction(const soul::ast::SourcePos& sourcePos_, Value* cond_, int32_t defaultTargetLabelId_) :
     Instruction(sourcePos_, nullptr, OpCode::switch_), cond(cond_), defaultTargetLabelId(defaultTargetLabelId_), defaultTargetBlock(nullptr)
 {
@@ -541,6 +607,13 @@ void SwitchInstruction::Accept(Visitor& visitor)
 void SwitchInstruction::AddCaseTarget(const CaseTarget& caseTarget)
 {
     caseTargets.push_back(caseTarget);
+}
+
+void SwitchInstruction::AddCase(Value* caseValue, BasicBlock* caseDest)
+{
+    CaseTarget caseTarget(caseValue, caseDest->Id());
+    caseTarget.targetBlock = caseDest;
+    AddCaseTarget(caseTarget);
 }
 
 void SwitchInstruction::AddToUses()
@@ -582,9 +655,42 @@ std::vector<Instruction*> SwitchInstruction::Uses() const
     return uses;
 }
 
+void SwitchInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format("switch ", 8));
+    formatter.Write(cond->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(cond->ToString());
+    formatter.Write(" ");
+    formatter.Write("@" + std::to_string(defaultTargetBlock->Id()));
+    formatter.Write(", [");
+    bool first = true;
+    for (const auto& p : caseTargets)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            formatter.Write(" : ");
+        }
+        Value* value = p.caseValue;
+        BasicBlock* dest = p.targetBlock;
+        formatter.Write(value->GetType()->Name());
+        formatter.Write(" ");
+        formatter.Write(value->ToString());
+        formatter.Write(", ");
+        formatter.Write("@" + std::to_string(dest->Id()));
+    }
+    formatter.Write("]");
+}
+
 ValueInstruction::ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_) : 
     Instruction(sourcePos_, result_->GetType(), opCode_), result(result_)
 {
+    result->SetInst(this);
+    SetRegValueIndex(result->Reg());
 }
 
 ValueInstruction::~ValueInstruction()
@@ -593,6 +699,17 @@ ValueInstruction::~ValueInstruction()
     {
         result->SetInst(nullptr);
     }
+}
+
+void ValueInstruction::WriteResult(util::CodeFormatter& formatter)
+{
+    formatter.Write(util::Format(result->GetType()->Name(), 7, util::FormatWidth::min));
+    formatter.Write(" " + result->ToString());
+}
+
+std::string ValueInstruction::ToString() const
+{
+    return result->ToString();
 }
 
 UnaryInstruction::UnaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_, OpCode opCode_) : 
@@ -622,6 +739,13 @@ std::vector<Instruction*> UnaryInstruction::Uses() const
     return uses;
 }
 
+void UnaryInstruction::WriteArg(util::CodeFormatter& formatter)
+{
+    formatter.Write(operand->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(operand->ToString());
+}
+
 NotInstruction::NotInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::not_)
 {
 }
@@ -631,6 +755,13 @@ void NotInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void NotInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = not ");
+    WriteArg(formatter);
+}
+
 NegInstruction::NegInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::neg)
 {
 }
@@ -638,6 +769,13 @@ NegInstruction::NegInstruction(const soul::ast::SourcePos& sourcePos_, RegValue*
 void NegInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void NegInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = neg ");
+    WriteArg(formatter);
 }
 
 SignExtendInstruction::SignExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -650,6 +788,13 @@ void SignExtendInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void SignExtendInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = signextend ");
+    WriteArg(formatter);
+}
+
 ZeroExtendInstruction::ZeroExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
     UnaryInstruction(sourcePos_, result_, operand_, OpCode::zeroextend)
 {
@@ -658,6 +803,13 @@ ZeroExtendInstruction::ZeroExtendInstruction(const soul::ast::SourcePos& sourceP
 void ZeroExtendInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void ZeroExtendInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = zeroextend ");
+    WriteArg(formatter);
 }
 
 TruncateInstruction::TruncateInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -670,6 +822,13 @@ void TruncateInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void TruncateInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = truncate ");
+    WriteArg(formatter);
+}
+
 BitcastInstruction::BitcastInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
     UnaryInstruction(sourcePos_, result_, operand_, OpCode::bitcast)
 {
@@ -678,6 +837,13 @@ BitcastInstruction::BitcastInstruction(const soul::ast::SourcePos& sourcePos_, R
 void BitcastInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void BitcastInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = bitcast ");
+    WriteArg(formatter);
 }
 
 IntToFloatInstruction::IntToFloatInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -690,6 +856,13 @@ void IntToFloatInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void IntToFloatInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = inttofloat ");
+    WriteArg(formatter);
+}
+
 FloatToIntInstruction::FloatToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
     UnaryInstruction(sourcePos_, result_, operand_, OpCode::floattoint)
 {
@@ -698,6 +871,13 @@ FloatToIntInstruction::FloatToIntInstruction(const soul::ast::SourcePos& sourceP
 void FloatToIntInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void FloatToIntInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = floattoint ");
+    WriteArg(formatter);
 }
 
 IntToPtrInstruction::IntToPtrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -710,6 +890,13 @@ void IntToPtrInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void IntToPtrInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = inttoptr ");
+    WriteArg(formatter);
+}
+
 PtrToIntInstruction::PtrToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
     UnaryInstruction(sourcePos_, result_, operand_, OpCode::ptrtoint)
 {
@@ -718,6 +905,13 @@ PtrToIntInstruction::PtrToIntInstruction(const soul::ast::SourcePos& sourcePos_,
 void PtrToIntInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void PtrToIntInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = ptrtoint ");
+    WriteArg(formatter);
 }
 
 BinaryInstruction::BinaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_, OpCode opCode_) :
@@ -755,6 +949,17 @@ std::vector<Instruction*> BinaryInstruction::Uses() const
     return uses;
 }
 
+void BinaryInstruction::WriteArgs(util::CodeFormatter& formatter)
+{
+    formatter.Write(left->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(left->ToString());
+    formatter.Write(", ");
+    formatter.Write(right->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(right->ToString());
+}
+
 AddInstruction::AddInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) :
     BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::add)
 {
@@ -763,6 +968,13 @@ AddInstruction::AddInstruction(const soul::ast::SourcePos& sourcePos_, RegValue*
 void AddInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void AddInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = add ");
+    WriteArgs(formatter);
 }
 
 SubInstruction::SubInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -775,6 +987,13 @@ void SubInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void SubInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = sub ");
+    WriteArgs(formatter);
+}
+
 MulInstruction::MulInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
     BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::mul)
 {
@@ -783,6 +1002,13 @@ MulInstruction::MulInstruction(const soul::ast::SourcePos& sourcePos_, RegValue*
 void MulInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void MulInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = mul ");
+    WriteArgs(formatter);
 }
 
 DivInstruction::DivInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -795,6 +1021,13 @@ void DivInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void DivInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = div ");
+    WriteArgs(formatter);
+}
+
 ModInstruction::ModInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
     BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::mod)
 {
@@ -803,6 +1036,13 @@ ModInstruction::ModInstruction(const soul::ast::SourcePos& sourcePos_, RegValue*
 void ModInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void ModInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = mod ");
+    WriteArgs(formatter);
 }
 
 AndInstruction::AndInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -815,6 +1055,13 @@ void AndInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void AndInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = and ");
+    WriteArgs(formatter);
+}
+
 OrInstruction::OrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
     BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::or_)
 {
@@ -823,6 +1070,13 @@ OrInstruction::OrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* r
 void OrInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void OrInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = or ");
+    WriteArgs(formatter);
 }
 
 XorInstruction::XorInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -835,6 +1089,13 @@ void XorInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void XorInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = xor ");
+    WriteArgs(formatter);
+}
+
 ShlInstruction::ShlInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
     BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::shl)
 {
@@ -843,6 +1104,13 @@ ShlInstruction::ShlInstruction(const soul::ast::SourcePos& sourcePos_, RegValue*
 void ShlInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void ShlInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = shl ");
+    WriteArgs(formatter);
 }
 
 ShrInstruction::ShrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -855,6 +1123,13 @@ void ShrInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void ShrInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = shr ");
+    WriteArgs(formatter);
+}
+
 EqualInstruction::EqualInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
     BinaryInstruction(sourcePos_, result_, left_, right_, OpCode::equal)
 {
@@ -863,6 +1138,13 @@ EqualInstruction::EqualInstruction(const soul::ast::SourcePos& sourcePos_, RegVa
 void EqualInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void EqualInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = equal ");
+    WriteArgs(formatter);
 }
 
 LessInstruction::LessInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -875,6 +1157,13 @@ void LessInstruction::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void LessInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = less ");
+    WriteArgs(formatter);
+}
+
 ParamInstruction::ParamInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_) : ValueInstruction(sourcePos_, result_, OpCode::param), paramIndex(0)
 {
 }
@@ -882,6 +1171,12 @@ ParamInstruction::ParamInstruction(const soul::ast::SourcePos& sourcePos_, RegVa
 void ParamInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void ParamInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = param");
 }
 
 LocalInstruction::LocalInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Type* localType_) : 
@@ -892,6 +1187,13 @@ LocalInstruction::LocalInstruction(const soul::ast::SourcePos& sourcePos_, RegVa
 void LocalInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void LocalInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = local ");
+    formatter.Write(localType->Name());
 }
 
 LoadInstruction::LoadInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_) : ValueInstruction(sourcePos_, result_, OpCode::load), ptr(ptr_)
@@ -923,6 +1225,15 @@ std::vector<Instruction*> LoadInstruction::Uses() const
     std::vector<Instruction*> uses;
     AddToUsesVec(uses, ptr);
     return uses;
+}
+
+void LoadInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = load ");
+    formatter.Write(ptr->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(ptr->ToString());
 }
 
 ElemAddrInstruction::ElemAddrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* indexValue_) :
@@ -984,6 +1295,19 @@ ElemAddrKind ElemAddrInstruction::GetElemAddrKind(Context* context) const
     return ElemAddrKind::none;
 }
 
+void ElemAddrInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = elemaddr ");
+    formatter.Write(ptr->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(ptr->ToString());
+    formatter.Write(", ");
+    formatter.Write(indexValue->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(indexValue->ToString());
+}
+
 PtrOffsetInstruction::PtrOffsetInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* offset_) :
     ValueInstruction(sourcePos_, result_, OpCode::ptroffset), ptr(ptr_), offset(offset_)
 {
@@ -1024,6 +1348,19 @@ std::vector<Instruction*> PtrOffsetInstruction::Uses() const
     return uses;
 }
 
+void PtrOffsetInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = ptroffset ");
+    formatter.Write(ptr->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(ptr->ToString());
+    formatter.Write(", ");
+    formatter.Write(offset->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(offset->ToString());
+}
+
 PtrDiffInstruction::PtrDiffInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* leftPtr_, Value* rightPtr_) :
     ValueInstruction(sourcePos_, result_, OpCode::ptrdiff), leftPtr(leftPtr_), rightPtr(rightPtr_)
 {
@@ -1062,6 +1399,19 @@ std::vector<Instruction*> PtrDiffInstruction::Uses() const
     AddToUsesVec(uses, leftPtr);
     AddToUsesVec(uses, rightPtr);
     return uses;
+}
+
+void PtrDiffInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = ptrdiff ");
+    formatter.Write(leftPtr->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(leftPtr->ToString());
+    formatter.Write(", ");
+    formatter.Write(rightPtr->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(rightPtr->ToString());
 }
 
 FunctionCallInstruction::FunctionCallInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* callee_) :
@@ -1118,6 +1468,15 @@ std::vector<Instruction*> FunctionCallInstruction::Uses() const
     return uses;
 }
 
+void FunctionCallInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = call ");
+    formatter.Write(callee->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(callee->ToString());
+}
+
 TrapInstruction::TrapInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* op1_, Value* op2_, Value* op3_) :
     ValueInstruction(sourcePos_, result_, OpCode::trap), op1(op1_), op2(op2_), op3(op3_), args()
 {
@@ -1164,6 +1523,23 @@ std::vector<Instruction*> TrapInstruction::Uses() const
     return uses;
 }
 
+void TrapInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = trap ");
+    formatter.Write(op1->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(op1->ToString());
+    formatter.Write(", ");
+    formatter.Write(op2->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(op2->ToString());
+    formatter.Write(", ");
+    formatter.Write(op3->GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(op3->ToString());
+}
+
 NoOperationInstruction::NoOperationInstruction(const soul::ast::SourcePos& sourcePos_) : Instruction(sourcePos_, nullptr, OpCode::nop)
 {
 }
@@ -1171,6 +1547,11 @@ NoOperationInstruction::NoOperationInstruction(const soul::ast::SourcePos& sourc
 void NoOperationInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void NoOperationInstruction::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write("nop");
 }
 
 BasicBlock::BasicBlock(const soul::ast::SourcePos& sourcePos_, int32_t id_) : sourcePos(sourcePos_), id(id_), instructions(this)
@@ -1206,6 +1587,11 @@ std::string BasicBlock::Name() const
     {
         return std::to_string(id);
     }
+}
+
+void BasicBlock::AddInstruction(Instruction* instruction)
+{
+    instructions.AddChild(instruction);
 }
 
 void BasicBlock::AddInstruction(Instruction* instruction, MetadataRef* metadataRef)
@@ -1287,10 +1673,66 @@ Function* BasicBlock::Parent() const
     return static_cast<Function*>(GetContainer()->Parent());
 }
 
-Function::Function(const soul::ast::SourcePos& sourcePos_, FunctionType* type_, const std::string& name_, bool once_, bool main_, bool definition_, 
-    MetadataRef* metadataRef_) :
-    flags(FunctionFlags::none), sourcePos(sourcePos_), type(type_), name(name_), metadataRef(metadataRef_), basicBlocks(this), nextRegNumber(0)
+void BasicBlock::Write(util::CodeFormatter& formatter)
 {
+    int indent = formatter.IndentSize();
+    bool indentDecremented = false;
+    if (formatter.CurrentIndent() > 0)
+    {
+        formatter.DecIndent();
+        indentDecremented = true;
+    }
+    formatter.Write(util::Format("@" + std::to_string(id), indent, util::FormatWidth::min));
+    bool first = true;
+    Instruction* inst = FirstInstruction();
+    while (inst)
+    {
+        inst->Write(formatter);
+        formatter.WriteLine();
+        if (first)
+        {
+            if (indentDecremented)
+            {
+                formatter.IncIndent();
+            }
+            first = false;
+        }
+        inst = inst->Next();
+    }
+}
+
+Function::Function(const soul::ast::SourcePos& sourcePos_, Type* type_, const std::string& name_, bool once_, bool main_, bool inline_, bool definition_, 
+    MetadataRef* metadataRef_, bool parsing, Context* context) : 
+    Value(sourcePos_, ValueKind::function, type_), flags(FunctionFlags::none), sourcePos(sourcePos_), functionType(nullptr), name(name_), metadataRef(metadataRef_), 
+    basicBlocks(this), nextRegNumber(0), nextBBNumber(0), nextIndex(0)
+{
+    Type* t = GetType();
+    if (t->IsPointerType())
+    {
+        PointerType* pointerType = static_cast<PointerType*>(t);
+        t = pointerType->BaseType();
+    }
+    if (t->IsFunctionType())
+    {
+        functionType = static_cast<FunctionType*>(t);
+    }
+    else
+    {
+        Error("function type or pointer to function type expected", sourcePos_, context);
+    }
+    if (!parsing)
+    {
+        entryBlock.reset(new BasicBlock(soul::ast::SourcePos(), nextBBNumber++));
+        int n = functionType->ParamTypeRefs().size();
+        for (int i = 0; i < n; ++i)
+        {
+            Type* paramType = functionType->ParamType(i);
+            Instruction* paramInst = new ParamInstruction(soul::ast::SourcePos(), MakeRegValue(paramType));
+            entryBlock->AddInstruction(paramInst);
+            params.push_back(paramInst);
+        }
+
+    }
     if (once_)
     {
         SetFlag(FunctionFlags::once);
@@ -1303,6 +1745,11 @@ Function::Function(const soul::ast::SourcePos& sourcePos_, FunctionType* type_, 
     {
         SetFlag(FunctionFlags::defined);
     }
+}
+
+Instruction* Function::GetParam(int index) const
+{
+    return params[index];
 }
 
 void Function::Accept(Visitor& visitor)
@@ -1323,6 +1770,26 @@ void Function::VisitBasicBlocks(Visitor& visitor)
 Code* Function::Parent() const
 {
     return static_cast<Code*>(GetContainer()->Parent());
+}
+
+BasicBlock* Function::CreateBasicBlock()
+{
+    if (basicBlocks.IsEmpty())
+    {
+        BasicBlock* bb = entryBlock.get();
+        basicBlocks.AddChild(entryBlock.release());
+        return bb;
+    }
+    BasicBlock* bb = new BasicBlock(soul::ast::SourcePos(), nextBBNumber++);
+    basicBlocks.AddChild(bb);
+    return bb;
+}
+
+BasicBlock* Function::CreateCleanupBasicBlock()
+{
+    BasicBlock* cubb = new BasicBlock(soul::ast::SourcePos(), -1);
+    cleanupBasicBlocks.push_back(std::unique_ptr<BasicBlock>(cubb));
+    return cubb;
 }
 
 BasicBlock* Function::GetBasicBlock(int32_t id) const
@@ -1412,6 +1879,14 @@ RegValue* Function::MakeRegValue(const soul::ast::SourcePos& sourcePos, Type* ty
     RegValue* regValue = new RegValue(sourcePos, type, reg);
     regValues.push_back(std::unique_ptr<RegValue>(regValue));
     regValueMap[reg] = regValue;
+    return regValue;
+}
+
+RegValue* Function::MakeRegValue(Type* type)
+{
+    RegValue* regValue = new RegValue(soul::ast::SourcePos(), type, regValues.size());
+    regValues.push_back(std::unique_ptr<RegValue>(regValue));
+    regValueMap[regValue->Reg()] = regValue;
     return regValue;
 }
 
@@ -1566,6 +2041,182 @@ void Function::AddIndex(int32_t index)
     indexSet.insert(index);
 }
 
+void Function::MapRegValue(RegValue* regValue)
+{
+    regValueMap[regValue->Reg()] = regValue;
+}
+
+void Function::MapLineColLen(const soul::ast::LineColLen& lineColLen)
+{
+    auto it = lineColLenIndexMap.find(lineColLen);
+    if (it == lineColLenIndexMap.end())
+    {
+        lineColLenIndexMap[lineColLen] = nextIndex++;
+    }
+}
+
+int32_t Function::GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const
+{
+    auto it = lineColLenIndexMap.find(lineColLen);
+    if (it != lineColLenIndexMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+std::string Function::ResolveFullName() const
+{
+    if (metadataRef)
+    {
+        MetadataStruct* metadataStruct = metadataRef->GetMetadataStruct();
+        if (metadataStruct)
+        {
+            MetadataItem* metadataItem = metadataStruct->GetItem("fullName");
+            if (metadataItem)
+            {
+                if (metadataItem->IsMetadataString())
+                {
+                    MetadataString* metadataString = static_cast<MetadataString*>(metadataItem);
+                    return metadataString->Value();
+                }
+            }
+        }
+    }
+    return std::string();
+}
+
+void Function::SetNumbers()
+{
+    Context* context = Parent()->GetContext();
+    basicBlockMap.clear();
+    regValueMap.clear();
+    instructionMap.clear();
+    nextBBNumber = 0;
+    BasicBlock* bb = FirstBasicBlock();
+    while (bb)
+    {
+        bb->SetId(nextBBNumber++);
+        basicBlockMap[bb->Id()] = bb;
+        bb = bb->Next();
+    }
+    int instructionIndex = 0;
+    nextRegNumber = 0;
+    bb = FirstBasicBlock();
+    while (bb)
+    {
+        Instruction* inst = bb->FirstInstruction();
+        while (inst)
+        {
+            inst->SetIndex(instructionIndex++);
+            if (inst->IsValueInstruction())
+            {
+                ValueInstruction* valueInst = static_cast<ValueInstruction*>(inst);
+                valueInst->SetRegValueIndex(nextRegNumber++);
+                valueInst->Result()->SetReg(valueInst->RegValueIndex());
+                MapRegValue(valueInst->Result());
+                MapInstruction(valueInst->RegValueIndex(), valueInst, context);
+            }
+            inst = inst->Next();
+        }
+        bb = bb->Next();
+    }
+}
+
+void Function::Finalize()
+{
+    nextBBNumber = 0;
+    for (std::unique_ptr<BasicBlock>& cubb : cleanupBasicBlocks)
+    {
+        basicBlocks.AddChild(cubb.release());
+    }
+    BasicBlock* bb = FirstBasicBlock();
+    while (bb)
+    {
+        bb->SetId(nextBBNumber++);
+        bb = bb->Next();
+    }
+    if (!basicBlocks.IsEmpty())
+    {
+        SetDefined();
+    }
+}
+
+void Function::Write(util::CodeFormatter& formatter)
+{
+    if (metadataRef)
+    {
+        SetComment(ResolveFullName());
+    }
+    if (!comment.empty())
+    {
+        formatter.WriteLine("// " + comment);
+        formatter.WriteLine();
+    }
+    if (basicBlocks.IsEmpty())
+    {
+        formatter.Write("extern ");
+    }
+    else if (IsInline())
+    {
+        formatter.Write("inline ");
+    }
+    if (Once())
+    {
+        formatter.Write("once ");
+    }
+    if (IsMain())
+    {
+        formatter.Write("main ");
+    }
+    Context* context = Parent()->GetContext();
+    context->GetTypes().Map(functionType);
+    Type* ptrType = functionType->AddPointer(context);
+    int mdId = -1;
+    if (metadataRef)
+    {
+        mdId = metadataRef->NodeId();
+    }
+    std::string mdIdStr;
+    if (mdId != -1)
+    {
+        mdIdStr.append(" !").append(std::to_string(mdId));
+    }
+    formatter.WriteLine("function " + ptrType->Name() + " " + name + mdIdStr);
+    if (basicBlocks.IsEmpty())
+    {
+        return;
+    }
+    SetNumbers();
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    bool first = true;
+    BasicBlock* bb = FirstBasicBlock();
+    while (bb)
+    {
+        if (bb->IsEmpty())
+        {
+            bb = bb->Next();
+            continue;
+        }
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            formatter.WriteLine();
+        }
+        bb->Write(formatter);
+        bb = bb->Next();
+    }
+    formatter.DecIndent();
+    formatter.WriteLine("}");
+}
+
 Code::Code() : context(nullptr), currentFunction(nullptr), functions(this)
 {
 }
@@ -1588,7 +2239,7 @@ Function* Code::GetFunction(const std::string& functionId) const
     }
 }
 
-Function* Code::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId, bool once, bool main, 
+Function* Code::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId, bool once, bool main, bool inline_,
     MetadataRef* metadataRef, Context* context)
 {
     Function* prev = GetFunction(functionId);
@@ -1600,33 +2251,46 @@ Function* Code::AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Fun
         }
         else
         {
-            if (prev->GetType() != functionType)
+            if (prev->GetType() != type)
             {
-                Error("error adding function '" + functionId + "': type '" + functionType->Name() + "' conflicts with earlier declaration", sourcePos, context, 
+                Error("error adding function '" + functionId + "': type '" + type->Name() + "' conflicts with earlier declaration", sourcePos, context, 
                     prev->GetSourcePos());
             }
             prev->SetDefined();
             return prev;
         }
     }
-    Function* function = new Function(sourcePos, functionType, functionId, once, main, true, metadataRef);
+    Function* function = new Function(sourcePos, type, functionId, once, main, inline_, true, metadataRef, true, context);
     functions.AddChild(function);
     functionMap[function->Name()] = function;
     return function;
 }
 
-Function* Code::AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId)
+Function* Code::AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId)
 {
     Function* prev = GetFunction(functionId);
     if (prev)
     {
-        if (prev->GetType() != functionType)
+        if (prev->GetType() != type)
         {
-            Error("error adding function declaration '" + functionId + "': type '" + functionType->Name() + "' conflicts with earlier declaration", sourcePos, context, prev->GetSourcePos());
+            Error("error adding function declaration '" + functionId + "': type '" + type->Name() + "' conflicts with earlier declaration", sourcePos, context, prev->GetSourcePos());
         }
         return prev;
     }
-    Function* function = new Function(sourcePos, functionType, functionId, false, false, false, nullptr);
+    Function* function = new Function(sourcePos, type, functionId, false, false, false, false, nullptr, true, context);
+    functions.AddChild(function);
+    functionMap[function->Name()] = function;
+    return function;
+}
+
+Function* Code::GetOrInsertFunction(const std::string& name, Type* type)
+{
+    Function* prev = GetFunction(name);
+    if (prev)
+    {
+        return prev;
+    }
+    Function* function = new Function(soul::ast::SourcePos(), type, name, false, false, false, false, nullptr, false, context);
     functions.AddChild(function);
     functionMap[function->Name()] = function;
     return function;

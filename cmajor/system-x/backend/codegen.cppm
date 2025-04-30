@@ -6,11 +6,11 @@
 export module cmajor.systemx.backend.codegen;
 
 import cmajor.systemx.backend.emitter;
+import cmajor.systemx.intermediate;
 import cmajor.codegen;
 import cmajor.binder;
 import cmajor.symbols;
 import cmajor.ir;
-import cmajor.systemx.ir;
 import soul.ast.span;
 import std.core;
 
@@ -121,7 +121,7 @@ private:
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;
     soul::ast::FullSpan fullSpan;
-    cmajor::systemx::ir::CompileUnit* nativeCompileUnit;
+    cmajor::systemx::intermediate::CompileUnit* nativeCompileUnit;
     void* function;
     void* entryBasicBlock;
     bool lastInstructionWasRet;

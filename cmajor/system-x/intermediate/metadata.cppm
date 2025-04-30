@@ -7,11 +7,22 @@ export module cmajor.systemx.intermediate.metadata;
 
 import cmajor.systemx.intermediate.data;
 import soul.ast.source.pos;
+import util;
 import std.core;
 
 export namespace cmajor::systemx::intermediate {
 
 export namespace metadata {}
+
+const int64_t fileInfoNodeType = 0;
+const int64_t funcInfoNodeType = 1;
+const int64_t lineInfoNodeType = 2;
+const int64_t cfgNodeType = 3;
+const int64_t beginTryNodeType = 4;
+const int64_t endTryNodeType = 5;
+const int64_t catchNodeType = 6;
+const int64_t beginCleanupNodeType = 7;
+const int64_t endCleanupNodeType = 8;
 
 class MetadataStruct;
 class Context;
@@ -32,6 +43,7 @@ public:
     bool IsMetadataLong() const { return kind == MetadataItemKind::metadataLong; }
     bool IsMetadataString() const { return kind == MetadataItemKind::metadataString; }
     bool IsMetadataArray() const { return kind == MetadataItemKind::metadataArray; }
+    virtual void Write(util::CodeFormatter& formatter) = 0;
 private:
     MetadataItemKind kind;
 };
@@ -44,6 +56,7 @@ public:
     int32_t NodeId() const { return nodeId; }
     MetadataStruct* GetMetadataStruct() const { return metadataStruct; }
     void SetMetadataStruct(MetadataStruct* metadataStruct_) { metadataStruct = metadataStruct_; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     soul::ast::SourcePos sourcePos;
     int32_t nodeId;
@@ -55,6 +68,7 @@ class MetadataBool : public MetadataItem
 public:
     MetadataBool(bool value_);
     bool Value() const { return value; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     bool value;
 };
@@ -64,6 +78,7 @@ class MetadataLong : public MetadataItem
 public:
     MetadataLong(int64_t value_);
     int64_t Value() const { return value; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     int64_t value;
 };
@@ -73,6 +88,7 @@ class MetadataString : public MetadataItem
 public:
     MetadataString(const std::string& value_);
     const std::string& Value() const { return value; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     std::string value;
 };
@@ -84,6 +100,7 @@ public:
     void AddItem(MetadataItem* item);
     int ItemCount() const { return static_cast<int>(items.size()); }
     MetadataItem* GetItem(int index) const { return items[index]; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     std::vector<MetadataItem*> items;
 };
@@ -98,6 +115,8 @@ public:
     int32_t Id() const { return id; }
     void AddItem(const std::string& fieldName, MetadataItem* item);
     MetadataItem* GetItem(const std::string& fieldName) const;
+    void Write(util::CodeFormatter& formatter);
+    void WriteDefinition(util::CodeFormatter& formatter);
 private:
     soul::ast::SourcePos sourcePos;
     int32_t id;
@@ -114,12 +133,14 @@ public:
     void SetContext(Context* context_) { context = context_; }
     MetadataStruct* GetMetadataStruct(int32_t id) const;
     MetadataStruct* AddMetadataStruct(const soul::ast::SourcePos& sourcePos, int32_t id, Context* context);
+    MetadataStruct* CreateMetadataStruct();
     MetadataBool* CreateMetadataBool(bool value);
     MetadataLong* CreateMetadataLong(int64_t value);
-    MetadataString* CreateMetadataString(const std::string& value);
+    MetadataString* CreateMetadataString(const std::string& value, bool crop);
     MetadataArray* CreateMetadataArray();
     MetadataRef* CreateMetadataRef(const soul::ast::SourcePos& sourcePos, int32_t nodeId);
     void ResolveMetadataReferences(Context* context);
+    void Write(util::CodeFormatter& formatter);
 private:
     Context* context;
     std::vector<std::unique_ptr<MetadataStruct>> metadataNodes;

@@ -53,6 +53,8 @@ public:
     ValueStack& Stack() { return *stack; }
     virtual cmajor::ir::EmittingContext* EmittingContext() const = 0;
     virtual void SetEmittingDelegate(EmittingDelegate* emittingDelegate_) = 0;
+    virtual void* GetCompileUnit() { return nullptr; }
+    virtual void SetFilePath(const std::string& filePath) {}
     virtual void* GetIrTypeForBool() = 0;
     virtual void* GetIrTypeForSByte() = 0;
     virtual void* GetIrTypeForByte() = 0;
@@ -154,14 +156,14 @@ public:
     virtual void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName,
         const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) = 0;
     virtual uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) = 0;
-    virtual void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
+    virtual void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
         const soul::ast::LineColLen& lineColLen, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType) = 0;
     virtual void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) = 0;
     virtual void* GetDITypeByTypeId(const util::uuid& typeId) const = 0;
     virtual void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) = 0;
     virtual void* GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId) = 0;
     virtual void SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType) = 0;
-    virtual void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    virtual void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) = 0;
     virtual void* CreateConstDIType(void* diType) = 0;
     virtual void* CreateLValueRefDIType(void* diType) = 0;
@@ -246,6 +248,7 @@ public:
     virtual void* GetOrInsertAnyComdat(const std::string& name, void* global) = 0;
     virtual void* GetOrInsertAnyFunctionComdat(const std::string& name, void* function) = 0;
     virtual void* GetOrInsertFunction(const std::string& name, void* type, bool nothrow) = 0;
+    virtual void* MakeSymbolValue(void* type, const std::string& name) { return nullptr; }
     virtual void SetInitializer(void* global, void* initializer) = 0;
     virtual void SetPrivateLinkage(void* global) = 0;
     virtual bool IsVmtObjectCreated(void* symbol) const = 0;
@@ -268,7 +271,7 @@ public:
     virtual void* CreateClassDIType(void* classPtr) = 0;
     virtual void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) = 0;
     virtual void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen) = 0;
-    virtual void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+    virtual void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock,
         const soul::ast::LineColLen& lineColLen) = 0;
     virtual void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) = 0;
     virtual void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
@@ -349,15 +352,15 @@ public:
     virtual unsigned GetPureVirtualVirtuality() = 0;
     virtual unsigned GetVirtualVirtuality() = 0;
     virtual unsigned GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit) = 0;
-    virtual void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    virtual void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags) = 0;
     virtual void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* subroutineType, unsigned flags) = 0;
     virtual void SetDISubprogram(void* function, void* subprogram) = 0;
     virtual void* CreateAlloca(void* irType) = 0;
-    virtual void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    virtual void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* irType, void* allocaInst) = 0;
-    virtual void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    virtual void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* irType, void* allocaInst) = 0;
     virtual void* GetFunctionArgument(void* function, int argumentIndex) = 0;
     virtual void SetDebugLoc(void* callInst) = 0;
@@ -372,6 +375,7 @@ public:
     virtual void* GenerateTrap(const std::vector<void*>& args) = 0;
     virtual void SetCompileUnitId(const std::string& compileUnitId) = 0;
     virtual const std::string& CompileUnitId() const = 0;
+    virtual void SetCompileUnitMetadataRef(void* metadataRef) {}
     virtual void* GetClsIdValue(const std::string& typeId) = 0;
     virtual void* CreateMDBool(bool value) = 0;
     virtual void* CreateMDLong(int64_t value) = 0;

@@ -15,6 +15,11 @@ MetadataRef::MetadataRef(const soul::ast::SourcePos& sourcePos_, int32_t nodeId_
 {
 }
 
+void MetadataRef::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write("!" + std::to_string(nodeId));
+}
+
 MetadataItem::MetadataItem(MetadataItemKind kind_) : kind(kind_)
 {
 }
@@ -27,12 +32,36 @@ MetadataBool::MetadataBool(bool value_) : MetadataItem(MetadataItemKind::metadat
 {
 }
 
+void MetadataBool::Write(util::CodeFormatter& formatter)
+{
+    if (value)
+    {
+        formatter.Write("true");
+    }
+    else
+    {
+        formatter.Write("false");
+    }
+}
+
 MetadataLong::MetadataLong(int64_t value_) : MetadataItem(MetadataItemKind::metadataLong), value(value_)
 {
 }
 
+void MetadataLong::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(std::to_string(value));
+}
+
 MetadataString::MetadataString(const std::string& value_) : MetadataItem(MetadataItemKind::metadataString), value(value_)
 {
+}
+
+void MetadataString::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write("\"");
+    formatter.Write(util::StringStr(value));
+    formatter.Write("\"");
 }
 
 MetadataArray::MetadataArray() : MetadataItem(MetadataItemKind::metadataArray)
@@ -42,6 +71,25 @@ MetadataArray::MetadataArray() : MetadataItem(MetadataItemKind::metadataArray)
 void MetadataArray::AddItem(MetadataItem* item)
 {
     items.push_back(item);
+}
+
+void MetadataArray::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write("[");
+    bool first = true;
+    for (const auto& item : items)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            formatter.Write(", ");
+        }
+        item->Write(formatter);
+    }
+    formatter.Write("]");
 }
 
 MetadataStruct::MetadataStruct(const soul::ast::SourcePos& sourcePos_, int32_t id_) : sourcePos(sourcePos_), id(id_)
@@ -66,6 +114,32 @@ MetadataItem* MetadataStruct::GetItem(const std::string& fieldName) const
     }
 }
 
+void MetadataStruct::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write("!" + std::to_string(id));
+}
+
+void MetadataStruct::WriteDefinition(util::CodeFormatter& formatter)
+{
+    formatter.Write("!" + std::to_string(id) + " = {");
+    bool first = true;
+    for (const auto& item : itemMap)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            formatter.Write(", ");
+        }
+        formatter.Write(item.first);
+        formatter.Write(": ");
+        item.second->Write(formatter);
+    }
+    formatter.WriteLine("}");
+}
+
 Metadata::Metadata() : context(nullptr), trueItem(), falseItem()
 {
 }
@@ -81,6 +155,14 @@ MetadataStruct* Metadata::GetMetadataStruct(int32_t id) const
     {
         return nullptr;
     }
+}
+
+MetadataStruct* Metadata::CreateMetadataStruct()
+{
+    MetadataStruct* metadataStruct = new MetadataStruct(soul::ast::SourcePos(), metadataNodes.size());
+    metadataNodes.push_back(std::unique_ptr<MetadataStruct>(metadataStruct));
+    metadataMap[metadataStruct->Id()] = metadataStruct;
+    return metadataStruct;
 }
 
 MetadataStruct* Metadata::AddMetadataStruct(const soul::ast::SourcePos& sourcePos, int32_t id, Context* context)
@@ -134,9 +216,13 @@ MetadataLong* Metadata::CreateMetadataLong(int64_t value)
     }
 }
 
-MetadataString* Metadata::CreateMetadataString(const std::string& value)
+MetadataString* Metadata::CreateMetadataString(const std::string& value, bool crop)
 {
-    std::string val = value.substr(1, value.length() - 2);
+    std::string val = value;
+    if (crop)
+    {
+        val = value.substr(1, value.length() - 2);
+    }
     auto it = stringItemMap.find(val);
     if (it != stringItemMap.cend())
     {
@@ -190,6 +276,21 @@ void Metadata::ResolveMetadataReferences(Context* context)
             Error("error resolving metadata reference: node id " + std::to_string(nodeId) + " not found", metadataRef->GetSourcePos(), context);
         }
     }
+}
+
+void Metadata::Write(util::CodeFormatter& formatter)
+{
+    if (metadataNodes.empty()) return;
+    formatter.WriteLine();
+    formatter.WriteLine("metadata");
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    for (const auto& node : metadataNodes)
+    {
+        node->WriteDefinition(formatter);
+    }
+    formatter.DecIndent();
+    formatter.WriteLine("}");
 }
 
 } // cmajor::systemx::intermediate

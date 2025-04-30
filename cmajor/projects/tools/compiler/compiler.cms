@@ -10,7 +10,7 @@ project <codegen/codegen.cmp>;
 project <intermediate/intermediate.cmp>;
 project <optimizer/optimizer.cmp>;
 project <symbols/symbols.cmp>;
-activeProject cmcmc;
+activeProject intermediate;
 activeBackEnd=llvm;
 activeConfig=debug;
 activeOptLevel=2;

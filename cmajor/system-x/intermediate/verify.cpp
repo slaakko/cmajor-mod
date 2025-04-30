@@ -370,7 +370,7 @@ void VerifierVisitor::Visit(ProcedureCallInstruction& inst)
         if (inst.Callee()->IsSymbolValue())
         {
             SymbolValue* calleeSymbolValue = static_cast<SymbolValue*>(inst.Callee());
-            Function* function = GetContext()->AddFunctionDeclaration(inst.GetSourcePos(), calleeType, calleeSymbolValue->Symbol());
+            Function* function = GetContext()->AddFunctionDeclaration(inst.GetSourcePos(), inst.Callee()->GetType(), calleeSymbolValue->Symbol());
             if (function)
             {
                 calleeSymbolValue->SetFunction(function);
@@ -395,7 +395,7 @@ void VerifierVisitor::Visit(ProcedureCallInstruction& inst)
 
 void VerifierVisitor::Visit(RetInstruction& inst)
 {
-    FunctionType* functionType = currentFunction->GetType();
+    FunctionType* functionType = currentFunction->GetFunctionType();
     if (inst.ReturnValue())
     {
         Type* returnValueType = inst.ReturnValue()->GetType();
@@ -779,7 +779,7 @@ void VerifierVisitor::Visit(FunctionCallInstruction& inst)
         if (inst.Callee()->IsSymbolValue())
         {
             SymbolValue* calleeSymbolValue = static_cast<SymbolValue*>(inst.Callee());
-            Function* function = GetContext()->AddFunctionDeclaration(inst.GetSourcePos(), calleeType, calleeSymbolValue->Symbol());
+            Function* function = GetContext()->AddFunctionDeclaration(inst.GetSourcePos(), inst.Callee()->GetType(), calleeSymbolValue->Symbol());
             if (function)
             {
                 calleeSymbolValue->SetFunction(function);

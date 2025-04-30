@@ -7,7 +7,7 @@ import cmajor.systemx.intermediate.code.token;
 
 keywords cmajor.systemx.intermediate.code.keyword
 { 
-    ("cu", CU), ("types", TYPES), ("data", DATA), ("function", FUNCTION), ("once", ONCE), ("main_fn", MAIN),
+    ("cu", CU), ("types", TYPES), ("data", DATA), ("function", FUNCTION), ("once", ONCE), ("main_fn", MAIN), ("extern", EXTERN), ("inline", INLINE),
     ("store", STORE), ("arg", ARG), ("jmp", JMP), ("branch", BRANCH), ("call", CALL), ("ret", RET), ("switch", SWITCH), ("nop", NOP), ("save", SAVE),
     ("not", NOT), ("neg", NEG), ("signextend", SIGNEXTEND), ("zeroextend", ZEROEXTEND), ("truncate", TRUNCATE), ("bitcast", BITCAST),
     ("inttofloat", INTTOFLOAT), ("floattoint", FLOATTOINT), ("inttoptr", INTTOPTR), ("ptrtoint", PTRTOINT),

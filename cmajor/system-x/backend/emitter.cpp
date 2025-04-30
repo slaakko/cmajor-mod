@@ -5,12 +5,10 @@
 
 module cmajor.systemx.backend.emitter;
 
-import cmajor.systemx.ir;
-
 namespace cmajor::systemx::backend {
 
 SystemXEmitter::SystemXEmitter(cmajor::ir::EmittingContext* emittingContext_) :
-    cmajor::ir::Emitter(), emittingContext(emittingContext_), emittingDelegate(nullptr), context(nullptr), compileUnit(nullptr), currentFunction(nullptr),
+    cmajor::ir::Emitter(), emittingContext(emittingContext_), emittingDelegate(nullptr), context(new cmajor::systemx::intermediate::Context()), currentFunction(nullptr),
     objectPointer(nullptr)
 {
     SetStack(&stack);
@@ -21,89 +19,104 @@ void SystemXEmitter::SetEmittingDelegate(cmajor::ir::EmittingDelegate* emittingD
     emittingDelegate = emittingDelegate_;
 }
 
+void* SystemXEmitter::GetCompileUnit()
+{
+    return &context->GetCompileUnit();
+}
+
+void SystemXEmitter::SetFilePath(const std::string& filePath)
+{
+    context->SetFilePath(filePath);
+}
+
+void SystemXEmitter::SetCompileUnitMetadataRef(void* metadataRef)
+{
+    context->GetCompileUnit().SetMetadataRef(static_cast<cmajor::systemx::intermediate::MetadataRef*>(metadataRef));
+}
+
 void* SystemXEmitter::GetIrTypeForBool()
 {
-    return context->GetBoolType();
+    return context->GetTypes().GetBoolType();
 }
 
 void* SystemXEmitter::GetIrTypeForSByte()
 {
-    return context->GetSByteType();
+    return context->GetTypes().GetSByteType();
 }
 
 void* SystemXEmitter::GetIrTypeForByte()
 {
-    return context->GetByteType();
+    return context->GetTypes().GetByteType();
 }
 
 void* SystemXEmitter::GetIrTypeForShort()
 {
-    return context->GetShortType();
+    return context->GetTypes().GetShortType();
 }
 
 void* SystemXEmitter::GetIrTypeForUShort()
 {
-    return context->GetUShortType();
+    return context->GetTypes().GetUShortType();
 }
 
 void* SystemXEmitter::GetIrTypeForInt()
 {
-    return context->GetIntType();
+    return context->GetTypes().GetIntType();
 }
 
 void* SystemXEmitter::GetIrTypeForUInt()
 {
-    return context->GetUIntType();
+    return context->GetTypes().GetUIntType();
 }
 
 void* SystemXEmitter::GetIrTypeForLong()
 {
-    return context->GetLongType();
+    return context->GetTypes().GetLongType();
 }
 
 void* SystemXEmitter::GetIrTypeForULong()
 {
-    return context->GetULongType();
+    return context->GetTypes().GetULongType();
 }
 
 void* SystemXEmitter::GetIrTypeForFloat()
 {
-    return context->GetFloatType();
+    return context->GetTypes().GetFloatType();
 }
 
 void* SystemXEmitter::GetIrTypeForDouble()
 {
-    return context->GetDoubleType();
+    return context->GetTypes().GetDoubleType();
 }
 
 void* SystemXEmitter::GetIrTypeForChar()
 {
-    return context->GetByteType();
+    return context->GetTypes().GetByteType();
 }
 
 void* SystemXEmitter::GetIrTypeForWChar()
 {
-    return context->GetUShortType();
+    return context->GetTypes().GetUShortType();
 }
 
 void* SystemXEmitter::GetIrTypeForUChar()
 {
-    return context->GetUIntType();
+    return context->GetTypes().GetUIntType();
 }
 
 void* SystemXEmitter::GetIrTypeForVoid()
 {
-    return context->GetVoidType();
+    return context->GetTypes().GetVoidType();
 }
 
 void* SystemXEmitter::GetIrTypeForFunction(void* retType, const std::vector<void*>& paramTypes)
 {
-    std::vector<cmajor::systemx::ir::Type*> parameterTypes;
+    std::vector<cmajor::systemx::intermediate::Type*> parameterTypes;
     for (void* paramType : paramTypes)
     {
-        parameterTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(paramType));
+        parameterTypes.push_back(static_cast<cmajor::systemx::intermediate::Type*>(paramType));
     }
-    return context->GetFunctionType(static_cast<cmajor::systemx::ir::Type*>(retType), parameterTypes);
+    return context->GetTypes().GetFunctionType(static_cast<cmajor::systemx::intermediate::Type*>(retType), parameterTypes);
 }
 
 void* SystemXEmitter::GetIrTypeForVariableParamFunction(void* retType)
@@ -126,68 +139,68 @@ void* SystemXEmitter::GetIrTypeByTypeId(const util::uuid& typeId)
 
 void SystemXEmitter::SetIrTypeByTypeId(const util::uuid& typeId, void* irType)
 {
-    irTypeTypeIdMap[typeId] = static_cast<cmajor::systemx::ir::Type*>(irType);
+    irTypeTypeIdMap[typeId] = static_cast<cmajor::systemx::intermediate::Type*>(irType);
 }
 
 void* SystemXEmitter::GetIrTypeForArrayType(void* elementType, int64_t size)
 {
-    return context->GetArrayType(static_cast<cmajor::systemx::ir::Type*>(elementType), size);
+    return context->GetTypes().GetArrayType(size, static_cast<cmajor::systemx::intermediate::Type*>(elementType));
 }
 
 void* SystemXEmitter::GetIrTypeForClassType(const std::vector<void*>& elementTypes)
 {
-    std::vector<cmajor::systemx::ir::Type*> memberTypes;
+    std::vector<cmajor::systemx::intermediate::Type*> memberTypes;
     for (void* elementType : elementTypes)
     {
-        memberTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(elementType));
+        memberTypes.push_back(static_cast<cmajor::systemx::intermediate::Type*>(elementType));
     }
-    return context->GetStructureType(memberTypes);
+    return context->GetTypes().GetStructureType(memberTypes);
 }
 
 void* SystemXEmitter::CreateFwdIrTypeForClassType()
 {
-    return context->CreateStructureType();
+    return context->GetTypes().CreateStructureType();
 }
 
 void SystemXEmitter::SetFwdIrTypeBody(void* forwardDeclaredType, const std::vector<void*>& elementTypes)
 {
-    std::vector<cmajor::systemx::ir::Type*> memberTypes;
+    std::vector<cmajor::systemx::intermediate::Type*> memberTypes;
     for (void* elementType : elementTypes)
     {
-        memberTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(elementType));
+        memberTypes.push_back(static_cast<cmajor::systemx::intermediate::Type*>(elementType));
     }
-    cmajor::systemx::ir::StructureType* structureType = static_cast<cmajor::systemx::ir::StructureType*>(forwardDeclaredType);
+    cmajor::systemx::intermediate::StructureType* structureType = static_cast<cmajor::systemx::intermediate::StructureType*>(forwardDeclaredType);
     structureType->SetMemberTypes(memberTypes);
 }
 
 void* SystemXEmitter::GetIrTypeForDelegateType(void* retType, const std::vector<void*>& paramTypes)
 {
-    std::vector<cmajor::systemx::ir::Type*> parameterTypes;
+    std::vector<cmajor::systemx::intermediate::Type*> parameterTypes;
     for (void* paramType : paramTypes)
     {
-        parameterTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(paramType));
+        parameterTypes.push_back(static_cast<cmajor::systemx::intermediate::Type*>(paramType));
     }
-    return context->GetPtrType(context->GetFunctionType(static_cast<cmajor::systemx::ir::Type*>(retType), parameterTypes));
+    return context->GetTypes().GetPointerType(context->GetTypes().GetFunctionType(static_cast<cmajor::systemx::intermediate::Type*>(retType), parameterTypes));
 }
 
 void* SystemXEmitter::GetIrTypeForVoidPtrType()
 {
-    return context->GetPtrType(context->GetVoidType());
+    return context->GetTypes().GetPointerType(context->GetTypes().GetVoidType());
 }
 
 void* SystemXEmitter::GetIrTypeForStructType(const std::vector<void*>& elementTypes)
 {
-    std::vector<cmajor::systemx::ir::Type*> memberTypes;
+    std::vector<cmajor::systemx::intermediate::Type*> memberTypes;
     for (void* elementType : elementTypes)
     {
-        memberTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(elementType));
+        memberTypes.push_back(static_cast<cmajor::systemx::intermediate::Type*>(elementType));
     }
-    return context->GetStructureType(memberTypes);
+    return context->GetTypes().GetStructureType(memberTypes);
 }
 
 void* SystemXEmitter::GetIrTypeForPtrType(void* baseIrType)
 {
-    return context->GetPtrType(static_cast<cmajor::systemx::ir::Type*>(baseIrType));
+    return context->GetTypes().GetPointerType(static_cast<cmajor::systemx::intermediate::Type*>(baseIrType));
 }
 
 std::string SystemXEmitter::GetIrTypeName(void* irType)
@@ -202,128 +215,132 @@ std::string SystemXEmitter::MakeVmtVariableName(const std::string& vmtObjectName
 
 void* SystemXEmitter::CreateDefaultIrValueForArrayType(void* arrayIrType, const std::vector<void*>& arrayOfDefaults)
 {
-    std::vector<cmajor::systemx::ir::ConstantValue*> arrayOfConstants;
+    std::vector<cmajor::systemx::intermediate::ConstantValue*> arrayOfConstants;
     for (void* constant : arrayOfDefaults)
     {
-        arrayOfConstants.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(constant));
+        arrayOfConstants.push_back(static_cast<cmajor::systemx::intermediate::ConstantValue*>(constant));
     }
-    cmajor::systemx::ir::Type* arrayType = static_cast<cmajor::systemx::ir::Type*>(arrayIrType);
-    return context->GetArrayValue(arrayType, arrayOfConstants, std::string());
+    cmajor::systemx::intermediate::Value* arrayValue = context->GetData().MakeArrayValue(soul::ast::SourcePos(), arrayOfConstants, std::string());
+    arrayValue->SetType(static_cast<cmajor::systemx::intermediate::Type*>(arrayIrType));
+    return arrayValue;
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForBool()
 {
-    return context->GetDefaultBoolValue();
+    return context->GetFalseValue();
 }
 
 void* SystemXEmitter::CreateTrue()
 {
-    return context->GetBoolValue(true);
+    return context->GetTrueValue();
 }
 
 void* SystemXEmitter::CreateFalse()
 {
-    return context->GetBoolValue(false);
+    return context->GetFalseValue();
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForSByte()
 {
-    return context->GetDefaultSByteValue();
+    return context->GetSByteValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForByte()
 {
-    return context->GetDefaultByteValue();
+    return context->GetByteValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForShort()
 {
-    return context->GetDefaultShortValue();
+    return context->GetShortValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForUShort()
 {
-    return context->GetDefaultUShortValue();
+    return context->GetUShortValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForInt()
 {
-    return context->GetDefaultIntValue();
+    return context->GetIntValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForUInt()
 {
-    return context->GetDefaultUIntValue();
+    return context->GetUIntValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForLong()
 {
-    return context->GetDefaultLongValue();
+    return context->GetLongValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForULong()
 {
-    return context->GetDefaultULongValue();
+    return context->GetULongValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForFloat()
 {
-    return context->GetDefaultFloatValue();
+    return context->GetFloatValue(0.0f);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForDouble()
 {
-    return context->GetDefaultDoubleValue();
+    return context->GetDoubleValue(0.0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForChar()
 {
-    return context->GetDefaultByteValue();
+    return context->GetByteValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForWChar()
 {
-    return context->GetDefaultUShortValue();
+    return context->GetUShortValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForUChar()
 {
-    return context->GetDefaultUIntValue();
+    return context->GetUIntValue(0);
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForStruct(void* irType, const std::vector<void*>& defaultMembers)
 {
-    std::vector<cmajor::systemx::ir::ConstantValue*> arrayOfDefaults;
+    std::vector<cmajor::systemx::intermediate::ConstantValue*> arrayOfDefaults;
     for (void* constant : defaultMembers)
     {
-        arrayOfDefaults.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(constant));
+        arrayOfDefaults.push_back(static_cast<cmajor::systemx::intermediate::ConstantValue*>(constant));
     }
-    return context->GetStructureValue(static_cast<cmajor::systemx::ir::StructureType*>(irType), arrayOfDefaults);
+    cmajor::systemx::intermediate::Value* structureValue = context->MakeStructureValue(soul::ast::SourcePos(), arrayOfDefaults);
+    structureValue->SetType(static_cast<cmajor::systemx::intermediate::Type*>(irType));
+    return structureValue;
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForDelegateType(void* irType)
 {
-    return context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(irType));
+    return context->GetNullValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::PointerType*>(irType));
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForVoidPtrType()
 {
-    return context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(context->GetPtrType(context->GetVoidType())));
+    return context->GetNullValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::PointerType*>(context->GetTypes().GetPointerType(
+        context->GetTypes().GetVoidType())));
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForDerivedType(void* irType)
 {
-    return static_cast<cmajor::systemx::ir::Type*>(irType)->DefaultValue();
+    return static_cast<cmajor::systemx::intermediate::Type*>(irType)->DefaultValue();
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForPtrType(void* irType)
 {
-    return context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(irType));
+    return context->GetNullValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::PointerType*>(irType));
 }
 
 void* SystemXEmitter::CreateIrValueForBool(bool value)
 {
-    return context->GetBoolValue(value);
+    return value ? context->GetTrueValue() : context->GetFalseValue();
 }
 
 void* SystemXEmitter::CreateIrValueForSByte(int8_t value)
@@ -393,48 +410,53 @@ void* SystemXEmitter::CreateIrValueForUChar(uint32_t value)
 
 void* SystemXEmitter::CreateIrValueForWString(void* type, void* wstringConstant)
 {
-    return static_cast<cmajor::systemx::ir::Value*>(wstringConstant);
+    return static_cast<cmajor::systemx::intermediate::Value*>(wstringConstant);
 }
 
 void* SystemXEmitter::CreateIrValueForUString(void* type, void* ustringConstant)
 {
-    return static_cast<cmajor::systemx::ir::Value*>(ustringConstant);
+    return static_cast<cmajor::systemx::intermediate::Value*>(ustringConstant);
 }
 
 void* SystemXEmitter::CreateIrValueForConstantArray(void* arrayIrType, const std::vector<void*>& elementConstants, const std::string& prefix)
 {
-    std::vector<cmajor::systemx::ir::ConstantValue*> elements;
+    std::vector<cmajor::systemx::intermediate::ConstantValue*> elements;
     for (void* elementConstant : elementConstants)
     {
-        elements.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(elementConstant));
+        elements.push_back(static_cast<cmajor::systemx::intermediate::ConstantValue*>(elementConstant));
     }
-    return context->GetArrayValue(static_cast<cmajor::systemx::ir::ArrayType*>(arrayIrType), elements, prefix);
+    cmajor::systemx::intermediate::Value* arrayValue = context->MakeArrayValue(soul::ast::SourcePos(), elements, prefix);
+    arrayValue->SetType(static_cast<cmajor::systemx::intermediate::Type*>(arrayIrType));
+    return arrayValue;
 }
 
 void* SystemXEmitter::CreateIrValueForConstantStruct(void* structIrType, const std::vector<void*>& elementConstants)
 {
-    std::vector<cmajor::systemx::ir::ConstantValue*> memberConstants;
+    std::vector<cmajor::systemx::intermediate::ConstantValue*> memberConstants;
     for (void* elementConstant : elementConstants)
     {
-        memberConstants.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(elementConstant));
+        memberConstants.push_back(static_cast<cmajor::systemx::intermediate::ConstantValue*>(elementConstant));
     }
-    return context->GetStructureValue(static_cast<cmajor::systemx::ir::StructureType*>(structIrType), memberConstants);
+    cmajor::systemx::intermediate::Value* structureValue = context->MakeStructureValue(soul::ast::SourcePos(), memberConstants);
+    structureValue->SetType(static_cast<cmajor::systemx::intermediate::Type*>(structIrType));
+    return structureValue;
 }
 
 void* SystemXEmitter::CreateIrValueForUuid(void* type, void* uuidConstant)
 {
-    cmajor::systemx::ir::Value* arg = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(uuidConstant), context->GetLongValue(0));
-    return context->CreateBitCast(arg, context->GetPtrType(context->GetVoidType()));
+    cmajor::systemx::intermediate::Value* arg = context->CreatePtrOffset(static_cast<cmajor::systemx::intermediate::Value*>(uuidConstant), context->GetLongValue(0));
+    return context->CreateBitCast(arg, context->GetTypes().GetPointerType(context->GetTypes().GetVoidType()));
 }
 
 void* SystemXEmitter::GetConversionValue(void* type, void* from)
 {
-    return context->GetConversionValue(static_cast<cmajor::systemx::ir::Type*>(type), static_cast<cmajor::systemx::ir::ConstantValue*>(from));
+    return context->GetData().MakeConversionValue(soul::ast::SourcePos(), 
+        static_cast<cmajor::systemx::intermediate::Type*>(type), static_cast<cmajor::systemx::intermediate::ConstantValue*>(from));
 }
 
 void* SystemXEmitter::CreateGlobalStringPtr(const std::string& stringValue)
 {
-    return context->CreateGlobalStringPtr(stringValue);
+    return context->GetData().AddGlobalStringPtr(stringValue);
 }
 
 void* SystemXEmitter::CreateGlobalWStringPtr(const std::u16string& stringValue)
@@ -652,12 +674,12 @@ void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::Span& span)
 
 void* SystemXEmitter::GetArrayBeginAddress(void* arrayType, void* arrayPtr)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(0));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(arrayPtr), context->GetLongValue(0));
 }
 
 void* SystemXEmitter::GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(size));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(arrayPtr), context->GetLongValue(size));
 }
 
 void* SystemXEmitter::CreateBasicBlock(const std::string& name)
@@ -695,12 +717,12 @@ void SystemXEmitter::SetCleanupBlock(void* cleanupBlock)
 
 int SystemXEmitter::GetBasicBlockId(void* basicBlock)
 {
-    return static_cast<cmajor::systemx::ir::BasicBlock*>(basicBlock)->Id();
+    return static_cast<cmajor::systemx::intermediate::BasicBlock*>(basicBlock)->Id();
 }
 
 void SystemXEmitter::CreateBr(void* targetBasicBlock)
 {
-    context->CreateJump(static_cast<cmajor::systemx::ir::BasicBlock*>(targetBasicBlock));
+    context->CreateJump(static_cast<cmajor::systemx::intermediate::BasicBlock*>(targetBasicBlock));
 }
 
 void* SystemXEmitter::CurrentBasicBlock() const
@@ -710,147 +732,148 @@ void* SystemXEmitter::CurrentBasicBlock() const
 
 void SystemXEmitter::SetCurrentBasicBlock(void* basicBlock)
 {
-    context->SetCurrentBasicBlock(static_cast<cmajor::systemx::ir::BasicBlock*>(basicBlock));
+    context->SetCurrentBasicBlock(static_cast<cmajor::systemx::intermediate::BasicBlock*>(basicBlock));
 }
 
 void SystemXEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasicBlock)
 {
-    context->CreateBranch(static_cast<cmajor::systemx::ir::Value*>(cond), static_cast<cmajor::systemx::ir::BasicBlock*>(trueBasicBlock), static_cast<cmajor::systemx::ir::BasicBlock*>(falseBasicBlock));
+    context->CreateBranch(static_cast<cmajor::systemx::intermediate::Value*>(cond), static_cast<cmajor::systemx::intermediate::BasicBlock*>(trueBasicBlock), 
+        static_cast<cmajor::systemx::intermediate::BasicBlock*>(falseBasicBlock));
 }
 
 void* SystemXEmitter::CreateArrayIndexAddress(void* arrayType, void* arrayPtr, void* elementType, void* index)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), static_cast<cmajor::systemx::ir::Value*>(index));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(arrayPtr), static_cast<cmajor::systemx::intermediate::Value*>(index));
 }
 
 void SystemXEmitter::CreateStore(void* value, void* ptr)
 {
-    context->CreateStore(static_cast<cmajor::systemx::ir::Value*>(value), static_cast<cmajor::systemx::ir::Value*>(ptr));
+    context->CreateStore(static_cast<cmajor::systemx::intermediate::Value*>(value), static_cast<cmajor::systemx::intermediate::Value*>(ptr));
 }
 
 void* SystemXEmitter::CreateLoad(void* type, void* ptr)
 {
-    return context->CreateLoad(static_cast<cmajor::systemx::ir::Value*>(ptr));
+    return context->CreateLoad(static_cast<cmajor::systemx::intermediate::Value*>(ptr));
 }
 
 void* SystemXEmitter::CreateAdd(void* left, void* right)
 {
-    return context->CreateAdd(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateAdd(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateFAdd(void* left, void* right)
 {
-    return context->CreateAdd(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateAdd(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateSub(void* left, void* right)
 {
-    return context->CreateSub(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateSub(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateFSub(void* left, void* right)
 {
-    return context->CreateSub(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateSub(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateMul(void* left, void* right)
 {
-    return context->CreateMul(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateMul(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateFMul(void* left, void* right)
 {
-    return context->CreateMul(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateMul(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateUDiv(void* left, void* right)
 {
-    return context->CreateDiv(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateDiv(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateSDiv(void* left, void* right)
 {
-    return context->CreateDiv(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateDiv(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateFDiv(void* left, void* right)
 {
-    return context->CreateDiv(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateDiv(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateURem(void* left, void* right)
 {
-    return context->CreateMod(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateMod(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateSRem(void* left, void* right)
 {
-    return context->CreateMod(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateMod(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateAnd(void* left, void* right)
 {
-    return context->CreateAnd(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateAnd(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateOr(void* left, void* right)
 {
-    return context->CreateOr(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateOr(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateXor(void* left, void* right)
 {
-    return context->CreateXor(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateXor(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateShl(void* left, void* right)
 {
-    return context->CreateShl(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateShl(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateAShr(void* left, void* right)
 {
-    return context->CreateShr(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateShr(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateLShr(void* left, void* right)
 {
-    return context->CreateShr(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateShr(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateICmpEQ(void* left, void* right)
 {
-    return context->CreateEqual(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateEqual(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateFCmpOEQ(void* left, void* right)
 {
-    return context->CreateEqual(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateEqual(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateICmpULT(void* left, void* right)
 {
-    return context->CreateLess(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateLess(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateICmpSLT(void* left, void* right)
 {
-    return context->CreateLess(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateLess(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateFCmpOLT(void* left, void* right)
 {
-    return context->CreateLess(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreateLess(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 void* SystemXEmitter::CreateSExt(void* operand, void* destinationType)
 {
-    return context->CreateSignExtend(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateSignExtend(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateZExt(void* operand, void* destinationType)
 {
-    return context->CreateZeroExtend(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateZeroExtend(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateFPExt(void* operand, void* destinationType)
@@ -860,70 +883,70 @@ void* SystemXEmitter::CreateFPExt(void* operand, void* destinationType)
 
 void* SystemXEmitter::CreateTrunc(void* operand, void* destinationType)
 {
-    return context->CreateTruncate(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateTruncate(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateFPTrunc(void* operand, void* destinationType)
 {
-    return context->CreateTruncate(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateTruncate(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateBitCast(void* operand, void* destinationType)
 {
-    return context->CreateBitCast(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateBitCast(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateUIToFP(void* operand, void* destinationType)
 {
-    return context->CreateIntToFloat(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateIntToFloat(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateSIToFP(void* operand, void* destinationType)
 {
-    return context->CreateIntToFloat(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateIntToFloat(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateFPToUI(void* operand, void* destinationType)
 {
-    return context->CreateFloatToInt(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateFloatToInt(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateFPToSI(void* operand, void* destinationType)
 {
-    return context->CreateFloatToInt(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateFloatToInt(static_cast<cmajor::systemx::intermediate::Value*>(operand), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateIntToPtr(void* intValue, void* destinationType)
 {
-    return context->CreateIntToPtr(static_cast<cmajor::systemx::ir::Value*>(intValue), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreateIntToPtr(static_cast<cmajor::systemx::intermediate::Value*>(intValue), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreatePtrToInt(void* ptrValue, void* destinationType)
 {
-    return context->CreatePtrToInt(static_cast<cmajor::systemx::ir::Value*>(ptrValue), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+    return context->CreatePtrToInt(static_cast<cmajor::systemx::intermediate::Value*>(ptrValue), static_cast<cmajor::systemx::intermediate::Type*>(destinationType));
 }
 
 void* SystemXEmitter::CreateNot(void* value)
 {
-    return context->CreateNot(static_cast<cmajor::systemx::ir::Value*>(value));
+    return context->CreateNot(static_cast<cmajor::systemx::intermediate::Value*>(value));
 }
 
 void* SystemXEmitter::CreateNeg(void* value)
 {
-    return context->CreateNeg(static_cast<cmajor::systemx::ir::Value*>(value));
+    return context->CreateNeg(static_cast<cmajor::systemx::intermediate::Value*>(value));
 }
 
 void* SystemXEmitter::CreateFNeg(void* value)
 {
-    cmajor::systemx::ir::Value* val = static_cast<cmajor::systemx::ir::Value*>(value);
-    if (val->GetType(*context)->Id() == cmajor::systemx::ir::doubleTypeId)
+    cmajor::systemx::intermediate::Value* val = static_cast<cmajor::systemx::intermediate::Value*>(value);
+    if (val->GetType()->Id() == cmajor::systemx::intermediate::doubleTypeId)
     {
-        cmajor::systemx::ir::ConstantValue* minusOne = context->GetDoubleValue(-1.0);
+        cmajor::systemx::intermediate::ConstantValue* minusOne = context->GetDoubleValue(-1.0);
         return context->CreateMul(minusOne, val);
     }
-    else if (val->GetType(*context)->Id() == cmajor::systemx::ir::floatTypeId)
+    else if (val->GetType()->Id() == cmajor::systemx::intermediate::floatTypeId)
     {
-        cmajor::systemx::ir::ConstantValue* minusOne = context->GetFloatValue(-1.0f);
+        cmajor::systemx::intermediate::ConstantValue* minusOne = context->GetFloatValue(-1.0f);
         return context->CreateMul(minusOne, val);
     }
     else
@@ -1004,7 +1027,7 @@ void* SystemXEmitter::GetStaticObjectType(void* symbol) const
 
 void SystemXEmitter::SetStaticObjectType(void* symbol, void* type)
 {
-    staticTypeMap[symbol] = static_cast<cmajor::systemx::ir::StructureType*>(type);
+    staticTypeMap[symbol] = static_cast<cmajor::systemx::intermediate::StructureType*>(type);
 }
 
 std::string SystemXEmitter::GetStaticObjectName(void* symbol) const
@@ -1027,30 +1050,35 @@ void SystemXEmitter::SetStaticObjectName(void* symbol, const std::string& static
 
 void* SystemXEmitter::GetOrInsertGlobal(const std::string& name, void* type)
 {
-    return context->GetOrInsertGlobal(name, static_cast<cmajor::systemx::ir::Type*>(type));
+    return context->GetOrInsertGlobal(name, static_cast<cmajor::systemx::intermediate::Type*>(type));
 }
 
 void* SystemXEmitter::GetOrInsertAnyComdat(const std::string& name, void* global)
 {
-    static_cast<cmajor::systemx::ir::GlobalVariable*>(global)->SetLinkOnce();
+    static_cast<cmajor::systemx::intermediate::GlobalVariable*>(global)->SetOnce();
     return nullptr;
 }
 
 void* SystemXEmitter::GetOrInsertAnyFunctionComdat(const std::string& name, void* function)
 {
-    static_cast<cmajor::systemx::ir::Function*>(function)->SetLinkOnce();
+    static_cast<cmajor::systemx::intermediate::Function*>(function)->SetOnce();
     return nullptr;
 }
 
 void* SystemXEmitter::GetOrInsertFunction(const std::string& name, void* type, bool nothrow)
 {
-    return compileUnit->GetOrInsertFunction(name, static_cast<cmajor::systemx::ir::FunctionType*>(type));
+    return context->GetOrInsertFunction(name, context->GetTypes().GetPointerType(static_cast<cmajor::systemx::intermediate::Type*>(type)));
+}
+
+void* SystemXEmitter::MakeSymbolValue(void* type, const std::string& name)
+{
+    return context->MakeSymbolValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::Type*>(type), name);
 }
 
 void SystemXEmitter::SetInitializer(void* global, void* initializer)
 {
-    cmajor::systemx::ir::GlobalVariable* globalVar = static_cast<cmajor::systemx::ir::GlobalVariable*>(global);
-    globalVar->SetInitializer(static_cast<cmajor::systemx::ir::ConstantValue*>(initializer));
+    cmajor::systemx::intermediate::GlobalVariable* globalVar = static_cast<cmajor::systemx::intermediate::GlobalVariable*>(global);
+    globalVar->SetInitializer(static_cast<cmajor::systemx::intermediate::ConstantValue*>(initializer));
 }
 
 void SystemXEmitter::SetPrivateLinkage(void* global)
@@ -1150,10 +1178,15 @@ void* SystemXEmitter::CreateCall(void* functionType, void* callee, const std::ve
 {
     for (void* arg : args)
     {
-        cmajor::systemx::ir::Value* argument = static_cast<cmajor::systemx::ir::Value*>(arg);
+        cmajor::systemx::intermediate::Value* argument = static_cast<cmajor::systemx::intermediate::Value*>(arg);
         context->CreateArg(argument);
     }
-    cmajor::systemx::ir::Value* calleeValue = static_cast<cmajor::systemx::ir::Value*>(callee);
+    cmajor::systemx::intermediate::Value* calleeValue = static_cast<cmajor::systemx::intermediate::Value*>(callee);
+    if (!calleeValue->IsInstruction())
+    {
+        calleeValue = context->MakeSymbolValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::Type*>(functionType),
+            calleeValue->ToString());
+    }
     return context->CreateCall(calleeValue);
 }
 
@@ -1161,10 +1194,15 @@ void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std
 {
     for (void* arg : args)
     {
-        cmajor::systemx::ir::Value* argument = static_cast<cmajor::systemx::ir::Value*>(arg);
+        cmajor::systemx::intermediate::Value* argument = static_cast<cmajor::systemx::intermediate::Value*>(arg);
         context->CreateArg(argument);
     }
-    cmajor::systemx::ir::Value* calleeValue = static_cast<cmajor::systemx::ir::Value*>(callee);
+    cmajor::systemx::intermediate::Value* calleeValue = static_cast<cmajor::systemx::intermediate::Value*>(callee);
+    if (!calleeValue->IsInstruction())
+    {
+        calleeValue = context->MakeSymbolValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::Type*>(functionType),
+            calleeValue->ToString());
+    }
     return context->CreateCall(calleeValue);
 }
 
@@ -1175,11 +1213,16 @@ void* SystemXEmitter::CreateCallInstToBasicBlock(void* functionType, void* calle
     SetCurrentBasicBlock(basicBlock);
     for (void* arg : args)
     {
-        cmajor::systemx::ir::Value* argument = static_cast<cmajor::systemx::ir::Value*>(arg);
+        cmajor::systemx::intermediate::Value* argument = static_cast<cmajor::systemx::intermediate::Value*>(arg);
         context->CreateArg(argument);
     }
-    cmajor::systemx::ir::Value* calleeValue = static_cast<cmajor::systemx::ir::Value*>(callee);
-    cmajor::systemx::ir::Instruction* callInst = context->CreateCall(calleeValue);
+    cmajor::systemx::intermediate::Value* calleeValue = static_cast<cmajor::systemx::intermediate::Value*>(callee);
+    if (!calleeValue->IsInstruction())
+    {
+        calleeValue = context->MakeSymbolValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::Type*>(functionType),
+            calleeValue->ToString());
+    }
+    cmajor::systemx::intermediate::Instruction* callInst = context->CreateCall(calleeValue);
     SetCurrentBasicBlock(prevBasicBlock);
     return callInst;
 }
@@ -1191,7 +1234,7 @@ void* SystemXEmitter::CreateInvoke(void* functionType, void* callee, void* norma
     {
         void* nop1 = CreateNop();
         void* beginCleanup = CreateMDStruct();
-        AddMDItem(beginCleanup, "nodeType", CreateMDLong(cmajor::systemx::ir::beginCleanupNodeType));
+        AddMDItem(beginCleanup, "nodeType", CreateMDLong(cmajor::systemx::intermediate::beginCleanupNodeType));
         AddMDItem(beginCleanup, "cleanupBlockId", CreateMDBasicBlockRef(cleanupBlock));
         if (emittingDelegate->InTryBlock())
         {
@@ -1206,7 +1249,7 @@ void* SystemXEmitter::CreateInvoke(void* functionType, void* callee, void* norma
     {
         void* nop2 = CreateNop();
         void* endCleanup = CreateMDStruct();
-        AddMDItem(endCleanup, "nodeType", CreateMDLong(cmajor::systemx::ir::endCleanupNodeType));
+        AddMDItem(endCleanup, "nodeType", CreateMDLong(cmajor::systemx::intermediate::endCleanupNodeType));
         AddMDItem(endCleanup, "cleanupBlockId", CreateMDBasicBlockRef(cleanupBlock));
         int endCleanupId = GetMDStructId(endCleanup);
         void* endCleanupMdRef = CreateMDStructRef(endCleanupId);
@@ -1232,58 +1275,63 @@ void SystemXEmitter::SetCurrentDIBuilder(void* diBuilder_)
 
 void* SystemXEmitter::GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(0));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(classDelegatePtr), context->GetLongValue(0));
 }
 
 void* SystemXEmitter::GetDelegateFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(1));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(classDelegatePtr), context->GetLongValue(1));
 }
 
 void* SystemXEmitter::GetObjectFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
-    cmajor::systemx::ir::Value* addr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
+    cmajor::systemx::intermediate::Value* addr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(interfaceTypePtr), context->GetLongValue(0));
     return context->CreateLoad(addr);
 }
 
 void* SystemXEmitter::GetObjectPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(interfaceTypePtr), context->GetLongValue(0));
 }
 
 void* SystemXEmitter::GetImtPtrPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
-    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
+    return context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(interfaceTypePtr), context->GetLongValue(1));
 }
 
 void* SystemXEmitter::GetImtPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
-    cmajor::systemx::ir::Value* interfacePtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
-    cmajor::systemx::ir::Value* interfacePtr = context->CreateLoad(interfacePtrAddr);
-    return context->CreateBitCast(interfacePtr, context->GetPtrType(context->GetVoidType()));
+    cmajor::systemx::intermediate::Value* interfacePtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(interfaceTypePtr), 
+        context->GetLongValue(1));
+    cmajor::systemx::intermediate::Value* interfacePtr = context->CreateLoad(interfacePtrAddr);
+    return context->CreateBitCast(interfacePtr, context->GetTypes().GetPointerType(context->GetTypes().GetVoidType()));
 }
 
 void* SystemXEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
 {
-    cmajor::systemx::ir::Value* methodPtrPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtPtr), context->GetLongValue(methodIndex));
-    cmajor::systemx::ir::Value* methodPtr = context->CreateLoad(methodPtrPtr);
-    cmajor::systemx::ir::Value* callee = context->CreateBitCast(methodPtr, context->GetPtrType(static_cast<cmajor::systemx::ir::Type*>(interfaceMethodType)));
+    cmajor::systemx::intermediate::Value* methodPtrPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::intermediate::Value*>(imtPtr), 
+        context->GetLongValue(methodIndex));
+    cmajor::systemx::intermediate::Value* methodPtr = context->CreateLoad(methodPtrPtr);
+    cmajor::systemx::intermediate::Value* callee = context->CreateBitCast(methodPtr, context->GetTypes().GetPointerType(
+        static_cast<cmajor::systemx::intermediate::Type*>(interfaceMethodType)));
     return callee;
 }
 
 void* SystemXEmitter::GetImtsArrayPtrFromVmt(void* vmtPtr, void* vmtArrayType, int32_t imtsVmtIndexOffset)
 {
-    cmajor::systemx::ir::Value* imtsArrayPtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(imtsVmtIndexOffset));
-    cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateLoad(imtsArrayPtrAddr);
+    cmajor::systemx::intermediate::Value* imtsArrayPtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(vmtPtr), 
+        context->GetLongValue(imtsVmtIndexOffset));
+    cmajor::systemx::intermediate::Value* imtsArrayPtr = context->CreateLoad(imtsArrayPtrAddr);
     return imtsArrayPtr;
 }
 
 void* SystemXEmitter::GetImtPtrFromImtsPtr(void* imtsPtr, int32_t interfaceIndex, int32_t interfaceCount)
 {
-    cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateBitCast(static_cast<cmajor::systemx::ir::Value*>(imtsPtr),
-        context->GetPtrType(context->GetArrayType(context->GetPtrType(context->GetVoidType()), static_cast<uint64_t>(interfaceCount))));
-    cmajor::systemx::ir::Value* imtPtrAddr = context->CreateElemAddr(imtsArrayPtr, context->GetLongValue(interfaceIndex));
-    cmajor::systemx::ir::Value* imtPtr = context->CreateLoad(imtPtrAddr);
+    cmajor::systemx::intermediate::Value* imtsArrayPtr = context->CreateBitCast(static_cast<cmajor::systemx::intermediate::Value*>(imtsPtr),
+        context->GetTypes().GetPointerType(context->GetTypes().GetArrayType(static_cast<uint64_t>(interfaceCount), context->GetTypes().GetPointerType(
+            context->GetTypes().GetVoidType()))));
+    cmajor::systemx::intermediate::Value* imtPtrAddr = context->CreateElemAddr(imtsArrayPtr, context->GetLongValue(interfaceIndex));
+    cmajor::systemx::intermediate::Value* imtPtr = context->CreateLoad(imtPtrAddr);
     return imtPtr;
 }
 
@@ -1302,36 +1350,21 @@ void* SystemXEmitter::GetFunctionIrType(void* functionSymbol) const
 
 void SystemXEmitter::SetFunctionIrType(void* symbol, void* irType)
 {
-    functionIrTypeMap[symbol] = static_cast<cmajor::systemx::ir::FunctionType*>(irType);
+    functionIrTypeMap[symbol] = static_cast<cmajor::systemx::intermediate::FunctionType*>(irType);
 }
 
 void* SystemXEmitter::GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
 {
-    cmajor::systemx::ir::Value* vmtPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(thisPtr), context->GetLongValue(vmtPtrIndex));
-    cmajor::systemx::ir::Value* vmtPtr = context->CreateLoad(vmtPtrPtr);
-    return context->CreateBitCast(vmtPtr, static_cast<cmajor::systemx::ir::Type*>(vmtPtrType));
+    cmajor::systemx::intermediate::Value* vmtPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(thisPtr), context->GetLongValue(vmtPtrIndex));
+    cmajor::systemx::intermediate::Value* vmtPtr = context->CreateLoad(vmtPtrPtr);
+    return context->CreateBitCast(vmtPtr, static_cast<cmajor::systemx::intermediate::Type*>(vmtPtrType));
 }
 
 void* SystemXEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
 {
-    cmajor::systemx::ir::Value* funPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(vmtIndex));
+    cmajor::systemx::intermediate::Value* funPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(vmtPtr), context->GetLongValue(vmtIndex));
     return context->CreateLoad(funPtrPtr);
 }
-
-/*
-void* SystemXEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
-{
-    cmajor::systemx::ir::Value* imtsArrayPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset));
-    cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateBitCast(imtsArrayPtrPtr, context->GetPtrType(context->GetPtrType(context->GetVoidType())));
-    return context->CreateLoad(imtsArrayPtr);
-}
-
-void* SystemXEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex)
-{
-    cmajor::systemx::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
-    return context->CreateLoad(imtArrayPtr);
-}
-*/
 
 void* SystemXEmitter::GetIrObject(void* symbol) const
 {
@@ -1348,20 +1381,20 @@ void* SystemXEmitter::GetIrObject(void* symbol) const
 
 void SystemXEmitter::SetIrObject(void* symbol, void* irObject)
 {
-    irObjectMap[symbol] = static_cast<cmajor::systemx::ir::Value*>(irObject);
+    irObjectMap[symbol] = static_cast<cmajor::systemx::intermediate::Value*>(irObject);
 }
 
 void* SystemXEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex)
 {
-    cmajor::systemx::ir::Value* clsPtr = static_cast<cmajor::systemx::ir::Value*>(classPtr);
+    cmajor::systemx::intermediate::Value* clsPtr = static_cast<cmajor::systemx::intermediate::Value*>(classPtr);
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
 }
 
 void* SystemXEmitter::SizeOf(void* elementType, void* ptrType)
 {
-    cmajor::systemx::ir::Value* nullPtr = context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(ptrType));
-    cmajor::systemx::ir::Value* one = context->CreatePtrOffset(nullPtr, context->GetLongValue(1));
-    cmajor::systemx::ir::Value* size = context->CreatePtrToInt(one, context->GetLongType());
+    cmajor::systemx::intermediate::Value* nullPtr = context->GetNullValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::PointerType*>(ptrType));
+    cmajor::systemx::intermediate::Value* one = context->CreatePtrOffset(nullPtr, context->GetLongValue(1));
+    cmajor::systemx::intermediate::Value* size = context->CreatePtrToInt(one, context->GetTypes().GetLongType());
     return size;
 }
 
@@ -1373,13 +1406,13 @@ void SystemXEmitter::SaveObjectPointer(void* objectPointer_)
 {
     if (objectPointer == nullptr)
     {
-        objectPointer = static_cast<cmajor::systemx::ir::Value*>(objectPointer_);
+        objectPointer = static_cast<cmajor::systemx::intermediate::Value*>(objectPointer_);
     }
 }
 
 void SystemXEmitter::SetObjectPointer(void* objectPointer_)
 {
-    objectPointer = static_cast<cmajor::systemx::ir::Value*>(objectPointer_);
+    objectPointer = static_cast<cmajor::systemx::intermediate::Value*>(objectPointer_);
 }
 
 void* SystemXEmitter::GetObjectPointer()
@@ -1389,27 +1422,29 @@ void* SystemXEmitter::GetObjectPointer()
 
 void* SystemXEmitter::GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset)
 {
-    cmajor::systemx::ir::Value* classIdPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(0));
+    cmajor::systemx::intermediate::Value* classIdPtr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(vmtPtr), context->GetLongValue(0));
     return classIdPtr;
 }
 
 void* SystemXEmitter::GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset)
 {
-    cmajor::systemx::ir::Value* classNamePtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(classNameVmtIndexOffset));
-    cmajor::systemx::ir::Value* classNamePtr = context->CreateLoad(classNamePtrPtr);
-    cmajor::systemx::ir::Value* classNameCharPtr = context->CreateBitCast(classNamePtr, context->GetPtrType(context->GetPtrType(context->GetByteType())));
-    cmajor::systemx::ir::Value* className = context->CreateLoad(classNameCharPtr);
+    cmajor::systemx::intermediate::Value* classNamePtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::intermediate::Value*>(vmtPtr), 
+        context->GetLongValue(classNameVmtIndexOffset));
+    cmajor::systemx::intermediate::Value* classNamePtr = context->CreateLoad(classNamePtrPtr);
+    cmajor::systemx::intermediate::Value* classNameCharPtr = context->CreateBitCast(classNamePtr, context->GetTypes().GetPointerType(
+        context->GetTypes().GetPointerType(context->GetTypes().GetByteType())));
+    cmajor::systemx::intermediate::Value* className = context->CreateLoad(classNameCharPtr);
     return className;
 }
 
 void* SystemXEmitter::ComputeAddress(void* type, void* ptr, void* index)
 {
-    return context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(ptr), static_cast<cmajor::systemx::ir::Value*>(index));
+    return context->CreatePtrOffset(static_cast<cmajor::systemx::intermediate::Value*>(ptr), static_cast<cmajor::systemx::intermediate::Value*>(index));
 }
 
 void* SystemXEmitter::CreatePtrDiff(void* elementType, void* left, void* right)
 {
-    return context->CreatePtrDiff(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+    return context->CreatePtrDiff(static_cast<cmajor::systemx::intermediate::Value*>(left), static_cast<cmajor::systemx::intermediate::Value*>(right));
 }
 
 uint32_t SystemXEmitter::GetPrivateFlag()
@@ -1434,18 +1469,15 @@ uint32_t SystemXEmitter::GetNoFlags()
 
 void* SystemXEmitter::CreateModule(const std::string& moduleName)
 {
-    return new cmajor::systemx::ir::CompileUnit(moduleName);
+    return nullptr;
 }
 
 void SystemXEmitter::DestroyModule(void* module)
 {
-    delete static_cast<cmajor::systemx::ir::CompileUnit*>(module);
 }
-
+ 
 void SystemXEmitter::SetModule(void* module_)
 {
-    compileUnit = static_cast<cmajor::systemx::ir::CompileUnit*>(module_);
-    context = compileUnit->GetContext();
 }
 
 void SystemXEmitter::SetTargetTriple(const std::string& targetTriple)
@@ -1535,7 +1567,7 @@ void SystemXEmitter::SetFunctionLinkage(void* function, bool setInline)
 
 void SystemXEmitter::SetFunctionLinkageToLinkOnceODRLinkage(void* function)
 {
-    static_cast<cmajor::systemx::ir::Function*>(function)->SetLinkOnce();
+    static_cast<cmajor::systemx::intermediate::Function*>(function)->SetOnce();
 }
 
 void SystemXEmitter::SetFunctionCallConventionToStdCall(void* function)
@@ -1544,7 +1576,7 @@ void SystemXEmitter::SetFunctionCallConventionToStdCall(void* function)
 
 void SystemXEmitter::SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId)
 {
-    currentFunction = static_cast<cmajor::systemx::ir::Function*>(function_);
+    currentFunction = static_cast<cmajor::systemx::intermediate::Function*>(function_);
     context->SetCurrentFunction(currentFunction);
 }
 
@@ -1640,7 +1672,7 @@ void SystemXEmitter::SetDISubprogram(void* function, void* subprogram)
 
 void* SystemXEmitter::CreateAlloca(void* irType)
 {
-    return context->CreateLocal(static_cast<cmajor::systemx::ir::Type*>(irType));
+    return context->CreateLocal(static_cast<cmajor::systemx::intermediate::Type*>(irType));
 }
 
 void* SystemXEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
@@ -1656,7 +1688,7 @@ void* SystemXEmitter::CreateDIAutoVariable(const std::string& name, const soul::
 
 void* SystemXEmitter::GetFunctionArgument(void* function, int argumentIndex)
 {
-    return static_cast<cmajor::systemx::ir::Function*>(function)->GetParam(argumentIndex);
+    return static_cast<cmajor::systemx::intermediate::Function*>(function)->GetParam(argumentIndex);
 }
 
 void SystemXEmitter::SetDebugLoc(void* callInst)
@@ -1665,7 +1697,7 @@ void SystemXEmitter::SetDebugLoc(void* callInst)
 
 void* SystemXEmitter::CreateRet(void* value)
 {
-    return context->CreateRet(static_cast<cmajor::systemx::ir::Value*>(value));
+    return context->CreateRet(static_cast<cmajor::systemx::intermediate::Value*>(value));
 }
 
 void* SystemXEmitter::CreateRetVoid()
@@ -1692,127 +1724,128 @@ void* SystemXEmitter::CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, co
 
 void* SystemXEmitter::CreateSwitch(void* condition, void* defaultDest, unsigned numCases)
 {
-    return context->CreateSwitch(static_cast<cmajor::systemx::ir::Value*>(condition), static_cast<cmajor::systemx::ir::BasicBlock*>(defaultDest));
+    return context->CreateSwitch(static_cast<cmajor::systemx::intermediate::Value*>(condition), static_cast<cmajor::systemx::intermediate::BasicBlock*>(defaultDest));
 }
 
 void SystemXEmitter::AddCase(void* switchInst, void* caseValue, void* caseDest)
 {
-    cmajor::systemx::ir::SwitchInstruction* inst = static_cast<cmajor::systemx::ir::SwitchInstruction*>(switchInst);
-    inst->AddCase(static_cast<cmajor::systemx::ir::Value*>(caseValue), static_cast<cmajor::systemx::ir::BasicBlock*>(caseDest));
+    cmajor::systemx::intermediate::SwitchInstruction* inst = static_cast<cmajor::systemx::intermediate::SwitchInstruction*>(switchInst);
+    inst->AddCase(static_cast<cmajor::systemx::intermediate::Value*>(caseValue), static_cast<cmajor::systemx::intermediate::BasicBlock*>(caseDest));
 }
 
 void* SystemXEmitter::GenerateTrap(const std::vector<void*>& args)
 {
-    std::vector<cmajor::systemx::ir::Value*> arguments;
+    std::vector<cmajor::systemx::intermediate::Value*> arguments;
     for (void* arg : args)
     {
-        arguments.push_back(static_cast<cmajor::systemx::ir::Value*>(arg));
+        arguments.push_back(static_cast<cmajor::systemx::intermediate::Value*>(arg));
     }
     return context->CreateTrap(arguments);
 }
 
 void SystemXEmitter::SetCompileUnitId(const std::string& compileUnitId)
 {
-    context->SetCompileUnitId(compileUnitId);
+    context->GetCompileUnit().SetInfo(compileUnitId, nullptr);
 }
 
 const std::string& SystemXEmitter::CompileUnitId() const
 {
-    return context->CompileUnitId();
+    return context->GetCompileUnit().Id();
 }
 
 void* SystemXEmitter::GetClsIdValue(const std::string& typeId)
 {
-    return context->GetClsIdValue(typeId);
+    return context->MakeClsIdValue(soul::ast::SourcePos(), context->GetTypes().GetPointerType(context->GetTypes().GetVoidType()), typeId, false);
 }
 
 void* SystemXEmitter::CreateMDBool(bool value)
 {
-    return context->CreateMDBool(value);
+    return context->GetMetadata().CreateMetadataBool(value);
 }
 
 void* SystemXEmitter::CreateMDLong(int64_t value)
 {
-    return context->CreateMDLong(value);
+    return context->GetMetadata().CreateMetadataLong(value);
 }
 
 void* SystemXEmitter::CreateMDString(const std::string& value)
 {
-    return context->CreateMDString(value);
+    return context->GetMetadata().CreateMetadataString(value, false);
 }
 
 void* SystemXEmitter::CreateMDStructRef(int id)
 {
-    return context->CreateMDStructRef(id);
+    return context->GetMetadata().CreateMetadataRef(soul::ast::SourcePos(), id);
 }
 
 int SystemXEmitter::GetMDStructId(void* mdStruct)
 {
-    return static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct)->Id();
+    return static_cast<cmajor::systemx::intermediate::MetadataStruct*>(mdStruct)->Id();
 }
 
 void* SystemXEmitter::CreateMDStruct()
 {
-    return context->CreateMDStruct();
+    return context->GetMetadata().CreateMetadataStruct();
 }
 
 void* SystemXEmitter::CreateMDArray()
 {
-    return context->CreateMDArray();
+    return context->GetMetadata().CreateMetadataArray();
 }
 
 void* SystemXEmitter::CreateMDBasicBlockRef(void* bb)
 {
-    return context->CreateMDBasicBlockRef(bb);
+    return context->GetMetadata().CreateMetadataLong(static_cast<cmajor::systemx::intermediate::BasicBlock*>(bb)->Id());
 }
 
 void SystemXEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
 {
-    context->AddMDStructItem(static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct), fieldName, static_cast<cmajor::systemx::ir::MDItem*>(mdItem));
+    static_cast<cmajor::systemx::intermediate::MetadataStruct*>(mdStruct)->AddItem(fieldName, static_cast<cmajor::systemx::intermediate::MetadataItem*>(mdItem));
 }
 
 void SystemXEmitter::AddMDArrayItem(void* mdArray, void* mdItem)
 {
-    context->AddMDArrayITem(static_cast<cmajor::systemx::ir::MDArray*>(mdArray), static_cast<cmajor::systemx::ir::MDItem*>(mdItem));
+    static_cast<cmajor::systemx::intermediate::MetadataArray*>(mdArray)->AddItem(static_cast<cmajor::systemx::intermediate::MetadataItem*>(mdItem));
 }
 
 void SystemXEmitter::SetFunctionMdId(void* function, int mdId)
 {
-    static_cast<cmajor::systemx::ir::Function*>(function)->SetMdId(mdId);
+    cmajor::systemx::intermediate::MetadataRef* metadataRef = context->GetMetadata().CreateMetadataRef(soul::ast::SourcePos(), mdId);
+    static_cast<cmajor::systemx::intermediate::Function*>(function)->SetMetadataRef(metadataRef);
 }
 
 void* SystemXEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName)
 {
-    return context->GetMDStructRefForSourceFile(sourceFileName);
+    return context->GetMetadataRefForSourceFile(sourceFileName);
 }
 
 void SystemXEmitter::SetMetadataRef(void* inst, void* mdStructRef)
 {
-    context->SetMetadataRef(static_cast<cmajor::systemx::ir::Instruction*>(inst), static_cast<cmajor::systemx::ir::MDStructRef*>(mdStructRef));
+    static_cast<cmajor::systemx::intermediate::Instruction*>(inst)->SetMetadataRef(static_cast<cmajor::systemx::intermediate::MetadataRef*>(mdStructRef));
 }
 
 void SystemXEmitter::SetMetadataRefForStructType(void* structType, void* mdRef)
 {
-    cmajor::systemx::ir::StructureType* structureType = static_cast<cmajor::systemx::ir::StructureType*>(structType);
-    cmajor::systemx::ir::MDStructRef* metadataRef = static_cast<cmajor::systemx::ir::MDStructRef*>(mdRef);
+    cmajor::systemx::intermediate::StructureType* structureType = static_cast<cmajor::systemx::intermediate::StructureType*>(structType);
+    cmajor::systemx::intermediate::MetadataRef* metadataRef = static_cast<cmajor::systemx::intermediate::MetadataRef*>(mdRef);
     structureType->SetMetadataRef(metadataRef);
 }
 
 void* SystemXEmitter::GetMetadataRefForStructType(void* structType) const
 {
-    cmajor::systemx::ir::StructureType* structureType = static_cast<cmajor::systemx::ir::StructureType*>(structType);
-    return structureType->MetadataRef();
+    cmajor::systemx::intermediate::StructureType* structureType = static_cast<cmajor::systemx::intermediate::StructureType*>(structType);
+    return structureType->GetMetadataRef();
 }
 
 int SystemXEmitter::GetTypeId(void* type) const
 {
-    cmajor::systemx::ir::Type* tp = static_cast<cmajor::systemx::ir::Type*>(type);
-    return context->GetTypeRepository().GetTypeId(tp);
+    cmajor::systemx::intermediate::Type* tp = static_cast<cmajor::systemx::intermediate::Type*>(type);
+    return tp->Id();
 }
 
 void SystemXEmitter::FinalizeFunction(void* function, bool hasCleanup)
 {
-    static_cast<cmajor::systemx::ir::Function*>(function)->Finalize();
+    static_cast<cmajor::systemx::intermediate::Function*>(function)->Finalize();
 }
 
 int SystemXEmitter::Install(const std::string& str)

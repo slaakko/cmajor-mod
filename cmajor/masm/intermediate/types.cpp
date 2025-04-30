@@ -521,18 +521,18 @@ Type* Types::GetFundamentalType(int32_t id) const
 {
     switch (id)
     {
-    case voidTypeId: return const_cast<VoidType*>(&voidType);
-    case boolTypeId: return const_cast<BoolType*>(&boolType);
-    case sbyteTypeId: return const_cast<SByteType*>(&sbyteType);
-    case byteTypeId: return const_cast<ByteType*>(&byteType);
-    case shortTypeId: return const_cast<ShortType*>(&shortType);
-    case ushortTypeId: return const_cast<UShortType*>(&ushortType);
-    case intTypeId: return const_cast<IntType*>(&intType);
-    case uintTypeId: return const_cast<UIntType*>(&uintType);
-    case longTypeId: return const_cast<LongType*>(&longType);
-    case ulongTypeId: return const_cast<ULongType*>(&ulongType);
-    case floatTypeId: return const_cast<FloatType*>(&floatType);
-    case doubleTypeId: return const_cast<DoubleType*>(&doubleType);
+        case voidTypeId: return const_cast<VoidType*>(&voidType);
+        case boolTypeId: return const_cast<BoolType*>(&boolType);
+        case sbyteTypeId: return const_cast<SByteType*>(&sbyteType);
+        case byteTypeId: return const_cast<ByteType*>(&byteType);
+        case shortTypeId: return const_cast<ShortType*>(&shortType);
+        case ushortTypeId: return const_cast<UShortType*>(&ushortType);
+        case intTypeId: return const_cast<IntType*>(&intType);
+        case uintTypeId: return const_cast<UIntType*>(&uintType);
+        case longTypeId: return const_cast<LongType*>(&longType);
+        case ulongTypeId: return const_cast<ULongType*>(&ulongType);
+        case floatTypeId: return const_cast<FloatType*>(&floatType);
+        case doubleTypeId: return const_cast<DoubleType*>(&doubleType);
     }
     return nullptr;
 }

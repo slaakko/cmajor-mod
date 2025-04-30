@@ -735,7 +735,7 @@ void SimpleAssemblyCodeGenerator::Visit(StringValue& value)
 
 void SimpleAssemblyCodeGenerator::Visit(StringArrayValue& value)
 {
-    for (ConstantValue* elementValue : value.Strings())
+    for (ConstantValue* elementValue : value.Elements())
     {
         assemblyInst = nullptr;
         elementValue->Accept(*this);

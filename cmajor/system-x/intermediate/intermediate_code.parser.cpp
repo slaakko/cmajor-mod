@@ -164,7 +164,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::IntermediateCodeFile(LexerT&
                 int64_t save = lexer.GetPos();
                 soul::parser::Match* parentMatch12 = &match;
                 {
-                    soul::parser::Match match = IntermediateCodeParser<LexerT>::FunctionDefinitions(lexer, context);
+                    soul::parser::Match match = IntermediateCodeParser<LexerT>::Functions(lexer, context);
                     if (match.hit)
                     {
                         *parentMatch12 = match;
@@ -2030,7 +2030,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::DataDefinitions(LexerT& lexe
                 }
                 if (match.hit)
                 {
-                    context->ValidateData();
+                    context->GetData().Resolve();
                 }
                 *parentMatch7 = match;
             }
@@ -3735,7 +3735,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::AddressConstant(LexerT& lexe
                                     #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                     if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "AddressConstant");
                                     #endif
-                                    return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSourcePos(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString())));
+                                    return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSourcePos(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()), false));
                                 }
                             }
                             *parentMatch6 = match;
@@ -3940,7 +3940,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ArrayConstant(LexerT& lexer,
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ArrayConstant");
                         #endif
-                        return soul::parser::Match(true, context->MakeArrayValue(sp, elements));
+                        return soul::parser::Match(true, context->MakeArrayValue(sp, elements, std::string()));
                     }
                 }
                 *parentMatch15 = match;
@@ -4189,7 +4189,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::StringConstant(LexerT& lexer
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "StringConstant");
                 #endif
-                return soul::parser::Match(true, context->MakeStringValue(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())));
+                return soul::parser::Match(true, context->MakeStringValue(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()), true));
             }
         }
         *parentMatch0 = match;
@@ -4671,7 +4671,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ClsIdConstant(LexerT& lexer,
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ClsIdConstant");
                         #endif
-                        return soul::parser::Match(true, context->MakeClsIdValue(sp, tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString())));
+                        return soul::parser::Match(true, context->MakeClsIdValue(sp, tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()), true));
                     }
                 }
                 *parentMatch3 = match;
@@ -5263,7 +5263,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::LiteralValue(LexerT& lexer, 
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "LiteralValue");
                         #endif
-                        return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSourcePos(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())));
+                        return soul::parser::Match(true, context->MakeAddressLiteral(lexer.GetSourcePos(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString()), true));
                     }
                 }
                 *parentMatch5 = match;
@@ -5290,7 +5290,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::LiteralValue(LexerT& lexer, 
 }
 
 template<typename LexerT>
-soul::parser::Match IntermediateCodeParser<LexerT>::FunctionDefinitions(LexerT& lexer, cmajor::systemx::intermediate::Context* context)
+soul::parser::Match IntermediateCodeParser<LexerT>::Functions(LexerT& lexer, cmajor::systemx::intermediate::Context* context)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     int64_t parser_debug_match_pos = 0;
@@ -5298,7 +5298,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionDefinitions(LexerT& 
     if (parser_debug_write_to_log)
     {
         parser_debug_match_pos = lexer.GetPos();
-        soul::lexer::WriteBeginRuleToLog(lexer, "FunctionDefinitions");
+        soul::lexer::WriteBeginRuleToLog(lexer, "Functions");
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469480);
@@ -5309,7 +5309,29 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionDefinitions(LexerT& 
         {
             int64_t save = lexer.GetPos();
             {
-                soul::parser::Match match = IntermediateCodeParser<LexerT>::FunctionDefinition(lexer, context);
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch1 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch2 = &match;
+                    {
+                        int64_t save = lexer.GetPos();
+                        soul::parser::Match match = IntermediateCodeParser<LexerT>::FunctionDeclaration(lexer, context);
+                        *parentMatch2 = match;
+                        if (!match.hit)
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch3 = &match;
+                            lexer.SetPos(save);
+                            {
+                                soul::parser::Match match = IntermediateCodeParser<LexerT>::FunctionDefinition(lexer, context);
+                                *parentMatch3 = match;
+                            }
+                            *parentMatch2 = match;
+                        }
+                    }
+                    *parentMatch1 = match;
+                }
                 if (match.hit)
                 {
                     *parentMatch0 = match;
@@ -5325,8 +5347,147 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionDefinitions(LexerT& 
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     if (parser_debug_write_to_log)
     {
-        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "FunctionDefinitions");
-        else soul::lexer::WriteFailureToLog(lexer, "FunctionDefinitions");
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Functions");
+        else soul::lexer::WriteFailureToLog(lexer, "Functions");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateCodeParser<LexerT>::FunctionDeclaration(LexerT& lexer, cmajor::systemx::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "FunctionDeclaration");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469481);
+    soul::ast::SourcePos sp = soul::ast::SourcePos();
+    cmajor::systemx::intermediate::TypeRef functionTypeRef = cmajor::systemx::intermediate::TypeRef();
+    std::string functionId = std::string();
+    std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch4 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch5 = &match;
+                        {
+                            int64_t pos = lexer.GetPos();
+                            soul::parser::Match match(false);
+                            if (*lexer == EXTERN)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
+                            if (match.hit)
+                            {
+                                sp = lexer.GetSourcePos(pos);
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    if (match.hit)
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch6 = &match;
+                        {
+                            soul::parser::Match match(false);
+                            if (*lexer == FUNCTION)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                if (match.hit)
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch7 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch8 = &match;
+                        {
+                            int64_t pos = lexer.GetPos();
+                            soul::parser::Match match = IntermediateCodeParser<LexerT>::TypeRef(lexer);
+                            typeRef.reset(static_cast<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>*>(match.value));
+                            if (match.hit)
+                            {
+                                functionTypeRef = typeRef->value;
+                                context->ResolveType(functionTypeRef);
+                            }
+                            *parentMatch8 = match;
+                        }
+                        *parentMatch7 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch9 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch10 = &match;
+                    {
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == ID)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            functionId = util::ToUtf8(lexer.GetToken(pos).ToString());
+                        }
+                        *parentMatch10 = match;
+                    }
+                    *parentMatch9 = match;
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            context->AddFunctionDeclaration(sp, functionTypeRef.GetType(), functionId);
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "FunctionDeclaration");
+        else soul::lexer::WriteFailureToLog(lexer, "FunctionDeclaration");
     }
     #endif
     if (!match.hit)
@@ -5348,7 +5509,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionDefinition(LexerT& l
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionDefinition");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469481);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469482);
     cmajor::systemx::intermediate::Function* function = nullptr;
     std::unique_ptr<cmajor::systemx::intermediate::Function> header;
     soul::parser::Match match(false);
@@ -5464,11 +5625,12 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionHeader");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469482);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469483);
     cmajor::systemx::intermediate::TypeRef functionTypeRef = cmajor::systemx::intermediate::TypeRef();
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     bool once = bool();
     bool main_ = bool();
+    bool inline_ = bool();
     std::string functionId = std::string();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataRef> mdRef;
@@ -5497,6 +5659,140 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
                                 soul::parser::Match match(false);
                                 soul::parser::Match* parentMatch7 = &match;
                                 {
+                                    soul::parser::Match match(true);
+                                    int64_t save = lexer.GetPos();
+                                    soul::parser::Match* parentMatch8 = &match;
+                                    {
+                                        soul::parser::Match match(false);
+                                        soul::parser::Match* parentMatch9 = &match;
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch10 = &match;
+                                            {
+                                                int64_t pos = lexer.GetPos();
+                                                soul::parser::Match match(false);
+                                                if (*lexer == ONCE)
+                                                {
+                                                    ++lexer;
+                                                    match.hit = true;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    once = true;
+                                                }
+                                                *parentMatch10 = match;
+                                            }
+                                            *parentMatch9 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            *parentMatch8 = match;
+                                        }
+                                        else
+                                        {
+                                            lexer.SetPos(save);
+                                        }
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    soul::parser::Match match(false);
+                                    soul::parser::Match* parentMatch11 = &match;
+                                    {
+                                        soul::parser::Match match(true);
+                                        int64_t save = lexer.GetPos();
+                                        soul::parser::Match* parentMatch12 = &match;
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch13 = &match;
+                                            {
+                                                soul::parser::Match match(false);
+                                                soul::parser::Match* parentMatch14 = &match;
+                                                {
+                                                    int64_t pos = lexer.GetPos();
+                                                    soul::parser::Match match(false);
+                                                    if (*lexer == INLINE)
+                                                    {
+                                                        ++lexer;
+                                                        match.hit = true;
+                                                    }
+                                                    if (match.hit)
+                                                    {
+                                                        inline_ = true;
+                                                    }
+                                                    *parentMatch14 = match;
+                                                }
+                                                *parentMatch13 = match;
+                                            }
+                                            if (match.hit)
+                                            {
+                                                *parentMatch12 = match;
+                                            }
+                                            else
+                                            {
+                                                lexer.SetPos(save);
+                                            }
+                                        }
+                                        *parentMatch11 = match;
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                *parentMatch6 = match;
+                            }
+                            if (match.hit)
+                            {
+                                soul::parser::Match match(false);
+                                soul::parser::Match* parentMatch15 = &match;
+                                {
+                                    soul::parser::Match match(true);
+                                    int64_t save = lexer.GetPos();
+                                    soul::parser::Match* parentMatch16 = &match;
+                                    {
+                                        soul::parser::Match match(false);
+                                        soul::parser::Match* parentMatch17 = &match;
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch18 = &match;
+                                            {
+                                                int64_t pos = lexer.GetPos();
+                                                soul::parser::Match match(false);
+                                                if (*lexer == MAIN)
+                                                {
+                                                    ++lexer;
+                                                    match.hit = true;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    main_ = true;
+                                                }
+                                                *parentMatch18 = match;
+                                            }
+                                            *parentMatch17 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            *parentMatch16 = match;
+                                        }
+                                        else
+                                        {
+                                            lexer.SetPos(save);
+                                        }
+                                    }
+                                    *parentMatch15 = match;
+                                }
+                                *parentMatch6 = match;
+                            }
+                            *parentMatch5 = match;
+                        }
+                        if (match.hit)
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch19 = &match;
+                            {
+                                soul::parser::Match match(false);
+                                soul::parser::Match* parentMatch20 = &match;
+                                {
                                     int64_t pos = lexer.GetPos();
                                     soul::parser::Match match(false);
                                     if (*lexer == FUNCTION)
@@ -5508,74 +5804,9 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
                                     {
                                         sp = lexer.GetSourcePos(pos);
                                     }
-                                    *parentMatch7 = match;
+                                    *parentMatch20 = match;
                                 }
-                                *parentMatch6 = match;
-                            }
-                            if (match.hit)
-                            {
-                                soul::parser::Match match(false);
-                                soul::parser::Match* parentMatch8 = &match;
-                                {
-                                    soul::parser::Match match(false);
-                                    soul::parser::Match* parentMatch9 = &match;
-                                    {
-                                        int64_t pos = lexer.GetPos();
-                                        soul::parser::Match match = IntermediateCodeParser<LexerT>::TypeRef(lexer);
-                                        typeRef.reset(static_cast<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>*>(match.value));
-                                        if (match.hit)
-                                        {
-                                            functionTypeRef = typeRef->value;
-                                            context->ResolveType(functionTypeRef);
-                                        }
-                                        *parentMatch9 = match;
-                                    }
-                                    *parentMatch8 = match;
-                                }
-                                *parentMatch6 = match;
-                            }
-                            *parentMatch5 = match;
-                        }
-                        if (match.hit)
-                        {
-                            soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch10 = &match;
-                            {
-                                soul::parser::Match match(true);
-                                int64_t save = lexer.GetPos();
-                                soul::parser::Match* parentMatch11 = &match;
-                                {
-                                    soul::parser::Match match(false);
-                                    soul::parser::Match* parentMatch12 = &match;
-                                    {
-                                        soul::parser::Match match(false);
-                                        soul::parser::Match* parentMatch13 = &match;
-                                        {
-                                            int64_t pos = lexer.GetPos();
-                                            soul::parser::Match match(false);
-                                            if (*lexer == ONCE)
-                                            {
-                                                ++lexer;
-                                                match.hit = true;
-                                            }
-                                            if (match.hit)
-                                            {
-                                                once = true;
-                                            }
-                                            *parentMatch13 = match;
-                                        }
-                                        *parentMatch12 = match;
-                                    }
-                                    if (match.hit)
-                                    {
-                                        *parentMatch11 = match;
-                                    }
-                                    else
-                                    {
-                                        lexer.SetPos(save);
-                                    }
-                                }
-                                *parentMatch10 = match;
+                                *parentMatch19 = match;
                             }
                             *parentMatch5 = match;
                         }
@@ -5584,43 +5815,22 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
                     if (match.hit)
                     {
                         soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch14 = &match;
+                        soul::parser::Match* parentMatch21 = &match;
                         {
-                            soul::parser::Match match(true);
-                            int64_t save = lexer.GetPos();
-                            soul::parser::Match* parentMatch15 = &match;
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch22 = &match;
                             {
-                                soul::parser::Match match(false);
-                                soul::parser::Match* parentMatch16 = &match;
-                                {
-                                    soul::parser::Match match(false);
-                                    soul::parser::Match* parentMatch17 = &match;
-                                    {
-                                        int64_t pos = lexer.GetPos();
-                                        soul::parser::Match match(false);
-                                        if (*lexer == MAIN)
-                                        {
-                                            ++lexer;
-                                            match.hit = true;
-                                        }
-                                        if (match.hit)
-                                        {
-                                            main_ = true;
-                                        }
-                                        *parentMatch17 = match;
-                                    }
-                                    *parentMatch16 = match;
-                                }
+                                int64_t pos = lexer.GetPos();
+                                soul::parser::Match match = IntermediateCodeParser<LexerT>::TypeRef(lexer);
+                                typeRef.reset(static_cast<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>*>(match.value));
                                 if (match.hit)
                                 {
-                                    *parentMatch15 = match;
+                                    functionTypeRef = typeRef->value;
+                                    context->ResolveType(functionTypeRef);
                                 }
-                                else
-                                {
-                                    lexer.SetPos(save);
-                                }
+                                *parentMatch22 = match;
                             }
-                            *parentMatch14 = match;
+                            *parentMatch21 = match;
                         }
                         *parentMatch4 = match;
                     }
@@ -5629,10 +5839,10 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch18 = &match;
+                    soul::parser::Match* parentMatch23 = &match;
                     {
                         soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch19 = &match;
+                        soul::parser::Match* parentMatch24 = &match;
                         {
                             int64_t pos = lexer.GetPos();
                             soul::parser::Match match(false);
@@ -5645,9 +5855,9 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
                             {
                                 functionId = util::ToUtf8(lexer.GetToken(pos).ToString());
                             }
-                            *parentMatch19 = match;
+                            *parentMatch24 = match;
                         }
-                        *parentMatch18 = match;
+                        *parentMatch23 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -5656,24 +5866,24 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch20 = &match;
+                soul::parser::Match* parentMatch25 = &match;
                 {
                     soul::parser::Match match(true);
                     int64_t save = lexer.GetPos();
-                    soul::parser::Match* parentMatch21 = &match;
+                    soul::parser::Match* parentMatch26 = &match;
                     {
                         soul::parser::Match match = IntermediateCodeParser<LexerT>::MetadataRef(lexer, context);
                         mdRef.reset(static_cast<cmajor::systemx::intermediate::MetadataRef*>(match.value));
                         if (match.hit)
                         {
-                            *parentMatch21 = match;
+                            *parentMatch26 = match;
                         }
                         else
                         {
                             lexer.SetPos(save);
                         }
                     }
-                    *parentMatch20 = match;
+                    *parentMatch25 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -5685,7 +5895,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionHeader(LexerT& lexer
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "FunctionHeader");
                 #endif
-                return soul::parser::Match(true, context->AddFunctionDefinition(sp, functionTypeRef.GetType(), functionId, once, main_, mdRef.release()));
+                return soul::parser::Match(true, context->AddFunctionDefinition(sp, functionTypeRef.GetType(), functionId, once, main_, inline_, mdRef.release()));
             }
         }
         *parentMatch0 = match;
@@ -5716,7 +5926,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::BasicBlock(LexerT& lexer, cm
         soul::lexer::WriteBeginRuleToLog(lexer, "BasicBlock");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469483);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469484);
     cmajor::systemx::intermediate::BasicBlock* basicBlock = nullptr;
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<soul::parser::Value<int32_t>> id;
@@ -5774,7 +5984,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::Label(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "Label");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469484);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469485);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -5842,7 +6052,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::Operand(LexerT& lexer, cmajo
         soul::lexer::WriteBeginRuleToLog(lexer, "Operand");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469485);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469486);
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
     std::unique_ptr<cmajor::systemx::intermediate::Value> value;
@@ -5916,7 +6126,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::Instructions(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "Instructions");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469486);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469487);
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> instruction;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataRef> mdRef;
     soul::parser::Match match(false);
@@ -6072,7 +6282,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::Instruction(LexerT& lexer, c
         soul::lexer::WriteBeginRuleToLog(lexer, "Instruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469487);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469488);
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> store;
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> arg;
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> jmp;
@@ -6350,7 +6560,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::StoreInstruction(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "StoreInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469488);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469489);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     cmajor::systemx::intermediate::TypeRef ptref = cmajor::systemx::intermediate::TypeRef();
@@ -6521,7 +6731,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ArgInstruction(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "ArgInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469489);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469490);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -6626,7 +6836,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::JmpInstruction(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "JmpInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469490);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469491);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<soul::parser::Value<int32_t>> target;
     soul::parser::Match match(false);
@@ -6702,7 +6912,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::BranchInstruction(LexerT& le
         soul::lexer::WriteBeginRuleToLog(lexer, "BranchInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469491);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469492);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -6881,7 +7091,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ProcedureCallInstruction(Lex
         soul::lexer::WriteBeginRuleToLog(lexer, "ProcedureCallInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469492);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469493);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -6986,7 +7196,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::RetInstruction(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "RetInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469493);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469494);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -7191,7 +7401,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::SwitchInstruction(LexerT& le
         soul::lexer::WriteBeginRuleToLog(lexer, "SwitchInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469494);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469495);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     cmajor::systemx::intermediate::TypeRef caseTref = cmajor::systemx::intermediate::TypeRef();
@@ -7625,7 +7835,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ValueInstruction(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "ValueInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469495);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469496);
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     cmajor::systemx::intermediate::RegValue* rslt = nullptr;
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -7747,7 +7957,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::Operation(LexerT& lexer, cma
         soul::lexer::WriteBeginRuleToLog(lexer, "Operation");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469496);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469497);
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> unaryInst;
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> binaryInst;
     std::unique_ptr<cmajor::systemx::intermediate::Instruction> paramInst;
@@ -8059,7 +8269,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::UnaryInstruction(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "UnaryInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469497);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469498);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> notOp;
     std::unique_ptr<cmajor::systemx::intermediate::Value> negOp;
@@ -8652,7 +8862,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::BinaryInstruction(LexerT& le
         soul::lexer::WriteBeginRuleToLog(lexer, "BinaryInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469498);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469499);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> leftAdd;
     std::unique_ptr<cmajor::systemx::intermediate::Value> rightAdd;
@@ -9861,7 +10071,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ParamInstruction(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "ParamInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469499);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469500);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -9911,7 +10121,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::LocalInstruction(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "LocalInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469500);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469501);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -9990,7 +10200,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::LoadInstruction(LexerT& lexe
         soul::lexer::WriteBeginRuleToLog(lexer, "LoadInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469501);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469502);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> ptr;
     soul::parser::Match match(false);
@@ -10066,7 +10276,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::ElemAddrInstruction(LexerT& 
         soul::lexer::WriteBeginRuleToLog(lexer, "ElemAddrInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469502);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469503);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> ptr;
     std::unique_ptr<cmajor::systemx::intermediate::Value> index;
@@ -10179,7 +10389,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::PtrOffsetInstruction(LexerT&
         soul::lexer::WriteBeginRuleToLog(lexer, "PtrOffsetInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469503);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469504);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> ptr;
     std::unique_ptr<cmajor::systemx::intermediate::Value> offset;
@@ -10292,7 +10502,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::PtrDiffInstruction(LexerT& l
         soul::lexer::WriteBeginRuleToLog(lexer, "PtrDiffInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469504);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469505);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> leftPtr;
     std::unique_ptr<cmajor::systemx::intermediate::Value> rightPtr;
@@ -10405,7 +10615,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::FunctionCallInstruction(Lexe
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionCallInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469505);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469506);
     cmajor::systemx::intermediate::TypeRef tref = cmajor::systemx::intermediate::TypeRef();
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<soul::parser::Value<cmajor::systemx::intermediate::TypeRef>> typeRef;
@@ -10510,7 +10720,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::TrapInstruction(LexerT& lexe
         soul::lexer::WriteBeginRuleToLog(lexer, "TrapInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469506);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469507);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     std::unique_ptr<cmajor::systemx::intermediate::Value> op1;
     std::unique_ptr<cmajor::systemx::intermediate::Value> op2;
@@ -10660,7 +10870,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::NoOperationInstruction(Lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "NoOperationInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469507);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469508);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -10710,7 +10920,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::Metadata(LexerT& lexer, cmaj
         soul::lexer::WriteBeginRuleToLog(lexer, "Metadata");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469508);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469509);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -10827,7 +11037,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataStruct(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataStruct");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469509);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469510);
     cmajor::systemx::intermediate::MetadataStruct* value = nullptr;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -11043,7 +11253,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataField(LexerT& lexer,
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataField");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469510);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469511);
     std::string fieldName = std::string();
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> item;
     soul::parser::Match match(false);
@@ -11134,7 +11344,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataItem(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataItem");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469511);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469512);
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdBool;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdLong;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> mdString;
@@ -11297,7 +11507,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataBool(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataBool");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469512);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469513);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)
@@ -11387,7 +11597,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataLong(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataLong");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469513);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469514);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -11435,7 +11645,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataString(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataString");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469514);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469515);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -11452,7 +11662,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataString(LexerT& lexer
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataString");
                 #endif
-                return soul::parser::Match(true, context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString())));
+                return soul::parser::Match(true, context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString()), true));
             }
         }
         *parentMatch0 = match;
@@ -11483,7 +11693,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataArray(LexerT& lexer,
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataArray");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469515);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469516);
     cmajor::systemx::intermediate::MetadataArray* array = nullptr;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> first;
     std::unique_ptr<cmajor::systemx::intermediate::MetadataItem> next;
@@ -11678,7 +11888,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::MetadataRef(LexerT& lexer, c
         soul::lexer::WriteBeginRuleToLog(lexer, "MetadataRef");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469516);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469517);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {

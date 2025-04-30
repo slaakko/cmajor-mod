@@ -1721,7 +1721,15 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index, Contex
     for (int i = 0; i < n; ++i)
     {
         FunctionSymbol* memFun = imt[i];
-        void* interfaceFun = emitter.GetOrInsertFunction(util::ToUtf8(memFun->MangledName()), memFun->IrType(emitter, context), memFun->DontThrow());
+        void* interfaceFun = nullptr;
+        if (GetBackEnd() == BackEnd::systemx)
+        {
+            interfaceFun = emitter.MakeSymbolValue(memFun->IrType(emitter, context), util::ToUtf8(memFun->MangledName()));
+        }
+        else
+        {
+            interfaceFun = emitter.GetOrInsertFunction(util::ToUtf8(memFun->MangledName()), memFun->IrType(emitter, context), memFun->DontThrow());
+        }
         if (GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::sbin)
         {
             irImt.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), interfaceFun));
@@ -1883,8 +1891,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create, Cont
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter, context), 
-                        virtualFunction->DontThrow());
+                    void* functionObject = emitter.MakeSymbolValue(virtualFunction->IrType(emitter, context), util::ToUtf8(virtualFunction->MangledName()));
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
             }

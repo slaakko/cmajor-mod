@@ -23,7 +23,7 @@ parser IntermediateCodeParser
             CompileUnitHeader(context):header
             TypeDeclarations(context):types?
             DataDefinitions(context):data?
-            FunctionDefinitions(context):functions?
+            Functions(context):functions?
             Metadata(context):metadata?
         ;
 
@@ -128,7 +128,10 @@ parser IntermediateCodeParser
         ;
 
     DataDefinitions(cmajor::systemx::intermediate::Context* context) 
-        ::= DATA LBRACE DataDefinition(context):dataDefinition* RBRACE{ context->ValidateData(); }
+        ::= DATA LBRACE DataDefinition(context):dataDefinition* RBRACE
+        { 
+            context->GetData().Resolve(); 
+        }
         ;
 
     DataDefinition(cmajor::systemx::intermediate::Context* context, 
@@ -217,7 +220,7 @@ parser IntermediateCodeParser
             }
         |   ID
             { 
-                return context->MakeAddressLiteral(lexer.GetSourcePos(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString())); 
+                return context->MakeAddressLiteral(lexer.GetSourcePos(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()), false); 
             }
         )
         ;
@@ -229,7 +232,7 @@ parser IntermediateCodeParser
             (COMMA Constant(context):next{ elements.push_back(next); })*)? 
             RBRACKET
         {
-            return context->MakeArrayValue(sp, elements);
+            return context->MakeArrayValue(sp, elements, std::string());
         }
         ;
 
@@ -245,7 +248,7 @@ parser IntermediateCodeParser
         ;
 
     StringConstant(cmajor::systemx::intermediate::Context* context, var soul::ast::SourcePos sp) : cmajor::systemx::intermediate::ConstantValue*
-        ::= STRING{ return context->MakeStringValue(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ::= STRING{ return context->MakeStringValue(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()), true); }
         ;
 
     StringArrayConstant(cmajor::systemx::intermediate::Context* context, 
@@ -274,7 +277,7 @@ parser IntermediateCodeParser
     ClsIdConstant(cmajor::systemx::intermediate::Context* context, var cmajor::systemx::intermediate::TypeRef tref, var soul::ast::SourcePos sp) : cmajor::systemx::intermediate::ConstantValue*
         ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); sp = lexer.GetSourcePos(pos); } CLSID 
         {
-            return context->MakeClsIdValue(sp, tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()));
+            return context->MakeClsIdValue(sp, tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()), true);
         }
         ;
 
@@ -308,11 +311,28 @@ parser IntermediateCodeParser
         |   FALSE{ return context->GetBooleanLiteral(lexer.GetSourcePos(pos), type, false); }
         |   NULL_TOKEN{ return context->GetNullValue(lexer.GetSourcePos(pos), type); }
         |   NUMBER{ return context->MakeNumericLiteral(lexer.GetSourcePos(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
-        |   ID{ return context->MakeAddressLiteral(lexer.GetSourcePos(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   ID{ return context->MakeAddressLiteral(lexer.GetSourcePos(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString()), true); }
         ;
 
-    FunctionDefinitions(cmajor::systemx::intermediate::Context* context)
-        ::= FunctionDefinition(context):function*
+    Functions(cmajor::systemx::intermediate::Context* context)
+        ::= 
+        (   FunctionDeclaration(context):declaration
+        |   FunctionDefinition(context):definition
+        )*
+        ;
+
+    FunctionDeclaration(cmajor::systemx::intermediate::Context* context, var soul::ast::SourcePos sp, 
+        var cmajor::systemx::intermediate::TypeRef functionTypeRef, var std::string functionId)
+        ::= 
+        (
+            EXTERN{ sp = lexer.GetSourcePos(pos); }
+            FUNCTION
+            TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
+            ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+        )
+        {
+            context->AddFunctionDeclaration(sp, functionTypeRef.GetType(), functionId);
+        }
         ;
 
     FunctionDefinition(cmajor::systemx::intermediate::Context* context, var cmajor::systemx::intermediate::Function* function)
@@ -320,19 +340,20 @@ parser IntermediateCodeParser
         ;
 
     FunctionHeader(cmajor::systemx::intermediate::Context* context, 
-        var cmajor::systemx::intermediate::TypeRef functionTypeRef, var soul::ast::SourcePos sp, var bool once, var bool main_, var std::string functionId) : 
+        var cmajor::systemx::intermediate::TypeRef functionTypeRef, var soul::ast::SourcePos sp, var bool once, var bool main_, var bool inline_, var std::string functionId) : 
             cmajor::systemx::intermediate::Function*
         ::= 
         (   
+            (ONCE{ once = true; })? 
+            (INLINE{ inline_ = true; })? 
+            (MAIN{ main_ = true; })?
             FUNCTION{ sp = lexer.GetSourcePos(pos); } 
             TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
-            (ONCE{ once = true; })? 
-            (MAIN{ main_ = true; })?
             ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
             MetadataRef(context):mdRef?
         )
         {
-            return context->AddFunctionDefinition(sp, functionTypeRef.GetType(), functionId, once, main_, mdRef);
+            return context->AddFunctionDefinition(sp, functionTypeRef.GetType(), functionId, once, main_, inline_, mdRef);
         }
         ;
 
@@ -691,7 +712,7 @@ parser IntermediateCodeParser
         ;
 
     MetadataString(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::MetadataItem*
-        ::= STRING{ return context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ::= STRING{ return context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString()), true); }
         ;
 
     MetadataArray(cmajor::systemx::intermediate::Context* context, var cmajor::systemx::intermediate::MetadataArray* array) : cmajor::systemx::intermediate::MetadataItem*

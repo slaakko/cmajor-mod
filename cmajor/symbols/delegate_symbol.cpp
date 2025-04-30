@@ -769,7 +769,14 @@ void FunctionToDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, st
     Context* context)
 {
     emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.GetOrInsertFunction(util::ToUtf8(function->MangledName()), function->IrType(emitter, context), function->DontThrow()));
+    if (GetBackEnd() == BackEnd::systemx)
+    {
+        emitter.Stack().Push(emitter.MakeSymbolValue(function->IrType(emitter, context), util::ToUtf8(function->MangledName())));
+    }
+    else
+    {
+        emitter.Stack().Push(emitter.GetOrInsertFunction(util::ToUtf8(function->MangledName()), function->IrType(emitter, context), function->DontThrow()));
+    }
 }
 
 void FunctionToDelegateConversion::Check()
@@ -1636,7 +1643,15 @@ void MemberFunctionToClassDelegateConversion::GenerateCall(cmajor::ir::Emitter& 
         throw Exception("cannot construct class delegate because expression has no this pointer", GetFullSpan());
     }
     void* objectValueAsVoidPtr = emitter.CreateBitCast(objectValue, emitter.GetIrTypeForVoidPtrType());
-    void* memFunPtrValue = emitter.GetOrInsertFunction(util::ToUtf8(function->MangledName()), function->IrType(emitter, context), function->DontThrow());
+    void* memFunPtrValue = nullptr;
+    if (GetBackEnd() == BackEnd::systemx)
+    {
+        memFunPtrValue = emitter.MakeSymbolValue(function->IrType(emitter, context), util::ToUtf8(function->MangledName()));
+    }
+    else
+    {
+        memFunPtrValue = emitter.GetOrInsertFunction(util::ToUtf8(function->MangledName()), function->IrType(emitter, context), function->DontThrow());
+    }
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* ptr = emitter.Stack().Pop();
     void* objectPtr = emitter.GetObjectFromClassDelegate(targetType->IrType(emitter, context), ptr);

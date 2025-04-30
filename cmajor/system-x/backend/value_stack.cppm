@@ -8,7 +8,7 @@ module;
 
 export module cmajor.systemx.backend.value.stack;
 
-import cmajor.systemx.ir;
+import cmajor.systemx.intermediate;
 import cmajor.ir.value.stack;
 import std.core;
 
@@ -19,13 +19,13 @@ class ValueStack : public cmajor::ir::ValueStack
 public:
     void Push(void* val) override
     {
-        cmajor::systemx::ir::Value* value = static_cast<cmajor::systemx::ir::Value*>(val);
+        cmajor::systemx::intermediate::Value* value = static_cast<cmajor::systemx::intermediate::Value*>(val);
         s.push_back(value);
     }
     void* Pop() override
     {
         Assert(!s.empty(), "value stack is empty");
-        cmajor::systemx::ir::Value* top = s.back();
+        cmajor::systemx::intermediate::Value* top = s.back();
         s.pop_back();
         return top;
     }
@@ -43,7 +43,7 @@ public:
         std::swap(s.back(), s[s.size() - 2]);
     }
 private:
-    std::vector<cmajor::systemx::ir::Value*> s;
+    std::vector<cmajor::systemx::intermediate::Value*> s;
 };
 
 } // namespace cmajor::systemx::backend

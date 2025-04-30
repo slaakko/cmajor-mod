@@ -5,8 +5,11 @@
 
 export module cmajor.systemx.intermediate.code;
 
+import cmajor.systemx.intermediate.types;
+import cmajor.systemx.intermediate.value;
 import cmajor.systemx.intermediate.data;
 import cmajor.systemx.intermediate.metadata;
+import soul.ast.span;
 import soul.xml.dom;
 import util;
 import std.core;
@@ -25,8 +28,10 @@ class RegValue : public Value
 public:
     RegValue(const soul::ast::SourcePos& sourcePos_, Type* type_, int32_t reg_);
     int32_t Reg() const { return reg; }
+    void SetReg(int32_t reg_) { reg = reg_; }
     void SetInst(Instruction* inst_) { inst = inst_; }
     Instruction* Inst() const { return inst; }
+    std::string ToString() const override;
 private:
     int32_t reg;
     Instruction* inst;
@@ -80,6 +85,7 @@ public:
     void SetIndex(int index_) { index = index_; }
     int RegValueIndex() const { return regValueIndex; }
     void SetRegValueIndex(int regValueIndex_) { regValueIndex = regValueIndex_; }
+    virtual void Write(util::CodeFormatter& formatter) = 0;
 private:
     OpCode opCode;
     MetadataRef* metadataRef;
@@ -98,6 +104,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* value;
     Value* ptr;
@@ -114,6 +121,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* arg;
     int argIndex;
@@ -127,6 +135,7 @@ public:
     int32_t TargetLabelId() const { return targetLabelId; }
     BasicBlock* TargetBasicBlock() const { return targetBasicBlock; }
     void SetTargetBasicBlock(BasicBlock* targetBasicBlock_) { targetBasicBlock = targetBasicBlock_; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     int32_t targetLabelId;
     BasicBlock* targetBasicBlock;
@@ -147,6 +156,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* cond;
     int32_t trueTargetLabelId;
@@ -166,6 +176,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -180,6 +191,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* returnValue;
 };
@@ -200,6 +212,7 @@ public:
     Value* Cond() const { return cond; }
     int32_t DefaultTargetLabelId() const { return defaultTargetLabelId; }
     void AddCaseTarget(const CaseTarget& caseTarget);
+    void AddCase(Value* caseValue, BasicBlock* caseDest);
     const std::vector<CaseTarget>& CaseTargets() const { return caseTargets; }
     std::vector<CaseTarget>& CaseTargets() { return caseTargets; }
     BasicBlock* DefaultTargetBlock() const { return defaultTargetBlock; }
@@ -207,6 +220,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* cond;
     int32_t defaultTargetLabelId;
@@ -220,6 +234,8 @@ public:
     ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_);
     ~ValueInstruction();
     RegValue* Result() const { return result; }
+    void WriteResult(util::CodeFormatter& formatter);
+    std::string ToString() const override;
 private:
     RegValue* result;
 };
@@ -233,6 +249,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void WriteArg(util::CodeFormatter& formatter);
 private:
     Value* operand;
 };
@@ -242,6 +259,7 @@ class NotInstruction : public UnaryInstruction
 public:
     NotInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class NegInstruction : public UnaryInstruction
@@ -249,6 +267,7 @@ class NegInstruction : public UnaryInstruction
 public:
     NegInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class SignExtendInstruction : public UnaryInstruction
@@ -256,6 +275,7 @@ class SignExtendInstruction : public UnaryInstruction
 public:
     SignExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class ZeroExtendInstruction : public UnaryInstruction
@@ -263,6 +283,7 @@ class ZeroExtendInstruction : public UnaryInstruction
 public:
     ZeroExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class TruncateInstruction : public UnaryInstruction
@@ -270,6 +291,7 @@ class TruncateInstruction : public UnaryInstruction
 public:
     TruncateInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class BitcastInstruction : public UnaryInstruction
@@ -277,6 +299,7 @@ class BitcastInstruction : public UnaryInstruction
 public:
     BitcastInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class IntToFloatInstruction : public UnaryInstruction
@@ -284,6 +307,7 @@ class IntToFloatInstruction : public UnaryInstruction
 public:
     IntToFloatInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class FloatToIntInstruction : public UnaryInstruction
@@ -291,6 +315,7 @@ class FloatToIntInstruction : public UnaryInstruction
 public:
     FloatToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class IntToPtrInstruction : public UnaryInstruction
@@ -298,6 +323,7 @@ class IntToPtrInstruction : public UnaryInstruction
 public:
     IntToPtrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class PtrToIntInstruction : public UnaryInstruction
@@ -305,6 +331,7 @@ class PtrToIntInstruction : public UnaryInstruction
 public:
     PtrToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class BinaryInstruction : public ValueInstruction
@@ -316,6 +343,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void WriteArgs(util::CodeFormatter& formatter);
 private:
     Value* left;
     Value* right;
@@ -326,6 +354,7 @@ class AddInstruction : public BinaryInstruction
 public:
     AddInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class SubInstruction : public BinaryInstruction
@@ -333,6 +362,7 @@ class SubInstruction : public BinaryInstruction
 public:
     SubInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class MulInstruction : public BinaryInstruction
@@ -340,6 +370,7 @@ class MulInstruction : public BinaryInstruction
 public:
     MulInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class DivInstruction : public BinaryInstruction
@@ -347,6 +378,7 @@ class DivInstruction : public BinaryInstruction
 public:
     DivInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class ModInstruction : public BinaryInstruction
@@ -354,6 +386,7 @@ class ModInstruction : public BinaryInstruction
 public:
     ModInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class AndInstruction : public BinaryInstruction
@@ -361,6 +394,7 @@ class AndInstruction : public BinaryInstruction
 public:
     AndInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class OrInstruction : public BinaryInstruction
@@ -368,6 +402,7 @@ class OrInstruction : public BinaryInstruction
 public:
     OrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class XorInstruction : public BinaryInstruction
@@ -375,6 +410,7 @@ class XorInstruction : public BinaryInstruction
 public:
     XorInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class ShlInstruction : public BinaryInstruction
@@ -382,6 +418,7 @@ class ShlInstruction : public BinaryInstruction
 public:
     ShlInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class ShrInstruction : public BinaryInstruction
@@ -389,6 +426,7 @@ class ShrInstruction : public BinaryInstruction
 public:
     ShrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class EqualInstruction : public BinaryInstruction
@@ -396,6 +434,7 @@ class EqualInstruction : public BinaryInstruction
 public:
     EqualInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class LessInstruction : public BinaryInstruction
@@ -403,6 +442,7 @@ class LessInstruction : public BinaryInstruction
 public:
     LessInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 class ParamInstruction : public ValueInstruction
@@ -412,6 +452,7 @@ public:
     void Accept(Visitor& visitor) override;
     int ParamIndex() const { return paramIndex; }
     void SetParamIndex(int paramIndex_) { paramIndex = paramIndex_; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     int paramIndex;
 };
@@ -422,6 +463,7 @@ public:
     LocalInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Type* localType_);
     void Accept(Visitor& visitor) override;
     Type* LocalType() const { return localType; }
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Type* localType;
 };
@@ -435,6 +477,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* ptr;
 };
@@ -455,6 +498,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* ptr;
     Value* indexValue;
@@ -470,6 +514,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* ptr;
     Value* offset;
@@ -485,6 +530,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* leftPtr;
     Value* rightPtr;
@@ -501,6 +547,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -519,6 +566,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     std::vector<Instruction*> Uses() const override;
+    void Write(util::CodeFormatter& formatter) override;
 private:
     Value* op1;
     Value* op2;
@@ -531,6 +579,7 @@ class NoOperationInstruction : public Instruction
 public:
     NoOperationInstruction(const soul::ast::SourcePos& sourcePos_);
     void Accept(Visitor& visitor) override;
+    void Write(util::CodeFormatter& formatter) override;
 };
 
 const int32_t entryBlockId = -1;
@@ -545,11 +594,13 @@ public:
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     std::string Name() const;
     int32_t Id() const { return id; }
+    void SetId(int32_t id_) { id = id_; }
     Function* Parent() const;
     BasicBlock* Next() { return static_cast<BasicBlock*>(NextSibling()); }
     BasicBlock* Prev() { return static_cast<BasicBlock*>(PrevSibling()); }
     Instruction* FirstInstruction() { return static_cast<Instruction*>(instructions.FirstChild()); }
     Instruction* LastInstruction() { return static_cast<Instruction*>(instructions.LastChild()); }
+    void AddInstruction(Instruction* instruction);
     void AddInstruction(Instruction* instruction, MetadataRef* metadataRef);
     void InsertFront(Instruction* instruction);
     bool IsEmpty() const { return instructions.IsEmpty(); }
@@ -563,6 +614,7 @@ public:
     bool RemovePredecessor(BasicBlock* predecessor);
     void ClearSuccessorsAndPredecessors();
     int IndexOf(Instruction* x);
+    void Write(util::CodeFormatter& formatter);
 private:
     soul::ast::SourcePos sourcePos;
     int32_t id;
@@ -573,7 +625,7 @@ private:
 
 enum class FunctionFlags : int
 {
-    none = 0, defined = 1 << 0, once = 1 << 1, main = 1 << 2
+    none = 0, defined = 1 << 0, once = 1 << 1, main = 1 << 2, inline_ = 1 << 3,
 };
 
 inline FunctionFlags operator|(FunctionFlags left, FunctionFlags right)
@@ -591,13 +643,15 @@ inline FunctionFlags operator~(FunctionFlags flags)
     return FunctionFlags(~static_cast<int>(flags));
 }
 
-class Function : public util::Component
+class Function : public Value, public util::Component
 {
 public:
-    Function(const soul::ast::SourcePos& sourcePos_, FunctionType* functionType_, const std::string& name_, bool once_, bool main_, bool definition_, 
-        MetadataRef* metadataRef_);
+    Function(const soul::ast::SourcePos& sourcePos_, Type* type_, const std::string& name_, bool once_, bool main_, bool inline_, bool definition_, 
+        MetadataRef* metadataRef_, bool parsing, Context* context);
     Function(const Function&) = delete;
     Function& operator=(const Function&) = delete;
+    Instruction* GetParam(int index) const;
+    std::string ToString() const override { return Name(); }
     bool GetFlag(FunctionFlags flag) const { return (flags & flag) != FunctionFlags::none; }
     void SetFlag(FunctionFlags flag) { flags = flags | flag; }
     void ResetFlag(FunctionFlags flag) { flags = flags & ~flag; }
@@ -605,27 +659,34 @@ public:
     bool IsExternal() const { return !IsDefined(); }
     void SetDefined() { SetFlag(FunctionFlags::defined); }
     bool Once() const { return GetFlag(FunctionFlags::once); }
+    void SetOnce() { SetFlag(FunctionFlags::once); }
+    bool IsInline() const { return GetFlag(FunctionFlags::inline_); }
+    void SetInline() { SetFlag(FunctionFlags::inline_); }
     bool IsMain() const { return GetFlag(FunctionFlags::main); }
     void SetMain() { SetFlag(FunctionFlags::main); }
-    int Arity() const { return type->Arity(); }
+    int Arity() const { return functionType->Arity(); }
     void Accept(Visitor& visitor);
     void VisitBasicBlocks(Visitor& visitor);
     Code* Parent() const;
     Function* Next() { return static_cast<Function*>(NextSibling()); }
     Function* Prev() { return static_cast<Function*>(PrevSibling()); }
     bool IsEmpty() const { return basicBlocks.IsEmpty(); }
+    BasicBlock* CreateBasicBlock();
+    BasicBlock* CreateCleanupBasicBlock();
     BasicBlock* GetBasicBlock(int32_t id) const;
     BasicBlock* AddBasicBlock(const soul::ast::SourcePos& sourcePos, int32_t id, Context* context);
     bool RemoveBasicBlock(BasicBlock* block);
     BasicBlock* FirstBasicBlock() { return static_cast<BasicBlock*>(basicBlocks.FirstChild()); }
     BasicBlock* LastBasicBlock() { return static_cast<BasicBlock*>(basicBlocks.LastChild()); }
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
-    FunctionType* GetType() const { return type; }
+    FunctionType* GetFunctionType() const { return functionType; }
     const std::string& Name() const { return name; }
     MetadataRef* GetMetadataRef() const { return metadataRef; }
+    void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
     RegValue* GetRegValue(int32_t reg) const;
     RegValue* GetRegRef(const soul::ast::SourcePos& sourcePos, Type* type, int32_t reg, Context* context) const;
     RegValue* MakeRegValue(const soul::ast::SourcePos& sourcePos, Type* type, int32_t reg, Context* context);
+    RegValue* MakeRegValue(Type* type);
     Instruction* GetInstruction(int32_t reg) const;
     void MapInstruction(int32_t reg, Instruction* inst, Context* context);
     int NumBasicBlocks() const;
@@ -633,26 +694,42 @@ public:
     void AddRetBlock(BasicBlock* retBlock);
     void AddEntryAndExitBlocks();
     void RemoveEntryAndExitBlocks();
+    void SetNumbers();
     soul::xml::Element* ToXml();
     void WriteXmlDocument(const std::string& filePath);
     void SetNextRegNumber(int32_t nextRegNumber_) { nextRegNumber = nextRegNumber_; }
     int32_t NextRegNumber() const { return nextRegNumber; }
     bool IndexSeen(int32_t index) const;
     void AddIndex(int32_t index);
+    void MapRegValue(RegValue* regValue);
+    void MapLineColLen(const soul::ast::LineColLen& lineColLen);
+    int32_t GetLineColLenIndex(const soul::ast::LineColLen& lineColLen) const;
+    void SetComment(const std::string& comment_) { comment = comment_; }
+    const std::string& Comment() const { return comment; }
+    std::string ResolveFullName() const;
+    void Finalize();
+    void Write(util::CodeFormatter& formatter);
 private:
     FunctionFlags flags;
     soul::ast::SourcePos sourcePos;
-    FunctionType* type;
+    FunctionType* functionType;
+    std::vector<Instruction*> params;
     std::string name;
     MetadataRef* metadataRef;
+    std::string comment;
+    std::unique_ptr<BasicBlock> entryBlock;
     util::Container basicBlocks;
+    std::vector<std::unique_ptr<BasicBlock>> cleanupBasicBlocks;
     std::map<int32_t, BasicBlock*> basicBlockMap;
     std::map<int32_t, RegValue*> regValueMap;
     std::map<int32_t, Instruction*> instructionMap;
     std::vector<std::unique_ptr<RegValue>> regValues;
     std::vector<BasicBlock*> retBlocks;
     int32_t nextRegNumber;
+    int32_t nextBBNumber;
+    int32_t nextIndex;
     std::set<int32_t> indexSet;
+    std::map<soul::ast::LineColLen, int32_t> lineColLenIndexMap;
 };
 
 class Code : public util::Component
@@ -666,9 +743,10 @@ public:
     Function* CurrentFunction() const { return currentFunction; }
     void SetCurrentFunction(Function* function);
     Function* GetFunction(const std::string& functionId) const;
-    Function* AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId, bool once, bool main, 
+    Function* AddFunctionDefinition(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId, bool once, bool main, bool inline_, 
         MetadataRef* metadataRef, Context* context);
-    Function* AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, FunctionType* functionType, const std::string& functionId);
+    Function* AddFunctionDeclaration(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& functionId);
+    Function* GetOrInsertFunction(const std::string& name, Type* type);
     Function* FirstFunction() { return static_cast<Function*>(functions.FirstChild()); }
     Function* LastFunction() { return static_cast<Function*>(functions.LastChild()); }
     void VisitFunctions(Visitor& visitor);

@@ -1,8 +1,8 @@
 <parserFile>
  <grammar name="IntermediateCodeParser">
-  <rule first="{#, CU, DATA, FUNCTION, METADATA, TYPES}" name="IntermediateCodeFile">
-   <sequence first="{#, CU, DATA, FUNCTION, METADATA, TYPES}">
-    <sequence first="{#, CU, DATA, FUNCTION, TYPES}">
+  <rule first="{#, AT, BOOL, BYTE, CU, DATA, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, METADATA, ONCE, RBRACE, SBYTE, SHORT, TYPEID, TYPES, UINT, ULONG, USHORT, VOID}" name="IntermediateCodeFile">
+   <sequence first="{#, AT, BOOL, BYTE, CU, DATA, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, METADATA, ONCE, RBRACE, SBYTE, SHORT, TYPEID, TYPES, UINT, ULONG, USHORT, VOID}">
+    <sequence first="{#, AT, BOOL, BYTE, CU, DATA, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, TYPES, UINT, ULONG, USHORT, VOID}">
      <sequence first="{#, CU, DATA, TYPES}">
       <sequence first="{#, CU, TYPES}">
        <sequence first="{#, CU}">
@@ -19,8 +19,8 @@
        <nonterminal first="{DATA}" ruleName="DataDefinitions"/>
       </optional>
      </sequence>
-     <optional first="{#, FUNCTION}">
-      <nonterminal first="{#, FUNCTION}" ruleName="FunctionDefinitions"/>
+     <optional first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+      <nonterminal first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="Functions"/>
      </optional>
     </sequence>
     <optional first="{#, METADATA}">
@@ -761,17 +761,44 @@
     </action>
    </choice>
   </rule>
-  <rule first="{#, FUNCTION}" name="FunctionDefinitions">
-   <kleene first="{#, FUNCTION}">
-    <nonterminal first="{FUNCTION}" ruleName="FunctionDefinition"/>
+  <rule first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" name="Functions">
+   <kleene first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+    <group first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+     <choice first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, EXTERN, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+      <nonterminal first="{EXTERN}" ruleName="FunctionDeclaration"/>
+      <nonterminal first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="FunctionDefinition"/>
+     </choice>
+    </group>
    </kleene>
   </rule>
-  <rule first="{FUNCTION}" name="FunctionDefinition">
-   <sequence first="{FUNCTION}">
-    <sequence first="{FUNCTION}">
-     <sequence first="{FUNCTION}">
-      <action first="{FUNCTION}">
-       <nonterminal first="{FUNCTION}" ruleName="FunctionHeader"/>
+  <rule first="{EXTERN}" name="FunctionDeclaration">
+   <action first="{EXTERN}">
+    <group first="{EXTERN}">
+     <sequence first="{EXTERN}">
+      <sequence first="{EXTERN}">
+       <sequence first="{EXTERN}">
+        <action first="{EXTERN}">
+         <token first="{EXTERN}" name="EXTERN"/>
+        </action>
+        <token first="{FUNCTION}" name="FUNCTION"/>
+       </sequence>
+       <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+        <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
+       </action>
+      </sequence>
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" name="FunctionDefinition">
+   <sequence first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, RBRACE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+    <sequence first="{#, AT, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+     <sequence first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LBRACE, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+      <action first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+       <nonterminal first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="FunctionHeader"/>
       </action>
       <token first="{LBRACE}" name="LBRACE"/>
      </sequence>
@@ -782,36 +809,45 @@
     <token first="{RBRACE}" name="RBRACE"/>
    </sequence>
   </rule>
-  <rule first="{FUNCTION}" name="FunctionHeader">
-   <action first="{FUNCTION}">
-    <group first="{FUNCTION}">
-     <sequence first="{FUNCTION}">
-      <sequence first="{FUNCTION}">
-       <sequence first="{FUNCTION}">
-        <sequence first="{FUNCTION}">
-         <sequence first="{FUNCTION}">
-          <action first="{FUNCTION}">
-           <token first="{FUNCTION}" name="FUNCTION"/>
-          </action>
-          <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
-           <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
-          </action>
+  <rule first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" name="FunctionHeader">
+   <action first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+    <group first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+     <sequence first="{#, BOOL, BYTE, DOUBLE, EXCLAMATION, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+      <sequence first="{#, BOOL, BYTE, DOUBLE, FLOAT, FUNCTION, ID, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+       <sequence first="{#, BOOL, BYTE, DOUBLE, FLOAT, FUNCTION, INLINE, INT, LONG, MAIN, ONCE, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+        <sequence first="{#, FUNCTION, INLINE, MAIN, ONCE}">
+         <sequence first="{#, INLINE, MAIN, ONCE}">
+          <sequence first="{#, INLINE, ONCE}">
+           <optional first="{#, ONCE}">
+            <group first="{ONCE}">
+             <action first="{ONCE}">
+              <token first="{ONCE}" name="ONCE"/>
+             </action>
+            </group>
+           </optional>
+           <optional first="{#, INLINE}">
+            <group first="{INLINE}">
+             <action first="{INLINE}">
+              <token first="{INLINE}" name="INLINE"/>
+             </action>
+            </group>
+           </optional>
+          </sequence>
+          <optional first="{#, MAIN}">
+           <group first="{MAIN}">
+            <action first="{MAIN}">
+             <token first="{MAIN}" name="MAIN"/>
+            </action>
+           </group>
+          </optional>
          </sequence>
-         <optional first="{#, ONCE}">
-          <group first="{ONCE}">
-           <action first="{ONCE}">
-            <token first="{ONCE}" name="ONCE"/>
-           </action>
-          </group>
-         </optional>
+         <action first="{FUNCTION}">
+          <token first="{FUNCTION}" name="FUNCTION"/>
+         </action>
         </sequence>
-        <optional first="{#, MAIN}">
-         <group first="{MAIN}">
-          <action first="{MAIN}">
-           <token first="{MAIN}" name="MAIN"/>
-          </action>
-         </group>
-        </optional>
+        <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+         <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
+        </action>
        </sequence>
        <action first="{ID}">
         <token first="{ID}" name="ID"/>
