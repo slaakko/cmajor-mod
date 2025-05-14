@@ -19,9 +19,9 @@ public:
     SourceFile();
     SourceFile(const std::string& filePath_);
     const std::string& FilePath() const { return filePath; }
-    int LineCount() const { return static_cast<int>(lines.size()); }
+    int64_t LineCount() const { return static_cast<int64_t>(lines.size()); }
     const std::string& GetLine(int lineNumber) const { return lines[lineNumber]; }
-    void Print(int start, cmajor::systemx::kernel::Process* process, Debugger& debugger, int file, bool printNext);
+    void Print(int64_t start, cmajor::systemx::kernel::Process* process, Debugger& debugger, int64_t file, bool printNext);
     void PrintCurrent(cmajor::systemx::kernel::Process* process, Debugger& debugger);
 private:
     std::string filePath;

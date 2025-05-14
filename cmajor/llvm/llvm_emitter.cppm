@@ -214,6 +214,7 @@ public:
     void SetInitializer(void* global, void* initializer) override;
     void SetPrivateLinkage(void* global) override;
     void* GetOrInsertFunction(const std::string& name, void* type, bool nothrow) override;
+    void SetSystemType(void* type, int8_t systemType) override;
     void* CreateGlobalStringPtr(const std::string& name) override;
     void* CreateGlobalWStringPtr(const std::u16string& name) override;
     void* CreateGlobalUStringPtr(const std::u32string& name) override;
@@ -378,7 +379,12 @@ public:
     void SetMetadataRef(void* inst, void* mdStructRef) override;
     void SetMetadataRefForStructType(void* structType, void* mdRef) override;
     void* GetMetadataRefForStructType(void* structType) const override;
+    void SetMetadataRefForArrayType(void* arrayType, void* mdRef) override;
+    void* GetMetadataRefForArrayType(void* arrayType) const override;
+    void SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef) override;
+    void* GetMetadataRefForFunctionPointerType(void* functionPointerType) const override;
     int GetTypeId(void* type) const override;
+    int GetBaseTypeId(void* type) const override;
     void FinalizeFunction(void* function, bool hasCleanup) override;
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;

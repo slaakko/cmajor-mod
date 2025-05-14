@@ -93,6 +93,11 @@ bool Type::IsFloatingPointType() const
     }
 }
 
+void Type::SetSystemType(int8_t systemType)
+{
+    cmajor::systemx::intermediate::SetSystemType(id, systemType);
+}
+
 Type* Type::AddPointer(Context* context) 
 {
     if (IsPointerType())
@@ -437,12 +442,12 @@ bool operator<(const ArrayTypeKey& left, const ArrayTypeKey& right)
 }
 
 ArrayType::ArrayType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, int64_t elementCount_, const TypeRef& elementTypeRef_) :
-    Type(sourcePos_, TypeKind::arrayType, typeId_), elementCount(elementCount_), elementTypeRef(elementTypeRef_)
+    Type(sourcePos_, TypeKind::arrayType, typeId_), elementCount(elementCount_), elementTypeRef(elementTypeRef_), metadataRef(nullptr)
 {
 }
 
 ArrayType::ArrayType(int32_t typeId_, int64_t elementCount_, Type* elementType_) : 
-    Type(soul::ast::SourcePos(), TypeKind::arrayType, typeId_), elementCount(elementCount_)
+    Type(soul::ast::SourcePos(), TypeKind::arrayType, typeId_), elementCount(elementCount_), metadataRef(nullptr)
 {
     elementTypeRef.SetType(elementType_);
 }
@@ -485,6 +490,11 @@ void ArrayType::WriteDeclaration(util::CodeFormatter& formatter)
     formatter.Write(" x ");
     ElementType()->Write(formatter);
     formatter.Write("]");
+    if (metadataRef)
+    {
+        formatter.Write(" ");
+        metadataRef->Write(formatter);
+    }
 }
 
 FunctionTypeKey::FunctionTypeKey(Type* returnType_, const std::vector<Type*>& paramTypes_) : returnType(returnType_), paramTypes(paramTypes_)
@@ -499,12 +509,12 @@ bool operator<(const FunctionTypeKey& left, const FunctionTypeKey& right)
 }
 
 FunctionType::FunctionType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, const TypeRef& returnTypeRef_, const std::vector<TypeRef>& paramTypeRefs_) :
-    Type(sourcePos_, TypeKind::functionType, typeId_), returnTypeRef(returnTypeRef_), paramTypeRefs(paramTypeRefs_)
+    Type(sourcePos_, TypeKind::functionType, typeId_), returnTypeRef(returnTypeRef_), paramTypeRefs(paramTypeRefs_), metadataRef(nullptr)
 {
 }
 
 FunctionType::FunctionType(int32_t typeId_, Type* returnType_, const std::vector<Type*>& paramTypes_) : 
-    Type(soul::ast::SourcePos(), TypeKind::functionType, typeId_)
+    Type(soul::ast::SourcePos(), TypeKind::functionType, typeId_), metadataRef(nullptr)
 {
     returnTypeRef.SetType(returnType_);
     int n = paramTypes_.size();
@@ -570,6 +580,11 @@ void FunctionType::WriteDeclaration(util::CodeFormatter& formatter)
         ParamType(i)->Write(formatter);
     }
     formatter.Write(")");
+    if (metadataRef)
+    {
+        formatter.Write(" ");
+        metadataRef->Write(formatter);
+    }
 }
 
 PointerType::PointerType(const soul::ast::SourcePos& sourcePos_, int32_t typeId_, int8_t pointerCount_, int32_t baseTypeId_) :
@@ -598,15 +613,18 @@ void Types::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t type
     types.push_back(std::unique_ptr<Type>(structureType));
 }
 
-void Types::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef)
+void Types::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef, MetadataRef* metadataRef)
 {
-    Type* arrayType = new ArrayType(sourcePos, typeId, size, elementTypeRef);
+    ArrayType* arrayType = new ArrayType(sourcePos, typeId, size, elementTypeRef);
+    arrayType->SetMetadataRef(metadataRef);
     types.push_back(std::unique_ptr<Type>(arrayType));
 }
 
-void Types::AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs)
+void Types::AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs, 
+    MetadataRef* metadataRef)
 {
-    Type* functionType = new FunctionType(sourcePos, typeId, returnTypeRef, paramTypeRefs);
+    FunctionType* functionType = new FunctionType(sourcePos, typeId, returnTypeRef, paramTypeRefs);
+    functionType->SetMetadataRef(metadataRef);
     types.push_back(std::unique_ptr<Type>(functionType));
 }
 

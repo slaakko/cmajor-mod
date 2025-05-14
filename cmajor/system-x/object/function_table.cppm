@@ -159,8 +159,8 @@ class ExceptionTableRecord
 {
 public:
     ExceptionTableRecord(ExceptionTableRecordKind kind_);
-    ExceptionTableRecordKind Kind() const { return kind; }
     virtual ~ExceptionTableRecord();
+    ExceptionTableRecordKind Kind() const { return kind; }
     virtual int64_t Size() const { return 4; }
     virtual void Write(Section* section);
     virtual void Read(int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
@@ -274,6 +274,17 @@ private:
     FunctionTableEntry* functionTableEntry;
 };
 
+struct LocalEntry
+{
+    LocalEntry();
+    void Write(StringTable& stringTable, Section* section);
+    int64_t Read(StringTable& stringTable, SymbolTable& symbolTable, int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    int32_t nameId;
+    std::string name;
+    int32_t typeId;
+    int32_t offset;
+};
+
 class FunctionTableEntry
 {
 public:
@@ -306,6 +317,8 @@ public:
     ExceptionTableRecord* SearchExceptionTableRecord(uint64_t pc) const;
     void AddToCfg(int32_t prev, int32_t next);
     std::vector<int32_t> Next(int32_t index) const;
+    void AddLocalEntry(LocalEntry&& entry);
+    const std::vector<LocalEntry>& LocalEntries() const { return localEntries; }
 private:
     int64_t functionStart;
     int64_t functionLength;
@@ -321,6 +334,7 @@ private:
     LineNumberTable lineNumberTable;
     ExceptionTable exceptionTable;
     std::map<int32_t, std::vector<int32_t>> cfg;
+    std::vector<LocalEntry> localEntries;
 };
 
 class FunctionTable
@@ -338,6 +352,7 @@ public:
     std::string GetSourceFileName(int32_t fileIndex, SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     int32_t GetSourceFileIndex(int32_t sourceFileId) const;
     void ReadSourceFileTable(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
+    StringTable* GetStringTable() { return &stringTable; }
 private:
     void ReadIndex(SymbolTable& symbolTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);
     bool indexRead;
@@ -349,6 +364,6 @@ private:
     std::vector<std::unique_ptr<FunctionTableEntry>> entries;
 };
 
-void MakeFunctionTable(const std::vector<std::unique_ptr<BinaryFile>>& binaryFiles, ExecutableFile& executable, LinkTable& linkTable);
+void MakeTables(const std::vector<std::unique_ptr<BinaryFile>>& binaryFiles, ExecutableFile& executable, LinkTable& linkTable);
 
 } // namespace cmajor::systemx::object

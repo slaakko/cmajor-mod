@@ -1,0 +1,11 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    Map<int, string> m;
+    m[2] = "foo";
+    m[0] = "bar";
+    m[1] = "bazz";
+    int x = 0;
+}

@@ -213,6 +213,7 @@ public:
     void* GetOrInsertAnyComdat(const std::string& name, void* global) override;
     void* GetOrInsertAnyFunctionComdat(const std::string& name, void* function) override;
     void* GetOrInsertFunction(const std::string& name, void* type, bool nothrow) override;
+    void SetSystemType(void* type, int8_t systemType) override;
     void* MakeSymbolValue(void* type, const std::string& name) override;
     void SetInitializer(void* global, void* initializer) override;
     void SetPrivateLinkage(void* global) override;
@@ -261,6 +262,7 @@ public:
     void* GetIrObject(void* symbol) const override;
     void SetIrObject(void* symbol, void* irObject) override;
     void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) override;
+    int64_t GetFieldOffset(void* structureType, int64_t fieldIndex) const override;
     void* SizeOf(void* elementType, void* ptrType) override;
     void SetLineNumber(int32_t lineNumber) override;
     void SaveObjectPointer(void* objectPointer_) override;
@@ -323,6 +325,7 @@ public:
         void* subroutineType, unsigned flags) override;
     void SetDISubprogram(void* function, void* subprogram) override;
     void* CreateAlloca(void* irType) override;
+    void SetLocalMetadataRef(void* local, void* mdRef) override;
     void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
         void* irType, void* allocaInst) override;
     void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
@@ -356,7 +359,12 @@ public:
     void SetMetadataRef(void* inst, void* mdStructRef) override;
     void SetMetadataRefForStructType(void* structType, void* mdRef) override;
     void* GetMetadataRefForStructType(void* structType) const override;
+    void SetMetadataRefForArrayType(void* arrayType, void* mdRef) override;
+    void* GetMetadataRefForArrayType(void* arrayType) const override;
+    void SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef) override;
+    void* GetMetadataRefForFunctionPointerType(void* functionPointerType) const override;
     int GetTypeId(void* type) const override;
+    int GetBaseTypeId(void* type) const override;
     void FinalizeFunction(void* function, bool hasCleanup) override;
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;

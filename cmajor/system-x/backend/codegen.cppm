@@ -23,8 +23,12 @@ const int64_t cfgNodeType = 3;
 const int64_t beginTryNodeType = 4;
 const int64_t endTryNodeType = 5;
 const int64_t catchNodeType = 6;
-const int64_t structInfoNodeType = 7;
-const int64_t fieldInfoNodeType = 8;
+const int64_t beginCleanupNodeType = 7;
+const int64_t endCleanupNodeType = 8;
+const int64_t structInfoNodeType = 9;
+const int64_t fieldInfoNodeType = 10;
+const int64_t localInfoNodeType = 11;
+const int64_t delegateInfoNodeType = 12;
 
 struct Cleanup
 {
@@ -113,7 +117,12 @@ public:
     int Install(const std::u32string& str) override;
     soul::ast::LineColLen GetLineColLen(const soul::ast::Span& span);
     void AddCFGItem(int index, int next);
+    void CreateMetadataForType(cmajor::symbols::TypeSymbol* type);
     void CreateMetadataForClassType(cmajor::symbols::ClassTypeSymbol* classTypeSymbol);
+    void CreateMetadataForArrayType(cmajor::symbols::ArrayTypeSymbol* arrayTypeSymbol);
+    void CreateMetadataForDelegateType(cmajor::symbols::DelegateTypeSymbol* delegateTypeSymbol);
+    void CreateMetadataForClassDelegateType(cmajor::symbols::ClassDelegateTypeSymbol* classDelegateTypeSymbol);
+    void CreateLocalNode(void* local, const std::string& name, void* type);
 private:
     cmajor::ir::Emitter* emitter;
     cmajor::symbols::Context* context;

@@ -66,25 +66,25 @@ SourceFile::SourceFile(const std::string& filePath_) : filePath(filePath_)
     AddLines(content, lines);
 }
 
-void SourceFile::Print(int start, cmajor::systemx::kernel::Process* process, Debugger& debugger, int file, bool printNext)
+void SourceFile::Print(int64_t start, cmajor::systemx::kernel::Process* process, Debugger& debugger, int64_t file, bool printNext)
 {
-    int end = std::min(start + debugger.PageSize(), LineCount() - 1);
-    int width = 0;
-    for (int lineNumber = start; lineNumber <= end; ++lineNumber)
+    int64_t end = std::min(start + debugger.PageSize(), LineCount() - 1);
+    int64_t width = 0;
+    for (int64_t lineNumber = start; lineNumber <= end; ++lineNumber)
     {
-        width = std::max(width, util::Log10(lineNumber));
+        width = std::max(width, static_cast<int64_t>(util::Log10(static_cast<int>(lineNumber))));
     }
     soul::ast::LineColLen currentLineColLen = debugger.CurrentLineColLen();
-    for (int lineNumber = start; lineNumber <= end; ++lineNumber)
+    for (int64_t lineNumber = start; lineNumber <= end; ++lineNumber)
     {
         std::string line;
         if (file == debugger.CurrentFile() && lineNumber == currentLineColLen.line)
         {
             line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
-            line.append(util::Format(std::to_string(lineNumber), width, util::FormatJustify::right));
+            line.append(util::Format(std::to_string(lineNumber), static_cast<int>(width), util::FormatJustify::right));
             line.append(util::ToUtf8(cmajor::systemx::ResetColors()));
             line.append(1, ' ');
-            std::string ln = GetLine(lineNumber);
+            std::string ln = GetLine(static_cast<int>(lineNumber));
             line.append(ln.substr(0, currentLineColLen.col - 1));
             line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
             line.append(ln.substr(currentLineColLen.col - 1, currentLineColLen.len));
@@ -94,8 +94,8 @@ void SourceFile::Print(int start, cmajor::systemx::kernel::Process* process, Deb
         }
         else
         {
-            line.append(util::Format(std::to_string(lineNumber), width, util::FormatJustify::right)).append(1, ' ');
-            line.append(GetLine(lineNumber)).append(1, '\n');
+            line.append(util::Format(std::to_string(lineNumber), static_cast<int>(width), util::FormatJustify::right)).append(1, ' ');
+            line.append(GetLine(static_cast<int>(lineNumber))).append(1, '\n');
         }
         cmajor::systemx::kernel::WriteToTerminal(line, process);
     }
@@ -107,7 +107,7 @@ void SourceFile::Print(int start, cmajor::systemx::kernel::Process* process, Deb
 
 void SourceFile::PrintCurrent(cmajor::systemx::kernel::Process* process, Debugger& debugger)
 {
-    int start = std::max(1, debugger.CurrentLineColLen().line - debugger.PageSize() / 2);
+    int64_t start = std::max(static_cast<int64_t>(1), debugger.CurrentLineColLen().line - debugger.PageSize() / 2);
     Print(start, process, debugger, debugger.CurrentFile(), false);
 }
 

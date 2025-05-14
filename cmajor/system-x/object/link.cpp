@@ -673,61 +673,61 @@ void ProcessLinkCommands(LinkTable& linkTable, Symbol* linkSymbol, ObjectFile* o
         bool processLinkCommand = false;
         switch (linkCommand->Code())
         {
-        case LinkCode::absoluteAddrValue:
-        {
-            LinkAbsoluteAddressCommand* command = static_cast<LinkAbsoluteAddressCommand*>(linkCommand);
-            symbol = objectFile->GetSymbolTable().GetSymbol(command->SymbolIndex());
-            if (!symbol)
+            case LinkCode::absoluteAddrValue:
             {
-                throw std::runtime_error("symbol " + std::to_string(command->SymbolIndex()) + " not found from symbol table of object file '" + objectFile->FileName() + "'");
-            }
-            if (symbol->IsUndefinedSymbol() || symbol->GetLinkage() == Linkage::remove)
-            {
-                Symbol* executableSymbol = executable->GetSymbolTable().GetSymbol(symbol->FullName());
-                if (executableSymbol)
+                LinkAbsoluteAddressCommand* command = static_cast<LinkAbsoluteAddressCommand*>(linkCommand);
+                symbol = objectFile->GetSymbolTable().GetSymbol(command->SymbolIndex());
+                if (!symbol)
                 {
-                    symbol = executableSymbol;
+                    throw std::runtime_error("symbol " + std::to_string(command->SymbolIndex()) + " not found from symbol table of object file '" + objectFile->FileName() + "'");
                 }
-            }
-            processLinkCommand = true;
-            break;
-        }
-        case LinkCode::farOcta:
-        {
-            LinkFarOctaCommand* command = static_cast<LinkFarOctaCommand*>(linkCommand);
-            symbol = objectFile->GetSymbolTable().GetSymbol(command->SymbolIndex());
-            if (!symbol)
-            {
-                throw std::runtime_error("symbol " + std::to_string(command->SymbolIndex()) + " not found from symbol table of object file '" + objectFile->FileName() + "'");
-            }
-            if (symbol->IsUndefinedSymbol() || symbol->GetLinkage() == Linkage::remove)
-            {
-                Symbol* executableSymbol = executable->GetSymbolTable().GetSymbol(symbol->FullName());
-                if (executableSymbol)
+                if (symbol->IsUndefinedSymbol() || symbol->GetLinkage() == Linkage::remove)
                 {
-                    symbol = executableSymbol;
+                    Symbol* executableSymbol = executable->GetSymbolTable().GetSymbol(symbol->FullName());
+                    if (executableSymbol)
+                    {
+                        symbol = executableSymbol;
+                    }
                 }
+                processLinkCommand = true;
+                break;
             }
-            processLinkCommand = true;
-            break;
-        }
-        case LinkCode::clsid:
-        {
-            LinkClsIdCommand* command = static_cast<LinkClsIdCommand*>(linkCommand);
-            util::uuid typeId;
-            IntsToUuid(command->TypeId1(), command->TypeId2(), typeId);
-            uint64_t value = linkTable.GetClassId(typeId);
-            command->Apply(objectFile, value);
-            symbol = nullptr;
-            processLinkCommand = false;
-            break;
-        }
-        default:
-        {
-            symbol = nullptr;
-            processLinkCommand = false;
-            break;
-        }
+            case LinkCode::farOcta:
+            {
+                LinkFarOctaCommand* command = static_cast<LinkFarOctaCommand*>(linkCommand);
+                symbol = objectFile->GetSymbolTable().GetSymbol(command->SymbolIndex());
+                if (!symbol)
+                {
+                    throw std::runtime_error("symbol " + std::to_string(command->SymbolIndex()) + " not found from symbol table of object file '" + objectFile->FileName() + "'");
+                }
+                if (symbol->IsUndefinedSymbol() || symbol->GetLinkage() == Linkage::remove)
+                {
+                    Symbol* executableSymbol = executable->GetSymbolTable().GetSymbol(symbol->FullName());
+                    if (executableSymbol)
+                    {
+                        symbol = executableSymbol;
+                    }
+                }
+                processLinkCommand = true;
+                break;
+            }
+            case LinkCode::clsid:
+            {
+                LinkClsIdCommand* command = static_cast<LinkClsIdCommand*>(linkCommand);
+                util::uuid typeId;
+                IntsToUuid(command->TypeId1(), command->TypeId2(), typeId);
+                uint64_t value = linkTable.GetClassId(typeId);
+                command->Apply(objectFile, value);
+                symbol = nullptr;
+                processLinkCommand = false;
+                break;
+            }
+            default:
+            {
+                symbol = nullptr;
+                processLinkCommand = false;
+                break;
+            }
         }
         if (symbol && processLinkCommand)
         {
@@ -802,25 +802,25 @@ void LinkObjectFiles(LinkTable& linkTable, const std::vector<std::unique_ptr<Bin
     {
         switch (binaryFile->Kind())
         {
-        case BinaryFileKind::objectFile:
-        {
-            ObjectFile* objectFile = static_cast<ObjectFile*>(binaryFile.get());
-            LinkObjectFile(linkTable, objectFile, prevCodeSection, prevDataSection, executable);
-            break;
-        }
-        case BinaryFileKind::archiveFile:
-        {
-            ArchiveFile* archiveFile = static_cast<ArchiveFile*>(binaryFile.get());
-            for (const auto& objectFile : archiveFile->ObjectFiles())
+            case BinaryFileKind::objectFile:
             {
-                LinkObjectFile(linkTable, objectFile.get(), prevCodeSection, prevDataSection, executable);
+                ObjectFile* objectFile = static_cast<ObjectFile*>(binaryFile.get());
+                LinkObjectFile(linkTable, objectFile, prevCodeSection, prevDataSection, executable);
+                break;
             }
-            break;
-        }
-        default:
-        {
-            throw std::runtime_error("error linking: object or archive file expected");
-        }
+            case BinaryFileKind::archiveFile:
+            {
+                ArchiveFile* archiveFile = static_cast<ArchiveFile*>(binaryFile.get());
+                for (const auto& objectFile : archiveFile->ObjectFiles())
+                {
+                    LinkObjectFile(linkTable, objectFile.get(), prevCodeSection, prevDataSection, executable);
+                }
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("error linking: object or archive file expected");
+            }
         }
     }
 }
@@ -867,7 +867,7 @@ void Link(int logStreamId, const std::string& executableFilePath, const std::vec
     LinkObjectFiles(linkTable, binaryFiles, executable.get());
     linkTable.CheckUnresolvedSymbols(logStreamId);
     CopyRanges(linkTable.CopyRanges());
-    MakeFunctionTable(binaryFiles, *executable, linkTable);
+    MakeTables(binaryFiles, *executable, linkTable);
     ProcessResources(binaryFiles, *executable);
     executable->Finalize();
     executable->WriteFile();

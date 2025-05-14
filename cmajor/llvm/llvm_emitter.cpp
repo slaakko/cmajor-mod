@@ -1205,6 +1205,10 @@ void* LLVMEmitter::GetOrInsertFunction(const std::string& name, void* type, bool
 #endif
 }
 
+void LLVMEmitter::SetSystemType(void* type, int8_t systemType)
+{
+}
+
 void* LLVMEmitter::CreateGlobalStringPtr(const std::string& name)
 {
     llvm::Constant* strConstant = llvm::ConstantDataArray::getString(context, name);
@@ -2500,7 +2504,30 @@ void* LLVMEmitter::GetMetadataRefForStructType(void* structType) const
     return nullptr;
 }
 
+void LLVMEmitter::SetMetadataRefForArrayType(void* arrayType, void* mdRef)
+{
+}
+
+void* LLVMEmitter::GetMetadataRefForArrayType(void* arrayType) const
+{
+    return nullptr;
+}
+
+void LLVMEmitter::SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef)
+{
+}
+
+void* LLVMEmitter::GetMetadataRefForFunctionPointerType(void* functionPointerType) const
+{
+    return nullptr;
+}
+
 int LLVMEmitter::GetTypeId(void* type) const
+{
+    return -1;
+}
+
+int LLVMEmitter::GetBaseTypeId(void* type) const
 {
     return -1;
 }

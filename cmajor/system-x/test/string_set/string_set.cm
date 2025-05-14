@@ -1,0 +1,15 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    Set<string> s;
+    s.Insert("foo");
+    s.Insert("bar");
+    s.Insert("bazz");
+    int x = 0;
+    for (const auto& p : s)
+    {
+        Console.WriteLine(p);
+    }
+}

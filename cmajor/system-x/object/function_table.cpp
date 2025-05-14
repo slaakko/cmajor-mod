@@ -8,6 +8,8 @@ module cmajor.systemx.object.function.table;
 import cmajor.systemx.object.binary.file;
 import cmajor.systemx.object.symbol;
 import cmajor.systemx.object.link.table;
+import cmajor.systemx.object.type.table;
+import cmajor.systemx.object.type;
 import cmajor.systemx.object.debug;
 import util;
 
@@ -70,7 +72,7 @@ void FunctionTableIndex::Read(SymbolTable& symbolTable, uint64_t rv, cmajor::sys
             entry.Read(rv, memory, address);
             entryIdMap[entry.entryId] = entry.entryAddress;
             indexEntries.push_back(entry);
-            address = address + entry.Size();
+            address += entry.Size();
         }
     }
     else
@@ -913,6 +915,31 @@ ExceptionTableRecord* ExceptionTable::SearchRecord(uint32_t offset) const
     return nullptr;
 }
 
+LocalEntry::LocalEntry() : nameId(-1), name(), typeId(-1), offset(-1)
+{
+}
+
+void LocalEntry::Write(StringTable& stringTable, Section* section)
+{
+    nameId = stringTable.AddString(name);
+    section->EmitTetra(nameId);
+    section->EmitTetra(typeId);
+    section->EmitTetra(offset);
+}
+
+int64_t LocalEntry::Read(StringTable& stringTable, SymbolTable& symbolTable, int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
+{
+    int64_t addr = address;
+    nameId = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    name = stringTable.GetString(symbolTable, nameId, rv, memory);
+    addr += 4;
+    typeId = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    offset = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    return addr;
+}
+
 FunctionTableEntry::FunctionTableEntry() :
     functionStart(), functionLength(), id(-1), fullNameId(-1), mangledNameId(-1), sourceFileNameId(-1), fullName(), mangledName(), sourceFileName(), frameSize(), main(false)
 {
@@ -947,12 +974,23 @@ int64_t FunctionTableEntry::Write(StringTable& stringTable, Section* section)
             section->EmitTetra(nxt);
         }
     }
+    uint32_t nl = static_cast<uint32_t>(localEntries.size());
+    section->EmitTetra(nl);
+    for (LocalEntry& localEntry : localEntries)
+    {
+        localEntry.Write(stringTable, section);
+    }
+    if (main)
+    {
+        int x = 0;
+    }
     section->EmitByte(main ? 1 : 0);
     return address;
 }
 
 void FunctionTableEntry::Read(StringTable& stringTable, SymbolTable& symbolTable, int64_t address, uint64_t rv, cmajor::systemx::machine::Memory& memory)
 {
+    address = util::Align(address, 8);
     functionStart = memory.ReadOcta(rv, address, cmajor::systemx::machine::Protection::read);
     functionLength = memory.ReadOcta(rv, address + 8, cmajor::systemx::machine::Protection::read);
     frameSize = memory.ReadOcta(rv, address + 16, cmajor::systemx::machine::Protection::read);
@@ -977,7 +1015,16 @@ void FunctionTableEntry::Read(StringTable& stringTable, SymbolTable& symbolTable
             cfg[prev].push_back(next);
         }
     }
-    main = memory.ReadByte(rv, addr, cmajor::systemx::machine::Protection::read) == 1;
+    uint32_t nl = memory.ReadTetra(rv, addr, cmajor::systemx::machine::Protection::read);
+    addr += 4;
+    for (uint32_t i = 0; i < nl; ++i)
+    {
+        LocalEntry localEntry;
+        addr = localEntry.Read(stringTable, symbolTable, addr, rv, memory);
+        localEntries.push_back(std::move(localEntry));
+    }
+    uint8_t m = memory.ReadByte(rv, addr, cmajor::systemx::machine::Protection::read);
+    main = m == 1;
     fullName = stringTable.GetString(symbolTable, fullNameId, rv, memory);
     mangledName = stringTable.GetString(symbolTable, mangledNameId, rv, memory);
     sourceFileName = stringTable.GetString(symbolTable, sourceFileNameId, rv, memory);
@@ -1060,6 +1107,11 @@ std::vector<int32_t> FunctionTableEntry::Next(int32_t index) const
         next = it->second;
     }
     return next;
+}
+
+void FunctionTableEntry::AddLocalEntry(LocalEntry&& entry)
+{
+    localEntries.push_back(std::move(entry));
 }
 
 FunctionTable::FunctionTable() : indexRead(false), index(), stringTable()
@@ -1489,7 +1541,7 @@ void ProcessDebugRecord(DebugRecord* debugRecord, FunctionTableEntry* functionTa
     }
 }
 
-void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, ExecutableFile& executable, ObjectFile* objectFile,
+void ProcessDebugRecords(FunctionTable& functionTable, TypeTable& typeTable, LinkTable& linkTable, ExecutableFile& executable, ObjectFile* objectFile,
     FunctionDebugRecordCollection* functionDebugRecordCollection,
     std::map<uint32_t, FileInfoRecord*>& fileInfoRecordMap, std::map<uint32_t, FuncInfoRecord*>& funcInfoRecordMap)
 {
@@ -1498,6 +1550,8 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
     std::string sourceFileName;
     int64_t frameSize = 8;
     bool main = false;
+    std::vector<LocalInfoRecord> localInfoRecords;
+    const std::vector<LocalInfoRecord>* localInfoRecordPtr = &localInfoRecords;
     std::vector<std::pair<int32_t, int32_t>> cfgVec;
     const std::vector<std::pair<int32_t, int32_t>>* cfgPtr = &cfgVec;
     auto it = funcInfoRecordMap.find(functionDebugRecordCollection->functionSymbolIndex);
@@ -1508,6 +1562,7 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
         frameSize = funcInfoRecord->FrameSize();
         main = funcInfoRecord->IsMain();
         cfgPtr = &funcInfoRecord->Cfg();
+        localInfoRecordPtr = &funcInfoRecord->LocalInfoRecords();
         uint32_t sourceFileNameId = funcInfoRecord->SourceFileNameId();
         auto it2 = fileInfoRecordMap.find(sourceFileNameId);
         if (it2 != fileInfoRecordMap.cend())
@@ -1533,6 +1588,14 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
     {
         functionTableEntry->SetMain();
     }
+    for (const LocalInfoRecord& localInfoRecord : *localInfoRecordPtr)
+    {
+        LocalEntry localEntry;
+        localEntry.name = localInfoRecord.Name();
+        localEntry.typeId = typeTable.MakeInternalTypeId(localInfoRecord.TypeId(), objectFile);
+        localEntry.offset = localInfoRecord.Offset();
+        functionTableEntry->AddLocalEntry(std::move(localEntry));
+    }
     functionTable.AddEntry(functionTableEntry);
     std::map<uint32_t, TryRecord*> tryRecordMap;
     std::map<uint32_t, CleanupRecord*> cleanupRecordMap;
@@ -1542,7 +1605,7 @@ void ProcessDebugRecords(FunctionTable& functionTable, LinkTable& linkTable, Exe
     }
 }
 
-void ProcessObjectFileDebugSection(FunctionTable& functionTable, LinkTable& linkTable, ExecutableFile& executable, ObjectFile* objectFile)
+void ProcessObjectFileDebugSection(FunctionTable& functionTable, TypeTable& typeTable, LinkTable& linkTable, ExecutableFile& executable, ObjectFile* objectFile)
 {
     std::map<uint32_t, FileInfoRecord*> fileInfoRecordMap;
     std::map<uint32_t, FuncInfoRecord*> funcInfoRecordMap;
@@ -1557,30 +1620,33 @@ void ProcessObjectFileDebugSection(FunctionTable& functionTable, LinkTable& link
     }
     for (auto& functionDebugRecordCollection : collections)
     {
-        ProcessDebugRecords(functionTable, linkTable, executable, objectFile, functionDebugRecordCollection.get(), fileInfoRecordMap, funcInfoRecordMap);
+        ProcessDebugRecords(functionTable, typeTable, linkTable, executable, objectFile, functionDebugRecordCollection.get(), fileInfoRecordMap, funcInfoRecordMap);
     }
 }
 
-void MakeFunctionTable(const std::vector<std::unique_ptr<BinaryFile>>& binaryFiles, ExecutableFile& executable, LinkTable& linkTable)
+void MakeTables(const std::vector<std::unique_ptr<BinaryFile>>& binaryFiles, ExecutableFile& executable, LinkTable& linkTable)
 {
     FunctionTable functionTable;
+    TypeTable typeTable;
     for (const auto& binaryFile : binaryFiles)
     {
         if (binaryFile->Kind() == BinaryFileKind::objectFile)
         {
             ObjectFile* objectFile = static_cast<ObjectFile*>(binaryFile.get());
-            ProcessObjectFileDebugSection(functionTable, linkTable, executable, objectFile);
+            ProcessObjectFileDebugSection(functionTable, typeTable, linkTable, executable, objectFile);
         }
         else if (binaryFile->Kind() == BinaryFileKind::archiveFile)
         {
             ArchiveFile* archiveFile = static_cast<ArchiveFile*>(binaryFile.get());
             for (const auto& objectFile : archiveFile->ObjectFiles())
             {
-                ProcessObjectFileDebugSection(functionTable, linkTable, executable, objectFile.get());
+                ProcessObjectFileDebugSection(functionTable, typeTable, linkTable, executable, objectFile.get());
             }
         }
     }
+    typeTable.AddStrings(functionTable.GetStringTable());
     functionTable.Write(executable);
+    typeTable.Write(executable);
 }
 
 } // namespace cmajor::systemx::object

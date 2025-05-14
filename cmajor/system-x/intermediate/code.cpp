@@ -333,6 +333,15 @@ BasicBlock* Instruction::Parent() const
     return static_cast<BasicBlock*>(GetContainer()->Parent());
 }
 
+void Instruction::WriteMetadataRef(util::CodeFormatter& formatter)
+{
+    if (metadataRef)
+    {
+        formatter.Write(" ");
+        metadataRef->Write(formatter);
+    }
+}
+
 StoreInstruction::StoreInstruction(const soul::ast::SourcePos& sourcePos_, Value* value_, Value* ptr_) : Instruction(sourcePos_, nullptr, OpCode::store), value(value_), ptr(ptr_)
 {
 }
@@ -382,6 +391,7 @@ void StoreInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(ptr->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(ptr->ToString());
+    WriteMetadataRef(formatter);
 }
 
 ArgInstruction::ArgInstruction(const soul::ast::SourcePos& sourcePos_, Value* arg_) : Instruction(sourcePos_, nullptr, OpCode::arg), arg(arg_), argIndex(0)
@@ -421,6 +431,7 @@ void ArgInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(arg->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(arg->ToString());
+    WriteMetadataRef(formatter);
 }
 
 JmpInstruction::JmpInstruction(const soul::ast::SourcePos& sourcePos_, int32_t targetLabelId_) :
@@ -437,6 +448,7 @@ void JmpInstruction::Write(util::CodeFormatter& formatter)
 {
     formatter.Write(util::Format("jmp ", 8));
     formatter.Write("@" + std::to_string(targetBasicBlock->Id()));
+    WriteMetadataRef(formatter);
 }
 
 BranchInstruction::BranchInstruction(const soul::ast::SourcePos& sourcePos_, Value* cond_, int32_t trueTargetLabelId_, int32_t falseTargetLabelId_) :
@@ -482,6 +494,7 @@ void BranchInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write("@" + std::to_string(trueTargetBasicBlock->Id()));
     formatter.Write(", ");
     formatter.Write("@" + std::to_string(falseTargetBasicBlock->Id()));
+    WriteMetadataRef(formatter);
 }
 
 ProcedureCallInstruction::ProcedureCallInstruction(const soul::ast::SourcePos& sourcePos_, Value* callee_) : Instruction(sourcePos_, nullptr, OpCode::procedure_call), callee(callee_)
@@ -543,6 +556,7 @@ void ProcedureCallInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(callee->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(callee->ToString());
+    WriteMetadataRef(formatter);
 }
 
 RetInstruction::RetInstruction(const soul::ast::SourcePos& sourcePos_, Value* returnValue_) : Instruction(sourcePos_, nullptr, OpCode::ret), returnValue(returnValue_)
@@ -592,6 +606,7 @@ void RetInstruction::Write(util::CodeFormatter& formatter)
     {
         formatter.Write("void");
     }
+    WriteMetadataRef(formatter);
 }
 
 SwitchInstruction::SwitchInstruction(const soul::ast::SourcePos& sourcePos_, Value* cond_, int32_t defaultTargetLabelId_) :
@@ -684,6 +699,7 @@ void SwitchInstruction::Write(util::CodeFormatter& formatter)
         formatter.Write("@" + std::to_string(dest->Id()));
     }
     formatter.Write("]");
+    WriteMetadataRef(formatter);
 }
 
 ValueInstruction::ValueInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, OpCode opCode_) : 
@@ -760,6 +776,7 @@ void NotInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = not ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 NegInstruction::NegInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : UnaryInstruction(sourcePos_, result_, operand_, OpCode::neg)
@@ -776,6 +793,7 @@ void NegInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = neg ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 SignExtendInstruction::SignExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -793,6 +811,7 @@ void SignExtendInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = signextend ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 ZeroExtendInstruction::ZeroExtendInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -810,6 +829,7 @@ void ZeroExtendInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = zeroextend ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 TruncateInstruction::TruncateInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -827,6 +847,7 @@ void TruncateInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = truncate ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 BitcastInstruction::BitcastInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -844,6 +865,7 @@ void BitcastInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = bitcast ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 IntToFloatInstruction::IntToFloatInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -861,6 +883,7 @@ void IntToFloatInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = inttofloat ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 FloatToIntInstruction::FloatToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -878,6 +901,7 @@ void FloatToIntInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = floattoint ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 IntToPtrInstruction::IntToPtrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -895,6 +919,7 @@ void IntToPtrInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = inttoptr ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 PtrToIntInstruction::PtrToIntInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* operand_) : 
@@ -912,6 +937,7 @@ void PtrToIntInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = ptrtoint ");
     WriteArg(formatter);
+    WriteMetadataRef(formatter);
 }
 
 BinaryInstruction::BinaryInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_, OpCode opCode_) :
@@ -975,6 +1001,7 @@ void AddInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = add ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 SubInstruction::SubInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -992,6 +1019,7 @@ void SubInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = sub ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 MulInstruction::MulInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1009,6 +1037,7 @@ void MulInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = mul ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 DivInstruction::DivInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1026,6 +1055,7 @@ void DivInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = div ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 ModInstruction::ModInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1043,6 +1073,7 @@ void ModInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = mod ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 AndInstruction::AndInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1060,6 +1091,7 @@ void AndInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = and ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 OrInstruction::OrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1077,6 +1109,7 @@ void OrInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = or ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 XorInstruction::XorInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1094,6 +1127,7 @@ void XorInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = xor ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 ShlInstruction::ShlInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1111,6 +1145,7 @@ void ShlInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = shl ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 ShrInstruction::ShrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1128,6 +1163,7 @@ void ShrInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = shr ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 EqualInstruction::EqualInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1145,6 +1181,7 @@ void EqualInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = equal ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 LessInstruction::LessInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* left_, Value* right_) : 
@@ -1162,6 +1199,7 @@ void LessInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = less ");
     WriteArgs(formatter);
+    WriteMetadataRef(formatter);
 }
 
 ParamInstruction::ParamInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_) : ValueInstruction(sourcePos_, result_, OpCode::param), paramIndex(0)
@@ -1177,10 +1215,11 @@ void ParamInstruction::Write(util::CodeFormatter& formatter)
 {
     WriteResult(formatter);
     formatter.Write(" = param");
+    WriteMetadataRef(formatter);
 }
 
 LocalInstruction::LocalInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Type* localType_) : 
-    ValueInstruction(sourcePos_, result_, OpCode::local), localType(localType_)
+    ValueInstruction(sourcePos_, result_, OpCode::local), localType(localType_), localMetadataRef(nullptr), offset(-1)
 {
 }
 
@@ -1194,6 +1233,12 @@ void LocalInstruction::Write(util::CodeFormatter& formatter)
     WriteResult(formatter);
     formatter.Write(" = local ");
     formatter.Write(localType->Name());
+    WriteMetadataRef(formatter);
+    if (localMetadataRef)
+    {
+        formatter.Write(" ");
+        localMetadataRef->Write(formatter);
+    }
 }
 
 LoadInstruction::LoadInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_) : ValueInstruction(sourcePos_, result_, OpCode::load), ptr(ptr_)
@@ -1234,6 +1279,7 @@ void LoadInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(ptr->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(ptr->ToString());
+    WriteMetadataRef(formatter);
 }
 
 ElemAddrInstruction::ElemAddrInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* indexValue_) :
@@ -1306,6 +1352,7 @@ void ElemAddrInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(indexValue->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(indexValue->ToString());
+    WriteMetadataRef(formatter);
 }
 
 PtrOffsetInstruction::PtrOffsetInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* ptr_, Value* offset_) :
@@ -1359,6 +1406,7 @@ void PtrOffsetInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(offset->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(offset->ToString());
+    WriteMetadataRef(formatter);
 }
 
 PtrDiffInstruction::PtrDiffInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* leftPtr_, Value* rightPtr_) :
@@ -1412,6 +1460,7 @@ void PtrDiffInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(rightPtr->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(rightPtr->ToString());
+    WriteMetadataRef(formatter);
 }
 
 FunctionCallInstruction::FunctionCallInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* callee_) :
@@ -1475,6 +1524,7 @@ void FunctionCallInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(callee->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(callee->ToString());
+    WriteMetadataRef(formatter);
 }
 
 TrapInstruction::TrapInstruction(const soul::ast::SourcePos& sourcePos_, RegValue* result_, Value* op1_, Value* op2_, Value* op3_) :
@@ -1538,6 +1588,7 @@ void TrapInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(op3->GetType()->Name());
     formatter.Write(" ");
     formatter.Write(op3->ToString());
+    WriteMetadataRef(formatter);
 }
 
 NoOperationInstruction::NoOperationInstruction(const soul::ast::SourcePos& sourcePos_) : Instruction(sourcePos_, nullptr, OpCode::nop)
@@ -1552,6 +1603,7 @@ void NoOperationInstruction::Accept(Visitor& visitor)
 void NoOperationInstruction::Write(util::CodeFormatter& formatter)
 {
     formatter.Write("nop");
+    WriteMetadataRef(formatter);
 }
 
 BasicBlock::BasicBlock(const soul::ast::SourcePos& sourcePos_, int32_t id_) : sourcePos(sourcePos_), id(id_), instructions(this)
@@ -1592,6 +1644,10 @@ std::string BasicBlock::Name() const
 void BasicBlock::AddInstruction(Instruction* instruction)
 {
     instructions.AddChild(instruction);
+    if (instruction->IsLocalInstruction())
+    {
+        Parent()->AddLocal(static_cast<LocalInstruction*>(instruction));
+    }
 }
 
 void BasicBlock::AddInstruction(Instruction* instruction, MetadataRef* metadataRef)
@@ -1604,6 +1660,10 @@ void BasicBlock::AddInstruction(Instruction* instruction, MetadataRef* metadataR
         Function* function = Parent();
         Context* context = function->Parent()->GetContext();
         function->MapInstruction(valueInstruction->Result()->Reg(), valueInstruction, context);
+    }
+    if (instruction->IsLocalInstruction())
+    {
+        Parent()->AddLocal(static_cast<LocalInstruction*>(instruction));
     }
 }
 
@@ -1750,6 +1810,26 @@ Function::Function(const soul::ast::SourcePos& sourcePos_, Type* type_, const st
 Instruction* Function::GetParam(int index) const
 {
     return params[index];
+}
+
+void Function::AddLocal(LocalInstruction* local)
+{
+    if (std::find(locals.begin(), locals.end(), local) == locals.end())
+    {
+        locals.push_back(local);
+    }
+}
+
+LocalInstruction* Function::GetLocal(int index) const
+{
+    if (index >= 0 && index < NumLocals())
+    {
+        return locals[index];
+    }
+    else
+    {
+        throw std::runtime_error("invalid local index");
+    }
 }
 
 void Function::Accept(Visitor& visitor)
@@ -2170,7 +2250,7 @@ void Function::Write(util::CodeFormatter& formatter)
     }
     if (IsMain())
     {
-        formatter.Write("main ");
+        formatter.Write("main_fn ");
     }
     Context* context = Parent()->GetContext();
     context->GetTypes().Map(functionType);

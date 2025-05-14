@@ -16,6 +16,7 @@ std::string DebugRecordKindStr(DebugRecordKind kind)
     {
         case DebugRecordKind::fileInfo: return "FILEINFO";
         case DebugRecordKind::funcInfo: return "FUNCINFO";
+        case DebugRecordKind::localInfo: return "LOCALINFO";
         case DebugRecordKind::startFunc: return "STARTFUNC";
         case DebugRecordKind::endFunc: return "ENDFUNC";
         case DebugRecordKind::lineInfo: return "LINEINFO";
@@ -24,11 +25,19 @@ std::string DebugRecordKindStr(DebugRecordKind kind)
         case DebugRecordKind::catch_: return "CATCH";
         case DebugRecordKind::beginCleanup: return "BEGINCLEANUP";
         case DebugRecordKind::endCleanup: return "ENDCLEANUP";
+        case DebugRecordKind::structTypeInfo: return "STRUCTTYPEINFO";
+        case DebugRecordKind::fieldInfo: return "FIELDINFO";
+        case DebugRecordKind::arrayTypeInfo: return "ARRAYTYPEINFO";
+        case DebugRecordKind::functionTypeInfo: return "FUNCIONTYPEINFO";
     }
     return std::string();
 }
 
 DebugRecord::DebugRecord(DebugRecordKind kind_) : kind(kind_)
+{
+}
+
+DebugRecord::~DebugRecord()
 {
 }
 
@@ -39,6 +48,28 @@ void DebugRecord::Emit(DebugSection* debugSection)
 
 void DebugRecord::Read(DebugSection* debugSection)
 {
+}
+
+TypeInfoRecord::TypeInfoRecord(DebugRecordKind kind_) : DebugRecord(kind_), fullName(), typeId(-1)
+{
+}
+
+TypeInfoRecord::TypeInfoRecord(DebugRecordKind kind_, const std::string& fullName_, int32_t typeId_) : DebugRecord(kind_), fullName(fullName_), typeId(typeId_)
+{
+}
+
+void TypeInfoRecord::Emit(DebugSection* debugSection)
+{
+    DebugRecord::Emit(debugSection);
+    debugSection->EmitString(fullName);
+    debugSection->EmitTetra(typeId);
+}
+
+void TypeInfoRecord::Read(DebugSection* debugSection)
+{
+    DebugRecord::Read(debugSection);
+    fullName = debugSection->ReadString();
+    typeId = debugSection->ReadTetra();
 }
 
 FileInfoRecord::FileInfoRecord() : DebugRecord(DebugRecordKind::fileInfo), sourceFileName(), sourceFileNameId()
@@ -71,6 +102,37 @@ std::string FileInfoRecord::ToString() const
     return str;
 }
 
+LocalInfoRecord::LocalInfoRecord() : DebugRecord(DebugRecordKind::localInfo), name(), typeId(-1), offset(-1)
+{
+}
+
+LocalInfoRecord::LocalInfoRecord(const std::string& name_, int32_t typeId_, int32_t offset_) : 
+    DebugRecord(DebugRecordKind::localInfo), name(name_), typeId(typeId_), offset(offset_)
+{
+}
+
+void LocalInfoRecord::Emit(DebugSection* debugSection)
+{
+    debugSection->EmitString(name);
+    debugSection->EmitTetra(typeId);
+    debugSection->EmitTetra(offset);
+}
+
+void LocalInfoRecord::Read(DebugSection* debugSection)
+{
+    name = debugSection->ReadString();
+    typeId = debugSection->ReadTetra();
+    offset = debugSection->ReadTetra();
+}
+
+std::string LocalInfoRecord::ToString() const
+{
+    std::string str = DebugRecordKindStr(Kind());
+    str.append("(name=").append(name).append(", typeId=#").append(util::ToHexString(static_cast<uint32_t>(typeId))).append(", offset=#").
+        append(util::ToHexString(static_cast<uint32_t>(offset))).append(")");
+    return str;
+}
+
 FuncInfoRecord::FuncInfoRecord() : DebugRecord(DebugRecordKind::funcInfo), functionSymbolIndex(), fullName(), sourceFileNameId(), frameSize(), main(false)
 {
 }
@@ -98,12 +160,23 @@ void FuncInfoRecord::Emit(DebugSection* debugSection)
         debugSection->EmitTetra(nextLine);
     }
     debugSection->EmitByte(main ? 1 : 0);
+    uint32_t localsSize = static_cast<uint32_t>(localInfoRecords.size());
+    debugSection->EmitTetra(localsSize);
+    for (uint32_t i = 0; i < localsSize; ++i)
+    {
+        LocalInfoRecord& localInfoRecord = localInfoRecords[i];
+        localInfoRecord.Emit(debugSection);
+    }
 }
 
 void FuncInfoRecord::Read(DebugSection* debugSection)
 {
     DebugRecord::Read(debugSection);
     functionSymbolIndex = debugSection->ReadTetra();
+    if (functionSymbolIndex == 0x000000a8)
+    {
+        int x = 0;
+    }
     fullName = debugSection->ReadString();
     sourceFileNameId = debugSection->ReadTetra();
     frameSize = debugSection->ReadOcta();
@@ -115,6 +188,13 @@ void FuncInfoRecord::Read(DebugSection* debugSection)
         AddToCfg(prev, next);
     }
     main = debugSection->ReadByte() != 0;
+    uint32_t localsSize = debugSection->ReadTetra();
+    for (uint32_t i = 0; i < localsSize; ++i)
+    {
+        LocalInfoRecord localInfoRecord;
+        localInfoRecord.Read(debugSection);
+        localInfoRecords.push_back(std::move(localInfoRecord));
+    }
 }
 
 std::string FuncInfoRecord::ToString() const
@@ -122,13 +202,18 @@ std::string FuncInfoRecord::ToString() const
     std::string str = DebugRecordKindStr(Kind());
     str.append("(").append("functionSymbolIndex=").append(std::to_string(functionSymbolIndex)).append(", fullName=").append(fullName).append(", sourceFileNameId=").append(
         std::to_string(sourceFileNameId)).append(", frameSize=#").append(util::ToHexString(std::uint64_t(frameSize))).append(", main=").
-        append(main ? "true" : "false").append(")");
+        append(main ? "true" : "false").append("locals_count=#").append(util::ToHexString(std::uint32_t(localInfoRecords.size()))).append(")");
     return str;
 }
 
 void FuncInfoRecord::AddToCfg(int32_t prev, int32_t next)
 {
     cfg.push_back(std::make_pair(prev, next));
+}
+
+void FuncInfoRecord::AddLocalInfoRecord(LocalInfoRecord&& localInfoRecord)
+{
+    localInfoRecords.push_back(std::move(localInfoRecord));
 }
 
 StartFuncRecord::StartFuncRecord() : DebugRecord(DebugRecordKind::startFunc), functionSymbolIndex()
@@ -388,12 +473,152 @@ std::string EndCleanupRecord::ToString() const
     return str;
 }
 
+FieldInfoRecord::FieldInfoRecord() : DebugRecord(DebugRecordKind::fieldInfo), name(), typeId(-1), offset(-1)
+{
+}
+
+FieldInfoRecord::FieldInfoRecord(const std::string& name_, int32_t typeId_, int32_t offset_) : 
+    DebugRecord(DebugRecordKind::fieldInfo), name(name_), typeId(typeId_), offset(offset_)
+{
+}
+
+void FieldInfoRecord::Emit(DebugSection* debugSection)
+{
+    debugSection->EmitString(name);
+    debugSection->EmitTetra(typeId);
+    debugSection->EmitTetra(offset);
+}
+
+void FieldInfoRecord::Read(DebugSection* debugSection)
+{
+    name = debugSection->ReadString();
+    typeId = debugSection->ReadTetra();
+    offset = debugSection->ReadTetra();
+}
+
+std::string FieldInfoRecord::ToString() const
+{
+    std::string str = DebugRecordKindStr(Kind());
+    str.append("(").append("name=").append(name).append(", typeId=#").append(util::ToHexString(static_cast<uint32_t>(typeId))).
+        append(", offset=#").append(util::ToHexString(static_cast<uint32_t>(offset)));
+    return str;
+}
+
+StructTypeInfoRecord::StructTypeInfoRecord() : TypeInfoRecord(DebugRecordKind::structTypeInfo), size(-1)
+{
+}
+
+StructTypeInfoRecord::StructTypeInfoRecord(const std::string& fullName_, int32_t typeId_, int64_t size_) :
+    TypeInfoRecord(DebugRecordKind::structTypeInfo, fullName_, typeId_), size(size_)
+{
+}
+
+void StructTypeInfoRecord::Emit(DebugSection* debugSection)
+{
+    TypeInfoRecord::Emit(debugSection);
+    debugSection->EmitOcta(size);
+    int32_t n = static_cast<int32_t>(fieldInfoRecords.size());
+    debugSection->EmitTetra(n);
+    for (int32_t i = 0; i < n; ++i)
+    {
+        FieldInfoRecord& fieldInfoRecord = fieldInfoRecords[i]; 
+        fieldInfoRecord.Emit(debugSection);
+    }
+}
+
+void StructTypeInfoRecord::Read(DebugSection* debugSection)
+{
+    TypeInfoRecord::Read(debugSection);
+    size = debugSection->ReadOcta();
+    int32_t n = debugSection->ReadTetra();
+    for (int32_t i = 0; i < n; ++i)
+    {
+        FieldInfoRecord fieldInfoRecord;
+        fieldInfoRecord.Read(debugSection);
+        fieldInfoRecords.push_back(std::move(fieldInfoRecord));
+    }
+}
+
+std::string StructTypeInfoRecord::ToString() const
+{
+    std::string str = DebugRecordKindStr(Kind());
+    str.append("(").append("fullName=").append(FullName()).append(", typeId=#").append(util::ToHexString(static_cast<uint32_t>(TypeId()))).
+        append(", size=#").append(util::ToHexString(static_cast<uint64_t>(size))).
+        append(", field_info_count=#").append(util::ToHexString(static_cast<uint32_t>(fieldInfoRecords.size()))).append(")");
+    return str;
+}
+
+void StructTypeInfoRecord::AddFieldInfoRecord(FieldInfoRecord&& fieldInfoRecord)
+{
+    fieldInfoRecords.push_back(std::move(fieldInfoRecord));
+}
+
+ArrayTypeInfoRecord::ArrayTypeInfoRecord() : TypeInfoRecord(DebugRecordKind::arrayTypeInfo), elementTypeId(-1), size(-1)
+{
+}
+
+ArrayTypeInfoRecord::ArrayTypeInfoRecord(const std::string& fullName_, int32_t typeId_, int32_t elementTypeId_, int64_t size_) :
+    TypeInfoRecord(DebugRecordKind::arrayTypeInfo, fullName_, typeId_), elementTypeId(elementTypeId_), size(size_)
+{
+}
+
+void ArrayTypeInfoRecord::Emit(DebugSection* debugSection)
+{
+    TypeInfoRecord::Emit(debugSection);
+    debugSection->EmitTetra(elementTypeId);
+    debugSection->EmitOcta(size);
+}
+
+void ArrayTypeInfoRecord::Read(DebugSection* debugSection)
+{
+    TypeInfoRecord::Read(debugSection);
+    elementTypeId = debugSection->ReadTetra();
+    size = debugSection->ReadOcta();
+}
+
+std::string ArrayTypeInfoRecord::ToString() const
+{
+    std::string str = DebugRecordKindStr(Kind());
+    str.append("(").append("fullName=").append(FullName()).append(", typeId=#").append(util::ToHexString(static_cast<uint32_t>(TypeId()))).
+        append(", elementTypeId=#").append(util::ToHexString(static_cast<uint32_t>(elementTypeId))).
+        append(", size=#").append(util::ToHexString(static_cast<uint64_t>(size)));
+    return str;
+}
+
+FunctionTypeInfoRecord::FunctionTypeInfoRecord() : TypeInfoRecord(DebugRecordKind::functionTypeInfo)
+{
+}
+
+FunctionTypeInfoRecord::FunctionTypeInfoRecord(const std::string& fullName_, int32_t typeId_) :
+    TypeInfoRecord(DebugRecordKind::functionTypeInfo, fullName_, typeId_)
+{
+}
+
+void FunctionTypeInfoRecord::Emit(DebugSection* debugSection)
+{
+    TypeInfoRecord::Emit(debugSection);
+}
+
+void FunctionTypeInfoRecord::Read(DebugSection* debugSection)
+{
+    TypeInfoRecord::Read(debugSection);
+}
+
+std::string FunctionTypeInfoRecord::ToString() const
+{
+    std::string str = DebugRecordKindStr(Kind());
+    str.append("(").append("fullName=").append(FullName()).append(", typeId=#").append(util::ToHexString(static_cast<uint32_t>(TypeId()))).
+        append(")");
+    return str;
+}
+
 DebugRecord* MakeDebugRecord(DebugRecordKind kind)
 {
     switch (kind)
     {
         case DebugRecordKind::fileInfo: return new FileInfoRecord();
         case DebugRecordKind::funcInfo: return new FuncInfoRecord();
+        case DebugRecordKind::localInfo: return new LocalInfoRecord();
         case DebugRecordKind::startFunc:return new StartFuncRecord();
         case DebugRecordKind::endFunc: return new EndFuncRecord();
         case DebugRecordKind::lineInfo: return new LineInfoRecord();
@@ -402,6 +627,10 @@ DebugRecord* MakeDebugRecord(DebugRecordKind kind)
         case DebugRecordKind::catch_: return new CatchRecord();
         case DebugRecordKind::beginCleanup: return new BeginCleanupRecord();
         case DebugRecordKind::endCleanup: return new EndCleanupRecord();
+        case DebugRecordKind::structTypeInfo: return new StructTypeInfoRecord();
+        case DebugRecordKind::fieldInfo: return new FieldInfoRecord();
+        case DebugRecordKind::arrayTypeInfo: return new ArrayTypeInfoRecord();
+        case DebugRecordKind::functionTypeInfo: return new FunctionTypeInfoRecord();
     }
     return nullptr;
 }

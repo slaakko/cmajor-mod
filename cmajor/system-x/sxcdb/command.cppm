@@ -13,7 +13,7 @@ export namespace cmajor::systemx::sxcdb {
 enum class CommandKind : int
 {
     none, exitCommand, helpCommand, filesCommand, fileCommand, listCommand, framesCommand, frameCommand, modesCommand, modeCommand, procsCommand, 
-    breakCommand, breakPointsCommand, deleteCommand, clearCommand, continueCommand, nextCommand, stepCommand, outCommand
+    breakCommand, breakPointsCommand, deleteCommand, clearCommand, continueCommand, nextCommand, stepCommand, outCommand, localsCommand, printCommand
 };
 
 class Debugger;
@@ -26,15 +26,16 @@ public:
     CommandKind Kind() const { return kind; }
     bool IsNext() const { return kind == CommandKind::nextCommand; }
     bool IsStep() const { return kind == CommandKind::stepCommand; }
-    virtual int MinArgs() const { return 0; }
-    virtual int MaxArgs() const { return 0; }
+    bool IsPrint() const { return kind == CommandKind::printCommand; }
+    virtual int64_t MinArgs() const { return 0; }
+    virtual int64_t MaxArgs() const { return 0; }
     virtual void Execute(Debugger& debugger) = 0;
-    void SetArgs(const std::vector<int>& args_);
-    int GetArgCount() const { return static_cast<int>(args.size()); }
-    int GetArg(int argIndex) const { return args[argIndex]; }
+    void SetArgs(const std::vector<int64_t>& args_);
+    int64_t GetArgCount() const { return static_cast<int64_t>(args.size()); }
+    int64_t GetArg(int argIndex) const { return args[argIndex]; }
 private:
     CommandKind kind;
-    std::vector<int> args;
+    std::vector<int64_t> args;
 };
 
 class CommandMap
@@ -67,7 +68,7 @@ class FilesCommand : public Command
 {
 public:
     FilesCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -75,7 +76,7 @@ class FileCommand : public Command
 {
 public:
     FileCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -83,7 +84,7 @@ class ListCommand : public Command
 {
 public:
     ListCommand();
-    int MaxArgs() const override { return 2; }
+    int64_t MaxArgs() const override { return 2; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -91,7 +92,7 @@ class FramesCommand : public Command
 {
 public:
     FramesCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -99,7 +100,7 @@ class FrameCommand : public Command
 {
 public:
     FrameCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -114,7 +115,7 @@ class ModeCommand : public Command
 {
 public:
     ModeCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -122,7 +123,7 @@ class ProcsCommand : public Command
 {
 public:
     ProcsCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 private:
     std::vector<cmajor::systemx::kernel::Process*> processes;
@@ -132,8 +133,8 @@ class BreakCommand : public Command
 {
 public:
     BreakCommand();
-    int MinArgs() const override { return 1; }
-    int MaxArgs() const override { return 2; }
+    int64_t MinArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 2; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -141,7 +142,7 @@ class BreakPointsCommand : public Command
 {
 public:
     BreakPointsCommand();
-    int MaxArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -149,8 +150,8 @@ class DeleteCommand : public Command
 {
 public:
     DeleteCommand();
-    int MinArgs() const override { return 1; }
-    int MaxArgs() const override { return 1; }
+    int64_t MinArgs() const override { return 1; }
+    int64_t MaxArgs() const override { return 1; }
     void Execute(Debugger& debugger) override;
 };
 
@@ -187,6 +188,24 @@ class OutCommand : public Command
 public:
     OutCommand();
     void Execute(Debugger& debugger) override;
+};
+
+class LocalsCommand : public Command
+{
+public:
+    LocalsCommand();
+    void Execute(Debugger& debugger) override;
+};
+
+class PrintCommand : public Command
+{
+public:
+    PrintCommand();
+    int64_t MaxArgs() const override { return 1; }
+    void SetExpr(const std::string& expr_);
+    void Execute(Debugger& debugger) override;
+private:
+    std::string expr;
 };
 
 } // namespace cmajor::systemx::sxcdb

@@ -107,6 +107,15 @@ cmajor::systemx::object::FunctionTable* Process::GetFunctionTable()
     return functionTable.get();
 }
 
+cmajor::systemx::object::TypeTable* Process::GetTypeTable()
+{
+    if (!typeTable)
+    {
+        typeTable.reset(new cmajor::systemx::object::TypeTable());
+    }
+    return typeTable.get();
+}
+
 void Process::RemoveFromParent()
 {
     if (Parent())

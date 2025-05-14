@@ -248,6 +248,7 @@ public:
     virtual void* GetOrInsertAnyComdat(const std::string& name, void* global) = 0;
     virtual void* GetOrInsertAnyFunctionComdat(const std::string& name, void* function) = 0;
     virtual void* GetOrInsertFunction(const std::string& name, void* type, bool nothrow) = 0;
+    virtual void SetSystemType(void* type, int8_t systemType) = 0;
     virtual void* MakeSymbolValue(void* type, const std::string& name) { return nullptr; }
     virtual void SetInitializer(void* global, void* initializer) = 0;
     virtual void SetPrivateLinkage(void* global) = 0;
@@ -296,6 +297,7 @@ public:
     virtual void* GetIrObject(void* symbol) const = 0;
     virtual void SetIrObject(void* symbol, void* irObject) = 0;
     virtual void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) = 0;
+    virtual int64_t GetFieldOffset(void* structureType, int64_t fieldIndex) const { return -1; }
     virtual void* SizeOf(void* elementType, void* ptrType) = 0;
     virtual void SetLineNumber(int32_t lineNumber) = 0;
     virtual void SaveObjectPointer(void* objectPointer_) = 0;
@@ -358,6 +360,7 @@ public:
         void* subroutineType, unsigned flags) = 0;
     virtual void SetDISubprogram(void* function, void* subprogram) = 0;
     virtual void* CreateAlloca(void* irType) = 0;
+    virtual void SetLocalMetadataRef(void* local, void* mdRef) {}
     virtual void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* irType, void* allocaInst) = 0;
     virtual void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
@@ -398,7 +401,12 @@ public:
     virtual void SetMetadataRef(void* inst, void* mdStructRef) = 0;
     virtual void SetMetadataRefForStructType(void* structType, void* mdRef) = 0;
     virtual void* GetMetadataRefForStructType(void* structType) const = 0;
+    virtual void SetMetadataRefForArrayType(void* arrayType, void* mdRef) = 0;
+    virtual void* GetMetadataRefForArrayType(void* arrayType) const = 0;
+    virtual void SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef) = 0;
+    virtual void* GetMetadataRefForFunctionPointerType(void* functionPointerType) const = 0;
     virtual int GetTypeId(void* type) const = 0;
+    virtual int GetBaseTypeId(void* type) const = 0;
     virtual void FinalizeFunction(void* function, bool hasCleanup) = 0;
     virtual int Install(const std::string& str) = 0;
     virtual int Install(const std::u16string& str) = 0;

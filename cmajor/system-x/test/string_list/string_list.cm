@@ -1,0 +1,17 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    List<string> x;
+    x.Add("alpha");
+    x.Add("beta");
+    x.Add("gamma");
+    x.Add("delta");
+    x.Add("omega");
+    x.Add("upsilon");
+    x.Add("psi");
+    x.Add("fii");
+    x.Add("ksi");
+    int y = 0;
+}

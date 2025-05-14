@@ -213,6 +213,7 @@ public:
     void* GetOrInsertAnyComdat(const std::string& name, void* global) override;
     void* GetOrInsertAnyFunctionComdat(const std::string& name, void* function) override;
     void* GetOrInsertFunction(const std::string& name, void* type, bool nothrow) override;
+    void SetSystemType(void* type, int8_t systemType) override;
     void SetInitializer(void* global, void* initializer) override;
     void SetPrivateLinkage(void* global) override;
     bool IsVmtObjectCreated(void* symbol) const override;
@@ -358,7 +359,12 @@ public:
     void SetMetadataRef(void* inst, void* mdStructRef) override;
     void SetMetadataRefForStructType(void* structType, void* mdRef) override;
     void* GetMetadataRefForStructType(void* structType) const override;
+    void SetMetadataRefForArrayType(void* arrayType, void* mdRef) override;
+    void* GetMetadataRefForArrayType(void* arrayType) const override;
+    void SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef) override;
+    void* GetMetadataRefForFunctionPointerType(void* functionPointerType) const override;
     int GetTypeId(void* type) const override;
+    int GetBaseTypeId(void* type) const override;
     void FinalizeFunction(void* function, bool hasCleanup) override;
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;

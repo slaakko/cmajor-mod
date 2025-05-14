@@ -5,7 +5,6 @@
 
 module cmajor.systemx.sxcdb.debugger;
 
-import cmajor.systemx.object;
 import cmajor.systemx.sxutil;
 import util;
 
@@ -86,6 +85,8 @@ void Debugger::HandleFrame()
         if (canHandle)
         {
             RemoveTemporaryBreakPoints();
+            transientValues.clear();
+            indexedValues.clear();
             ReadCommand();
             SetPrevFrame();
         }
@@ -105,7 +106,7 @@ bool Debugger::PrintLocation()
 {
     if (frames.FrameCount() > 0)
     {
-        const Frame& currentFrame = frames.GetFrame(frame);
+        const Frame& currentFrame = frames.GetFrame(static_cast<int>(frame));
         if (currentFrame.LineColLen().IsValid())
         {
             cmajor::systemx::object::FunctionTableEntry* entry = currentFrame.Entry();
@@ -117,7 +118,8 @@ bool Debugger::PrintLocation()
             if (currentFile != -1)
             {
                 file = currentFile;
-                SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(file, *symbolTable, process->RV(), process->GetMachine()->Mem()));
+                SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(static_cast<int32_t>(file), *symbolTable, process->RV(), 
+                    process->GetMachine()->Mem()));
                 currentLineColLen = currentFrame.LineColLen();
                 sourceFile.PrintCurrent(process, *this);
                 return true;
@@ -208,26 +210,27 @@ void Debugger::PrintHelp()
     cmajor::systemx::kernel::WriteToTerminal(lines, process);
 }
 
-void Debugger::Files(int start)
+void Debugger::Files(int64_t start)
 {
     cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
     cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
-    int n = functionTable->SourceFileCount(*symbolTable, process->RV(), machine->Mem());
-    int end = std::min(start + pageSize - 1, n - 1);
-    int width = 0;
-    for (int fileIndex = start; fileIndex <= end; ++fileIndex)
+    int64_t n = functionTable->SourceFileCount(*symbolTable, process->RV(), machine->Mem());
+    int64_t end = std::min(start + pageSize - 1, n - 1);
+    int64_t width = 0;
+    for (int64_t fileIndex = start; fileIndex <= end; ++fileIndex)
     {
-        width = std::max(width, util::Log10(fileIndex));
+        width = std::max(width, static_cast<int64_t>(util::Log10(static_cast<int>(fileIndex))));
     }
-    for (int fileIndex = start; fileIndex <= end; ++fileIndex)
+    for (int64_t fileIndex = start; fileIndex <= end; ++fileIndex)
     {
-        std::string sourceFileName = functionTable->GetSourceFileName(fileIndex, *symbolTable, process->RV(), machine->Mem());
+        std::string sourceFileName = functionTable->GetSourceFileName(static_cast<int32_t>(fileIndex), *symbolTable, process->RV(), machine->Mem());
         std::string line;
         if (fileIndex == file)
         {
             line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
         }
-        line.append(util::Format(std::to_string(fileIndex), width, util::FormatJustify::right)).append(1, ' ').append(sourceFileName);
+        line.append(util::Format(std::to_string(fileIndex), static_cast<int32_t>(width), util::FormatJustify::right)).append(1, ' ').
+            append(sourceFileName);
         if (fileIndex == file)
         {
             line.append(util::ToUtf8(cmajor::systemx::ResetColors()));
@@ -251,18 +254,18 @@ void Debugger::PrintFile()
     {
         cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
         cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
-        std::string sourceFileName = functionTable->GetSourceFileName(file, *symbolTable, process->RV(), machine->Mem());
+        std::string sourceFileName = functionTable->GetSourceFileName(static_cast<int32_t>(file), *symbolTable, process->RV(), machine->Mem());
         std::string line;
         line.append("file=").append(std::to_string(file).append(1, ' ').append(sourceFileName)).append(1, '\n');
         cmajor::systemx::kernel::WriteToTerminal(line, process);
     }
 }
 
-void Debugger::SetFile(int file_)
+void Debugger::SetFile(int64_t file_)
 {
     cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
     cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
-    int n = functionTable->SourceFileCount(*symbolTable, process->RV(), machine->Mem());
+    int64_t n = functionTable->SourceFileCount(*symbolTable, process->RV(), machine->Mem());
     if (file_ >= 0 && file_ < n)
     {
         file = file_;
@@ -274,13 +277,14 @@ void Debugger::SetFile(int file_)
     }
 }
 
-void Debugger::List(int listFile, int listStartLine)
+void Debugger::List(int64_t listFile, int64_t listStartLine)
 {
     file = listFile;
     cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
     cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
-    SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(listFile, *symbolTable, process->RV(), process->GetMachine()->Mem()));
-    sourceFile.Print(listStartLine, process, *this, listFile, true);
+    SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(static_cast<int32_t>(listFile), *symbolTable, process->RV(), 
+        process->GetMachine()->Mem()));
+    sourceFile.Print(static_cast<int>(listStartLine), process, *this, static_cast<int>(listFile), true);
 }
 
 void Debugger::PrintModes()
@@ -310,22 +314,22 @@ void Debugger::PrintMode()
     cmajor::systemx::kernel::WriteToTerminal(line, process);
 }
 
-void Debugger::SetMode(int mode_)
+void Debugger::SetMode(int64_t mode_)
 {
     mode = Mode(mode_);
     PrintMode();
 }
 
-void Debugger::PrintFrames(int start)
+void Debugger::PrintFrames(int64_t start)
 {
-    int n = frames.FrameCount();
-    int end = std::min(start + pageSize - 1, n - 1);
-    int width = 0;
-    for (int frameIndex = start; frameIndex <= end; ++frameIndex)
+    int64_t n = frames.FrameCount();
+    int64_t end = std::min(start + pageSize - 1, n - 1);
+    int64_t width = 0;
+    for (int64_t frameIndex = start; frameIndex <= end; ++frameIndex)
     {
-        width = std::max(width, util::Log10(frameIndex));
+        width = std::max(width, static_cast<int64_t>(util::Log10(static_cast<int>(frameIndex))));
     }
-    for (int frameIndex = start; frameIndex <= end; ++frameIndex)
+    for (int64_t frameIndex = start; frameIndex <= end; ++frameIndex)
     {
         PrintFrame(frameIndex, width);
     }
@@ -337,10 +341,10 @@ void Debugger::PrintFrames(int start)
 
 void Debugger::PrintFrame()
 {
-    PrintFrame(frame, util::Log10(frame));
+    PrintFrame(frame, static_cast<int64_t>(util::Log10(static_cast<int>(frame))));
 }
 
-void Debugger::PrintFrame(int frameIndex, int width)
+void Debugger::PrintFrame(int64_t frameIndex, int64_t width)
 {
     cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
     cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
@@ -349,8 +353,8 @@ void Debugger::PrintFrame(int frameIndex, int width)
     {
         line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
     }
-    const Frame& frm = frames.GetFrame(frameIndex);
-    line.append(util::Format(std::to_string(frameIndex), width, util::FormatJustify::right)).append(1, ' ');
+    const Frame& frm = frames.GetFrame(static_cast<int>(frameIndex));
+    line.append(util::Format(std::to_string(frameIndex), static_cast<int>(width), util::FormatJustify::right)).append(1, ' ');
     if (!frm.Entry()->FullName().empty())
     {
         line.append(frm.Entry()->FullName()).append(1, ' ');
@@ -385,7 +389,7 @@ void Debugger::PrintFrame(int frameIndex, int width)
     cmajor::systemx::kernel::WriteToTerminal(line, process);
 }
 
-void Debugger::SetFrame(int frame_)
+void Debugger::SetFrame(int64_t frame_)
 {
     if (frame_ >= 0 && frame_ < frames.FrameCount())
     {
@@ -398,18 +402,18 @@ void Debugger::SetFrame(int frame_)
     }
 }
 
-void Debugger::PrintProcs(int start, const std::vector<cmajor::systemx::kernel::Process*>& processes)
+void Debugger::PrintProcs(int64_t start, const std::vector<cmajor::systemx::kernel::Process*>& processes)
 {
-    int n = static_cast<int>(processes.size());
-    int end = std::min(start + pageSize, n - 1);
-    int width = 0;
-    for (int i = start; i <= end; ++i)
+    int64_t n = static_cast<int>(processes.size());
+    int64_t end = std::min(start + pageSize, n - 1);
+    int64_t width = 0;
+    for (int64_t i = start; i <= end; ++i)
     {
         cmajor::systemx::kernel::Process* proc = processes[i];
         std::string pid = std::to_string(proc->Id());
-        width = std::max(width, int(pid.length()));
+        width = std::max(width, int64_t(pid.length()));
     }
-    for (int i = start; i <= end; ++i)
+    for (int64_t i = start; i <= end; ++i)
     {
         cmajor::systemx::kernel::Process* proc = processes[i];
         std::string line;
@@ -417,7 +421,7 @@ void Debugger::PrintProcs(int start, const std::vector<cmajor::systemx::kernel::
         {
             line.append(util::ToUtf8(cmajor::systemx::SetColors(cmajor::systemx::ConsoleColor::green, cmajor::systemx::ConsoleColor::black)));
         }
-        line.append(util::Format(std::to_string(proc->Id()), width, util::FormatWidth::min, util::FormatJustify::right, '0'));
+        line.append(util::Format(std::to_string(proc->Id()), static_cast<int>(width), util::FormatWidth::min, util::FormatJustify::right, '0'));
         line.append(1, ' ').append(proc->FilePath());
         cmajor::systemx::machine::ProcessState state = proc->State();
         line.append(1, ' ').append(cmajor::systemx::machine::ProcessStateStr(state));
@@ -434,7 +438,7 @@ void Debugger::PrintProcs(int start, const std::vector<cmajor::systemx::kernel::
     }
 }
 
-void Debugger::Break(int breakFile, int breakLine)
+void Debugger::Break(int64_t breakFile, int64_t breakLine)
 {
     cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
     cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
@@ -443,18 +447,20 @@ void Debugger::Break(int breakFile, int breakLine)
     {
         throw std::runtime_error("invalid breakpoint file " + std::to_string(breakFile));
     }
-    SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(breakFile, *symbolTable, process->RV(), process->GetMachine()->Mem()));
-    int lineCount = sourceFile.LineCount();
+    SourceFile& sourceFile = sourceFiles.GetSourceFile(functionTable->GetSourceFileName(static_cast<int32_t>(breakFile), *symbolTable, process->RV(), 
+        process->GetMachine()->Mem()));
+    int64_t lineCount = sourceFile.LineCount();
     if (breakLine < 1 || breakLine >= lineCount)
     {
         throw std::runtime_error("invalid breakpoint line " + std::to_string(breakLine));
     }
-    cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(breakFile, breakLine, *symbolTable, process->RV(), process->GetMachine()->Mem());
+    cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(static_cast<int32_t>(breakFile), static_cast<int32_t>(breakLine), *symbolTable, process->RV(), 
+        process->GetMachine()->Mem());
     if (!entry)
     {
         throw std::runtime_error("invalid breakpoint line " + std::to_string(breakLine));
     }
-    std::vector<int64_t> pcs = entry->SearchPCs(breakLine);
+    std::vector<int64_t> pcs = entry->SearchPCs(static_cast<int32_t>(breakLine));
     if (pcs.empty())
     {
         throw std::runtime_error("function '" + entry->FullName() + "' has no code associated with line " + std::to_string(breakLine));
@@ -473,7 +479,7 @@ void Debugger::Break(int breakFile, int breakLine)
         }
         else
         {
-            BreakPoint breakPoint(pc, nextBreakPointId++, entry, breakLine);
+            BreakPoint breakPoint(pc, static_cast<int>(nextBreakPointId++), entry, static_cast<int32_t>(breakLine));
             AddBreakPoint(breakPoint);
             std::string line;
             line.append("breakpoint " + std::to_string(breakPoint.Id()) + " set to function '" + entry->FullName() + "' line " + std::to_string(breakLine) +
@@ -484,7 +490,7 @@ void Debugger::Break(int breakFile, int breakLine)
     }
 }
 
-void Debugger::PrintBreakPoints(int start)
+void Debugger::PrintBreakPoints(int64_t start)
 {
     std::vector<BreakPoint> bps;
     for (const auto& pcBpPair : bpMap)
@@ -496,9 +502,9 @@ void Debugger::PrintBreakPoints(int start)
         }
     }
     std::sort(bps.begin(), bps.end());
-    int n = static_cast<int>(bps.size());
-    int end = std::min(start + pageSize, n - 1);
-    for (int i = start; i <= end; ++i)
+    int64_t n = static_cast<int64_t>(bps.size());
+    int64_t end = std::min(start + pageSize, n - 1);
+    for (int64_t i = start; i <= end; ++i)
     {
         const BreakPoint& bp = bps[i];
         std::string line;
@@ -513,7 +519,7 @@ void Debugger::PrintBreakPoints(int start)
     }
 }
 
-void Debugger::DeleteBreakPoint(int bpId)
+void Debugger::DeleteBreakPoint(int64_t bpId)
 {
     bool deleted = false;
     for (const auto& pcBpPair : bpMap)
@@ -640,6 +646,67 @@ void Debugger::Out()
     cont = true;
 }
 
+void Debugger::PrintLocals()
+{
+    cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
+    cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
+    cmajor::systemx::object::StringTable* stringTable = functionTable->GetStringTable();
+    cmajor::systemx::object::TypeTable* typeTable = process->GetTypeTable();
+    std::string lines;
+    lines.append("locals:");
+    if (frames.FrameCount() > 0)
+    {
+        const Frame& frm = frames.GetFrame(static_cast<int>(frame));
+        cmajor::systemx::object::FunctionTableEntry* entry = frm.Entry();
+        if (entry)
+        {
+            const std::vector<cmajor::systemx::object::LocalEntry>& localEntries = entry->LocalEntries();
+            int64_t count = std::min(static_cast<int64_t>(localEntries.size()), pageSize);
+            for (int64_t i = 0; i < count; ++i)
+            {
+                const cmajor::systemx::object::LocalEntry& localEntry = localEntries[i];
+                cmajor::systemx::object::Type* type = typeTable->GetType(localEntry.typeId, process->RV(), process->GetMachine()->Mem(), stringTable, symbolTable);
+                uint64_t address = frm.FP() + localEntry.offset;
+                std::vector<std::unique_ptr<cmajor::systemx::object::TypedValue>> stack;
+                cmajor::systemx::object::EvaluationContext context(address, process->RV(), process->GetMachine()->Mem(), stringTable, symbolTable, typeTable, 
+                    &indexedValues, &transientValues, &stack, pageSize);
+                std::unique_ptr<cmajor::systemx::object::TypedValue> value = type->Evaluate(context);
+                value->SetAddress(address);
+                int32_t index = static_cast<int32_t>(indexedValues.size());
+                lines.append("\n").append("$").append(std::to_string(index)).append(" = ").append(localEntry.name).
+                    append(" = ").append(value->ToString());
+                indexedValues.push_back(std::move(value));
+            }
+        }
+    }
+    lines.append(1, '\n');
+    cmajor::systemx::kernel::WriteToTerminal(lines, process);
+}
+
+void Debugger::Print(const std::string& expr, int64_t start)
+{
+    cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
+    cmajor::systemx::object::SymbolTable* symbolTable = process->GetSymbolTable();
+    cmajor::systemx::object::StringTable* stringTable = functionTable->GetStringTable();
+    cmajor::systemx::object::TypeTable* typeTable = process->GetTypeTable();
+    std::vector<std::unique_ptr<cmajor::systemx::object::TypedValue>> stack;
+    cmajor::systemx::object::EvaluationContext context(0, process->RV(), process->GetMachine()->Mem(), stringTable, symbolTable, typeTable,
+        &indexedValues, &transientValues, &stack, pageSize);
+    context.start = start;
+    context.content = true;
+    std::string lines;
+    lines.append("print...");
+    cmajor::systemx::object::TypedValue* value = cmajor::systemx::object::Evaluate(expr, context);
+    if (value->NextStart() != -1)
+    {
+        std::vector<int64_t> args(1, value->NextStart());
+        command->SetArgs(args);
+    }
+    lines.append(1, '\n').append(value->ToString());
+    lines.append(1, '\n');
+    cmajor::systemx::kernel::WriteToTerminal(lines, process);
+}
+
 std::string Debugger::ReadLine()
 {
     std::string prompt = "> ";
@@ -719,12 +786,31 @@ void Debugger::ReadCommand()
                 {
                     std::string commandName = tokens.front();
                     command.reset(GetCommand(commandName));
-                    std::vector<int> args;
-                    for (int i = 1; i < tokens.size(); ++i)
+                    if (command->IsPrint())
                     {
-                        args.push_back(std::stoi(tokens[i]));
+                        std::string expr;
+                        int n = static_cast<int>(tokens.size());
+                        for (int i = 1; i < n; ++i)
+                        {
+                            const std::string& token = tokens[i];
+                            if (i > 1)
+                            {
+                                expr.append(1, ' ');
+                            }
+                            expr.append(token);
+                        }
+                        PrintCommand* printCommand = static_cast<PrintCommand*>(command.get());
+                        printCommand->SetExpr(expr);
                     }
-                    command->SetArgs(args);
+                    else
+                    {
+                        std::vector<int64_t> args;
+                        for (int i = 1; i < tokens.size(); ++i)
+                        {
+                            args.push_back(std::stoll(tokens[i]));
+                        }
+                        command->SetArgs(args);
+                    }
                     command->Execute(*this);
                 }
             }

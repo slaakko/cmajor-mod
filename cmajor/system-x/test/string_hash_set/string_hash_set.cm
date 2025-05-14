@@ -1,0 +1,11 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    HashSet<string> hs;
+    hs.Insert("foo");
+    hs.Insert("bar");
+    hs.Insert("bazz");
+    int x = 0;
+}

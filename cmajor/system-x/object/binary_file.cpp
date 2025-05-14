@@ -754,6 +754,21 @@ DebugSection::DebugSection(BinaryFile* file_) : Section(SectionKind::dbug, file_
 void DebugSection::AddDebugRecord(DebugRecord* debugRecord)
 {
     debugRecords.push_back(std::unique_ptr<DebugRecord>(debugRecord));
+    if (debugRecord->IsStructureTypeInfoRecord())
+    {
+        StructTypeInfoRecord* record = static_cast<StructTypeInfoRecord*>(debugRecord);
+        typeInfoMap[record->TypeId()] = record;
+    }
+    else if (debugRecord->IsArrayTypeInfoRecord())
+    {
+        ArrayTypeInfoRecord* record = static_cast<ArrayTypeInfoRecord*>(debugRecord);
+        typeInfoMap[record->TypeId()] = record;
+    }
+    else if (debugRecord->IsFunctionTypeInfoRecord())
+    {
+        FunctionTypeInfoRecord* record = static_cast<FunctionTypeInfoRecord*>(debugRecord);
+        typeInfoMap[record->TypeId()] = record;
+    }
 }
 
 void DebugSection::Finalize()
@@ -785,6 +800,19 @@ void DebugSection::Read(util::BinaryStreamReader& reader)
     {
         DebugRecord* debugRecord = ReadDebugRecord(this);
         AddDebugRecord(debugRecord);
+    }
+}
+
+TypeInfoRecord* DebugSection::GetTypeInfoRecord(int32_t typeId) const
+{
+    auto it = typeInfoMap.find(typeId);
+    if (it != typeInfoMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        throw std::runtime_error("type info not found");
     }
 }
 

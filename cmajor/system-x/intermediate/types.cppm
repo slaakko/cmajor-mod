@@ -41,6 +41,26 @@ const int32_t pointerTypeId = int32_t(1) << 30;
 constexpr bool IsFundamentalTypeId(int32_t typeId) { return typeId >= 0 && typeId < userTypeId; }
 constexpr bool IsPointerTypeId(int32_t typeId) { return (typeId & pointerTypeId) != 0; }
 
+const int8_t notSystemType = 0;
+const int8_t stringType = 1;
+const int8_t listType = 2;
+const int8_t setType = 3;
+const int8_t mapType = 4;
+const int8_t linkedListType = 5;
+const int8_t hashSetType = 6;
+const int8_t hashMapType = 7;
+const int8_t forwardListType = 8;
+
+inline void SetSystemType(int32_t& typeId, int8_t systemType)
+{
+    typeId |= static_cast<int32_t>(systemType) << 20;
+}
+
+inline int8_t GetSystemType(int32_t typeId)
+{
+    return (typeId >> 20) & 0x0F;
+}
+
 inline int32_t MakeUserTypeId(const std::string& typeIdStr)
 {
     return userTypeId + std::stoi(typeIdStr.substr(2));
@@ -104,6 +124,8 @@ public:
     bool IsFloatType() const { return id == floatTypeId; }
     bool IsDoubleType() const { return id == doubleTypeId; }
     bool IsPointerType() const { return kind == TypeKind::pointerType; }
+    int8_t GetSystemType() const { return cmajor::systemx::intermediate::GetSystemType(id); }
+    void SetSystemType(int8_t systemType) { cmajor::systemx::intermediate::SetSystemType(id, systemType); }
     Type* AddPointer(Context* context);
     Type* RemovePointer(const soul::ast::SourcePos& sourcePos, Context* context) const;
     bool IsStructureType() const { return kind == TypeKind::structureType; }
@@ -336,10 +358,13 @@ public:
     int64_t ElementCount() const { return elementCount; }
     const TypeRef& ElementTypeRef() const { return elementTypeRef; }
     Type* ElementType() const { return elementTypeRef.GetType(); }
+    void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
+    MetadataRef* GetMetadataRef() const { return metadataRef; }
     void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     int64_t elementCount;
     TypeRef elementTypeRef;
+    MetadataRef* metadataRef;
 };
 
 struct FunctionTypeKey
@@ -367,10 +392,13 @@ public:
     Type* ReturnType() const { return returnTypeRef.GetType(); }
     const std::vector<TypeRef>& ParamTypeRefs() const { return paramTypeRefs; }
     Type* ParamType(int index) const { return paramTypeRefs[index].GetType(); }
+    void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
+    MetadataRef* GetMetadataRef() const { return metadataRef; }
     void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     TypeRef returnTypeRef;
     std::vector<TypeRef> paramTypeRefs;
+    MetadataRef* metadataRef;
 };
 
 class PointerType : public Type
@@ -401,8 +429,9 @@ public:
     Context* GetContext() const { return context; }
     void SetContext(Context* context_) { context = context_; }
     void AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const std::vector<TypeRef>& fieldTypeRefs, MetadataRef* metadataRef);
-    void AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef);
-    void AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs);
+    void AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef, MetadataRef* metadataRef);
+    void AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs, 
+        MetadataRef* metadataRef);
     void Resolve(Context* context);
     void ResolveType(TypeRef& typeRef, Context* context);
     void Add(Type* type, Context* context);
@@ -427,6 +456,7 @@ public:
     Type* GetStructureType(const std::vector<Type*>& memberTypes);
     Type* GetFunctionType(Type* returnType, const std::vector<Type*>& paramTypes);
     Type* GetArrayType(int64_t size, Type* elementType);
+    const std::vector<Type*>& DeclaredTypes() const { return declaredTypes; }
     void Write(util::CodeFormatter& formatter);
 private:
     Type* GetFundamentalType(int32_t id) const;

@@ -32,6 +32,8 @@ std::string CommandKindStr(CommandKind kind)
         case CommandKind::nextCommand: return "next";
         case CommandKind::stepCommand: return "step";
         case CommandKind::outCommand: return "out";
+        case CommandKind::localsCommand: return "locals";
+        case CommandKind::printCommand: return "print";
     }
     return std::string();
 }
@@ -44,9 +46,9 @@ Command::~Command()
 {
 }
 
-void Command::SetArgs(const std::vector<int>& args_)
+void Command::SetArgs(const std::vector<int64_t>& args_)
 {
-    if (args_.size() < MinArgs() || args_.size() > MaxArgs())
+    if (static_cast<int64_t>(args_.size()) < MinArgs() || static_cast<int64_t>(args_.size()) > MaxArgs())
     {
         throw std::runtime_error(CommandKindStr(kind) + " command takes " + std::to_string(MinArgs()) + " to " + std::to_string(MaxArgs()) + " arguments");
     }
@@ -93,6 +95,10 @@ CommandMap::CommandMap()
     commandMap["st"] = CommandKind::stepCommand;
     commandMap["out"] = CommandKind::outCommand;
     commandMap["ou"] = CommandKind::outCommand;
+    commandMap["locals"] = CommandKind::localsCommand;
+    commandMap["lo"] = CommandKind::localsCommand;
+    commandMap["print"] = CommandKind::printCommand;
+    commandMap["pr"] = CommandKind::printCommand;
 }
 
 Command* CommandMap::GetCommand(const std::string& commandName) const
@@ -175,7 +181,14 @@ Command* CommandMap::GetCommand(const std::string& commandName) const
             {
                 return new OutCommand();
             }
-
+            case CommandKind::localsCommand:
+            {
+                return new LocalsCommand();
+            }
+            case CommandKind::printCommand:
+            {
+                return new PrintCommand();
+            }
         }
     }
     throw std::runtime_error("unknown command '" + commandName + "', try 'help'");
@@ -213,15 +226,15 @@ void FilesCommand::Execute(Debugger& debugger)
     if (GetArgCount() == 0)
     {
         debugger.Files(0);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(debugger.PageSize());
         SetArgs(args);
     }
     else
     {
-        int start = GetArg(0);
+        int64_t start = GetArg(0);
         debugger.Files(start);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
     }
@@ -253,24 +266,24 @@ void ListCommand::Execute(Debugger& debugger)
     {
         int start = 1;
         debugger.List(debugger.File(), start);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
     }
     else if (GetArgCount() == 1)
     {
-        int start = GetArg(0);
+        int64_t start = GetArg(0);
         debugger.List(debugger.File(), start);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
     }
     else if (GetArgCount() == 2)
     {
-        int file = GetArg(0);
-        int start = GetArg(1);
+        int64_t file = GetArg(0);
+        int64_t start = GetArg(1);
         debugger.List(file, start);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(file);
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
@@ -286,15 +299,15 @@ void FramesCommand::Execute(Debugger& debugger)
     if (GetArgCount() == 0)
     {
         debugger.PrintFrames(0);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(debugger.PageSize());
         SetArgs(args);
     }
     else
     {
-        int start = GetArg(0);
+        int64_t start = GetArg(0);
         debugger.PrintFrames(start);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
     }
@@ -350,15 +363,15 @@ void ProcsCommand::Execute(Debugger& debugger)
     if (GetArgCount() == 0)
     {
         debugger.PrintProcs(0, processes);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(debugger.PageSize());
         SetArgs(args);
     }
     else
     {
-        int start = GetArg(0);
+        int64_t start = GetArg(0);
         debugger.PrintProcs(start, processes);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
     }
@@ -372,14 +385,14 @@ void BreakCommand::Execute(Debugger& debugger)
 {
     if (GetArgCount() == 1)
     {
-        int file = debugger.File();
-        int line = GetArg(0);
+        int64_t file = debugger.File();
+        int64_t line = GetArg(0);
         debugger.Break(file, line);
     }
     else if (GetArgCount() == 2)
     {
-        int file = GetArg(0);
-        int line = GetArg(1);
+        int64_t file = GetArg(0);
+        int64_t line = GetArg(1);
         debugger.Break(file, line);
     }
 }
@@ -393,15 +406,15 @@ void BreakPointsCommand::Execute(Debugger& debugger)
     if (GetArgCount() == 0)
     {
         debugger.PrintBreakPoints(0);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(debugger.PageSize());
         SetArgs(args);
     }
     else
     {
-        int start = GetArg(0);
+        int64_t start = GetArg(0);
         debugger.PrintBreakPoints(start);
-        std::vector<int> args;
+        std::vector<int64_t> args;
         args.push_back(start + debugger.PageSize());
         SetArgs(args);
     }
@@ -413,7 +426,7 @@ DeleteCommand::DeleteCommand() : Command(CommandKind::deleteCommand)
 
 void DeleteCommand::Execute(Debugger& debugger)
 {
-    int bpId = GetArg(0);
+    int64_t bpId = GetArg(0);
     debugger.DeleteBreakPoint(bpId);
 }
 
@@ -460,6 +473,34 @@ OutCommand::OutCommand() : Command(CommandKind::outCommand)
 void OutCommand::Execute(Debugger& debugger)
 {
     debugger.Out();
+}
+
+LocalsCommand::LocalsCommand() : Command(CommandKind::localsCommand)
+{
+}
+
+void LocalsCommand::Execute(Debugger& debugger)
+{
+    debugger.PrintLocals();
+}
+
+PrintCommand::PrintCommand() : Command(CommandKind::printCommand)
+{
+}
+
+void PrintCommand::SetExpr(const std::string& expr_)
+{
+    expr = expr_;
+}
+
+void PrintCommand::Execute(Debugger& debugger)
+{
+    int64_t start = 0;
+    if (GetArgCount() == 1)
+    {
+        start = GetArg(0);
+    }
+    debugger.Print(expr, start);
 }
 
 } // namespace cmajor::systemx::sxcdb

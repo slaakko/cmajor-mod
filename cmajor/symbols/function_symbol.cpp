@@ -1466,6 +1466,7 @@ void FunctionSymbol::CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usin
 LocalVariableSymbol* FunctionSymbol::CreateTemporary(TypeSymbol* type, const soul::ast::Span& span, Context* context, bool add)
 {
     LocalVariableSymbol* temporary = new LocalVariableSymbol(span, U"@t" + util::ToUtf32(std::to_string(nextTemporaryIndex++)));
+    temporary->SetTemporary();
     temporary->SetType(type);
     if (add)
     {

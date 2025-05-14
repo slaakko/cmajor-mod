@@ -1,0 +1,3 @@
+project string_map;
+target=program;
+source <string_map.cm>;

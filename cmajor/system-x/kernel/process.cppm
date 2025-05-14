@@ -51,6 +51,7 @@ public:
     const std::shared_ptr<cmajor::systemx::object::SymbolTable>& GetSymbolTablePtr() const { return symbolTable; }
     void SetSymbolTable(const std::shared_ptr<cmajor::systemx::object::SymbolTable>& symbolTable_);
     cmajor::systemx::object::FunctionTable* GetFunctionTable();
+    cmajor::systemx::object::TypeTable* GetTypeTable();
     void RemoveFromParent();
     uint8_t ExitCode() const { return exitCode; }
     void SetExitCode(uint8_t exitCode_) { exitCode = exitCode_; }
@@ -165,6 +166,7 @@ private:
     RegionTable regionTable;
     ProcessFileTable fileTable;
     std::unique_ptr<cmajor::systemx::object::FunctionTable> functionTable;
+    std::unique_ptr<cmajor::systemx::object::TypeTable> typeTable;
     SystemError error;
     uint64_t currentExceptionAddress;
     uint64_t currentExceptionClassId;

@@ -1,0 +1,66 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.systemx.object.expr.parser;
+
+[interface]import cmajor.systemx.object.expr;
+[implementation]import cmajor.systemx.object.expr.token;
+[implementation]import cmajor.systemx.object.expr.lexer;
+[implementation]import util;
+
+parser ExprParser
+{
+    lexer cmajor::systemx::object::expr::lexer::ExprLexer<char32_t>;
+    main;
+
+    Expr : cmajor::systemx::object::Expr*
+        ::= UnaryExpr:unary{ return unary; }
+        ;
+
+    UnaryExpr(var std::unique_ptr<cmajor::systemx::object::Expr> expr) : cmajor::systemx::object::Expr*
+        ::= DEREF UnaryExpr:unary{ return new cmajor::systemx::object::DerefExpr(unary); }
+        |   PostfixExpr:postfix{ return postfix; }
+        ;
+
+    PostfixExpr(var std::unique_ptr<cmajor::systemx::object::Expr> expr, var int64_t index, var int64_t count) : cmajor::systemx::object::Expr*
+        ::= 
+        (
+            PrimaryExpr:primary{ expr.reset(primary); }
+            (   DOT ID{ expr.reset(new cmajor::systemx::object::MemberExpr(expr.release(), util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+            |   ARROW ID{ expr.reset(new cmajor::systemx::object::ArrowExpr(expr.release(), util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+            |   LBRACKET 
+                INTEGER{ index = cmajor::systemx::object::ParseInteger(util::ToUtf8(lexer.GetToken(pos).ToString())); } 
+                COMMA 
+                INTEGER{ count = cmajor::systemx::object::ParseInteger(util::ToUtf8(lexer.GetToken(pos).ToString())); } 
+                RBRACKET
+                {
+                    expr.reset(new cmajor::systemx::object::RangeExpr(expr.release(), index, count)); 
+                }
+            |   LBRACKET INTEGER{ index = cmajor::systemx::object::ParseInteger(util::ToUtf8(lexer.GetToken(pos).ToString())); } RBRACKET
+                {
+                    expr.reset(new cmajor::systemx::object::IndexExpr(expr.release(), index)); 
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    PrimaryExpr : cmajor::systemx::object::Expr*
+        ::= DollarExpr:dollarExpr { return dollarExpr; }
+        |   LPAREN Expr:expr RPAREN{ return expr; }
+        ;
+
+    DollarExpr(var int64_t index) : cmajor::systemx::object::Expr*
+        ::= 
+        (
+            DOLLAR INTEGER{ index = cmajor::systemx::object::ParseInteger(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        )
+        {
+            return new cmajor::systemx::object::DollarExpr(index);
+        }
+        ;
+}

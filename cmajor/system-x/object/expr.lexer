@@ -1,0 +1,28 @@
+// =================================
+// Copyright (c) 2025 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.systemx.object.expr.lexer;
+
+import cmajor.systemx.object.expr.token;
+import cmajor.systemx.object.expr.expr;
+
+lexer ExprLexer
+{
+    rules
+    {
+        "{ws}" {}
+        "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return kw; }
+        "{integer}" { return INTEGER; }
+        "$" { return DOLLAR; }
+        "\*" { return DEREF; }
+        "\." { return DOT; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "," { return COMMA; }
+        "->" { return ARROW; }
+    }
+}

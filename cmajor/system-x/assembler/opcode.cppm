@@ -42,6 +42,9 @@ const uint64_t ENDTRY = 5;
 const uint64_t CATCH = 6;
 const uint64_t BEGINCLEANUP = 7;
 const uint64_t ENDCLEANUP = 8;
+const uint64_t STRUCTTYPEINFO = 9;
+const uint64_t ARRAYTYPEINFO = 10;
+const uint64_t FUNCTIONTYPEINFO = 11;
 
 class OpCode : public Node
 {

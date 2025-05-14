@@ -1,0 +1,3 @@
+project int_list;
+target=program;
+source <int_list.cm>;

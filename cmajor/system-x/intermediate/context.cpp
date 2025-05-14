@@ -58,14 +58,15 @@ void Context::AddStructureType(const soul::ast::SourcePos& sourcePos, int32_t ty
     types.AddStructureType(sourcePos, typeId, fieldTypeRefs, metadataRef);
 }
 
-void Context::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef)
+void Context::AddArrayType(const soul::ast::SourcePos& sourcePos, int32_t typeId, int64_t size, const TypeRef& elementTypeRef, MetadataRef* metadataRef)
 {
-    types.AddArrayType(sourcePos, typeId, size, elementTypeRef);
+    types.AddArrayType(sourcePos, typeId, size, elementTypeRef, metadataRef);
 }
 
-void Context::AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs)
+void Context::AddFunctionType(const soul::ast::SourcePos& sourcePos, int32_t typeId, const TypeRef& returnTypeRef, const std::vector<TypeRef>& paramTypeRefs, 
+    MetadataRef* metadataRef)
 {
-    types.AddFunctionType(sourcePos, typeId, returnTypeRef, paramTypeRefs);
+    types.AddFunctionType(sourcePos, typeId, returnTypeRef, paramTypeRefs, metadataRef);
 }
 
 void Context::AddGlobalVariable(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& variableName, ConstantValue* initializer, bool once)

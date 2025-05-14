@@ -1,0 +1,4 @@
+project cmajor.systemx.object.expr.lexer;
+tokens <expr.token>;
+expressions <expr.expr>;
+lexer <expr.lexer>;

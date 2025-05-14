@@ -16,15 +16,17 @@ class Frame
 {
 public:
     Frame();
-    Frame(int index_, uint64_t pc_, cmajor::systemx::object::FunctionTableEntry* entry_, soul::ast::LineColLen lineColLen_, int32_t idx_);
+    Frame(int index_, uint64_t pc_, uint64_t fp_, cmajor::systemx::object::FunctionTableEntry* entry_, soul::ast::LineColLen lineColLen_, int32_t idx_);
     int Index() const { return index; }
     uint64_t PC() const { return pc; }
+    uint64_t FP() const { return fp; }
     cmajor::systemx::object::FunctionTableEntry* Entry() const { return entry; }
     const soul::ast::LineColLen& LineColLen() const { return lineColLen; }
     int32_t Idx() const { return idx; }
 private:
     int index;
     uint64_t pc;
+    uint64_t fp;
     cmajor::systemx::object::FunctionTableEntry* entry;
     soul::ast::LineColLen lineColLen;
     int32_t idx;

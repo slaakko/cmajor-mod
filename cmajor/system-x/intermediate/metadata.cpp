@@ -7,6 +7,7 @@ module cmajor.systemx.intermediate.metadata;
 
 import cmajor.systemx.intermediate.context;
 import cmajor.systemx.intermediate.error;
+import cmajor.systemx.intermediate.code;
 
 namespace cmajor::systemx::intermediate {
 
@@ -18,6 +19,15 @@ MetadataRef::MetadataRef(const soul::ast::SourcePos& sourcePos_, int32_t nodeId_
 void MetadataRef::Write(util::CodeFormatter& formatter)
 {
     formatter.Write("!" + std::to_string(nodeId));
+}
+
+MetadataBasicBlockRef::MetadataBasicBlockRef(BasicBlock* bb_) : MetadataItem(MetadataItemKind::metadataBasicBlockRef), bb(bb_)
+{
+}
+
+void MetadataBasicBlockRef::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(std::to_string(bb->Id()));
 }
 
 MetadataItem::MetadataItem(MetadataItemKind kind_) : kind(kind_)
@@ -99,6 +109,7 @@ MetadataStruct::MetadataStruct(const soul::ast::SourcePos& sourcePos_, int32_t i
 void MetadataStruct::AddItem(const std::string& fieldName, MetadataItem* item)
 {
     itemMap[fieldName] = item;
+    items.push_back(std::make_pair(fieldName, item));
 }
 
 MetadataItem* MetadataStruct::GetItem(const std::string& fieldName) const
@@ -123,7 +134,7 @@ void MetadataStruct::WriteDefinition(util::CodeFormatter& formatter)
 {
     formatter.Write("!" + std::to_string(id) + " = {");
     bool first = true;
-    for (const auto& item : itemMap)
+    for (const auto& item : items)
     {
         if (first)
         {
@@ -259,6 +270,13 @@ MetadataRef* Metadata::CreateMetadataRef(const soul::ast::SourcePos& sourcePos, 
         metadataReferences.push_back(metadataRef);
         return metadataRef;
     }
+}
+
+MetadataBasicBlockRef* Metadata::CreateMetadataBasicBlockRef(BasicBlock* bb)
+{
+    MetadataBasicBlockRef* bbRef = new MetadataBasicBlockRef(bb);
+    metadataItems.push_back(std::unique_ptr<MetadataItem>(bbRef));
+    return bbRef;
 }
 
 void Metadata::ResolveMetadataReferences(Context* context)

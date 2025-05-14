@@ -64,6 +64,8 @@ class LocalVariableSymbol : public VariableSymbol
 {
 public:
     LocalVariableSymbol(const soul::ast::Span& span_, const std::u32string& name_);
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     bool IsExportSymbol() const override { return false; }
     std::unique_ptr<soul::xml::Element> CreateDomElement(TypeMap& typeMap) override;
@@ -73,8 +75,11 @@ public:
     std::string GetSymbolHelp() const override;
     bool IsInitialized() const { return initialized; }
     void SetInitialized() { initialized = true; }
+    bool IsTemporary() const { return temporary; }
+    void SetTemporary() { temporary = true; }
 private:
     bool initialized;
+    bool temporary;
 };
 
 class MemberVariableSymbol : public VariableSymbol

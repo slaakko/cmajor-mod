@@ -16,6 +16,26 @@ import std.core;
 
 export namespace cmajor::symbols {
 
+const int8_t notSystemType = 0;
+const int8_t stringType = 1;
+const int8_t listType = 2;
+const int8_t setType = 3;
+const int8_t mapType = 4;
+const int8_t linkedListType = 5;
+const int8_t hashSetType = 6;
+const int8_t hashMapType = 7;
+const int8_t forwardListType = 8;
+
+class SystemTypeMap
+{
+public:
+    static SystemTypeMap& Instance();
+    int8_t GetSystemType(ClassTemplateSpecializationSymbol* specialization) const;
+private:
+    SystemTypeMap();
+    std::map<std::u32string, int8_t> templateTypeMap;
+};
+
 enum class ClassTemplateSpecializationFlags : uint8_t
 {
     none = 0,

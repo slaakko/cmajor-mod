@@ -169,9 +169,11 @@ public:
     void Finalize() override;
     void Read(util::BinaryStreamReader& reader) override;
     const std::vector<std::unique_ptr<DebugRecord>>& DebugRecords() const { return debugRecords; };
+    TypeInfoRecord* GetTypeInfoRecord(int32_t typeId) const;
 private:
     void EmitDebugRecords();
     std::vector<std::unique_ptr<DebugRecord>> debugRecords;
+    std::map<int32_t, TypeInfoRecord*> typeInfoMap;
 };
 
 class ResourceSection : public Section

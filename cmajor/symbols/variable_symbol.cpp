@@ -155,8 +155,22 @@ std::string ParameterSymbol::GetSymbolHelp() const
 }
 
 LocalVariableSymbol::LocalVariableSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
-    VariableSymbol(SymbolType::localVariableSymbol, span_, name_), initialized(false)
+    VariableSymbol(SymbolType::localVariableSymbol, span_, name_), initialized(false), temporary(false)
 {
+}
+
+void LocalVariableSymbol::Write(SymbolWriter& writer)
+{
+    VariableSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(initialized);
+    writer.GetBinaryStreamWriter().Write(temporary);
+}
+
+void LocalVariableSymbol::Read(SymbolReader& reader)
+{
+    VariableSymbol::Read(reader);
+    initialized = reader.GetBinaryStreamReader().ReadBool();
+    temporary = reader.GetBinaryStreamReader().ReadBool();
 }
 
 std::unique_ptr<soul::xml::Element> LocalVariableSymbol::CreateDomElement(TypeMap& typeMap)

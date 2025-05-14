@@ -195,9 +195,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         emitter->SetCurrentLineColLen(beginLineColLen);
     }
-    if (functionSymbol->IsProgramMain())
+    if (functionSymbol->GroupName() == U"main")
     {
-        emitter->SetCurrentFunctionMain();
+        if (!functionSymbol->IsProgramMain())
+        {
+            emitter->SetCurrentFunctionMain();
+        }
     }
     void* entryBlock = emitter->CreateBasicBlock("entry");
     entryBasicBlock = entryBlock;
@@ -219,7 +222,10 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     for (int i = 0; i < np; ++i)
     {
         cmajor::symbols::ParameterSymbol* parameter = functionSymbol->Parameters()[i];
-        void* allocaInst = emitter->CreateAlloca(parameter->GetType()->IrType(*emitter, context));
+        CreateMetadataForType(parameter->GetType());
+        void* irType = parameter->GetType()->IrType(*emitter, context);
+        void* allocaInst = emitter->CreateAlloca(irType);
+        CreateLocalNode(allocaInst, util::ToUtf8(parameter->Name()), irType);
         emitter->SetIrObject(parameter, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -234,7 +240,13 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     for (int i = 0; i < nlv; ++i)
     {
         cmajor::symbols::LocalVariableSymbol* localVariable = functionSymbol->LocalVariables()[i];
-        void* allocaInst = emitter->CreateAlloca(localVariable->GetType()->IrType(*emitter, context));
+        CreateMetadataForType(localVariable->GetType());
+        void* irType = localVariable->GetType()->IrType(*emitter, context);
+        void* allocaInst = emitter->CreateAlloca(irType);
+        if (!localVariable->IsTemporary())
+        {
+            CreateLocalNode(allocaInst, util::ToUtf8(localVariable->Name()), irType);
+        }
         emitter->SetIrObject(localVariable, allocaInst);
         lastAlloca = allocaInst;
     }
@@ -1778,22 +1790,102 @@ void SystemXCodeGenerator::AddCFGItem(int prev, int next)
     emitter->AddMDArrayItem(cfg, mdStructRef);
 }
 
+void SystemXCodeGenerator::CreateMetadataForType(cmajor::symbols::TypeSymbol* type)
+{
+    cmajor::symbols::TypeSymbol* baseType = type->BaseType();
+    if (baseType->IsClassTypeSymbol())
+    {
+        CreateMetadataForClassType(static_cast<cmajor::symbols::ClassTypeSymbol*>(baseType));
+    }
+    else if (baseType->IsArrayType())
+    {
+        CreateMetadataForArrayType(static_cast<cmajor::symbols::ArrayTypeSymbol*>(baseType));
+    }
+    else if (baseType->IsDelegateType())
+    {
+        CreateMetadataForDelegateType(static_cast<cmajor::symbols::DelegateTypeSymbol*>(baseType));
+    }
+    else if (baseType->IsClassDelegateType())
+    {
+        CreateMetadataForClassDelegateType(static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(baseType));
+    }
+}
+
 void SystemXCodeGenerator::CreateMetadataForClassType(cmajor::symbols::ClassTypeSymbol* classTypeSymbol)
 {
-    return;
     void* irType = classTypeSymbol->IrType(*emitter, context);
     void* metadataRef = emitter->GetMetadataRefForStructType(irType);
     if (metadataRef) return;
     void* mdStruct = emitter->CreateMDStruct();
     emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(structInfoNodeType));
+    emitter->AddMDItem(mdStruct, "typeId", emitter->CreateMDLong(emitter->GetTypeId(irType)));
     void* fullNameItem = emitter->CreateMDString(util::ToUtf8(classTypeSymbol->FullName()));
     emitter->AddMDItem(mdStruct, "fullName", fullNameItem);
     int mdStructId = emitter->GetMDStructId(mdStruct);
     void* mdStructRef = emitter->CreateMDStructRef(mdStructId);
     emitter->SetMetadataRefForStructType(irType, mdStructRef);
     void* fieldArray = emitter->CreateMDArray();
-    for (const auto& memberVar : classTypeSymbol->MemberVariables())
+    int index = 0;
+    if (classTypeSymbol->BaseClass())
     {
+        void* fieldStruct = emitter->CreateMDStruct();
+        emitter->AddMDItem(fieldStruct, "nodeType", emitter->CreateMDLong(fieldInfoNodeType));
+        int fieldStructId = emitter->GetMDStructId(fieldStruct);
+        void* fieldStructRef = emitter->CreateMDStructRef(fieldStructId);
+        void* nameItem = emitter->CreateMDString("base");
+        emitter->AddMDItem(fieldStruct, "name", nameItem);
+        emitter->AddMDArrayItem(fieldArray, fieldStructRef);
+        cmajor::symbols::TypeSymbol* baseClassType = classTypeSymbol->BaseClass();
+        CreateMetadataForType(baseClassType);
+        void* baseIrType = baseClassType->IrType(*emitter, context);
+        int typeId = emitter->GetTypeId(baseIrType);
+        if (typeId != -1)
+        {
+            void* typeItem = emitter->CreateMDLong(typeId);
+            emitter->AddMDItem(fieldStruct, "typeId", typeItem);
+        }
+        int64_t offset = emitter->GetFieldOffset(irType, 0);
+        emitter->AddMDItem(fieldStruct, "offset", emitter->CreateMDLong(offset));
+        ++index;
+    }
+    else if (classTypeSymbol->IsPolymorphic())
+    {
+        void* fieldStruct = emitter->CreateMDStruct();
+        emitter->AddMDItem(fieldStruct, "nodeType", emitter->CreateMDLong(fieldInfoNodeType));
+        int fieldStructId = emitter->GetMDStructId(fieldStruct);
+        void* fieldStructRef = emitter->CreateMDStructRef(fieldStructId);
+        void* nameItem = emitter->CreateMDString("@vmtptr");
+        emitter->AddMDItem(fieldStruct, "name", nameItem);
+        emitter->AddMDArrayItem(fieldArray, fieldStructRef);
+        void* vmtPtrIrType = context->RootModule()->GetSymbolTable().GetTypeByName(U"void")->AddPointer(context)->IrType(*emitter, context);
+        int typeId = emitter->GetTypeId(vmtPtrIrType);
+        void* typeItem = emitter->CreateMDLong(typeId);
+        emitter->AddMDItem(fieldStruct, "typeId", typeItem);
+        int64_t offset = emitter->GetFieldOffset(irType, 0);
+        emitter->AddMDItem(fieldStruct, "offset", emitter->CreateMDLong(offset));
+        ++index;
+    }
+    int n = static_cast<int>(classTypeSymbol->MemberVariables().size());
+    if (index == 0 && n == 0)
+    {
+        void* fieldStruct = emitter->CreateMDStruct();
+        emitter->AddMDItem(fieldStruct, "nodeType", emitter->CreateMDLong(fieldInfoNodeType));
+        int fieldStructId = emitter->GetMDStructId(fieldStruct);
+        void* fieldStructRef = emitter->CreateMDStructRef(fieldStructId);
+        void* nameItem = emitter->CreateMDString("@first");
+        emitter->AddMDItem(fieldStruct, "name", nameItem);
+        emitter->AddMDArrayItem(fieldArray, fieldStructRef);
+        void* byteIrType = context->RootModule()->GetSymbolTable().GetTypeByName(U"byte")->IrType(*emitter, context);
+        int typeId = emitter->GetTypeId(byteIrType);
+        void* typeItem = emitter->CreateMDLong(typeId);
+        emitter->AddMDItem(fieldStruct, "typeId", typeItem);
+        int64_t offset = emitter->GetFieldOffset(irType, 0);
+        emitter->AddMDItem(fieldStruct, "offset", emitter->CreateMDLong(offset));
+        ++index;
+    }
+    for (int i = 0; i  < n; ++i)
+    {
+        const auto& memberVar = classTypeSymbol->MemberVariables()[i];
         void* fieldStruct = emitter->CreateMDStruct();
         emitter->AddMDItem(fieldStruct, "nodeType", emitter->CreateMDLong(fieldInfoNodeType));
         int fieldStructId = emitter->GetMDStructId(fieldStruct);
@@ -1802,20 +1894,69 @@ void SystemXCodeGenerator::CreateMetadataForClassType(cmajor::symbols::ClassType
         emitter->AddMDItem(fieldStruct, "name", nameItem);
         emitter->AddMDArrayItem(fieldArray, fieldStructRef);
         cmajor::symbols::TypeSymbol* memberVarType = memberVar->GetType();
-        if (memberVarType->IsClassTypeSymbol())
-        {
-            cmajor::symbols::ClassTypeSymbol* memberVarClassTypeSymbol = static_cast<cmajor::symbols::ClassTypeSymbol*>(memberVarType);
-            CreateMetadataForClassType(memberVarClassTypeSymbol);
-        }
+        CreateMetadataForType(memberVarType);
         void* memberVarIrType = memberVarType->IrType(*emitter, context);
         int typeId = emitter->GetTypeId(memberVarIrType);
         if (typeId != -1)
         {
             void* typeItem = emitter->CreateMDLong(typeId);
-            emitter->AddMDItem(fieldStruct, "type", typeItem);
+            emitter->AddMDItem(fieldStruct, "typeId", typeItem);
         }
+        int64_t offset = emitter->GetFieldOffset(irType, index + i);
+        emitter->AddMDItem(fieldStruct, "offset", emitter->CreateMDLong(offset));
     }
     emitter->AddMDItem(mdStruct, "fields", fieldArray);
+}
+
+void SystemXCodeGenerator::CreateMetadataForArrayType(cmajor::symbols::ArrayTypeSymbol* arrayTypeSymbol)
+{
+    void* irType = arrayTypeSymbol->IrType(*emitter, context);
+    void* metadataRef = emitter->GetMetadataRefForArrayType(irType);
+    if (metadataRef) return;
+    void* mdStruct = emitter->CreateMDStruct();
+    emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(structInfoNodeType));
+    emitter->AddMDItem(mdStruct, "typeId", emitter->CreateMDLong(emitter->GetTypeId(irType)));
+    void* fullNameItem = emitter->CreateMDString(util::ToUtf8(arrayTypeSymbol->FullName()));
+    emitter->AddMDItem(mdStruct, "fullName", fullNameItem);
+    void* elementIrType = elementIrType = arrayTypeSymbol->ElementType()->IrType(*emitter, context);
+    emitter->AddMDItem(mdStruct, "elementTypeId", emitter->CreateMDLong(emitter->GetTypeId(elementIrType)));
+    int mdStructId = emitter->GetMDStructId(mdStruct);
+    void* mdStructRef = emitter->CreateMDStructRef(mdStructId);
+    emitter->SetMetadataRefForArrayType(irType, mdStructRef);
+}
+
+void SystemXCodeGenerator::CreateMetadataForDelegateType(cmajor::symbols::DelegateTypeSymbol* delegateTypeSymbol)
+{
+    void* irType = delegateTypeSymbol->IrType(*emitter, context);
+    void* metadataRef = emitter->GetMetadataRefForFunctionPointerType(irType);
+    if (metadataRef) return;
+    void* mdStruct = emitter->CreateMDStruct();
+    emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(delegateInfoNodeType));
+    emitter->AddMDItem(mdStruct, "typeId", emitter->CreateMDLong(emitter->GetBaseTypeId(irType)));
+    void* fullNameItem = emitter->CreateMDString(util::ToUtf8(delegateTypeSymbol->FullName()));
+    emitter->AddMDItem(mdStruct, "fullName", fullNameItem);
+    int mdStructId = emitter->GetMDStructId(mdStruct);
+    void* mdStructRef = emitter->CreateMDStructRef(mdStructId);
+    emitter->SetMetadataRefForFunctionPointerType(irType, mdStructRef);
+}
+
+void SystemXCodeGenerator::CreateMetadataForClassDelegateType(cmajor::symbols::ClassDelegateTypeSymbol* classDelegateTypeSymbol)
+{
+    cmajor::symbols::ClassTypeSymbol* objectDelegatePairType = classDelegateTypeSymbol->ObjectDelegatePairType();
+    CreateMetadataForClassType(objectDelegatePairType);
+}
+
+void SystemXCodeGenerator::CreateLocalNode(void* local, const std::string& name, void* type)
+{
+    void* mdStruct = emitter->CreateMDStruct();
+    emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(localInfoNodeType));
+    void* nameItem = emitter->CreateMDString(name);
+    emitter->AddMDItem(mdStruct, "name", nameItem);
+    int typeId = emitter->GetTypeId(type);
+    emitter->AddMDItem(mdStruct, "typeId", emitter->CreateMDLong(typeId));
+    int mdStructId = emitter->GetMDStructId(mdStruct);
+    void* mdStructRef = emitter->CreateMDStructRef(mdStructId);
+    emitter->SetLocalMetadataRef(local, mdStructRef);
 }
 
 } // namespace cmajor::systemx::backend

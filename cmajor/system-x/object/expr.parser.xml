@@ -1,0 +1,113 @@
+<parserFile>
+ <grammar name="ExprParser">
+  <rule first="{DEREF, DOLLAR, LPAREN}" name="Expr">
+   <action first="{DEREF, DOLLAR, LPAREN}">
+    <nonterminal first="{DEREF, DOLLAR, LPAREN}" ruleName="UnaryExpr"/>
+   </action>
+  </rule>
+  <rule first="{DEREF, DOLLAR, LPAREN}" name="UnaryExpr">
+   <choice first="{DEREF, DOLLAR, LPAREN}">
+    <sequence first="{DEREF}">
+     <token first="{DEREF}" name="DEREF"/>
+     <action first="{DEREF, DOLLAR, LPAREN}">
+      <nonterminal first="{DEREF, DOLLAR, LPAREN}" ruleName="UnaryExpr"/>
+     </action>
+    </sequence>
+    <action first="{DOLLAR, LPAREN}">
+     <nonterminal first="{DOLLAR, LPAREN}" ruleName="PostfixExpr"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{DOLLAR, LPAREN}" name="PostfixExpr">
+   <action first="{DOLLAR, LPAREN}">
+    <group first="{DOLLAR, LPAREN}">
+     <sequence first="{DOLLAR, LPAREN}">
+      <action first="{DOLLAR, LPAREN}">
+       <nonterminal first="{DOLLAR, LPAREN}" ruleName="PrimaryExpr"/>
+      </action>
+      <kleene first="{#, ARROW, DOT, LBRACKET}">
+       <group first="{ARROW, DOT, LBRACKET}">
+        <choice first="{ARROW, DOT, LBRACKET}">
+         <choice first="{ARROW, DOT, LBRACKET}">
+          <choice first="{ARROW, DOT}">
+           <sequence first="{DOT}">
+            <token first="{DOT}" name="DOT"/>
+            <action first="{ID}">
+             <token first="{ID}" name="ID"/>
+            </action>
+           </sequence>
+           <sequence first="{ARROW}">
+            <token first="{ARROW}" name="ARROW"/>
+            <action first="{ID}">
+             <token first="{ID}" name="ID"/>
+            </action>
+           </sequence>
+          </choice>
+          <sequence first="{LBRACKET}">
+           <sequence first="{LBRACKET}">
+            <sequence first="{LBRACKET}">
+             <sequence first="{LBRACKET}">
+              <token first="{LBRACKET}" name="LBRACKET"/>
+              <action first="{INTEGER}">
+               <token first="{INTEGER}" name="INTEGER"/>
+              </action>
+             </sequence>
+             <token first="{COMMA}" name="COMMA"/>
+            </sequence>
+            <action first="{INTEGER}">
+             <token first="{INTEGER}" name="INTEGER"/>
+            </action>
+           </sequence>
+           <action first="{RBRACKET}">
+            <token first="{RBRACKET}" name="RBRACKET"/>
+           </action>
+          </sequence>
+         </choice>
+         <sequence first="{LBRACKET}">
+          <sequence first="{LBRACKET}">
+           <token first="{LBRACKET}" name="LBRACKET"/>
+           <action first="{INTEGER}">
+            <token first="{INTEGER}" name="INTEGER"/>
+           </action>
+          </sequence>
+          <action first="{RBRACKET}">
+           <token first="{RBRACKET}" name="RBRACKET"/>
+          </action>
+         </sequence>
+        </choice>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{DOLLAR, LPAREN}" name="PrimaryExpr">
+   <choice first="{DOLLAR, LPAREN}">
+    <action first="{DOLLAR}">
+     <nonterminal first="{DOLLAR}" ruleName="DollarExpr"/>
+    </action>
+    <sequence first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <token first="{LPAREN}" name="LPAREN"/>
+      <nonterminal first="{DEREF, DOLLAR, LPAREN}" ruleName="Expr"/>
+     </sequence>
+     <action first="{RPAREN}">
+      <token first="{RPAREN}" name="RPAREN"/>
+     </action>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{DOLLAR}" name="DollarExpr">
+   <action first="{DOLLAR}">
+    <group first="{DOLLAR}">
+     <sequence first="{DOLLAR}">
+      <token first="{DOLLAR}" name="DOLLAR"/>
+      <action first="{INTEGER}">
+       <token first="{INTEGER}" name="INTEGER"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

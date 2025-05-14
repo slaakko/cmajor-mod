@@ -26,10 +26,11 @@ const int64_t endCleanupNodeType = 8;
 
 class MetadataStruct;
 class Context;
+class BasicBlock;
 
 enum class MetadataItemKind
 {
-    metadataRef, metadataBool, metadataLong, metadataString, metadataArray
+    metadataRef, metadataBasicBlockRef, metadataBool, metadataLong, metadataString, metadataArray
 };
 
 class MetadataItem
@@ -39,6 +40,7 @@ public:
     virtual ~MetadataItem();
     MetadataItemKind Kind() const { return kind; }
     bool IsMetadataRef() const { return kind == MetadataItemKind::metadataRef; }
+    bool IsMetadataBasicBlockRef() const { return kind == MetadataItemKind::metadataBasicBlockRef; }
     bool IsMetadataBool() const { return kind == MetadataItemKind::metadataBool; }
     bool IsMetadataLong() const { return kind == MetadataItemKind::metadataLong; }
     bool IsMetadataString() const { return kind == MetadataItemKind::metadataString; }
@@ -61,6 +63,15 @@ private:
     soul::ast::SourcePos sourcePos;
     int32_t nodeId;
     MetadataStruct* metadataStruct;
+};
+
+class MetadataBasicBlockRef : public MetadataItem
+{
+public:
+    MetadataBasicBlockRef(BasicBlock* bb_);
+    void Write(util::CodeFormatter& formatter) override;
+private:
+    BasicBlock* bb;
 };
 
 class MetadataBool : public MetadataItem
@@ -121,6 +132,7 @@ private:
     soul::ast::SourcePos sourcePos;
     int32_t id;
     std::map<std::string, MetadataItem*> itemMap;
+    std::vector<std::pair<std::string, MetadataItem*>> items;
 };
 
 class Metadata
@@ -139,6 +151,7 @@ public:
     MetadataString* CreateMetadataString(const std::string& value, bool crop);
     MetadataArray* CreateMetadataArray();
     MetadataRef* CreateMetadataRef(const soul::ast::SourcePos& sourcePos, int32_t nodeId);
+    MetadataBasicBlockRef* CreateMetadataBasicBlockRef(BasicBlock* bb);
     void ResolveMetadataReferences(Context* context);
     void Write(util::CodeFormatter& formatter);
 private:

@@ -1,0 +1,3 @@
+project string_hash_map;
+target=program;
+source <string_hash_map.cm>;

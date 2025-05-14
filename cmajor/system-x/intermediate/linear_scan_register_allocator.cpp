@@ -145,6 +145,7 @@ void LinearScanRegisterAllocator::AllocateFrameLocation(Instruction* inst)
         LocalInstruction* localInst = static_cast<LocalInstruction*>(inst);
         int64_t size = util::Align(localInst->LocalType()->Size(), 8);
         frameLocations[localInst] = frame.GetFrameLocation(size);
+        localInst->SetOffset(frameLocations[localInst].offset);
         locations[localInst] = locations[localInst] | Locations::frame;
     }
     else

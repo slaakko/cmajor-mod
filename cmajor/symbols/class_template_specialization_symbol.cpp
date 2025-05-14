@@ -23,6 +23,34 @@ import std.core;
 
 namespace cmajor::symbols {
 
+SystemTypeMap& SystemTypeMap::Instance()
+{
+    static SystemTypeMap instance;
+    return instance;
+}
+
+int8_t SystemTypeMap::GetSystemType(ClassTemplateSpecializationSymbol* specialization) const
+{
+    auto it = templateTypeMap.find(specialization->GetClassTemplate()->Name());
+    if (it != templateTypeMap.end())
+    {
+        return it->second;
+    }
+    return notSystemType;
+}
+
+SystemTypeMap::SystemTypeMap()
+{
+    templateTypeMap[U"String<CharT>"] = stringType;
+    templateTypeMap[U"List<T>"] = listType;
+    templateTypeMap[U"Set<T, C>"] = setType;
+    templateTypeMap[U"Map<Key, Value, KeyCompare>"] = mapType;
+    templateTypeMap[U"LinkedList<T>"] = linkedListType;
+    templateTypeMap[U"HashSet<T, H, C>"] = hashSetType;
+    templateTypeMap[U"HashMap<K, T, H, C>"] = hashMapType;
+    templateTypeMap[U"ForwardList<T>"] = forwardListType;
+}
+
 std::u32string MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplate, const std::vector<TypeSymbol*>& templateArgumentTypes)
 {
     std::u32string name = classTemplate->GroupName();
@@ -125,20 +153,26 @@ bool ClassTemplateSpecializationSymbol::IsPrototypeTemplateSpecialization() cons
 
 void* ClassTemplateSpecializationSymbol::IrType(cmajor::ir::Emitter& emitter, Context* context)
 {
+    void* localIrType = nullptr;
     if (IsRecursive())
     {
-        void* localIrType = emitter.GetIrTypeByTypeId(TypeId());
+        localIrType = emitter.GetIrTypeByTypeId(TypeId());
         if (!localIrType)
         {
             localIrType = ClassTypeSymbol::IrType(emitter, context);
             emitter.SetIrTypeByTypeId(TypeId(), localIrType);
         }
-        return localIrType;
     }
     else
     {
-        return ClassTypeSymbol::IrType(emitter, context);
+        localIrType = ClassTypeSymbol::IrType(emitter, context);
     }
+    int8_t systemType = SystemTypeMap::Instance().GetSystemType(this);
+    if (systemType != notSystemType)
+    {
+        emitter.SetSystemType(localIrType, systemType);
+    }
+    return localIrType;
 }
 
 const ContainerScope* ClassTemplateSpecializationSymbol::GetArrowScope() const

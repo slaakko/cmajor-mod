@@ -61,9 +61,6 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(TRAP, "TRAP", "'trap'"));
         tokens.AddToken(new soul::ast::slg::Token(PHI, "PHI", "'phi'"));
         tokens.AddToken(new soul::ast::slg::Token(TYPE, "TYPE", "'type'"));
-        tokens.AddToken(new soul::ast::slg::Token(OFFSET, "OFFSET", "'offset'"));
-        tokens.AddToken(new soul::ast::slg::Token(SIZE, "SIZE", "'size'"));
-        tokens.AddToken(new soul::ast::slg::Token(ALIGNMENT, "ALIGNMENT", "'alignment'"));
         tokens.AddToken(new soul::ast::slg::Token(VOID, "VOID", "'void'"));
         tokens.AddToken(new soul::ast::slg::Token(BOOL, "BOOL", "'bool'"));
         tokens.AddToken(new soul::ast::slg::Token(SBYTE, "SBYTE", "'sbyte'"));
@@ -164,9 +161,6 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "trap", TRAP },
          { "phi", PHI },
          { "type", TYPE },
-         { "offset", OFFSET },
-         { "size", SIZE },
-         { "alignment", ALIGNMENT },
          { "void", VOID },
          { "bool", BOOL },
          { "sbyte", SBYTE },
@@ -242,9 +236,6 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"trap", TRAP },
          { u8"phi", PHI },
          { u8"type", TYPE },
-         { u8"offset", OFFSET },
-         { u8"size", SIZE },
-         { u8"alignment", ALIGNMENT },
          { u8"void", VOID },
          { u8"bool", BOOL },
          { u8"sbyte", SBYTE },
@@ -320,9 +311,6 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"trap", TRAP },
          { u"phi", PHI },
          { u"type", TYPE },
-         { u"offset", OFFSET },
-         { u"size", SIZE },
-         { u"alignment", ALIGNMENT },
          { u"void", VOID },
          { u"bool", BOOL },
          { u"sbyte", SBYTE },
@@ -398,9 +386,6 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"trap", TRAP },
          { U"phi", PHI },
          { U"type", TYPE },
-         { U"offset", OFFSET },
-         { U"size", SIZE },
-         { U"alignment", ALIGNMENT },
          { U"void", VOID },
          { U"bool", BOOL },
          { U"sbyte", SBYTE },

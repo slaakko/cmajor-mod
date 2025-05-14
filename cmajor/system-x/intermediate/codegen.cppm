@@ -63,6 +63,9 @@ class AddressValue;
 class SymbolValue;
 class StringValue;
 class CompileUnit;
+class StructureType;
+class ArrayType;
+class FunctionType;
 
 class CodeGenerator
 {
@@ -168,6 +171,10 @@ void EmitEndTry(uint32_t tryBlockId, CodeGenerator& codeGen);
 void EmitCatch(uint32_t catchBlockId, uint32_t tryBlockId, uint64_t caughtTypeId1, uint64_t caughtTypeId2, CodeGenerator& codeGen);
 void EmitBeginCleanup(uint32_t cleanupBlockId, uint32_t tryBlockId, CodeGenerator& codeGen);
 void EmitEndCleanup(uint32_t cleanupBlockId, CodeGenerator& codeGen);
+void EmitTypeDebugInfo(Type* type, CodeGenerator& codeGen);
+void EmitStructDebugInfo(StructureType* structureType, CodeGenerator& codeGen);
+void EmitArrayDebugInfo(ArrayType* arrayType, CodeGenerator& codeGen);
+void EmitFunctionDebugInfo(FunctionType* functionType, CodeGenerator& codeGen);
 void ProcessInstructionMetadata(Instruction* inst, CodeGenerator& codeGen);
 
 } // cmajor::systemx::intermediate

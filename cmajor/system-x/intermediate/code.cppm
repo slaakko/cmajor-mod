@@ -57,6 +57,7 @@ public:
     OpCode GetOpCode() const { return opCode; }
     void SetMetadataRef(MetadataRef* metadataRef_) { metadataRef = metadataRef_; }
     MetadataRef* GetMetadataRef() const { return metadataRef; }
+    virtual void SetSecondaryMdRef(MetadataRef* secondaryMdRef) {}
     bool IsLeader() const;
     bool IsTerminator() const;
     bool IsValueInstruction() const;
@@ -85,6 +86,7 @@ public:
     void SetIndex(int index_) { index = index_; }
     int RegValueIndex() const { return regValueIndex; }
     void SetRegValueIndex(int regValueIndex_) { regValueIndex = regValueIndex_; }
+    void WriteMetadataRef(util::CodeFormatter& formatter);
     virtual void Write(util::CodeFormatter& formatter) = 0;
 private:
     OpCode opCode;
@@ -464,8 +466,15 @@ public:
     void Accept(Visitor& visitor) override;
     Type* LocalType() const { return localType; }
     void Write(util::CodeFormatter& formatter) override;
+    void SetSecondaryMdRef(MetadataRef* secondaryMdRef) override { SetLocalMetadataRef(secondaryMdRef); }
+    void SetLocalMetadataRef(MetadataRef* localMetadataRef_) { localMetadataRef = localMetadataRef_; }
+    MetadataRef* GetLocalMetadataRef() const { return localMetadataRef; }
+    void SetOffset(int64_t offset_) { offset = offset_; }
+    int64_t Offset() const { return offset; }
 private:
     Type* localType;
+    MetadataRef* localMetadataRef;
+    int64_t offset;
 };
 
 class LoadInstruction : public ValueInstruction
@@ -651,6 +660,9 @@ public:
     Function(const Function&) = delete;
     Function& operator=(const Function&) = delete;
     Instruction* GetParam(int index) const;
+    void AddLocal(LocalInstruction* local);
+    int NumLocals() const { return static_cast<int>(locals.size()); }
+    LocalInstruction* GetLocal(int index) const;
     std::string ToString() const override { return Name(); }
     bool GetFlag(FunctionFlags flag) const { return (flags & flag) != FunctionFlags::none; }
     void SetFlag(FunctionFlags flag) { flags = flags | flag; }
@@ -714,6 +726,7 @@ private:
     soul::ast::SourcePos sourcePos;
     FunctionType* functionType;
     std::vector<Instruction*> params;
+    std::vector<LocalInstruction*> locals;
     std::string name;
     MetadataRef* metadataRef;
     std::string comment;

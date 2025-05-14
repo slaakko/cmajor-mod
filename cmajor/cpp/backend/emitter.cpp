@@ -1089,6 +1089,9 @@ void* CppEmitter::GetOrInsertFunction(const std::string& name, void* type, bool 
     return function;
 }
 
+void CppEmitter::SetSystemType(void* type, int8_t systemType)
+{
+}
 
 void CppEmitter::SetInitializer(void* global, void* initializer)
 {
@@ -1846,7 +1849,30 @@ void* CppEmitter::GetMetadataRefForStructType(void* structType) const
     return nullptr;
 }
 
+void CppEmitter::SetMetadataRefForArrayType(void* arrayType, void* mdRef)
+{
+}
+
+void* CppEmitter::GetMetadataRefForArrayType(void* arrayType) const
+{
+    return nullptr;
+}
+
+void CppEmitter::SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef)
+{
+}
+
+void* CppEmitter::GetMetadataRefForFunctionPointerType(void* functionPointerType) const
+{
+    return nullptr;
+}
+
 int CppEmitter::GetTypeId(void* type) const
+{
+    return -1;
+}
+
+int CppEmitter::GetBaseTypeId(void* type) const
 {
     return -1;
 }

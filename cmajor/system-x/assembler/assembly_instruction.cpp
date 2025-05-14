@@ -314,6 +314,26 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                                     {
                                         funcInfoRecord->AddToCfg(cfgRecord.first, cfgRecord.second);
                                     }
+                                    cmajor::systemx::object::Value localSizeValue = currentInst->Operands()[operandIndex++];
+                                    uint64_t localsSize = localSizeValue.Val();
+                                    for (uint32_t i = 0; i < localsSize; ++i)
+                                    {
+                                        cmajor::systemx::object::Value nameValue = currentInst->Operands()[operandIndex++];
+                                        const std::string& name = assembler.GetString(nameValue.Val(), currentInst->GetSourcePos());
+                                        if (name == "x")
+                                        {
+                                            int x = 0;
+                                        }
+                                        cmajor::systemx::object::Value typeIdValue = currentInst->Operands()[operandIndex++];
+                                        int32_t typeId = static_cast<int32_t>(typeIdValue.Val());
+                                        cmajor::systemx::object::Value offsetValue = currentInst->Operands()[operandIndex++];
+                                        int32_t offset = static_cast<int32_t>(offsetValue.Val());
+                                        if (!name.empty() && typeId != -1 && offset != -1)
+                                        {
+                                            cmajor::systemx::object::LocalInfoRecord localInfoRecord = cmajor::systemx::object::LocalInfoRecord(name, typeId, offset);
+                                            funcInfoRecord->AddLocalInfoRecord(std::move(localInfoRecord));
+                                        }
+                                    }
                                     assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(funcInfoRecord);
                                 }
                                 else
@@ -448,6 +468,77 @@ void OctaInstruction::Assemble(cmajor::systemx::assembler::assembler::Assembler&
                     else
                     {
                         assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA ENDCLEANUP requires two operands", currentInst->GetSourcePos());
+                    }
+                    break;
+                }
+                case STRUCTTYPEINFO:
+                {
+                    if (n >= 5)
+                    {
+                        cmajor::systemx::object::Value fullNameValue = currentInst->Operands()[1];
+                        const std::string& fullName = assembler.GetString(fullNameValue.Val(), currentInst->GetSourcePos());
+                        cmajor::systemx::object::Value typeIdValue = currentInst->Operands()[2];
+                        int32_t typeId = static_cast<int32_t>(typeIdValue.Val());
+                        cmajor::systemx::object::Value sizeValue = currentInst->Operands()[3];
+                        int64_t size = sizeValue.Val();
+                        cmajor::systemx::object::StructTypeInfoRecord* structTypeInfoRecord = new cmajor::systemx::object::StructTypeInfoRecord(fullName, typeId, size);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(structTypeInfoRecord);
+                        cmajor::systemx::object::Value fieldCountValue = currentInst->Operands()[4];
+                        int32_t fieldCount = static_cast<int32_t>(fieldCountValue.Val());
+                        int32_t index = 5;
+                        for (int32_t i = 0; i < fieldCount; ++i)
+                        {
+                            cmajor::systemx::object::Value fieldNameValue = currentInst->Operands()[index++];
+                            const std::string& fieldName = assembler.GetString(fieldNameValue.Val(), currentInst->GetSourcePos());
+                            cmajor::systemx::object::Value typeIdValue = currentInst->Operands()[index++];
+                            int32_t typeId = static_cast<int32_t>(typeIdValue.Val());
+                            cmajor::systemx::object::Value offsetValue = currentInst->Operands()[index++];
+                            int32_t offset = static_cast<int32_t>(offsetValue.Val());
+                            cmajor::systemx::object::FieldInfoRecord fieldInfoRecord(fieldName, typeId, offset);
+                            structTypeInfoRecord->AddFieldInfoRecord(std::move(fieldInfoRecord));
+                        }
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA STRUCTTYPEINFO requires at least four operands", currentInst->GetSourcePos());
+                    }
+                    break;
+                }
+                case ARRAYTYPEINFO:
+                {
+                    if (n == 5)
+                    {
+                        cmajor::systemx::object::Value fullNameValue = currentInst->Operands()[1];
+                        const std::string& fullName = assembler.GetString(fullNameValue.Val(), currentInst->GetSourcePos());
+                        cmajor::systemx::object::Value typeIdValue = currentInst->Operands()[2];
+                        int32_t typeId = static_cast<int32_t>(typeIdValue.Val());
+                        cmajor::systemx::object::Value elementTypeIdValue = currentInst->Operands()[3];
+                        int32_t elementTypeId = static_cast<int32_t>(elementTypeIdValue.Val());
+                        cmajor::systemx::object::Value sizeValue = currentInst->Operands()[4];
+                        int64_t size = sizeValue.Val();
+                        cmajor::systemx::object::ArrayTypeInfoRecord* arrayTypeInforecord = new cmajor::systemx::object::ArrayTypeInfoRecord(fullName, typeId, elementTypeId, size);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(arrayTypeInforecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA ARRAYTYPEINFO requires four operands", currentInst->GetSourcePos());
+                    }
+                    break;
+                }
+                case FUNCTIONTYPEINFO:
+                {
+                    if (n == 3)
+                    {
+                        cmajor::systemx::object::Value fullNameValue = currentInst->Operands()[1];
+                        const std::string& fullName = assembler.GetString(fullNameValue.Val(), currentInst->GetSourcePos());
+                        cmajor::systemx::object::Value typeIdValue = currentInst->Operands()[2];
+                        int32_t typeId = static_cast<int32_t>(typeIdValue.Val());
+                        cmajor::systemx::object::FunctionTypeInfoRecord* functionTypeInfoRecord = new cmajor::systemx::object::FunctionTypeInfoRecord(fullName, typeId);
+                        assembler.GetObjectFile()->GetDebugSection()->AddDebugRecord(functionTypeInfoRecord);
+                    }
+                    else
+                    {
+                        assembler.Error(currentInst->GetOpCode()->Name() + ": OCTA DELEGATETYPEINFO requires two operands", currentInst->GetSourcePos());
                     }
                     break;
                 }

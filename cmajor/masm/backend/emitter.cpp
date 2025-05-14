@@ -1034,6 +1034,10 @@ void* MasmEmitter::GetOrInsertFunction(const std::string& name, void* type, bool
     return compileUnit->GetOrInsertFunction(name, static_cast<cmajor::masm::ir::FunctionType*>(type));
 }
 
+void MasmEmitter::SetSystemType(void* type, int8_t systemType)
+{
+}
+
 void MasmEmitter::SetInitializer(void* global, void* initializer)
 {
     cmajor::masm::ir::GlobalVariable* globalVar = static_cast<cmajor::masm::ir::GlobalVariable*>(global);
@@ -1798,7 +1802,30 @@ void* MasmEmitter::GetMetadataRefForStructType(void* structType) const
     return nullptr;
 }
 
+void MasmEmitter::SetMetadataRefForArrayType(void* arrayType, void* mdRef)
+{
+}
+
+void* MasmEmitter::GetMetadataRefForArrayType(void* arrayType) const
+{
+    return nullptr;
+}
+
+void MasmEmitter::SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef)
+{
+}
+
+void* MasmEmitter::GetMetadataRefForFunctionPointerType(void* functionPointerType) const
+{
+    return nullptr;
+}
+
 int MasmEmitter::GetTypeId(void* type) const
+{
+    return -1;
+}
+
+int MasmEmitter::GetBaseTypeId(void* type) const
 {
     return -1;
 }

@@ -157,6 +157,13 @@
     <ClCompile Include="copy_range.cppm" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="debug.cppm" />
+    <ClCompile Include="expr.cpp" />
+    <ClCompile Include="expr.cppm" />
+    <ClCompile Include="expr.lexer.cpp" />
+    <ClCompile Include="expr.lexer.cppm" />
+    <ClCompile Include="expr.parser.cpp" />
+    <ClCompile Include="expr.parser.cppm" />
+    <ClCompile Include="expr.token.cppm" />
     <ClCompile Include="function_table.cpp" />
     <ClCompile Include="function_table.cppm" />
     <ClCompile Include="instruction_formatter.cpp" />
@@ -172,6 +179,12 @@
     <ClCompile Include="symbol.cppm" />
     <ClCompile Include="text_format.cpp" />
     <ClCompile Include="text_format.cppm" />
+    <ClCompile Include="type.cpp" />
+    <ClCompile Include="type.cppm" />
+    <ClCompile Include="type_table.cpp" />
+    <ClCompile Include="type_table.cppm" />
+    <ClCompile Include="value.cpp" />
+    <ClCompile Include="value.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\soul\ast\ast.vcxproj">
@@ -192,6 +205,14 @@
     <ProjectReference Include="..\machine\machine.vcxproj">
       <Project>{5af98f03-2215-4a25-b653-733a91e17456}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="expr.expr" />
+    <None Include="expr.lexer" />
+    <None Include="expr.parser" />
+    <None Include="expr.slg" />
+    <None Include="expr.spg" />
+    <None Include="expr.token" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

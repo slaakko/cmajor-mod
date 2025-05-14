@@ -1070,6 +1070,13 @@ void* SystemXEmitter::GetOrInsertFunction(const std::string& name, void* type, b
     return context->GetOrInsertFunction(name, context->GetTypes().GetPointerType(static_cast<cmajor::systemx::intermediate::Type*>(type)));
 }
 
+void SystemXEmitter::SetSystemType(void* type, int8_t systemType)
+{
+    cmajor::systemx::intermediate::Type* tp = static_cast<cmajor::systemx::intermediate::Type*>(type);
+    tp->SetSystemType(systemType);
+    context->GetTypes().Map(tp);
+}
+
 void* SystemXEmitter::MakeSymbolValue(void* type, const std::string& name)
 {
     return context->MakeSymbolValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::Type*>(type), name);
@@ -1390,6 +1397,12 @@ void* SystemXEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int3
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
 }
 
+int64_t SystemXEmitter::GetFieldOffset(void* structureType, int64_t fieldIndex) const
+{
+    cmajor::systemx::intermediate::StructureType* structType = static_cast<cmajor::systemx::intermediate::StructureType*>(structureType);
+    return structType->GetFieldOffset(fieldIndex);
+}
+
 void* SystemXEmitter::SizeOf(void* elementType, void* ptrType)
 {
     cmajor::systemx::intermediate::Value* nullPtr = context->GetNullValue(soul::ast::SourcePos(), static_cast<cmajor::systemx::intermediate::PointerType*>(ptrType));
@@ -1675,6 +1688,12 @@ void* SystemXEmitter::CreateAlloca(void* irType)
     return context->CreateLocal(static_cast<cmajor::systemx::intermediate::Type*>(irType));
 }
 
+void SystemXEmitter::SetLocalMetadataRef(void* local, void* mdRef) 
+{
+    cmajor::systemx::intermediate::LocalInstruction* localInst = static_cast<cmajor::systemx::intermediate::LocalInstruction*>(local);
+    localInst->SetLocalMetadataRef(static_cast<cmajor::systemx::intermediate::MetadataRef*>(mdRef));
+}
+
 void* SystemXEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
     void* irType, void* allocaInst)
 {
@@ -1795,7 +1814,7 @@ void* SystemXEmitter::CreateMDArray()
 
 void* SystemXEmitter::CreateMDBasicBlockRef(void* bb)
 {
-    return context->GetMetadata().CreateMetadataLong(static_cast<cmajor::systemx::intermediate::BasicBlock*>(bb)->Id());
+    return context->GetMetadata().CreateMetadataBasicBlockRef(static_cast<cmajor::systemx::intermediate::BasicBlock*>(bb));
 }
 
 void SystemXEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
@@ -1837,10 +1856,66 @@ void* SystemXEmitter::GetMetadataRefForStructType(void* structType) const
     return structureType->GetMetadataRef();
 }
 
+void SystemXEmitter::SetMetadataRefForArrayType(void* arrayType, void* mdRef)
+{
+    cmajor::systemx::intermediate::ArrayType* atype = static_cast<cmajor::systemx::intermediate::ArrayType*>(arrayType);
+    cmajor::systemx::intermediate::MetadataRef* metadataRef = static_cast<cmajor::systemx::intermediate::MetadataRef*>(mdRef);
+    atype->SetMetadataRef(metadataRef);
+}
+
+void* SystemXEmitter::GetMetadataRefForArrayType(void* arrayType) const
+{
+    cmajor::systemx::intermediate::ArrayType* atype = static_cast<cmajor::systemx::intermediate::ArrayType*>(arrayType);
+    return atype->GetMetadataRef();
+}
+
+void SystemXEmitter::SetMetadataRefForFunctionPointerType(void* functionPointerType, void* mdRef)
+{
+    cmajor::systemx::intermediate::Type* type = static_cast<cmajor::systemx::intermediate::Type*>(functionPointerType);
+    if (type->IsPointerType())
+    {
+        cmajor::systemx::intermediate::PointerType* pointerType = static_cast<cmajor::systemx::intermediate::PointerType*>(type);
+        cmajor::systemx::intermediate::Type* baseType = pointerType->BaseType();
+        if (baseType->IsFunctionType())
+        {
+            cmajor::systemx::intermediate::FunctionType* functionType = static_cast<cmajor::systemx::intermediate::FunctionType*>(baseType);
+            cmajor::systemx::intermediate::MetadataRef* metadataRef = static_cast<cmajor::systemx::intermediate::MetadataRef*>(mdRef);
+            functionType->SetMetadataRef(metadataRef);
+        }
+    }
+}
+
+void* SystemXEmitter::GetMetadataRefForFunctionPointerType(void* functionPointerType) const
+{
+    cmajor::systemx::intermediate::Type* type = static_cast<cmajor::systemx::intermediate::Type*>(functionPointerType);
+    if (type->IsPointerType())
+    {
+        cmajor::systemx::intermediate::PointerType* pointerType = static_cast<cmajor::systemx::intermediate::PointerType*>(type);
+        cmajor::systemx::intermediate::Type* baseType = pointerType->BaseType();
+        if (baseType->IsFunctionType())
+        {
+            cmajor::systemx::intermediate::FunctionType* functionType = static_cast<cmajor::systemx::intermediate::FunctionType*>(baseType);
+            return functionType->GetMetadataRef();
+        }
+    }
+    return nullptr;
+}
+
 int SystemXEmitter::GetTypeId(void* type) const
 {
     cmajor::systemx::intermediate::Type* tp = static_cast<cmajor::systemx::intermediate::Type*>(type);
     return tp->Id();
+}
+
+int SystemXEmitter::GetBaseTypeId(void* type) const
+{
+    cmajor::systemx::intermediate::Type* tp = static_cast<cmajor::systemx::intermediate::Type*>(type);
+    if (tp->IsPointerType())
+    {
+        cmajor::systemx::intermediate::PointerType* pointerType = static_cast<cmajor::systemx::intermediate::PointerType*>(tp);
+        return pointerType->BaseType()->Id();
+    }
+    return -1;
 }
 
 void SystemXEmitter::FinalizeFunction(void* function, bool hasCleanup)

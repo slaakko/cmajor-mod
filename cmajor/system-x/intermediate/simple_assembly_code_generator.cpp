@@ -35,6 +35,7 @@ void SimpleAssemblyCodeGenerator::AddSourceFileInfo(CompileUnit& compileUnit)
 
 void SimpleAssemblyCodeGenerator::GenerateDebugInfo()
 {
+    Context* ctx = Ctx();
     for (Function* debugInfoFunc : debugInfoFunctions)
     {
         MetadataRef* metadataRef = debugInfoFunc->GetMetadataRef();
@@ -74,6 +75,10 @@ void SimpleAssemblyCodeGenerator::GenerateDebugInfo()
             frameSize = it->second;
         }
         EmitFunctionDebugInfo(debugInfoFunc, frameSize, *this);
+    }
+    for (const auto& declaredType : ctx->GetTypes().DeclaredTypes())
+    {
+        EmitTypeDebugInfo(declaredType, *this);
     }
 }
 

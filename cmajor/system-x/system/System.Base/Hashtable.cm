@@ -190,6 +190,10 @@ namespace System.Collections
                     bucket = table->GetBucket(index);
                     ++index;
                 }
+                if (bucket == old)
+                {
+                    bucket = null;
+                }
             }
             return *this;
         }

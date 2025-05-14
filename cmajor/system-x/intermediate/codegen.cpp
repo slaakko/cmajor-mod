@@ -1819,6 +1819,54 @@ void EmitFunctionDebugInfo(Function* function, int64_t frameSize, CodeGenerator&
         octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(indexPair.first));
         octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(indexPair.second));
     }
+    int64_t numLocals = function->NumLocals();
+    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(numLocals));
+    for (int64_t i = 0; i < numLocals; ++i)
+    {
+        LocalInstruction* local = function->GetLocal(i);
+        MetadataRef* localMetadataRef = local->GetLocalMetadataRef();
+        if (localMetadataRef)
+        {
+            MetadataStruct* mdStruct = localMetadataRef->GetMetadataStruct();
+            if (mdStruct)
+            {
+                MetadataItem* nameItem = mdStruct->GetItem("name");
+                if (nameItem && nameItem->IsMetadataString())
+                {
+                    MetadataString* nameString = static_cast<MetadataString*>(nameItem);
+                    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(nameString->Value()));
+                }
+                else
+                {
+                    throw std::runtime_error("'name' item not found");
+                }
+                MetadataItem* typeIdItem = mdStruct->GetItem("typeId");
+                if (typeIdItem && typeIdItem->IsMetadataLong())
+                {
+                    MetadataLong* typeIdLong = static_cast<MetadataLong*>(typeIdItem);
+                    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(typeIdLong->Value()));
+                }
+                else
+                {
+                    throw std::runtime_error("'typeId' item not found");
+                }
+                if (local->Offset() != -1)
+                {
+                    octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(local->Offset()));
+                }
+                else
+                {
+                    throw std::runtime_error("local 'offset' not set");
+                }
+            }
+        }
+        else
+        {
+            octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(std::string()));
+            octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(int64_t(-1)));
+            octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(int64_t(-1)));
+        }
+    }
     codeGen.EmitDebugInfoInst(octaInst);
     codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
 }
@@ -1889,6 +1937,218 @@ void EmitEndCleanup(uint32_t cleanupBlockId, CodeGenerator& codeGen)
     octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cleanupBlockId));
     codeGen.Emit(octaInst);
     codeGen.Emit(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
+}
+
+void EmitTypeDebugInfo(Type* type, CodeGenerator& codeGen)
+{
+    switch (type->Kind())
+    {
+        case TypeKind::structureType:
+        {
+            StructureType* structureType = static_cast<StructureType*>(type);
+            EmitStructDebugInfo(structureType, codeGen);
+            break;
+        }
+        case TypeKind::arrayType:
+        {
+            ArrayType* arrayType = static_cast<ArrayType*>(type);
+            EmitArrayDebugInfo(arrayType, codeGen);
+            break;
+        }
+        case TypeKind::functionType:
+        {
+            FunctionType* functionType = static_cast<FunctionType*>(type);
+            EmitFunctionDebugInfo(functionType, codeGen);
+            break;
+        }
+    }
+}
+
+void EmitStructDebugInfo(StructureType* structureType, CodeGenerator& codeGen)
+{
+    MetadataRef* metadataRef = structureType->GetMetadataRef();
+    if (metadataRef)
+    {
+        codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BSPEC));
+        cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::assembler::STRUCTTYPEINFO));
+        MetadataStruct* metadataStruct = metadataRef->GetMetadataStruct();
+        if (metadataStruct)
+        {
+            MetadataItem* fullNameItem = metadataStruct->GetItem("fullName");
+            if (fullNameItem && fullNameItem->IsMetadataString())
+            {
+                MetadataString* fullNameString = static_cast<MetadataString*>(fullNameItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(fullNameString->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'fullName' item not found");
+            }
+            MetadataItem* typeIdItem = metadataStruct->GetItem("typeId");
+            if (typeIdItem && typeIdItem->IsMetadataLong())
+            {
+                MetadataLong* typeIdLong = static_cast<MetadataLong*>(typeIdItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(typeIdLong->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'typeId' item not found");
+            }
+            octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(structureType->Size()));
+            MetadataItem* fieldsItem = metadataStruct->GetItem("fields");
+            if (fieldsItem && fieldsItem->IsMetadataArray())
+            {
+                MetadataArray* fieldsArray = static_cast<MetadataArray*>(fieldsItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(fieldsArray->ItemCount()));
+                for (int i = 0; i < fieldsArray->ItemCount(); ++i)
+                {
+                    MetadataItem* fieldItem = fieldsArray->GetItem(i);
+                    if (fieldItem && fieldItem->IsMetadataRef())
+                    {
+                        MetadataRef* fieldRef = static_cast<MetadataRef*>(fieldItem);
+                        MetadataStruct* fieldStruct = fieldRef->GetMetadataStruct();
+                        if (fieldStruct)
+                        {
+                            MetadataItem* nameItem = fieldStruct->GetItem("name");
+                            if (nameItem && nameItem->IsMetadataString())
+                            {
+                                MetadataString* nameString = static_cast<MetadataString*>(nameItem);
+                                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(nameString->Value()));
+                            }
+                            else
+                            {
+                                throw std::runtime_error("'name' item not found");
+                            }
+                            MetadataItem* typeIdItem = fieldStruct->GetItem("typeId");
+                            if (typeIdItem && typeIdItem->IsMetadataLong())
+                            {
+                                MetadataLong* typeIdLong = static_cast<MetadataLong*>(typeIdItem);
+                                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(typeIdLong->Value()));
+                            }
+                            else
+                            {
+                                throw std::runtime_error("'typeId' item not found");
+                            }
+                            MetadataItem* offsetItem = fieldStruct->GetItem("offset");
+                            if (offsetItem && offsetItem->IsMetadataLong())
+                            {
+                                MetadataLong* offsetLong = static_cast<MetadataLong*>(offsetItem);
+                                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(offsetLong->Value()));
+                            }
+                            else
+                            {
+                                throw std::runtime_error("'offset' item not found");
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                throw std::runtime_error("'fields' item not found");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("metadata structure not found");
+        }
+        codeGen.EmitDebugInfoInst(octaInst);
+        codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
+    }
+}
+
+void EmitArrayDebugInfo(ArrayType* arrayType, CodeGenerator& codeGen)
+{
+    MetadataRef* metadataRef = arrayType->GetMetadataRef();
+    if (metadataRef)
+    {
+        codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BSPEC));
+        cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::assembler::ARRAYTYPEINFO));
+        MetadataStruct* metadataStruct = metadataRef->GetMetadataStruct();
+        if (metadataStruct)
+        {
+            MetadataItem* fullNameItem = metadataStruct->GetItem("fullName");
+            if (fullNameItem && fullNameItem->IsMetadataString())
+            {
+                MetadataString* fullNameString = static_cast<MetadataString*>(fullNameItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(fullNameString->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'fullName' item not found");
+            }
+            MetadataItem* typeIdItem = metadataStruct->GetItem("typeId");
+            if (typeIdItem && typeIdItem->IsMetadataLong())
+            {
+                MetadataLong* typeIdLong = static_cast<MetadataLong*>(typeIdItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(typeIdLong->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'typeId' item not found");
+            }
+            MetadataItem* elementTypeIdItem = metadataStruct->GetItem("elementTypeId");
+            if (elementTypeIdItem && elementTypeIdItem->IsMetadataLong())
+            {
+                MetadataLong* elementTypeIdLong = static_cast<MetadataLong*>(elementTypeIdItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(elementTypeIdLong->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'elementTypeId' item not found");
+            }
+            octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(arrayType->Size()));
+        }
+        else
+        {
+            throw std::runtime_error("metadata structure not found");
+        }
+        codeGen.EmitDebugInfoInst(octaInst);
+        codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
+    }
+}
+
+void EmitFunctionDebugInfo(FunctionType* functionType, CodeGenerator& codeGen)
+{
+    MetadataRef* metadataRef = functionType->GetMetadataRef();
+    if (metadataRef)
+    {
+        codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::BSPEC));
+        cmajor::systemx::assembler::Instruction* octaInst = new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::OCTA);
+        octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(cmajor::systemx::assembler::FUNCTIONTYPEINFO));
+        MetadataStruct* metadataStruct = metadataRef->GetMetadataStruct();
+        if (metadataStruct)
+        {
+            MetadataItem* fullNameItem = metadataStruct->GetItem("fullName");
+            if (fullNameItem && fullNameItem->IsMetadataString())
+            {
+                MetadataString* fullNameString = static_cast<MetadataString*>(fullNameItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(fullNameString->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'fullName' item not found");
+            }
+            MetadataItem* typeIdItem = metadataStruct->GetItem("typeId");
+            if (typeIdItem && typeIdItem->IsMetadataLong())
+            {
+                MetadataLong* typeIdLong = static_cast<MetadataLong*>(typeIdItem);
+                octaInst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(typeIdLong->Value()));
+            }
+            else
+            {
+                throw std::runtime_error("'typeId' item not found");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("metadata structure not found");
+        }
+        codeGen.EmitDebugInfoInst(octaInst);
+        codeGen.EmitDebugInfoInst(new cmajor::systemx::assembler::Instruction(cmajor::systemx::assembler::ESPEC));
+    }
 }
 
 void ProcessInstructionMetadata(Instruction* inst, CodeGenerator& codeGen)

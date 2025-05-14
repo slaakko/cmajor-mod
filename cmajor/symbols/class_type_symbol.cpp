@@ -692,15 +692,15 @@ void ClassTypeSymbol::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
 {
     switch (index)
     {
-    case defaultConstructorIndex: defaultConstructor = static_cast<ConstructorSymbol*>(functionSymbol); break;
-    case copyConstructorIndex: copyConstructor = static_cast<ConstructorSymbol*>(functionSymbol); break;
-    case moveConstructorIndex: moveConstructor = static_cast<ConstructorSymbol*>(functionSymbol); break;
-    case copyAssignmentIndex: copyAssignment = static_cast<MemberFunctionSymbol*>(functionSymbol); break;
-    case moveAssignmentIndex: moveAssignment = static_cast<MemberFunctionSymbol*>(functionSymbol); break;
-    default:
-    {
-        throw std::runtime_error("internal error: invalid class type emplace function index");
-    }
+        case defaultConstructorIndex: defaultConstructor = static_cast<ConstructorSymbol*>(functionSymbol); break;
+        case copyConstructorIndex: copyConstructor = static_cast<ConstructorSymbol*>(functionSymbol); break;
+        case moveConstructorIndex: moveConstructor = static_cast<ConstructorSymbol*>(functionSymbol); break;
+        case copyAssignmentIndex: copyAssignment = static_cast<MemberFunctionSymbol*>(functionSymbol); break;
+        case moveAssignmentIndex: moveAssignment = static_cast<MemberFunctionSymbol*>(functionSymbol); break;
+        default:
+        {
+            throw std::runtime_error("internal error: invalid class type emplace function index");
+        }
     }
 }
 
@@ -709,62 +709,62 @@ void ClassTypeSymbol::AddMember(Symbol* member, Context* context)
     TypeSymbol::AddMember(member, context);
     switch (member->GetSymbolType())
     {
-    case SymbolType::templateParameterSymbol:
-    {
-        templateParameters.push_back(static_cast<TemplateParameterSymbol*>(member));
-        break;
-    }
-    case SymbolType::memberVariableSymbol:
-    {
-        if (member->IsStatic())
+        case SymbolType::templateParameterSymbol:
         {
-            staticMemberVariables.push_back(static_cast<MemberVariableSymbol*>(member));
+            templateParameters.push_back(static_cast<TemplateParameterSymbol*>(member));
+            break;
         }
-        else
+        case SymbolType::memberVariableSymbol:
         {
-            memberVariables.push_back(static_cast<MemberVariableSymbol*>(member));
+            if (member->IsStatic())
+            {
+                staticMemberVariables.push_back(static_cast<MemberVariableSymbol*>(member));
+            }
+            else
+            {
+                memberVariables.push_back(static_cast<MemberVariableSymbol*>(member));
+            }
+            break;
         }
-        break;
-    }
-    case SymbolType::staticConstructorSymbol:
-    {
-        if (staticConstructor)
+        case SymbolType::staticConstructorSymbol:
         {
-            throw Exception("already has a static constructor", member->GetFullSpan(), staticConstructor->GetFullSpan());
+            if (staticConstructor)
+            {
+                throw Exception("already has a static constructor", member->GetFullSpan(), staticConstructor->GetFullSpan());
+            }
+            else
+            {
+                staticConstructor = static_cast<StaticConstructorSymbol*>(member);
+                allMemberFunctions.push_back(staticConstructor);
+            }
+            break;
         }
-        else
+        case SymbolType::constructorSymbol:
         {
-            staticConstructor = static_cast<StaticConstructorSymbol*>(member);
-            allMemberFunctions.push_back(staticConstructor);
+            ConstructorSymbol* constructor = static_cast<ConstructorSymbol*>(member);
+            constructors.push_back(constructor);
+            allMemberFunctions.push_back(constructor);
+            break;
         }
-        break;
-    }
-    case SymbolType::constructorSymbol:
-    {
-        ConstructorSymbol* constructor = static_cast<ConstructorSymbol*>(member);
-        constructors.push_back(constructor);
-        allMemberFunctions.push_back(constructor);
-        break;
-    }
-    case SymbolType::destructorSymbol:
-    {
-        if (destructor)
+        case SymbolType::destructorSymbol:
         {
-            throw Exception("already has a destructor", member->GetFullSpan(), destructor->GetFullSpan());
+            if (destructor)
+            {
+                throw Exception("already has a destructor", member->GetFullSpan(), destructor->GetFullSpan());
+            }
+            else
+            {
+                destructor = static_cast<DestructorSymbol*>(member);
+                allMemberFunctions.push_back(destructor);
+            }
+            break;
         }
-        else
+        case SymbolType::memberFunctionSymbol:
         {
-            destructor = static_cast<DestructorSymbol*>(member);
-            allMemberFunctions.push_back(destructor);
+            memberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
+            allMemberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
+            break;
         }
-        break;
-    }
-    case SymbolType::memberFunctionSymbol:
-    {
-        memberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
-        allMemberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
-        break;
-    }
     }
 }
 

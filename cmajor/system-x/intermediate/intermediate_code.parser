@@ -105,25 +105,33 @@ parser IntermediateCodeParser
         ;
 
     ArrayType(cmajor::systemx::intermediate::Context* context, int32_t typeId, var soul::ast::SourcePos sp, var int64_t size)
-        ::= LBRACKET { sp = lexer.GetSourcePos(pos); } 
+        ::= 
+        (
+            LBRACKET { sp = lexer.GetSourcePos(pos); } 
             NUMBER{ size = lexer.GetToken(pos).ToLong(); } 
             ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "x"; } 
             TypeRef:elementTypeRef
             RBRACKET
+            MetadataRef(context):mdref?
+        )
         {
-            context->AddArrayType(sp, typeId, size, elementTypeRef);
+            context->AddArrayType(sp, typeId, size, elementTypeRef, mdref);
         }
         ;
 
     FunctionType(cmajor::systemx::intermediate::Context* context, int32_t typeId, var soul::ast::SourcePos sp, var std::vector<cmajor::systemx::intermediate::TypeRef> paramTypeRefs)
-        ::= FUNCTION{ sp = lexer.GetSourcePos(pos); } 
+        ::= 
+        (
+            FUNCTION{ sp = lexer.GetSourcePos(pos); } 
             TypeRef:returnTypeRef 
             LPAREN 
             (TypeRef:first{ paramTypeRefs.push_back(first); } 
             (COMMA TypeRef:next{ paramTypeRefs.push_back(next); })*)? 
             RPAREN
+            MetadataRef(context):mdref?
+        )
         {
-            context->AddFunctionType(sp, typeId, returnTypeRef, paramTypeRefs);
+            context->AddFunctionType(sp, typeId, returnTypeRef, paramTypeRefs, mdref);
         }
         ;
 
@@ -375,7 +383,16 @@ parser IntermediateCodeParser
     Instructions(cmajor::systemx::intermediate::Context* context, cmajor::systemx::intermediate::BasicBlock* basicBlock)
         ::= 
         (
-            (Instruction(context):instruction MetadataRef(context):mdRef?){ basicBlock->AddInstruction(instruction, mdRef); }
+            (Instruction(context):instruction MetadataRef(context):mdRef? MetadataRef(context):secondaryMdRef?)
+            { 
+                cmajor::systemx::intermediate::Instruction* inst = instruction;
+                basicBlock->AddInstruction(inst, mdRef); 
+                cmajor::systemx::intermediate::MetadataRef* secMdRef = secondaryMdRef;
+                if (secMdRef)
+                {
+                    inst->SetSecondaryMdRef(secMdRef);
+                }
+            }
         )+
         ;
 

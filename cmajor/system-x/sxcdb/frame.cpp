@@ -9,12 +9,12 @@ import soul.ast.span;
 
 namespace cmajor::systemx::sxcdb {
 
-Frame::Frame() : index(-1), pc(0), entry(nullptr), lineColLen(), idx(-1)
+Frame::Frame() : index(-1), pc(0), fp(0), entry(nullptr), lineColLen(), idx(-1)
 {
 }
 
-Frame::Frame(int index_, uint64_t pc_, cmajor::systemx::object::FunctionTableEntry* entry_, soul::ast::LineColLen lineColLen_, int32_t idx_) : 
-    index(index_), pc(pc_), entry(entry_), lineColLen(lineColLen_), idx(idx_)
+Frame::Frame(int index_, uint64_t pc_, uint64_t fp_, cmajor::systemx::object::FunctionTableEntry* entry_, soul::ast::LineColLen lineColLen_, int32_t idx_) : 
+    index(index_), pc(pc_), fp(fp_), entry(entry_), lineColLen(lineColLen_), idx(idx_)
 {
 }
 
@@ -36,29 +36,29 @@ Frames GetFrames(cmajor::systemx::kernel::Process* process)
     if (processor && symbolTable)
     {
         uint64_t pc = processor->Regs().GetPC();
+        uint64_t fp = processor->Regs().Get(cmajor::systemx::machine::regFP);
         cmajor::systemx::object::FunctionTable* functionTable = process->GetFunctionTable();
         cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(pc, *symbolTable, process->RV(), processor->GetMachine()->Mem());
         if (entry)
         {
             int32_t idx = -1;
             soul::ast::LineColLen lineColLen = entry->SearchLineColLen(pc, idx);
-            frames.AddFrame(Frame(index, pc, entry, lineColLen, idx));
+            frames.AddFrame(Frame(index, pc, fp, entry, lineColLen, idx));
             ++index;
         }
-        uint64_t fp = processor->Regs().Get(cmajor::systemx::machine::regFP);
         while (fp != 0 && fp != cmajor::systemx::machine::stackSegmentBaseAddress)
         {
             uint64_t ret = processor->GetMachine()->Mem().ReadOcta(process->RV(), fp - 8, cmajor::systemx::machine::Protection::read);
             uint64_t pc = ret - 4;
+            fp = processor->GetMachine()->Mem().ReadOcta(process->RV(), fp, cmajor::systemx::machine::Protection::read);
             cmajor::systemx::object::FunctionTableEntry* entry = functionTable->GetEntry(pc, *symbolTable, process->RV(), processor->GetMachine()->Mem());
             if (entry)
             {
                 int32_t idx = -1;
                 soul::ast::LineColLen lineColLen = entry->SearchLineColLen(pc, idx);
-                frames.AddFrame(Frame(index, pc, entry, lineColLen, idx));
+                frames.AddFrame(Frame(index, pc, fp, entry, lineColLen, idx));
                 ++index;
             }
-            fp = processor->GetMachine()->Mem().ReadOcta(process->RV(), fp, cmajor::systemx::machine::Protection::read);
         }
     }
     return frames;
