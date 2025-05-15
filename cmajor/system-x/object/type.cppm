@@ -363,6 +363,9 @@ class ForwardListType : public SystemType
 public:
     ForwardListType(int32_t id_, Type* baseType_);
     std::unique_ptr<TypedValue> Evaluate(EvaluationContext& context) override;
+private:
+    PointerValue* Next(PointerValue* ptr, EvaluationContext& context);
+    int64_t Count(PointerValue* head, EvaluationContext& context);
 };
 
 Type* ReadType(int64_t address, SymbolTable& symbolTable, StringTable& stringTable, uint64_t rv, cmajor::systemx::machine::Memory& memory);

@@ -1149,7 +1149,102 @@ ForwardListType::ForwardListType(int32_t id_, Type* baseType_) : SystemType(Type
 
 std::unique_ptr<TypedValue> ForwardListType::Evaluate(EvaluationContext& context)
 {
-    return std::unique_ptr<TypedValue>();
+    std::unique_ptr<TypedValue> value = BaseType()->Evaluate(context);
+    TypedValue* val = value->Get();
+    if (val->IsStructureValue())
+    {
+        StructureValue* svalue = static_cast<StructureValue*>(val);
+        TypedValue* headValue = svalue->GetFieldValue("head").Value()->Get();
+        if (headValue->IsPointerValue())
+        {
+            PointerValue* head = static_cast<PointerValue*>(headValue);
+            int64_t count = Count(head, context);
+            ContainerValue* containerValue = new ContainerValue();
+            containerValue->SetCount(count);
+            containerValue->SetType(this);
+            if (context.content)
+            {
+                containerValue->SetContent();
+                if (context.count == 0)
+                {
+                    context.count = context.pageSize;
+                }
+                containerValue->SetStart(context.start);
+                containerValue->SetAddress(context.address);
+                TypedValue* headValue = svalue->GetFieldValue("head").Value()->Get();
+                if (headValue->IsPointerValue())
+                {
+                    PointerValue* ptr = static_cast<PointerValue*>(headValue);
+                    for (int64_t i = 0; i < context.start; ++i)
+                    {
+                        ptr = Next(ptr, context);
+                    }
+                    int64_t n = std::min(context.count, count - context.start);
+                    for (int64_t i = 0; i < n; ++i)
+                    {
+                        int64_t index = i + context.start;
+                        ArrowExpr valueExpr(new ValueExpr(ptr), "value");
+                        EvaluationContext valueContext = context;
+                        valueExpr.Evaluate(valueContext);
+                        std::unique_ptr<TypedValue> elemValue = valueContext.Pop();
+                        ElementValue* elementValue = new ElementValue(index, elemValue.get());
+                        context.values->push_back(std::move(elemValue));
+                        containerValue->AddElement(elementValue);
+                        ptr = Next(ptr, context);
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("pointer value expected");
+                }
+            }
+            return std::unique_ptr<TypedValue>(containerValue);
+        }
+        else
+        {
+            throw std::runtime_error("pointer value expected");
+        }
+    }
+    else
+    {
+        throw std::runtime_error("structure value expected");
+    }
+}
+
+PointerValue* ForwardListType::Next(PointerValue* ptr, EvaluationContext& context)
+{
+    ArrowExpr nextExpr(new ValueExpr(ptr), "next");
+    EvaluationContext nextContext = context;
+    nextExpr.Evaluate(nextContext);
+    std::unique_ptr<TypedValue> nextValue = nextContext.Pop();
+    TypedValue* nextVal = nextValue->Get();
+    context.values->push_back(std::move(nextValue));
+    if (nextVal->IsPointerValue())
+    {
+        ptr = static_cast<PointerValue*>(nextVal);
+    }
+    else
+    {
+        throw std::runtime_error("pointer value expected");
+    }
+    return ptr;
+}
+
+int64_t ForwardListType::Count(PointerValue* head, EvaluationContext& context) 
+{
+    int64_t count = 0;
+    if (head->IsNull())
+    {
+        return count;
+    }
+    ++count;
+    PointerValue* next = Next(head, context);
+    while (!next->IsNull())
+    {
+        ++count;
+        next = Next(next, context);
+    }
+    return count;
 }
 
 Type* ReadType(int64_t address, SymbolTable& symbolTable, StringTable& stringTable, uint64_t rv, cmajor::systemx::machine::Memory& memory)

@@ -1,0 +1,11 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    ForwardList<int> fwdlist;
+    auto it = fwdlist.InsertFront(1);
+    it = fwdlist.InsertAfter(it, 2);
+    fwdlist.InsertAfter(it, 3);
+    int x = 0;
+}

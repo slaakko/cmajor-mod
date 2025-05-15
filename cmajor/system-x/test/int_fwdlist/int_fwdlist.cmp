@@ -1,0 +1,3 @@
+project int_fwdlist;
+target=program;
+source <int_fwdlist.cm>;
