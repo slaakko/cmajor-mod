@@ -1,0 +1,8 @@
+using System;
+
+void main()
+{
+    Console.WriteLine("foo");
+    Console.WriteLine("bar");
+    int x = 0;
+}

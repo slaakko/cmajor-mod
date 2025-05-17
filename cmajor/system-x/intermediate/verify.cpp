@@ -66,14 +66,20 @@ private:
     void CheckBinaryInstructionTypes(BinaryInstruction& inst);
     void CheckBooleanInstructionTypes(BinaryInstruction& inst);
     void CheckArithmeticType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
+    void CheckArithmeticOrCharacterType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckArithmeticOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
+    void CheckArithmeticCharacterOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckArithmeticOrPointerType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
+    void CheckArithmeticCharacterOrPointerType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckIntegerType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckIntegerOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
+    void CheckIntegerCharacterOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckFloatingPointType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckPointerType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckArithmeticPointerOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
+    void CheckArithmeticCharacterPointerOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckArithmeticPointerFunctionOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
+    void CheckArithmeticPointerFunctionBooleanOrCharacterType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos);
     void CheckRegValue(Value* value, const soul::ast::SourcePos& sourcePos);
     void CheckValueInstruction(ValueInstruction* valueInstruction);
     void CheckUnaryInstuction(UnaryInstruction* unaryInstruction);
@@ -136,6 +142,14 @@ void VerifierVisitor::CheckArithmeticType(Type* type, const std::string& typeDes
     }
 }
 
+void VerifierVisitor::CheckArithmeticOrCharacterType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
+{
+    if (!type->IsArithmeticType() && !type->IsCharacterType())
+    {
+        Error("type check error: arithmetic or character type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
+    }
+}
+
 void VerifierVisitor::CheckArithmeticOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
 {
     if (!type->IsArithmeticType() && !type->IsBooleanType())
@@ -144,11 +158,27 @@ void VerifierVisitor::CheckArithmeticOrBooleanType(Type* type, const std::string
     }
 }
 
+void VerifierVisitor::CheckArithmeticCharacterOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
+{
+    if (!type->IsArithmeticType() && !type->IsCharacterType() && !type->IsBooleanType())
+    {
+        Error("type check error: arithmetic, character or Boolean type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
+    }
+}
+
 void VerifierVisitor::CheckArithmeticOrPointerType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
 {
     if (!type->IsArithmeticType() && !type->IsPointerType())
     {
         Error("type check error: arithmetic or pointer type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
+    }
+}
+
+void VerifierVisitor::CheckArithmeticCharacterOrPointerType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
+{
+    if (!type->IsArithmeticType() && !type->IsCharacterType()  && !type->IsPointerType())
+    {
+        Error("type check error: arithmetic, character or pointer type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
     }
 }
 
@@ -165,6 +195,14 @@ void VerifierVisitor::CheckIntegerOrBooleanType(Type* type, const std::string& t
     if (!type->IsIntegerType() && !type->IsBooleanType())
     {
         Error("type check error: integer or Boolean type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
+    }
+}
+
+void VerifierVisitor::CheckIntegerCharacterOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
+{
+    if (!type->IsIntegerType() && !type->IsCharacterType() && !type->IsBooleanType())
+    {
+        Error("type check error: integer, character or Boolean type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
     }
 }
 
@@ -192,11 +230,27 @@ void VerifierVisitor::CheckArithmeticPointerOrBooleanType(Type* type, const std:
     }
 }
 
+void VerifierVisitor::CheckArithmeticCharacterPointerOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
+{
+    if (!type->IsBooleanType() && !type->IsCharacterType()  && !type->IsArithmeticType() && !type->IsPointerType())
+    {
+        Error("type check exception: Boolean, arithmetic, character or pointer type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
+    }
+}
+
 void VerifierVisitor::CheckArithmeticPointerFunctionOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
 {
     if (!type->IsBooleanType() && !type->IsArithmeticType() && !type->IsPointerType() && !type->IsFunctionType())
     {
         Error("type check exception: Boolean, arithmetic, pointer or function type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
+    }
+}
+
+void VerifierVisitor::CheckArithmeticPointerFunctionBooleanOrCharacterType(Type* type, const std::string& typeDescription, const soul::ast::SourcePos& sourcePos)
+{
+    if (!type->IsBooleanType() && !type->IsArithmeticType() && !type->IsPointerType() && !type->IsFunctionType() && !type->IsCharacterType())
+    {
+        Error("type check exception: Boolean, arithmetic, character, pointer or function type expected, note: " + typeDescription + " is '" + type->Name() + "'", sourcePos, GetContext());
     }
 }
 
@@ -288,7 +342,7 @@ void VerifierVisitor::Visit(BasicBlock& basicBlock)
 
 void VerifierVisitor::Visit(StoreInstruction& inst)
 {
-    CheckArithmeticPointerOrBooleanType(inst.GetValue()->GetType(), "type of value", inst.GetSourcePos());
+    CheckArithmeticCharacterPointerOrBooleanType(inst.GetValue()->GetType(), "type of value", inst.GetSourcePos());
     CheckType("type of value", inst.GetValue()->GetType(), inst.GetValue()->GetType()->AddPointer(GetContext()), "pointer type", inst.GetPtr()->GetType(), inst.GetSourcePos());
     inst.AddToUses();
     inst.SetIndex(index++);
@@ -296,7 +350,7 @@ void VerifierVisitor::Visit(StoreInstruction& inst)
 
 void VerifierVisitor::Visit(ArgInstruction& inst)
 {
-    CheckArithmeticPointerOrBooleanType(inst.Arg()->GetType(), "type of argument", inst.GetSourcePos());
+    CheckArithmeticCharacterPointerOrBooleanType(inst.Arg()->GetType(), "type of argument", inst.GetSourcePos());
     inst.AddToUses();
     inst.SetIndex(index++);
     inst.SetArgIndex(argIndex++);
@@ -400,7 +454,7 @@ void VerifierVisitor::Visit(RetInstruction& inst)
     {
         Type* returnValueType = inst.ReturnValue()->GetType();
         CheckSameType("instruction return type", returnValueType, "function return type", functionType->ReturnType(), inst.GetSourcePos());
-        CheckArithmeticPointerOrBooleanType(returnValueType, "instruction return type", inst.GetSourcePos());
+        CheckArithmeticCharacterPointerOrBooleanType(returnValueType, "instruction return type", inst.GetSourcePos());
     }
     else
     {
@@ -418,7 +472,7 @@ void VerifierVisitor::Visit(RetInstruction& inst)
 
 void VerifierVisitor::Visit(SwitchInstruction& inst)
 {
-    CheckIntegerOrBooleanType(inst.Cond()->GetType(), "condition type", inst.GetSourcePos());
+    CheckIntegerCharacterOrBooleanType(inst.Cond()->GetType(), "condition type", inst.GetSourcePos());
     if (&inst != inst.Parent()->LastInstruction())
     {
         Error("code verification error: terminator in the middle of basic block " + std::to_string(inst.Parent()->Id()), inst.GetSourcePos(), GetContext());
@@ -480,8 +534,8 @@ void VerifierVisitor::Visit(SignExtendInstruction& inst)
 
 void VerifierVisitor::Visit(ZeroExtendInstruction& inst)
 {
-    CheckArithmeticOrBooleanType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
-    CheckArithmeticType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
+    CheckArithmeticCharacterOrBooleanType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
+    CheckArithmeticOrCharacterType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     if (!inst.Operand()->GetType()->IsBooleanType() && inst.Result()->GetType()->Size() <= inst.Operand()->GetType()->Size())
     {
         Error("code verification error: result type width expected to be greater than operand type width", inst.GetSourcePos(), GetContext());
@@ -493,8 +547,8 @@ void VerifierVisitor::Visit(ZeroExtendInstruction& inst)
 
 void VerifierVisitor::Visit(TruncateInstruction& inst)
 {
-    CheckArithmeticType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
-    CheckArithmeticOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
+    CheckArithmeticOrCharacterType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
+    CheckArithmeticCharacterOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     if (inst.Result()->GetType()->Size() >= inst.Operand()->GetType()->Size() && !inst.Result()->GetType()->IsBooleanType())
     {
         Error("code verification error: result type width expected to be less than operand type width", inst.GetSourcePos(), GetContext());
@@ -506,8 +560,8 @@ void VerifierVisitor::Visit(TruncateInstruction& inst)
 
 void VerifierVisitor::Visit(BitcastInstruction& inst)
 {
-    CheckArithmeticPointerFunctionOrBooleanType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
-    CheckArithmeticPointerFunctionOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
+    CheckArithmeticPointerFunctionBooleanOrCharacterType(inst.Operand()->GetType(), "operand type", inst.GetSourcePos());
+    CheckArithmeticPointerFunctionBooleanOrCharacterType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     if (inst.Result()->GetType()->Size() != inst.Operand()->GetType()->Size())
     {
         Error("code verification error: result type width expected to be same as operand type width", inst.GetSourcePos(), GetContext());
@@ -656,8 +710,8 @@ void VerifierVisitor::Visit(ShrInstruction& inst)
 void VerifierVisitor::Visit(EqualInstruction& inst)
 {
     CheckBooleanInstructionTypes(inst);
-    CheckArithmeticPointerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
-    CheckArithmeticPointerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
+    CheckArithmeticCharacterPointerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
+    CheckArithmeticCharacterPointerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
     inst.AddToUses();
     inst.SetIndex(index++);
@@ -666,8 +720,8 @@ void VerifierVisitor::Visit(EqualInstruction& inst)
 void VerifierVisitor::Visit(LessInstruction& inst)
 {
     CheckBooleanInstructionTypes(inst);
-    CheckArithmeticOrPointerType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
-    CheckArithmeticOrPointerType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
+    CheckArithmeticCharacterOrPointerType(inst.Left()->GetType(), "left operand type", inst.GetSourcePos());
+    CheckArithmeticCharacterOrPointerType(inst.Right()->GetType(), "right operand type", inst.GetSourcePos());
     CheckBinaryInstuction(&inst);
     inst.AddToUses();
     inst.SetIndex(index++);
@@ -675,7 +729,7 @@ void VerifierVisitor::Visit(LessInstruction& inst)
 
 void VerifierVisitor::Visit(ParamInstruction& inst)
 {
-    CheckArithmeticPointerOrBooleanType(inst.Result()->GetType(), "parameter type", inst.GetSourcePos());
+    CheckArithmeticCharacterPointerOrBooleanType(inst.Result()->GetType(), "parameter type", inst.GetSourcePos());
     CheckValueInstruction(&inst);
     ++numParams;
     inst.SetIndex(index++);
@@ -693,7 +747,7 @@ void VerifierVisitor::Visit(LoadInstruction& inst)
 {
     CheckPointerType(inst.Ptr()->GetType(), "operand type", inst.GetSourcePos());
     CheckType("result type", inst.Result()->GetType(), inst.Ptr()->GetType(), "pointer to result type", inst.Result()->GetType()->AddPointer(GetContext()), inst.GetSourcePos());
-    CheckArithmeticPointerOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
+    CheckArithmeticCharacterPointerOrBooleanType(inst.Result()->GetType(), "result type", inst.GetSourcePos());
     CheckValueInstruction(&inst);
     inst.AddToUses();
     inst.SetIndex(index++);

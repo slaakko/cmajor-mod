@@ -93,6 +93,9 @@ public:
     void Visit(ULongValue& value) override;
     void Visit(FloatValue& value) override;
     void Visit(DoubleValue& value) override;
+    void Visit(CharValue& value) override;
+    void Visit(WCharValue& value) override;
+    void Visit(UCharValue& value) override;
     void Visit(NullValue& value) override;
     void Visit(AddressValue& value) override;
     void Visit(ArrayValue& value) override;

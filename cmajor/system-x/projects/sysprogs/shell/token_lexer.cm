@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,7 +12,7 @@ class TokenLexer
     public TokenLexer(const List<ShellToken>& tokens_) : tokens(tokens_), pos(0), farthestPos(0)
     {
     }
-    public nothrow inline int operator*() const
+    public inline int operator*() const
     {
         if (pos >= tokens.Count())
         {
@@ -23,7 +23,7 @@ class TokenLexer
             return tokens[pos].id;
         }
     }
-    public nothrow inline void operator++() 
+    public inline void operator++() 
     {
         ++pos;
         if (pos > farthestPos)
@@ -39,11 +39,11 @@ class TokenLexer
     {
         pos = pos_;
     }
-    public nothrow const ShellToken& CurrentToken() const 
+    public const ShellToken& CurrentToken() const 
     {
         return tokens[pos];
     }
-    public nothrow void PrintErrorLines()
+    public void PrintErrorLines()
     {
         bool first = true;
         for (const ShellToken& token : tokens)

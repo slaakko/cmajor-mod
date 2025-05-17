@@ -145,11 +145,13 @@ soul::parser::Match ExprParser<LexerT>::UnaryExpr(LexerT& lexer)
                         unary.reset(static_cast<cmajor::systemx::object::Expr*>(match.value));
                         if (match.hit)
                         {
+                            cmajor::systemx::object::DerefExpr *de = new cmajor::systemx::object::DerefExpr(unary.release());
+                            de->SetTopLevel();
                             {
                                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryExpr");
                                 #endif
-                                return soul::parser::Match(true, new cmajor::systemx::object::DerefExpr(unary.release()));
+                                return soul::parser::Match(true, de);
                             }
                         }
                         *parentMatch3 = match;

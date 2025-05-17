@@ -35,7 +35,10 @@ const int32_t longTypeId = 8;
 const int32_t ulongTypeId = 9;
 const int32_t floatTypeId = 10;
 const int32_t doubleTypeId = 11;
-const int32_t userTypeId = 12;
+const int32_t charTypeId = 12;
+const int32_t wcharTypeId = 13;
+const int32_t ucharTypeId = 14;
+const int32_t userTypeId = 15;
 const int32_t pointerTypeId = int32_t(1) << 30;
 
 constexpr bool IsFundamentalTypeId(int32_t typeId) { return typeId >= 0 && typeId < userTypeId; }
@@ -118,11 +121,15 @@ public:
     bool IsBooleanType() const { return id == boolTypeId; }
     bool IsCompoundType() const { return !IsFundamentalType(); }
     bool IsArithmeticType() const { return IsIntegerType() || IsFloatingPointType(); }
+    bool IsCharacterType() const { return IsCharType() || IsWCharType() || IsUCharType(); }
     bool IsIntegerType() const;
     bool IsUnsignedType() const;
     bool IsFloatingPointType() const;
     bool IsFloatType() const { return id == floatTypeId; }
     bool IsDoubleType() const { return id == doubleTypeId; }
+    bool IsCharType() const { return id == charTypeId; }
+    bool IsWCharType() const { return id == wcharTypeId; }
+    bool IsUCharType() const { return id == ucharTypeId; }
     bool IsPointerType() const { return kind == TypeKind::pointerType; }
     int8_t GetSystemType() const { return cmajor::systemx::intermediate::GetSystemType(id); }
     void SetSystemType(int8_t systemType) { cmajor::systemx::intermediate::SetSystemType(id, systemType); }
@@ -284,6 +291,39 @@ public:
     ConstantValue* DefaultValue() override { return &defaultValue; }
 private:
     DoubleValue defaultValue;
+};
+
+class CharType : public Type
+{
+public:
+    CharType();
+    int64_t Size() const override { return 1; }
+    int64_t Alignment() const override { return 1; }
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    CharValue defaultValue;
+};
+
+class WCharType : public Type
+{
+public:
+    WCharType();
+    int64_t Size() const override { return 2; }
+    int64_t Alignment() const override { return 2; }
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    WCharValue defaultValue;
+};
+
+class UCharType : public Type
+{
+public:
+    UCharType();
+    int64_t Size() const override { return 4; }
+    int64_t Alignment() const override { return 4; }
+    ConstantValue* DefaultValue() override { return &defaultValue; }
+private:
+    UCharValue defaultValue;
 };
 
 class TypeRef
@@ -450,6 +490,9 @@ public:
     ULongType* GetULongType() const { return const_cast<ULongType*>(&ulongType); }
     FloatType* GetFloatType() const { return const_cast<FloatType*>(&floatType); }
     DoubleType* GetDoubleType() const { return const_cast<DoubleType*>(&doubleType); }
+    CharType* GetCharType() const { return const_cast<CharType*>(&charType); }
+    WCharType* GetWCharType() const { return const_cast<WCharType*>(&wcharType); }
+    UCharType* GetUCharType() const { return const_cast<UCharType*>(&ucharType); }
     Type* GetPointerType(Type* baseType);
     PointerType* MakePointerType(const soul::ast::SourcePos& sourcePos, int32_t baseTypeId, int8_t pointerCount, Context* context);
     StructureType* CreateStructureType();
@@ -480,6 +523,9 @@ private:
     ULongType ulongType;
     FloatType floatType;
     DoubleType doubleType;
+    CharType charType;
+    WCharType wcharType;
+    UCharType ucharType;
 };
 
 } // cmajor::systemx::intermediate

@@ -1,0 +1,7 @@
+using System;
+
+void main()
+{
+    char c = '@';
+    int x = 0;
+}

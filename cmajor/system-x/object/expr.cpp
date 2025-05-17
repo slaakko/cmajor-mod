@@ -57,7 +57,7 @@ void DollarExpr::Evaluate(EvaluationContext& context)
     }
 }
 
-DerefExpr::DerefExpr(Expr* subject_) : Expr(ExprKind::derefExpr), subject(subject_)
+DerefExpr::DerefExpr(Expr* subject_) : Expr(ExprKind::derefExpr), subject(subject_), topLevel(false)
 {
 }
 
@@ -96,7 +96,15 @@ void DerefExpr::Evaluate(EvaluationContext& context)
             {
                 EvaluationContext derefContext = context;
                 uint64_t address = pointerValue->Address();
-                derefContext.address = address;
+                if (topLevel)
+                {
+                    uint64_t addr = context.memory.ReadOcta(context.rv, address, cmajor::systemx::machine::Protection::read);
+                    derefContext.address = addr;
+                }
+                else
+                {
+                    derefContext.address = address;
+                }
                 std::unique_ptr<TypedValue> value = pointerType->BaseType()->Evaluate(derefContext);
                 context.Push(value.release());
             }

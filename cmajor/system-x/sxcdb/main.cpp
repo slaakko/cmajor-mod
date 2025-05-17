@@ -112,10 +112,13 @@ int main(int argc, const char** argv)
         cmajor::systemx::kernel::Kernel::Instance().SetMachine(&machine);
         cmajor::systemx::kernel::Kernel::Instance().Start();
         cmajor::systemx::kernel::Process* process = cmajor::systemx::kernel::ProcessManager::Instance().CreateProcess();
-        process->SetFilePath(args[0]);
+        process->SetFilePath(util::GetFullPath(args[0]));
         process->SetUMask(cmajor::systemx::machine::UMask());
-        process->SetUID(cmajor::systemx::machine::UID());
-        process->SetGID(cmajor::systemx::machine::GID());
+        if (util::Path::GetFileName(process->FilePath()) != "sh.x")
+        {
+            process->SetUID(cmajor::systemx::machine::UID());
+            process->SetGID(cmajor::systemx::machine::GID());
+        }
         cmajor::systemx::kernel::Load(process, args, env, machine);
         if (verbose)
         {

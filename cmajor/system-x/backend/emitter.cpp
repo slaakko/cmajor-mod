@@ -91,17 +91,17 @@ void* SystemXEmitter::GetIrTypeForDouble()
 
 void* SystemXEmitter::GetIrTypeForChar()
 {
-    return context->GetTypes().GetByteType();
+    return context->GetTypes().GetCharType();
 }
 
 void* SystemXEmitter::GetIrTypeForWChar()
 {
-    return context->GetTypes().GetUShortType();
+    return context->GetTypes().GetWCharType();
 }
 
 void* SystemXEmitter::GetIrTypeForUChar()
 {
-    return context->GetTypes().GetUIntType();
+    return context->GetTypes().GetUCharType();
 }
 
 void* SystemXEmitter::GetIrTypeForVoid()
@@ -292,17 +292,17 @@ void* SystemXEmitter::CreateDefaultIrValueForDouble()
 
 void* SystemXEmitter::CreateDefaultIrValueForChar()
 {
-    return context->GetByteValue(0);
+    return context->GetCharValue('\0');
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForWChar()
 {
-    return context->GetUShortValue(0);
+    return context->GetWCharValue(u'\0');
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForUChar()
 {
-    return context->GetUIntValue(0);
+    return context->GetUCharValue(U'\0');
 }
 
 void* SystemXEmitter::CreateDefaultIrValueForStruct(void* irType, const std::vector<void*>& defaultMembers)
@@ -395,17 +395,17 @@ void* SystemXEmitter::CreateIrValueForDouble(double value)
 
 void* SystemXEmitter::CreateIrValueForChar(uint8_t value)
 {
-    return context->GetByteValue(value);
+    return context->GetCharValue(value);
 }
 
 void* SystemXEmitter::CreateIrValueForWChar(uint16_t value)
 {
-    return context->GetUShortValue(value);
+    return context->GetWCharValue(value);
 }
 
 void* SystemXEmitter::CreateIrValueForUChar(uint32_t value)
 {
-    return context->GetUIntValue(value);
+    return context->GetUCharValue(value);
 }
 
 void* SystemXEmitter::CreateIrValueForWString(void* type, void* wstringConstant)

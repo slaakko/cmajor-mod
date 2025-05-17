@@ -75,6 +75,9 @@ parser IntermediateCodeParser
         |   ULONG{ return cmajor::systemx::intermediate::ulongTypeId; }
         |   FLOAT{ return cmajor::systemx::intermediate::floatTypeId; }
         |   DOUBLE{ return cmajor::systemx::intermediate::doubleTypeId; }
+        |   CHAR{ return cmajor::systemx::intermediate::charTypeId; }
+        |   WCHAR{ return cmajor::systemx::intermediate::wcharTypeId; }
+        |   UCHAR{ return cmajor::systemx::intermediate::ucharTypeId; }
         ;
 
     TypeRef(var soul::ast::SourcePos sp, var int32_t baseTypeId, var int8_t pointerCount) : cmajor::systemx::intermediate::TypeRef
@@ -155,10 +158,13 @@ parser IntermediateCodeParser
         ::= BoolConstant(context):boolConstant{ return boolConstant; }
         |   SByteConstant(context):sbyteConstant{ return sbyteConstant; }
         |   ByteConstant(context):byteConstant{ return byteConstant; }
+        |   CharConstant(context):charConstant{ return charConstant; }
         |   ShortConstant(context):shortConstant{ return shortConstant; }
         |   UShortConstant(context):ushortConstant{ return ushortConstant; }
+        |   WCharConstant(context):wcharConstant{ return wcharConstant; }
         |   IntConstant(context):intConstant{ return intConstant; }
         |   UIntConstant(context):uintConstant{ return uintConstant; }
+        |   UCharConstant(context):ucharConstant{ return ucharConstant; }
         |   LongConstant(context):longConstant{ return longConstant; }
         |   ULongConstant(context):ulongConstant{ return ulongConstant; }
         |   FloatConstant(context):floatConstant{ return floatConstant; }
@@ -188,6 +194,10 @@ parser IntermediateCodeParser
         ::= BYTE NUMBER{ return context->GetByteValue(lexer.GetToken(pos).ToByte()); }
         ;
 
+    CharConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
+        ::= CHAR NUMBER{ return context->GetCharValue(static_cast<char>(lexer.GetToken(pos).ToByte())); }
+        ;
+
     ShortConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
         ::= SHORT NUMBER{ return context->GetShortValue(lexer.GetToken(pos).ToShort()); }
         ;
@@ -196,12 +206,20 @@ parser IntermediateCodeParser
         ::= USHORT NUMBER{ return context->GetUShortValue(lexer.GetToken(pos).ToUShort()); }
         ;
 
+    WCharConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
+        ::= WCHAR NUMBER{ return context->GetWCharValue(static_cast<char16_t>(lexer.GetToken(pos).ToUShort())); }
+        ;
+
     IntConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
         ::= INT NUMBER{ return context->GetIntValue(lexer.GetToken(pos).ToInt()); }
         ;
 
     UIntConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
         ::= UINT NUMBER{ return context->GetUIntValue(lexer.GetToken(pos).ToUInt()); }
+        ;
+
+    UCharConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
+        ::= UCHAR NUMBER{ return context->GetCharValue(static_cast<char32_t>(lexer.GetToken(pos).ToUInt())); }
         ;
 
     LongConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*

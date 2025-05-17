@@ -1,0 +1,3 @@
+project char_value;
+target=program;
+source <char_value.cm>;

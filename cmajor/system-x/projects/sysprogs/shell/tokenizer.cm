@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,7 +12,7 @@ private int debugMode = 0;
 
 void SetTokenizerDebugMode()
 {
-	debugMode = GetDebugMode();
+    debugMode = GetDebugMode();
 }
 
 public enum TokenFlags : int
@@ -76,19 +76,19 @@ public string TokenFlagStr(TokenFlags flags)
 
 public class ShellToken
 {
-    public nothrow ShellToken(int id_, const ustring& match_) : 
+    public ShellToken(int id_, const ustring& match_) : 
         flags(), id(id_), match(match_), line(0), startCol(0), endCol(0)
     {
     }
-    public nothrow ShellToken(int id_, const ustring& match_, int line_, int startCol_, int endCol_) : 
+    public ShellToken(int id_, const ustring& match_, int line_, int startCol_, int endCol_) : 
         flags(), id(id_), match(match_), line(line_), startCol(startCol_), endCol(endCol_)
     {
     }
-    public nothrow const uchar* Begin() const
+    public const uchar* Begin() const
     {
         return match.Chars();
     }
-    public nothrow const uchar* End() const
+    public const uchar* End() const
     {
         return match.Chars() + match.Length();
     }
@@ -102,12 +102,12 @@ public class ShellToken
 
 public ustring MakeValue(const List<ShellToken>& tokens)
 {
-	ustring value;
-	for (const ShellToken& token : tokens)
-	{
-		value.Append(token.match);
-	}
-	return value;
+    ustring value;
+    for (const ShellToken& token : tokens)
+    {
+        value.Append(token.match);
+    }
+    return value;
 }
 
 public void SetTokenFlags(ShellToken& token, TokenFlags& globalFlags)
@@ -234,11 +234,11 @@ void AddQuotedStr(const ShellToken& token, List<ShellToken>& words, bool& brk)
 
 List<ShellToken> MakeWords(const List<ShellToken>& tokens)
 {
-	SetTokenizerDebugMode();
-	if ((debugMode & debugShell) != 0)
-	{
-		WriteDebugMessage("> sh.tokenizer.make.words");
-	}
+    SetTokenizerDebugMode();
+    if ((debugMode & debugShell) != 0)
+    {
+        WriteDebugMessage("> sh.tokenizer.make.words");
+    }
     bool brk = false;
     List<ShellToken> words;
     TokenLexer lexer(tokens);
@@ -248,65 +248,65 @@ List<ShellToken> MakeWords(const List<ShellToken>& tokens)
         {
             case TOKEN:
             {
-				if ((debugMode & debugShell) != 0)
-				{
-					WriteDebugMessage("> sh.tokenizer.make.words.token");
-				}
+                if ((debugMode & debugShell) != 0)
+                {
+                    WriteDebugMessage("> sh.tokenizer.make.words.token");
+                }
                 AddWord(lexer.CurrentToken(), words, brk);
                 break;
             }
             case QUOTED_CHAR:
             {
-				if ((debugMode & debugShell) != 0)
-				{
-					WriteDebugMessage("> sh.tokenizer.make.words.quoted.char");
-				}
+                if ((debugMode & debugShell) != 0)
+                {
+                    WriteDebugMessage("> sh.tokenizer.make.words.quoted.char");
+                }
                 AddQuotedChar(lexer.CurrentToken(), words, brk);
                 break;
             }
             case SINGLE_QUOTED:
             case DOUBLE_QUOTED:
             {
-				if ((debugMode & debugShell) != 0)
-				{
-					WriteDebugMessage("> sh.tokenizer.make.words.quoted");
-				}
+                if ((debugMode & debugShell) != 0)
+                {
+                    WriteDebugMessage("> sh.tokenizer.make.words.quoted");
+                }
                 AddQuotedStr(lexer.CurrentToken(), words, brk);
                 break;
             }
             case SPACE:
             {
                 brk = true;
-				if ((debugMode & debugShell) != 0)
-				{
-					WriteDebugMessage("> sh.tokenizer.make.words.space");
-				}
+                if ((debugMode & debugShell) != 0)
+                {
+                    WriteDebugMessage("> sh.tokenizer.make.words.space");
+                }
                 break;
             }
-			case WORD:
-			{
-				if ((debugMode & debugShell) != 0)
-				{
-					WriteDebugMessage("> sh.tokenizer.make.words.word");
-				}
+            case WORD:
+            {
+                if ((debugMode & debugShell) != 0)
+                {
+                    WriteDebugMessage("> sh.tokenizer.make.words.word");
+                }
                 AddWord(lexer.CurrentToken(), words, brk);
                 break;
-			}
+            }
             default:
             {
-				if ((debugMode & debugShell) != 0)
-				{
-					WriteDebugMessage("> sh.tokenizer.make.words.default token=" + ToString(lexer.CurrentToken().id));
-				}
+                if ((debugMode & debugShell) != 0)
+                {
+                    WriteDebugMessage("> sh.tokenizer.make.words.default token=" + ToString(lexer.CurrentToken().id));
+                }
                 words.Add(lexer.CurrentToken());
                 break;
             }
         }
         ++lexer;
     }
-	if ((debugMode & debugShell) != 0)
-	{
-		WriteDebugMessage("< sh.tokenizer.make.words.count=" + ToString(words.Count()));
-	}
+    if ((debugMode & debugShell) != 0)
+    {
+        WriteDebugMessage("< sh.tokenizer.make.words.count=" + ToString(words.Count()));
+    }
     return words;
 }

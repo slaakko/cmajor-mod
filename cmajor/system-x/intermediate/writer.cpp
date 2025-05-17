@@ -22,23 +22,26 @@ namespace {
         int32_t baseTypeId = GetBaseTypeId(type->Id());
         switch (baseTypeId)
         {
-        case voidTypeId: s = "void"; break;
-        case boolTypeId: s = "bool"; break;
-        case sbyteTypeId: s = "sbyte";  break;
-        case byteTypeId: s = "byte"; break;
-        case shortTypeId: s = "short"; break;
-        case ushortTypeId: s = "ushort"; break;
-        case intTypeId: s = "int"; break;
-        case uintTypeId: s = "uint"; break;
-        case longTypeId: s = "long"; break;
-        case ulongTypeId: s = "ulong"; break;
-        case floatTypeId: s = "float"; break;
-        case doubleTypeId: s = "double";  break;
-        default:
-        {
-            s = "$T" + std::to_string(MakeUserTypeId(baseTypeId));
-            break;
-        }
+            case voidTypeId: s = "void"; break;
+            case boolTypeId: s = "bool"; break;
+            case sbyteTypeId: s = "sbyte";  break;
+            case byteTypeId: s = "byte"; break;
+            case shortTypeId: s = "short"; break;
+            case ushortTypeId: s = "ushort"; break;
+            case intTypeId: s = "int"; break;
+            case uintTypeId: s = "uint"; break;
+            case longTypeId: s = "long"; break;
+            case ulongTypeId: s = "ulong"; break;
+            case floatTypeId: s = "float"; break;
+            case doubleTypeId: s = "double";  break;
+            case charTypeId: s = "char";  break;
+            case wcharTypeId: s = "wchar";  break;
+            case ucharTypeId: s = "uchar";  break;
+            default:
+            {
+                s = "$T" + std::to_string(MakeUserTypeId(baseTypeId));
+                break;
+            }
         }
         s.append(pointerCount, '*');
         formatter.Write(Format(s, w, util::FormatWidth::min));
@@ -102,6 +105,24 @@ namespace {
                 {
                     DoubleValue* doubleValue = static_cast<DoubleValue*>(value);
                     formatter.Write(std::to_string(doubleValue->GetValue()));
+                    break;
+                }
+                case ValueKind::charValue:
+                {
+                    CharValue* charValue = static_cast<CharValue*>(value);
+                    formatter.Write(std::to_string(static_cast<uint8_t>(charValue->GetValue())));
+                    break;
+                }
+                case ValueKind::wcharValue:
+                {
+                    WCharValue* wcharValue = static_cast<WCharValue*>(value);
+                    formatter.Write(std::to_string(static_cast<uint16_t>(wcharValue->GetValue())));
+                    break;
+                }
+                case ValueKind::ucharValue:
+                {
+                    UCharValue* ucharValue = static_cast<UCharValue*>(value);
+                    formatter.Write(std::to_string(static_cast<uint32_t>(ucharValue->GetValue())));
                     break;
                 }
                 case ValueKind::nullValue:

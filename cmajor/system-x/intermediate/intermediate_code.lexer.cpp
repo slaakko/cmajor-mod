@@ -73,6 +73,9 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(ULONG, "ULONG", "'ulong'"));
         tokens.AddToken(new soul::ast::slg::Token(FLOAT, "FLOAT", "'float'"));
         tokens.AddToken(new soul::ast::slg::Token(DOUBLE, "DOUBLE", "'double'"));
+        tokens.AddToken(new soul::ast::slg::Token(CHAR, "CHAR", "'char'"));
+        tokens.AddToken(new soul::ast::slg::Token(WCHAR, "WCHAR", "'wchar'"));
+        tokens.AddToken(new soul::ast::slg::Token(UCHAR, "UCHAR", "'uchar'"));
         tokens.AddToken(new soul::ast::slg::Token(TRUE, "TRUE", "'true'"));
         tokens.AddToken(new soul::ast::slg::Token(FALSE, "FALSE", "'false'"));
         tokens.AddToken(new soul::ast::slg::Token(NULL_TOKEN, "NULL_TOKEN", "'null'"));
@@ -173,6 +176,9 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "ulong", ULONG },
          { "float", FLOAT },
          { "double", DOUBLE },
+         { "char", CHAR },
+         { "wchar", WCHAR },
+         { "uchar", UCHAR },
          { "true", TRUE },
          { "false", FALSE },
          { "null", NULL_TOKEN },
@@ -248,6 +254,9 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"ulong", ULONG },
          { u8"float", FLOAT },
          { u8"double", DOUBLE },
+         { u8"char", CHAR },
+         { u8"wchar", WCHAR },
+         { u8"uchar", UCHAR },
          { u8"true", TRUE },
          { u8"false", FALSE },
          { u8"null", NULL_TOKEN },
@@ -323,6 +332,9 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"ulong", ULONG },
          { u"float", FLOAT },
          { u"double", DOUBLE },
+         { u"char", CHAR },
+         { u"wchar", WCHAR },
+         { u"uchar", UCHAR },
          { u"true", TRUE },
          { u"false", FALSE },
          { u"null", NULL_TOKEN },
@@ -398,6 +410,9 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"ulong", ULONG },
          { U"float", FLOAT },
          { U"double", DOUBLE },
+         { U"char", CHAR },
+         { U"wchar", WCHAR },
+         { U"uchar", UCHAR },
          { U"true", TRUE },
          { U"false", FALSE },
          { U"null", NULL_TOKEN },

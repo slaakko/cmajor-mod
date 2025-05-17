@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -38,9 +38,9 @@ void InstallUser(const string& userName, int& uid, string& shell, string& home)
 
 void MakeUserDirs(ShellEnvironment& environment)
 {
-	string projectsDir = GetFullPath(Path.Combine(environment.Home(), "projects"));
-	CreateDirectories(projectsDir);
-	ChMod(projectsDir.Chars(), cast<int>(ParseOctal("755")));
+    string projectsDir = GetFullPath(Path.Combine(environment.Home(), "projects"));
+    CreateDirectories(projectsDir);
+    ChMod(projectsDir.Chars(), cast<int>(ParseOctal("755")));
 }
 
 void CopyBin()

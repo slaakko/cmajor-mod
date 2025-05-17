@@ -47,7 +47,7 @@ namespace System.Unicode
                 }
                 case 1:
                 {
-                    result = cast<uchar>(0);
+                    result = cast<uchar>(0u);
                     bytes[1] = x;
                     byte b1 = bytes[1];
                     if ((b1 & 0xC0u) != 0x80u)
@@ -83,7 +83,7 @@ namespace System.Unicode
                 case 3:
                 {
                     bytes[2] = x;
-                    result = cast<uchar>(0);
+                    result = cast<uchar>(0u);
                     byte b2 = bytes[2];
                     if ((b2 & 0xC0u) != 0x80u)
                     {
@@ -136,7 +136,7 @@ namespace System.Unicode
                 case 6:
                 {
                     bytes[3] = x;
-                    result = cast<uchar>(0);
+                    result = cast<uchar>(0u);
                     byte b3 = bytes[3];
                     if ((b3 & 0xC0u) != 0x80u)
                     {

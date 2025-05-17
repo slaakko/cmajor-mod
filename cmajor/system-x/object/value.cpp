@@ -45,7 +45,7 @@ TypedValue::~TypedValue()
 {
 }
 
-std::string TypedValue::ToString() const
+std::string TypedValue::ToString(bool crop) const
 {
     if (index != -1)
     {
@@ -64,9 +64,9 @@ ValueRef::ValueRef(TypedValue* value_) : TypedValue(TypedValueKind::valueRef), v
     SetType(value->GetType());
 }
 
-std::string ValueRef::ToString() const
+std::string ValueRef::ToString(bool crop) const
 {
-    return value->ToString();
+    return value->ToString(crop);
 }
 
 void ValueRef::SetType(Type* type_)
@@ -79,7 +79,7 @@ ErrorValue::ErrorValue() : TypedValue(TypedValueKind::errorValue)
 {
 }
 
-std::string ErrorValue::ToString() const
+std::string ErrorValue::ToString(bool crop) const
 {
     return "<error>";
 }
@@ -88,9 +88,9 @@ BoolValue::BoolValue(bool value_) : TypedValue(TypedValueKind::boolValue), value
 {
 }
 
-std::string BoolValue::ToString() const
+std::string BoolValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("bool").append(1, ' ').append(value ? "true" : "false").append(", #").
         append(util::ToHexString(static_cast<uint8_t>(value))).append(1, '>');
@@ -101,9 +101,9 @@ SByteValue::SByteValue(int8_t value_) : TypedValue(TypedValueKind::sbyteValue), 
 {
 }
 
-std::string SByteValue::ToString() const
+std::string SByteValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("sbyte").append(1, ' ').append(std::to_string(static_cast<int>(value))).append(", #").
         append(util::ToHexString(static_cast<uint8_t>(value))).append(1, '>');
@@ -114,9 +114,9 @@ ByteValue::ByteValue(uint8_t value_) : TypedValue(TypedValueKind::byteValue), va
 {
 }
 
-std::string ByteValue::ToString() const
+std::string ByteValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("byte").append(1, ' ').append(std::to_string(static_cast<int>(value))).append(", #").
         append(util::ToHexString(value)).append(1, '>');
@@ -127,9 +127,9 @@ ShortValue::ShortValue(int16_t value_) : TypedValue(TypedValueKind::shortValue),
 {
 }
 
-std::string ShortValue::ToString() const
+std::string ShortValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("short").append(1, ' ').append(std::to_string(static_cast<int>(value))).append(", #").
         append(util::ToHexString(static_cast<uint16_t>(value))).append(1, '>');
@@ -140,9 +140,9 @@ UShortValue::UShortValue(uint16_t value_) : TypedValue(TypedValueKind::ushortVal
 {
 }
 
-std::string UShortValue::ToString() const
+std::string UShortValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("ushort").append(1, ' ').append(std::to_string(static_cast<int>(value))).append(", #").
         append(util::ToHexString(value)).append(1, '>');
@@ -153,9 +153,9 @@ IntValue::IntValue(int32_t value_) : TypedValue(TypedValueKind::intValue), value
 {
 }
 
-std::string IntValue::ToString() const
+std::string IntValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("int").append(1, ' ').append(std::to_string(static_cast<int>(value))).append(", #").
         append(util::ToHexString(static_cast<uint32_t>(value))).append(1, '>');
@@ -166,9 +166,9 @@ UIntValue::UIntValue(uint32_t value_) : TypedValue(TypedValueKind::uintValue), v
 {
 }
 
-std::string UIntValue::ToString() const
+std::string UIntValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("uint").append(1, ' ').append(std::to_string(value)).append(", #").
         append(util::ToHexString(value)).append(1, '>');
@@ -179,9 +179,9 @@ LongValue::LongValue(int64_t value_) : TypedValue(TypedValueKind::longValue), va
 {
 }
 
-std::string LongValue::ToString() const
+std::string LongValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("long").append(1, ' ').append(std::to_string(value)).append(", #").
         append(util::ToHexString(static_cast<uint64_t>(value))).append(1, '>');
@@ -192,9 +192,9 @@ ULongValue::ULongValue(uint64_t value_) : TypedValue(TypedValueKind::ulongValue)
 {
 }
 
-std::string ULongValue::ToString() const
+std::string ULongValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("ulong").append(1, ' ').append(std::to_string(value)).append(", #").
         append(util::ToHexString(value)).append(1, '>');
@@ -205,9 +205,9 @@ FloatValue::FloatValue(float value_) : TypedValue(TypedValueKind::floatValue), v
 {
 }
 
-std::string FloatValue::ToString() const
+std::string FloatValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("float").append(1, ' ').append(std::to_string(value)).append(1, '>');
     return s;
@@ -217,11 +217,47 @@ DoubleValue::DoubleValue(double value_) : TypedValue(TypedValueKind::doubleValue
 {
 }
 
-std::string DoubleValue::ToString() const
+std::string DoubleValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<');
     s.append("double").append(1, ' ').append(std::to_string(value)).append(1, '>');
+    return s;
+}
+
+CharValue::CharValue(char value_) : TypedValue(TypedValueKind::charValue), value(value_)
+{
+}
+
+std::string CharValue::ToString(bool crop) const
+{
+    std::string s = TypedValue::ToString(crop);
+    s.append(1, '<');
+    s.append("char").append(" '").append(util::CharStr(value)).append("'>");
+    return s;
+}
+
+WCharValue::WCharValue(char16_t value_) : TypedValue(TypedValueKind::wcharValue), value(value_)
+{
+}
+
+std::string WCharValue::ToString(bool crop) const
+{
+    std::string s = TypedValue::ToString(crop);
+    s.append(1, '<');
+    s.append("wchar").append(" '").append(util::ToUtf8(util::CharStr(static_cast<char32_t>(value)))).append("'>");
+    return s;
+}
+
+UCharValue::UCharValue(char32_t value_) : TypedValue(TypedValueKind::ucharValue), value(value_)
+{
+}
+
+std::string UCharValue::ToString(bool crop) const
+{
+    std::string s = TypedValue::ToString(crop);
+    s.append(1, '<');
+    s.append("uchar").append(" '").append(util::ToUtf8(util::CharStr(value))).append("'>");
     return s;
 }
 
@@ -229,10 +265,10 @@ FieldValue::FieldValue(const std::string& name_, TypedValue* value_) : name(name
 {
 }
 
-std::string FieldValue::ToString() const
+std::string FieldValue::ToString(bool crop) const
 {
     std::string s = name;
-    s.append(1, '=').append(value->ToString());
+    s.append(1, '=').append(value->ToString(crop));
     return s;
 }
 
@@ -272,9 +308,9 @@ const FieldValue& StructureValue::GetFieldValue(const std::string& fieldName) co
     }
 }
 
-std::string StructureValue::ToString() const
+std::string StructureValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append("{ ");
     bool first = true;
     for (const auto& fieldValue : fieldValues)
@@ -287,7 +323,7 @@ std::string StructureValue::ToString() const
         {
             s.append(", ");
         }
-        s.append(fieldValue.ToString());
+        s.append(fieldValue.ToString(crop));
     }
     s.append(" }");
     return s;
@@ -298,11 +334,11 @@ ElementValue::ElementValue(int64_t index_, TypedValue* value_) : TypedValue(Type
     SetType(value->GetType());
 }
 
-std::string ElementValue::ToString() const
+std::string ElementValue::ToString(bool crop) const
 {
     std::string s(1, '[');
     s.append(std::to_string(index)).append(1, ']').append(" = ");
-    s.append(value->ToString());
+    s.append(value->ToString(crop));
     return s;
 }
 
@@ -315,12 +351,12 @@ void ArrayValue::AddElementValue(ElementValue&& elementValue)
     elementValues.push_back(std::move(elementValue));
 }
 
-std::string ArrayValue::ToString() const
+std::string ArrayValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     for (const auto& elementValue : elementValues)
     {
-        s.append(1, '\n').append(elementValue.ToString());
+        s.append(1, '\n').append(elementValue.ToString(crop));
     }
     return s;
 }
@@ -334,24 +370,29 @@ void FunctionValue::SetName(const std::string& name_)
     name = name_;
 }
 
-std::string FunctionValue::ToString() const
+std::string FunctionValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append("<function ");
     s.append(name).append(1, '>');
     return s;
 }
 
-PointerValue::PointerValue() : TypedValue(TypedValueKind::pointerValue)
+PointerValue::PointerValue() : TypedValue(TypedValueKind::pointerValue), strValue(nullptr)
 {
 }
 
-std::string PointerValue::ToString() const
+std::string PointerValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append("<ptr");
     s.append(1, ' ').append(1, '#');
-    s.append(util::ToHexString(Address())).append(1, '>');
+    s.append(util::ToHexString(Address()));
+    if (strValue)
+    {
+        s.append(" value=\"").append(strValue->ToString(true)).append(1, '"');
+    }
+    s.append(1, '>');
     return s;
 }
 
@@ -364,12 +405,19 @@ void StringValue::SetStr(const std::string& str_)
     str = str_;
 }
 
-std::string StringValue::ToString() const
+std::string StringValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
-    s.append(1, '<');
-    s.append("string length=").append(std::to_string(str.length())).append(", value=").append(1, '"');
-    s.append(util::StringStr(str)).append(1, '"').append(1, '>');
+    std::string s = TypedValue::ToString(crop);
+    if (crop)
+    {
+        s.append(util::StringStr(str));
+    }
+    else
+    {
+        s.append(1, '<');
+        s.append("string length=").append(std::to_string(str.length())).append(", value=").append(1, '"');
+        s.append(util::StringStr(str)).append(1, '"').append(1, '>');
+    }
     return s;
 }
 
@@ -382,12 +430,19 @@ void WStringValue::SetStr(const std::u16string& str_)
     str = str_;
 }
 
-std::string WStringValue::ToString() const
+std::string WStringValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
-    s.append(1, '<');
-    s.append("wstring length=").append(std::to_string(str.length())).append(", value=").append(1, '"');
-    s.append(util::StringStr(util::ToUtf8(str))).append(1, '"').append(1, '>');
+    std::string s = TypedValue::ToString(crop);
+    if (crop)
+    {
+        s.append(util::StringStr(util::ToUtf8(str)));
+    }
+    else
+    {
+        s.append(1, '<');
+        s.append("wstring length=").append(std::to_string(str.length())).append(", value=").append(1, '"');
+        s.append(util::StringStr(util::ToUtf8(str))).append(1, '"').append(1, '>');
+    }
     return s;
 }
 
@@ -400,12 +455,19 @@ void UStringValue::SetStr(const std::u32string& str_)
     str = str_;
 }
 
-std::string UStringValue::ToString() const
+std::string UStringValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
-    s.append(1, '<');
-    s.append("ustring length=").append(std::to_string(str.length())).append(", value=").append(1, '"');
-    s.append(util::StringStr(util::ToUtf8(str))).append(1, '"').append(1, '>');
+    std::string s = TypedValue::ToString(crop);
+    if (crop)
+    {
+        s.append(util::StringStr(util::ToUtf8(str)));
+    }
+    else
+    {
+        s.append(1, '<');
+        s.append("ustring length=").append(std::to_string(str.length())).append(", value=").append(1, '"');
+        s.append(util::StringStr(util::ToUtf8(str))).append(1, '"').append(1, '>');
+    }
     return s;
 }
 
@@ -418,15 +480,15 @@ void ContainerValue::AddElement(TypedValue* element)
     elements.push_back(std::unique_ptr<TypedValue>(element));
 }
 
-std::string ContainerValue::ToString() const
+std::string ContainerValue::ToString(bool crop) const
 {
-    std::string s = TypedValue::ToString();
+    std::string s = TypedValue::ToString(crop);
     s.append(1, '<').append(GetType()->Name()).append(" count=").append(std::to_string(count)).append(1, '>');
     if (content)
     {
         for (const auto& element : elements)
         {
-            s.append(1, '\n').append(element->ToString());
+            s.append(1, '\n').append(element->ToString(crop));
         }
         if (nextStart != -1)
         {

@@ -1,0 +1,3 @@
+project writeln;
+target=program;
+source <writeln.cm>;

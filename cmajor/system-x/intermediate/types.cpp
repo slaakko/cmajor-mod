@@ -14,7 +14,7 @@ namespace cmajor::systemx::intermediate {
 
 const char* fundamentalTypeName[] =
 {
-    "void", "bool", "sbyte", "byte", "short", "ushort", "int", "uint", "long", "ulong", "float", "double"
+    "void", "bool", "sbyte", "byte", "short", "ushort", "int", "uint", "long", "ulong", "float", "double", "char", "wchar", "uchar"
 };
 
 std::string TypeName(int typeId)
@@ -292,6 +292,18 @@ FloatType::FloatType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType,
 }
 
 DoubleType::DoubleType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, doubleTypeId), defaultValue(0.0, this)
+{
+}
+
+CharType::CharType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, charTypeId), defaultValue('\0', this)
+{
+}
+
+WCharType::WCharType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, wcharTypeId), defaultValue(u'\0', this)
+{
+}
+
+UCharType::UCharType() : Type(soul::ast::SourcePos(), TypeKind::fundamentalType, ucharTypeId), defaultValue(U'\0', this)
 {
 }
 
@@ -672,6 +684,9 @@ Type* Types::GetFundamentalType(int32_t id) const
         case ulongTypeId: return const_cast<ULongType*>(&ulongType);
         case floatTypeId: return const_cast<FloatType*>(&floatType);
         case doubleTypeId: return const_cast<DoubleType*>(&doubleType);
+        case charTypeId: return const_cast<CharType*>(&charType);
+        case wcharTypeId: return const_cast<WCharType*>(&wcharType);
+        case ucharTypeId: return const_cast<UCharType*>(&ucharType);
     }
     return nullptr;
 }

@@ -232,6 +232,9 @@ Type* TypeTable::GetFundamentalType(int32_t fundamentalTypeId)
         case ulongTypeId: return &ulongType;
         case floatTypeId: return &floatType;
         case doubleTypeId: return &doubleType;
+        case charTypeId: return &charType;
+        case wcharTypeId: return &wcharType;
+        case ucharTypeId: return &ucharType;
     }
     return nullptr;
 }

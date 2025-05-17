@@ -11,8 +11,9 @@ namespace cmajor::systemx::intermediate {
 
 const char* valueKindStr[]
 {
-    "boolValue", "sbyteValue", "byteValue", "shortValue", "ushortValue", "intValue", "uintValue", "longValue", "ulongValue", "floatValue", "doubleValue", "nullValue",
-    "addressValue",
+    "boolValue", "sbyteValue", "byteValue", "shortValue", "ushortValue", "intValue", "uintValue", "longValue", "ulongValue", "floatValue", "doubleValue", 
+    "charValue", "wcharValue", "ucharValue",
+    "nullValue", "addressValue",
     "arrayValue", "structureValue", "stringValue", "stringArrayValue", "conversionValue", "clsIdValue", "symbolValue",
     "globalVariable",
     "regValue",
@@ -274,6 +275,48 @@ void DoubleValue::Accept(Visitor& visitor)
 std::string DoubleValue::ToString() const
 {
     return std::to_string(value);
+}
+
+CharValue::CharValue(char value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::charValue, type_), value(value_)
+{
+}
+
+void CharValue::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+std::string CharValue::ToString() const
+{
+    return std::to_string(static_cast<uint8_t>(value));
+}
+
+WCharValue::WCharValue(char16_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::wcharValue, type_), value(value_)
+{
+}
+
+void WCharValue::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+std::string WCharValue::ToString() const
+{
+    return std::to_string(static_cast<uint16_t>(value));
+}
+
+UCharValue::UCharValue(char32_t value_, Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::ucharValue, type_), value(value_)
+{
+}
+
+void UCharValue::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+std::string UCharValue::ToString() const
+{
+    return std::to_string(static_cast<uint32_t>(value));
 }
 
 NullValue::NullValue(Type* type_) : ConstantValue(soul::ast::SourcePos(), ValueKind::nullValue, type_)

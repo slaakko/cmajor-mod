@@ -172,6 +172,9 @@ public:
     ConstantValue* GetULongValue(uint64_t value, const Types& types);
     ConstantValue* GetFloatValue(float value, const Types& types);
     ConstantValue* GetDoubleValue(float value, const Types& types);
+    ConstantValue* GetCharValue(char value, const Types& types);
+    ConstantValue* GetWCharValue(char16_t value, const Types& types);
+    ConstantValue* GetUCharValue(char32_t value, const Types& types);
     ConstantValue* GetNullValue(Type* type);
     ConstantValue* MakeValue(int8_t value, const Types& types);
     ConstantValue* MakeValue(uint8_t value, const Types& types);
@@ -183,6 +186,9 @@ public:
     ConstantValue* MakeValue(uint64_t value, const Types& types);
     ConstantValue* MakeValue(float value, const Types& types);
     ConstantValue* MakeValue(double value, const Types& types);
+    ConstantValue* MakeValue(char value, const Types& types);
+    ConstantValue* MakeValue(char16_t value, const Types& types);
+    ConstantValue* MakeValue(char32_t value, const Types& types);
     ConstantValue* MakeArrayValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& elements, const std::string& prefix);
     ConstantValue* MakeStructureValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& fieldValues);
     ConstantValue* MakeStringValue(const soul::ast::SourcePos& sourcePos, const std::string& value, bool crop);
@@ -215,6 +221,9 @@ private:
     ConstantValueMap<uint64_t> ulongValueMap;
     ConstantValueMap<float> floatValueMap;
     ConstantValueMap<double> doubleValueMap;
+    ConstantValueMap<char> charValueMap;
+    ConstantValueMap<char16_t> wcharValueMap;
+    ConstantValueMap<char32_t> ucharValueMap;
     std::map<Type*, NullValue*> nullValueMap;
     int32_t nextStringId;
 };

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,12 +15,12 @@ private int debugMode = 0;
 
 void SetDebugShMode()
 {
-	debugMode = GetDebugMode();
+    debugMode = GetDebugMode();
 }
 
 inline nothrow bool DebugSh() 
 {
-	return (debugMode & debugShell) != 0;
+    return (debugMode & debugShell) != 0;
 }
 
 class PushPopLines
@@ -31,34 +31,40 @@ class PushPopLines
     }
     public ~PushPopLines()
     {
-        PopLines();
+        try
+        {
+            PopLines();
+        }
+        catch (const Exception& ex)
+        {
+        }
     }
 }
 
 string CWD(ShellEnvironment& environment)
 {
     string cwd = GetCurrentWorkingDirectory();
-	if (DebugSh())
-	{
-		WriteDebugMessage("> sh.cwd=" + cwd + ".home=" + environment.Home());
-	}
+    if (DebugSh())
+    {
+        WriteDebugMessage("> sh.cwd=" + cwd + ".home=" + environment.Home());
+    }
     if (cwd.StartsWith(environment.Home()))
     {
-		string setCwd = "~";
-		string suffix = cwd.Substring(environment.Home().Length());
-		if (!suffix.IsEmpty())
-		{
-			setCwd.Append(suffix);
-		}
-		cwd = setCwd;
-		if (DebugSh())
-		{
-			WriteDebugMessage("< sh.cwd=" + cwd);
-		}
+        string setCwd = "~";
+        string suffix = cwd.Substring(environment.Home().Length());
+        if (!suffix.IsEmpty())
+        {
+            setCwd.Append(suffix);
+        }
+        cwd = setCwd;
+        if (DebugSh())
+        {
+            WriteDebugMessage("< sh.cwd=" + cwd);
+        }
     }
     string cwdWithColors = SetColors(ConsoleColor.blue, DefaultConsoleBackColor());
-	cwdWithColors.Append(cwd).Append(ResetColors());
-	return cwdWithColors;
+    cwdWithColors.Append(cwd).Append(ResetColors());
+    return cwdWithColors;
 }
 
 void PrintPrompt(ShellEnvironment& environment)
@@ -74,23 +80,23 @@ void PrintPrompt(ShellEnvironment& environment)
 
 string GetLine(ShellEnvironment& environment)
 {
-	try
-	{
-		PrintPrompt(environment);
-		PushPid(Terminal.Descriptor(), GetPid());
-		Tab(Terminal.Descriptor(), environment.PutTabMsgQ(), environment.GetTabMsgQ());
-		string line = Terminal.ReadLine();
-		Untab(Terminal.Descriptor());
-		PopPid(Terminal.Descriptor());
-		return line;
-	}
-	catch (const Exception& ex)
-	{
-		Terminal.Out() << ex.Message() << endl();
-		Untab(Terminal.Descriptor());
-		PopPid(Terminal.Descriptor());
-	}
-	return string();
+    try
+    {
+        PrintPrompt(environment);
+        PushPid(Terminal.Descriptor(), GetPid());
+        Tab(Terminal.Descriptor(), environment.PutTabMsgQ(), environment.GetTabMsgQ());
+        string line = Terminal.ReadLine();
+        Untab(Terminal.Descriptor());
+        PopPid(Terminal.Descriptor());
+        return line;
+    }
+    catch (const Exception& ex)
+    {
+        Terminal.Out() << ex.Message() << endl();
+        Untab(Terminal.Descriptor());
+        PopPid(Terminal.Descriptor());
+    }
+    return string();
 }
 
 void ProcessLine(const string& line, ShellEnvironment& environment, Params& params, Context& context, Map<string, string>& executableMap)
@@ -109,7 +115,7 @@ void ProcessLine(const string& line, ShellEnvironment& environment, Params& para
     TokenLexer lexer(tokens);
     try
     {
-		ParserData parserData(environment, params, context);
+        ParserData parserData(environment, params, context);
         UniquePtr<Command> command = ParseCommand(lexer, parserData);
         if (!command.IsNull())
         {
@@ -148,26 +154,26 @@ void ProcessLine(const string& line, ShellEnvironment& environment, Params& para
 
 void RunFile(ShellEnvironment& environment, Params& params, Context& context, const string& filePath)
 {
-	SetDebugShMode();
-	Map<string, string> executableMap;
-	string path = GetEnv("PATH");
-	AddDirChangeNotification(path.Chars());
-	ReadPathDirectories(path, executableMap);
-	List<string> lines = File.ReadAllLines(filePath);
-	for (const string& line : lines)
-	{
-		ProcessLine(line, environment, params, context, executableMap);
-	}
+    SetDebugShMode();
+    Map<string, string> executableMap;
+    string path = GetEnv("PATH");
+    AddDirChangeNotification(path.Chars());
+    ReadPathDirectories(path, executableMap);
+    List<string> lines = File.ReadAllLines(filePath);
+    for (const string& line : lines)
+    {
+        ProcessLine(line, environment, params, context, executableMap);
+    }
 }
 
 void Run(ShellEnvironment& environment, Params& params, Context& context)
 {
-	SetDebugShMode();
-	Map<string, string> executableMap;
-	string path = GetEnv("PATH");
-	AddDirChangeNotification(path.Chars());
-	ReadPathDirectories(path, executableMap);
-	string line = GetLine(environment);
+    SetDebugShMode();
+    Map<string, string> executableMap;
+    string path = GetEnv("PATH");
+    AddDirChangeNotification(path.Chars());
+    ReadPathDirectories(path, executableMap);
+    string line = GetLine(environment);
     while (line != "exit")
     {
         ProcessLine(line, environment, params, context, executableMap);

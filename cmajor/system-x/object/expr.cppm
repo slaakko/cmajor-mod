@@ -56,8 +56,10 @@ class DerefExpr : public Expr
 public:
     DerefExpr(Expr* subject_);
     void Evaluate(EvaluationContext& context) override;
+    void SetTopLevel() { topLevel = true; }
 private:
     std::unique_ptr<Expr> subject;
+    bool topLevel;
 };
 
 class MemberExpr : public Expr

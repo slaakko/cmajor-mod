@@ -658,6 +658,24 @@ void SimpleAssemblyCodeGenerator::Visit(DoubleValue& value)
     currentOffset += 8;
 }
 
+void SimpleAssemblyCodeGenerator::Visit(CharValue& value)
+{
+    EmitChar(value, *this);
+    currentOffset += 1;
+}
+
+void SimpleAssemblyCodeGenerator::Visit(WCharValue& value)
+{
+    EmitWChar(value, *this);
+    currentOffset += 2;
+}
+
+void SimpleAssemblyCodeGenerator::Visit(UCharValue& value)
+{
+    EmitUChar(value, *this);
+    currentOffset += 4;
+}
+
 void SimpleAssemblyCodeGenerator::Visit(NullValue& value)
 {
     EmitNull(*this);

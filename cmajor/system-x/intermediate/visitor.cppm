@@ -66,6 +66,9 @@ class LongValue;
 class ULongValue;
 class FloatValue;
 class DoubleValue;
+class CharValue;
+class WCharValue;
+class UCharValue;
 class NullValue;
 class AddressValue;
 class ArrayValue;
@@ -137,6 +140,9 @@ public:
     virtual void Visit(ULongValue& value) {}
     virtual void Visit(FloatValue& value) {}
     virtual void Visit(DoubleValue& value) {}
+    virtual void Visit(CharValue& value) {}
+    virtual void Visit(WCharValue& value) {}
+    virtual void Visit(UCharValue& value) {}
     virtual void Visit(NullValue& value) {}
     virtual void Visit(AddressValue& value) {}
     virtual void Visit(ArrayValue& value) {}

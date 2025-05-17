@@ -39,10 +39,13 @@ struct IntermediateCodeParser
     static soul::parser::Match BoolConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match SByteConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match ByteConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
+    static soul::parser::Match CharConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match ShortConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match UShortConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
+    static soul::parser::Match WCharConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match IntConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match UIntConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
+    static soul::parser::Match UCharConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match LongConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match ULongConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);
     static soul::parser::Match FloatConstant(LexerT& lexer, cmajor::systemx::intermediate::Context* context);

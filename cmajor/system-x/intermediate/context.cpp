@@ -169,6 +169,21 @@ ConstantValue* Context::GetDoubleValue(double value)
     return data.GetDoubleValue(value, types);
 }
 
+ConstantValue* Context::GetCharValue(char value)
+{
+    return data.GetCharValue(value, types);
+}
+
+ConstantValue* Context::GetWCharValue(char16_t value)
+{
+    return data.GetWCharValue(value, types);
+}
+
+ConstantValue* Context::GetUCharValue(char32_t value)
+{
+    return data.GetUCharValue(value, types);
+}
+
 ConstantValue* Context::GetNullValue(const soul::ast::SourcePos& sourcePos, Type* type)
 {
     if (type->IsPointerType())

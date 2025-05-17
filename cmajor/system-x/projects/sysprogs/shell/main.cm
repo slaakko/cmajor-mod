@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2025 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,17 +12,17 @@ using System.Message;
 
 int main(int argc, const char** argv)
 {
-	ShellEnvironment environment;
+    ShellEnvironment environment;
     try
     {
         Params params;
-		Context context;
+        Context context;
         if (argc > 0)
         {
             params.Add(argv[0]);
         }
         bool debug = false;
-		List<string> files;
+        List<string> files;
         for (int i = 1; i < argc; ++i)
         {
             string arg = argv[i];
@@ -70,42 +70,42 @@ int main(int argc, const char** argv)
                     }
                 }
             }
-			else
-			{
-				files.Add(arg);
-			}
+            else
+            {
+                files.Add(arg);
+            }
         }
-		if (files.IsEmpty())
-		{
-			Install();
-			ParseEnvironmentFile("/etc/environment");
-			environment.SetDebug(debug);
-			SetupShellEnvironment(environment);
-			SetupCredentials(environment);
-			ChDir(environment.Home().Chars());
-			MakeDefaultProfile(environment);
-			MakeUserDirs(environment);
-			StartTabCompletion(environment);
-			RunProfile(environment, params, context);
-			Run(environment, params, context);
-			StopTabCompletion(environment);
-		}
-		else
-		{
-			for (const string& file : files)
-			{
-				environment.SetDebug(debug);
-				SetupShellEnvironment(environment);
-				SetupCredentials(environment);
-				ChDir(environment.Home().Chars());
-				RunFile(environment, params, context, file);
-			}
-		}
+        if (files.IsEmpty())
+        {
+            Install();
+            ParseEnvironmentFile("/etc/environment");
+            environment.SetDebug(debug);
+            SetupShellEnvironment(environment);
+            SetupCredentials(environment);
+            ChDir(environment.Home().Chars());
+            MakeDefaultProfile(environment);
+            MakeUserDirs(environment);
+            StartTabCompletion(environment);
+            RunProfile(environment, params, context);
+            Run(environment, params, context);
+            StopTabCompletion(environment);
+        }
+        else
+        {
+            for (const string& file : files)
+            {
+                environment.SetDebug(debug);
+                SetupShellEnvironment(environment);
+                SetupCredentials(environment);
+                ChDir(environment.Home().Chars());
+                RunFile(environment, params, context, file);
+            }
+        }
     }
     catch (const Exception& ex)
     {
         Terminal.Error() << ex.ToString() << endl();
-		StopTabCompletion(environment);
+        StopTabCompletion(environment);
         return 1;
     }
     return 0;

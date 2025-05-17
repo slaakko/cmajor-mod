@@ -63,6 +63,9 @@ private:
     ULongType ulongType;
     FloatType floatType;
     DoubleType doubleType;
+    CharType charType;
+    WCharType wcharType;
+    UCharType ucharType;
     std::map<std::pair<int32_t, BinaryFile*>, int32_t> oxTypeIdMap;
     std::map<std::string, Type*> userTypeMap;
     std::map<int32_t, Type*> typeMap;

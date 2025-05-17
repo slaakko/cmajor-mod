@@ -193,6 +193,45 @@ std::unique_ptr<TypedValue> DoubleType::Evaluate(EvaluationContext& context)
     return std::unique_ptr<TypedValue>(doubleValue);
 }
 
+CharType::CharType() : Type(TypeKind::fundamentalType, charTypeId, "char")
+{
+}
+
+std::unique_ptr<TypedValue> CharType::Evaluate(EvaluationContext& context)
+{
+    uint8_t b = context.memory.ReadByte(context.rv, context.address, cmajor::systemx::machine::Protection::read);
+    char value = static_cast<char>(b);
+    CharValue* charValue = new CharValue(value);
+    charValue->SetType(this);
+    return std::unique_ptr<TypedValue>(charValue);
+}
+
+WCharType::WCharType() : Type(TypeKind::fundamentalType, wcharTypeId, "wchar")
+{
+}
+
+std::unique_ptr<TypedValue> WCharType::Evaluate(EvaluationContext& context)
+{
+    uint16_t w = context.memory.ReadWyde(context.rv, context.address, cmajor::systemx::machine::Protection::read);
+    char16_t value = static_cast<char16_t>(w);
+    WCharValue* wcharValue = new WCharValue(value);
+    wcharValue->SetType(this);
+    return std::unique_ptr<TypedValue>(wcharValue);
+}
+
+UCharType::UCharType() : Type(TypeKind::fundamentalType, ucharTypeId, "uchar")
+{
+}
+
+std::unique_ptr<TypedValue> UCharType::Evaluate(EvaluationContext& context)
+{
+    uint32_t t = context.memory.ReadTetra(context.rv, context.address, cmajor::systemx::machine::Protection::read);
+    char32_t value = static_cast<char32_t>(t);
+    UCharValue* ucharValue = new UCharValue(value);
+    ucharValue->SetType(this);
+    return std::unique_ptr<TypedValue>(ucharValue);
+}
+
 Field::Field() : name(), typeId(-1), offset(-1), nameId(-1)
 {
 }
@@ -370,6 +409,111 @@ std::unique_ptr<TypedValue> PointerType::Evaluate(EvaluationContext& context)
     pointerValue->SetType(this);
     uint64_t address = context.memory.ReadOcta(context.rv, context.address, cmajor::systemx::machine::Protection::read);
     pointerValue->SetAddress(address);
+    if (baseType->IsCharType())
+    {
+        std::string s;
+        int64_t length = maxCharPtrStrLen;
+        bool dots = true;
+        for (int64_t index = 0; index < length; ++index)
+        {
+            IndexExpr expr(new ValueExpr(pointerValue), index);
+            expr.Evaluate(context);
+            std::unique_ptr<TypedValue> charValue = context.Pop();
+            TypedValue* chrValue = charValue->Get();
+            if (chrValue->IsCharValue())
+            {
+                CharValue* charValue = static_cast<CharValue*>(chrValue);
+                if (charValue->Value() == '\0')
+                {
+                    dots = false;
+                    break;
+                }
+                s.append(1, charValue->Value());
+            }
+            else
+            {
+                throw std::runtime_error("char value expected");
+            }
+        }
+        if (dots)
+        {
+            s.append("...");
+        }
+        StringValue* stringValue = new StringValue();
+        stringValue->SetStr(s);
+        pointerValue->SetStrValue(stringValue);
+        context.values->push_back(std::unique_ptr<TypedValue>(stringValue));
+    }
+    else if (baseType->IsWCharType())
+    {
+        std::u16string s;
+        int64_t length = maxCharPtrStrLen;
+        bool dots = true;
+        for (int64_t index = 0; index < length; ++index)
+        {
+            IndexExpr expr(new ValueExpr(pointerValue), index);
+            expr.Evaluate(context);
+            std::unique_ptr<TypedValue> charValue = context.Pop();
+            TypedValue* chrValue = charValue->Get();
+            if (chrValue->IsWCharValue())
+            {
+                WCharValue* wcharValue = static_cast<WCharValue*>(chrValue);
+                if (wcharValue->Value() == u'\0')
+                {
+                    dots = false;
+                    break;
+                }
+                s.append(1, wcharValue->Value());
+            }
+            else
+            {
+                throw std::runtime_error("wchar value expected");
+            }
+        }
+        if (dots)
+        {
+            s.append(u"...");
+        }
+        WStringValue* stringValue = new WStringValue();
+        stringValue->SetStr(s);
+        pointerValue->SetStrValue(stringValue);
+        context.values->push_back(std::unique_ptr<TypedValue>(stringValue));
+    }
+    else if (baseType->IsUCharType())
+    {
+        std::u32string s;
+        int64_t length = maxCharPtrStrLen;
+        bool dots = true;
+        for (int64_t index = 0; index < length; ++index)
+        {
+            IndexExpr expr(new ValueExpr(pointerValue), index);
+            expr.Evaluate(context);
+            std::unique_ptr<TypedValue> charValue = context.Pop();
+            TypedValue* chrValue = charValue->Get();
+            if (chrValue->IsUCharValue())
+            {
+                UCharValue* ucharValue = static_cast<UCharValue*>(chrValue);
+                if (ucharValue->Value() == U'\0')
+                {
+                    dots = false;
+                    break;
+                }
+                s.append(1, ucharValue->Value());
+            }
+            else
+            {
+                throw std::runtime_error("uchar value expected");
+            }
+        }
+        if (dots)
+        {
+            s.append(U"...");
+        }
+        UStringValue* stringValue = new UStringValue();
+        stringValue->SetStr(s);
+        pointerValue->SetStrValue(stringValue);
+        context.values->push_back(std::unique_ptr<TypedValue>(stringValue));
+    }
     return std::unique_ptr<TypedValue>(pointerValue);
 }
 
@@ -404,7 +548,7 @@ std::unique_ptr<TypedValue> StringType::Evaluate(EvaluationContext& context)
                     if (charsPtrType->PointerCount() == 1)
                     {
                         Type* charType = charsPtrType->BaseType();
-                        if (charType->IsByteType())
+                        if (charType->IsCharType())
                         {
                             std::string s;
                             for (int64_t index = 0; index < length; ++index)
@@ -413,21 +557,21 @@ std::unique_ptr<TypedValue> StringType::Evaluate(EvaluationContext& context)
                                 expr.Evaluate(context);
                                 std::unique_ptr<TypedValue> charValue = context.Pop();
                                 TypedValue* chrValue = charValue->Get();
-                                if (chrValue->IsByteValue())
+                                if (chrValue->IsCharValue())
                                 {
-                                    ByteValue* byteValue = static_cast<ByteValue*>(chrValue);
-                                    s.append(1, static_cast<char>(byteValue->Value()));
+                                    CharValue* charValue = static_cast<CharValue*>(chrValue);
+                                    s.append(1, charValue->Value());
                                 }
                                 else
                                 {
-                                    throw std::runtime_error("byte value expected");
+                                    throw std::runtime_error("char value expected");
                                 }
                             }
                             StringValue* stringValue = new StringValue();
                             stringValue->SetStr(s);
                             return std::unique_ptr<TypedValue>(stringValue);
                         }
-                        else if (charType->IsUShortType())
+                        else if (charType->IsWCharType())
                         {
                             std::u16string s;
                             for (int64_t index = 0; index < length; ++index)
@@ -436,21 +580,21 @@ std::unique_ptr<TypedValue> StringType::Evaluate(EvaluationContext& context)
                                 expr.Evaluate(context);
                                 std::unique_ptr<TypedValue> charValue = context.Pop();
                                 TypedValue* chrValue = charValue->Get();
-                                if (chrValue->IsUShortValue())
+                                if (chrValue->IsWCharValue())
                                 {
-                                    UShortValue* ushortValue = static_cast<UShortValue*>(chrValue);
-                                    s.append(1, static_cast<char16_t>(ushortValue->Value()));
+                                    WCharValue* wcharValue = static_cast<WCharValue*>(chrValue);
+                                    s.append(1, wcharValue->Value());
                                 }
                                 else
                                 {
-                                    throw std::runtime_error("ushort value expected");
+                                    throw std::runtime_error("wchar value expected");
                                 }
                             }
                             WStringValue* stringValue = new WStringValue();
                             stringValue->SetStr(s);
                             return std::unique_ptr<TypedValue>(stringValue);
                         }
-                        else if (charType->IsUIntType())
+                        else if (charType->IsUCharType())
                         {
                             std::u32string s;
                             for (int64_t index = 0; index < length; ++index)
@@ -459,14 +603,14 @@ std::unique_ptr<TypedValue> StringType::Evaluate(EvaluationContext& context)
                                 expr.Evaluate(context);
                                 std::unique_ptr<TypedValue> charValue = context.Pop();
                                 TypedValue* chrValue = charValue->Get();
-                                if (chrValue->IsUIntValue())
+                                if (chrValue->IsUCharValue())
                                 {
-                                    UIntValue* uintValue = static_cast<UIntValue*>(chrValue);
-                                    s.append(1, static_cast<char32_t>(uintValue->Value()));
+                                    UCharValue* ucharValue = static_cast<UCharValue*>(chrValue);
+                                    s.append(1, ucharValue->Value());
                                 }
                                 else
                                 {
-                                    throw std::runtime_error("uint value expected");
+                                    throw std::runtime_error("uchar value expected");
                                 }
                             }
                             UStringValue* stringValue = new UStringValue();

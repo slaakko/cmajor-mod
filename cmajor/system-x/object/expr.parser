@@ -20,7 +20,7 @@ parser ExprParser
         ;
 
     UnaryExpr(var std::unique_ptr<cmajor::systemx::object::Expr> expr) : cmajor::systemx::object::Expr*
-        ::= DEREF UnaryExpr:unary{ return new cmajor::systemx::object::DerefExpr(unary); }
+        ::= DEREF UnaryExpr:unary{ cmajor::systemx::object::DerefExpr* de = new cmajor::systemx::object::DerefExpr(unary); de->SetTopLevel(); return de; }
         |   PostfixExpr:postfix{ return postfix; }
         ;
 

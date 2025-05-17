@@ -59,6 +59,9 @@ public:
     ConstantValue* GetULongValue(uint64_t value);
     ConstantValue* GetFloatValue(float value);
     ConstantValue* GetDoubleValue(double value);
+    ConstantValue* GetCharValue(char value);
+    ConstantValue* GetWCharValue(char16_t value);
+    ConstantValue* GetUCharValue(char32_t value);
     ConstantValue* GetNullValue(const soul::ast::SourcePos& sourcePos, Type* type);
     ConstantValue* MakeArrayValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& elements, const std::string& prefix);
     ConstantValue* MakeStructureValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& fieldValues);

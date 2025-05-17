@@ -12,8 +12,8 @@ export namespace cmajor::systemx::intermediate {
 
 enum class ValueKind
 {
-    boolValue, sbyteValue, byteValue, shortValue, ushortValue, intValue, uintValue, longValue, ulongValue, floatValue, doubleValue, nullValue, addressValue,
-    arrayValue, structureValue, stringValue, stringArrayValue, conversionValue, clsIdValue, symbolValue,
+    boolValue, sbyteValue, byteValue, shortValue, ushortValue, intValue, uintValue, longValue, ulongValue, floatValue, doubleValue, charValue, wcharValue, ucharValue,
+    nullValue, addressValue, arrayValue, structureValue, stringValue, stringArrayValue, conversionValue, clsIdValue, symbolValue,
     globalVariable,
     regValue,
     instruction, 
@@ -180,6 +180,39 @@ public:
     std::string ToString() const override;
 private:
     double value;
+};
+
+class CharValue : public ConstantValue
+{
+public:
+    CharValue(char value_, Type* type_);
+    char GetValue() const { return value; }
+    void Accept(Visitor& visitor) override;
+    std::string ToString() const override;
+private:
+    char value;
+};
+
+class WCharValue : public ConstantValue
+{
+public:
+    WCharValue(char16_t value_, Type* type_);
+    char16_t GetValue() const { return value; }
+    void Accept(Visitor& visitor) override;
+    std::string ToString() const override;
+private:
+    char16_t value;
+};
+
+class UCharValue : public ConstantValue
+{
+public:
+    UCharValue(char32_t value_, Type* type_);
+    char32_t GetValue() const { return value; }
+    void Accept(Visitor& visitor) override;
+    std::string ToString() const override;
+private:
+    char32_t value;
 };
 
 class NullValue : public ConstantValue

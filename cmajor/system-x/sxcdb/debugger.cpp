@@ -674,7 +674,7 @@ void Debugger::PrintLocals()
                 value->SetAddress(address);
                 int32_t index = static_cast<int32_t>(indexedValues.size());
                 lines.append("\n").append("$").append(std::to_string(index)).append(" = ").append(localEntry.name).
-                    append(" = ").append(value->ToString());
+                    append(" = ").append(value->ToString(false));
                 indexedValues.push_back(std::move(value));
             }
         }
@@ -702,7 +702,7 @@ void Debugger::Print(const std::string& expr, int64_t start)
         std::vector<int64_t> args(1, value->NextStart());
         command->SetArgs(args);
     }
-    lines.append(1, '\n').append(value->ToString());
+    lines.append(1, '\n').append(value->ToString(false));
     lines.append(1, '\n');
     cmajor::systemx::kernel::WriteToTerminal(lines, process);
 }

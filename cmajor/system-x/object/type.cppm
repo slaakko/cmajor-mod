@@ -20,6 +20,8 @@ enum class TypeKind : uint8_t
     fundamentalType, structureType, arrayType, functionType, pointerType, stringType, listType, setType, mapType, linkedListType, hashSetType, hashMapType, forwardListType
 };
 
+const int64_t maxCharPtrStrLen = 64;
+
 const int32_t voidTypeId = 0;
 const int32_t boolTypeId = 1;
 const int32_t sbyteTypeId = 2;
@@ -32,7 +34,10 @@ const int32_t longTypeId = 8;
 const int32_t ulongTypeId = 9;
 const int32_t floatTypeId = 10;
 const int32_t doubleTypeId = 11;
-const int32_t userTypeId = 12;
+const int32_t charTypeId = 12;
+const int32_t wcharTypeId = 13;
+const int32_t ucharTypeId = 14;
+const int32_t userTypeId = 15;
 const int32_t pointerTypeId = int32_t(1) << 30;
 
 constexpr bool IsFundamentalTypeId(int32_t typeId) { return typeId >= 0 && typeId < userTypeId; }
@@ -99,8 +104,11 @@ public:
     TypeKind Kind() const { return kind; }
     bool IsPointerType() const { return kind == TypeKind::pointerType; }
     bool IsByteType() const { return id == byteTypeId; }
+    bool IsCharType() const { return id == charTypeId; }
     bool IsUShortType() const { return id == ushortTypeId; }
+    bool IsWCharType() const { return id == wcharTypeId; }
     bool IsUIntType() const { return id == uintTypeId; }
+    bool IsUCharType() const { return id == ucharTypeId; }
     int32_t Id() const { return id; }
     const std::string& Name() const { return name; }
     virtual int64_t Size() const = 0;
@@ -207,6 +215,30 @@ class DoubleType : public Type
 public:
     DoubleType();
     int64_t Size() const override { return 8; }
+    std::unique_ptr<TypedValue> Evaluate(EvaluationContext& context) override;
+};
+
+class CharType : public Type
+{
+public:
+    CharType();
+    int64_t Size() const override { return 1; }
+    std::unique_ptr<TypedValue> Evaluate(EvaluationContext& context) override;
+};
+
+class WCharType : public Type
+{
+public:
+    WCharType();
+    int64_t Size() const override { return 2; }
+    std::unique_ptr<TypedValue> Evaluate(EvaluationContext& context) override;
+};
+
+class UCharType : public Type
+{
+public:
+    UCharType();
+    int64_t Size() const override { return 4; }
     std::unique_ptr<TypedValue> Evaluate(EvaluationContext& context) override;
 };
 

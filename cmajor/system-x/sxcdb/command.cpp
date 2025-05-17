@@ -79,7 +79,6 @@ CommandMap::CommandMap()
     commandMap["mode"] = CommandKind::modeCommand;
     commandMap["mo"] = CommandKind::modeCommand;
     commandMap["procs"] = CommandKind::procsCommand;
-    commandMap["pr"] = CommandKind::procsCommand;
     commandMap["break"] = CommandKind::breakCommand;
     commandMap["br"] = CommandKind::breakCommand;
     commandMap["breakpoints"] = CommandKind::breakPointsCommand;

@@ -336,7 +336,7 @@ GlobalVariable* Data::AddGlobalStringPtr(const std::string& stringValue)
         return it->second;
     }
     std::string variableName = "string" + std::to_string(nextStringId++) + "_" + context->GetCompileUnit().Id();
-    GlobalVariable* globalVariable = new GlobalVariable(soul::ast::SourcePos(), context->GetTypes().GetByteType()->AddPointer(context), variableName,
+    GlobalVariable* globalVariable = new GlobalVariable(soul::ast::SourcePos(), context->GetTypes().GetCharType()->AddPointer(context), variableName,
         context->GetData().MakeStringValue(soul::ast::SourcePos(), stringValue, false), false);
     values.push_back(std::unique_ptr<Value>(globalVariable));
     globalVariables.push_back(globalVariable);
@@ -428,6 +428,21 @@ ConstantValue* Data::GetDoubleValue(float value, const Types& types)
     return doubleValueMap.Get(value, this, types);
 }
 
+ConstantValue* Data::GetCharValue(char value, const Types& types)
+{
+    return charValueMap.Get(value, this, types);
+}
+
+ConstantValue* Data::GetWCharValue(char16_t value, const Types& types)
+{
+    return wcharValueMap.Get(value, this, types);
+}
+
+ConstantValue* Data::GetUCharValue(char32_t value, const Types& types)
+{
+    return ucharValueMap.Get(value, this, types);
+}
+
 ConstantValue* Data::GetNullValue(Type* type)
 {
     auto it = nullValueMap.find(type);
@@ -510,6 +525,27 @@ ConstantValue* Data::MakeValue(float value, const Types& types)
 ConstantValue* Data::MakeValue(double value, const Types& types)
 {
     DoubleValue* constantValue = new DoubleValue(value, types.Get(doubleTypeId));
+    values.push_back(std::unique_ptr<Value>(constantValue));
+    return constantValue;
+}
+
+ConstantValue* Data::MakeValue(char value, const Types& types)
+{
+    CharValue* constantValue = new CharValue(value, types.Get(charTypeId));
+    values.push_back(std::unique_ptr<Value>(constantValue));
+    return constantValue;
+}
+
+ConstantValue* Data::MakeValue(char16_t value, const Types& types)
+{
+    WCharValue* constantValue = new WCharValue(value, types.Get(wcharTypeId));
+    values.push_back(std::unique_ptr<Value>(constantValue));
+    return constantValue;
+}
+
+ConstantValue* Data::MakeValue(char32_t value, const Types& types)
+{
+    UCharValue* constantValue = new UCharValue(value, types.Get(ucharTypeId));
     values.push_back(std::unique_ptr<Value>(constantValue));
     return constantValue;
 }
@@ -651,6 +687,15 @@ ConstantValue* Data::MakeNumericLiteral(const soul::ast::SourcePos& sourcePos, T
             }
             return GetByteValue(static_cast<uint8_t>(value), types);
         }
+        case charTypeId:
+        {
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<uint8_t>::min() || value > std::numeric_limits<uint8_t>::max())
+            {
+                Error("error making literal: range error: byte value expected", sourcePos, context);
+            }
+            return GetCharValue(static_cast<char>(value), types);
+        }
         case shortTypeId:
         {
             int64_t value = std::stoll(strValue);
@@ -669,6 +714,15 @@ ConstantValue* Data::MakeNumericLiteral(const soul::ast::SourcePos& sourcePos, T
             }
             return GetUShortValue(static_cast<uint16_t>(value), types);
         }
+        case wcharTypeId:
+        {
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<uint16_t>::min() || value > std::numeric_limits<uint16_t>::max())
+            {
+                Error("error making literal: range error: ushort value expected", sourcePos, context);
+            }
+            return GetWCharValue(static_cast<char16_t>(value), types);
+        }
         case intTypeId:
         {
             int64_t value = std::stoll(strValue);
@@ -686,6 +740,15 @@ ConstantValue* Data::MakeNumericLiteral(const soul::ast::SourcePos& sourcePos, T
                 Error("error making literal: range error: uint value expected", sourcePos, context);
             }
             return GetUIntValue(static_cast<uint32_t>(value), types);
+        }
+        case ucharTypeId:
+        {
+            int64_t value = std::stoll(strValue);
+            if (value < std::numeric_limits<uint32_t>::min() || value > std::numeric_limits<uint32_t>::max())
+            {
+                Error("error making literal: range error: uint value expected", sourcePos, context);
+            }
+            return GetUCharValue(static_cast<char32_t>(value), types);
         }
         case longTypeId:
         {

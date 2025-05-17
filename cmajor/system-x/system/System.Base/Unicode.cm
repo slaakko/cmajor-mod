@@ -394,7 +394,7 @@ namespace System.Unicode
             blocks.Add(new Block(BlockId.nko, "Nko", "Nko", cast<uchar>(0x07C0u), cast<uchar>(0x07FFu)));
             blocks.Add(new Block(BlockId.samaritan, "Samaritan", "Samaritan", cast<uchar>(0x0800u), cast<uchar>(0x083Fu)));
             blocks.Add(new Block(BlockId.mandaic, "Mandaic", "Mandaic", cast<uchar>(0x0840u), cast<uchar>(0x085Fu)));
-            blocks.Add(new Block(BlockId.syriacSup, "Syriac Sup", "Syriac Supplement", cast<uchar>(0x0860), cast<uchar>(0x086F)));
+            blocks.Add(new Block(BlockId.syriacSup, "Syriac Sup", "Syriac Supplement", cast<uchar>(0x0860u), cast<uchar>(0x086Fu)));
             blocks.Add(new Block(BlockId.arabicExtA, "Arabic Ext A", "Arabic Extended-A", cast<uchar>(0x08A0u), cast<uchar>(0x08FFu)));
             blocks.Add(new Block(BlockId.devanagari, "Devanagari", "Devanagari", cast<uchar>(0x0900u), cast<uchar>(0x097Fu)));
             blocks.Add(new Block(BlockId.bengali, "Bengali", "Bengali", cast<uchar>(0x0980u), cast<uchar>(0x09FFu)));
@@ -438,7 +438,7 @@ namespace System.Unicode
             blocks.Add(new Block(BlockId.lepcha, "Lepcha", "Lepcha", cast<uchar>(0x1C00u), cast<uchar>(0x1C4Fu)));
             blocks.Add(new Block(BlockId.olChiki, "Ol Chiki", "Ol Chiki", cast<uchar>(0x1C50u), cast<uchar>(0x1C7Fu)));
             blocks.Add(new Block(BlockId.cyrillicExtC, "Cyrillic Ext C", "Cyrillic Extended-C", cast<uchar>(0x1C80u), cast<uchar>(0x1C8Fu)));
-            blocks.Add(new Block(BlockId.georgianExt, "Georgian Ext", "Georgian Extended", cast<uchar>(0x1C90), cast<uchar>(0x1CBF)));
+            blocks.Add(new Block(BlockId.georgianExt, "Georgian Ext", "Georgian Extended", cast<uchar>(0x1C90u), cast<uchar>(0x1CBFu)));
             blocks.Add(new Block(BlockId.sundaneseSup, "Sundanese Sup", "Sundanese Supplement", cast<uchar>(0x1CC0u), cast<uchar>(0x1CCFu)));
             blocks.Add(new Block(BlockId.vedicExt, "Vedic Ext", "Vedic Extensions", cast<uchar>(0x1CD0u), cast<uchar>(0x1CFFu)));
             blocks.Add(new Block(BlockId.phoneticExt, "Phonetic Ext", "Phonetic Extensions", cast<uchar>(0x1D00u), cast<uchar>(0x1D7Fu)));

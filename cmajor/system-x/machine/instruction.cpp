@@ -3683,10 +3683,6 @@ Ret::Ret() : Instruction(RET)
 void Ret::Execute(Processor& processor, uint8_t x, uint8_t y, uint8_t z)
 {
     uint64_t pc = processor.Regs().GetPC();
-    if (pc == 0x0000000000014EC4)
-    {
-        int x = 0;
-    }
     Memory& mem = processor.GetMachine()->Mem();
     uint64_t sp = processor.Regs().Get(regSP);
     uint64_t rv = processor.Regs().GetSpecial(rV);

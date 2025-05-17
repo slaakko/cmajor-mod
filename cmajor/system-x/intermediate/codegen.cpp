@@ -373,6 +373,24 @@ cmajor::systemx::assembler::Node* MakeRegOperand(Value* value, const Register& r
                 inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(v->GetValue()));
                 break;
             }
+            case ValueKind::charValue:
+            {
+                CharValue* v = static_cast<CharValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(static_cast<uint8_t>(v->GetValue())));
+                break;
+            }
+            case ValueKind::wcharValue:
+            {
+                WCharValue* v = static_cast<WCharValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(static_cast<uint16_t>(v->GetValue())));
+                break;
+            }
+            case ValueKind::ucharValue:
+            {
+                UCharValue* v = static_cast<UCharValue*>(value);
+                inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(static_cast<uint32_t>(v->GetValue())));
+                break;
+            }
             case ValueKind::nullValue:
             {
                 inst->AddOperand(cmajor::systemx::assembler::MakeConstantExpr(static_cast<uint64_t>(0)));
@@ -504,57 +522,60 @@ void EmitLoad(LoadInstruction& inst, CodeGenerator& codeGen)
     {
         switch (type->Id())
         {
-        case boolTypeId:
-        case sbyteTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDB;
-            break;
-        }
-        case byteTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDBU;
-            break;
-        }
-        case shortTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDW;
-            break;
-        }
-        case ushortTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDWU;
-            break;
-        }
-        case intTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDT;
-            break;
-        }
-        case uintTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDTU;
-            break;
-        }
-        case longTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDO;
-            break;
-        }
-        case ulongTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDOU;
-            break;
-        }
-        case floatTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDSF;
-            break;
-        }
-        case doubleTypeId:
-        {
-            machineInst = cmajor::systemx::machine::LDOU;
-            break;
-        }
+            case boolTypeId:
+            case sbyteTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDB;
+                break;
+            }
+            case byteTypeId: 
+            case charTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDBU;
+                break;
+            }
+            case shortTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDW;
+                break;
+            }
+            case ushortTypeId:
+            case wcharTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDWU;
+                break;
+            }
+            case intTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDT;
+                break;
+            }
+            case uintTypeId:
+            case ucharTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDTU;
+                break;
+            }
+            case longTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDO;
+                break;
+            }
+            case ulongTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDOU;
+                break;
+            }
+            case floatTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDSF;
+                break;
+            }
+            case doubleTypeId:
+            {
+                machineInst = cmajor::systemx::machine::LDOU;
+                break;
+            }
         }
     }
     else if (type->IsPointerType())
@@ -583,57 +604,60 @@ void EmitStore(StoreInstruction& inst, CodeGenerator& codeGen)
     {
         switch (type->Id())
         {
-        case boolTypeId:
-        case sbyteTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STB;
-            break;
-        }
-        case byteTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STBU;
-            break;
-        }
-        case shortTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STW;
-            break;
-        }
-        case ushortTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STWU;
-            break;
-        }
-        case intTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STT;
-            break;
-        }
-        case uintTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STTU;
-            break;
-        }
-        case longTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STO;
-            break;
-        }
-        case ulongTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STOU;
-            break;
-        }
-        case floatTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STSF;
-            break;
-        }
-        case doubleTypeId:
-        {
-            machineInst = cmajor::systemx::machine::STOU;
-            break;
-        }
+            case boolTypeId:
+            case sbyteTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STB;
+                break;
+            }
+            case byteTypeId:
+            case charTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STBU;
+                break;
+            }
+            case shortTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STW;
+                break;
+            }
+            case ushortTypeId:
+            case wcharTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STWU;
+                break;
+            }
+            case intTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STT;
+                break;
+            }
+            case uintTypeId:
+            case ucharTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STTU;
+                break;
+            }
+            case longTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STO;
+                break;
+            }
+            case ulongTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STOU;
+                break;
+            }
+            case floatTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STSF;
+                break;
+            }
+            case doubleTypeId:
+            {
+                machineInst = cmajor::systemx::machine::STOU;
+                break;
+            }
         }
     }
     else if (type->IsPointerType())
@@ -778,18 +802,21 @@ void EmitZeroExtension(ZeroExtendInstruction& inst, CodeGenerator& codeGen)
         }
         case byteTypeId:
         case sbyteTypeId:
+        case charTypeId:
         {
             maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFF), true);
             break;
         }
         case ushortTypeId:
         case shortTypeId:
+        case wcharTypeId:
         {
             maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFF), true);
             break;
         }
         case uintTypeId:
         case intTypeId:
+        case ucharTypeId:
         {
             maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFF), true);
             break;
@@ -981,8 +1008,11 @@ void EmitEqual(EqualInstruction& inst, CodeGenerator& codeGen)
             }
             case boolTypeId:
             case byteTypeId:
+            case charTypeId:
             case ushortTypeId:
+            case wcharTypeId:
             case uintTypeId:
+            case ucharTypeId:
             case ulongTypeId:
             {
                 machineInst = cmajor::systemx::machine::CMPU;
@@ -1041,8 +1071,11 @@ void EmitLess(LessInstruction& inst, CodeGenerator& codeGen)
                 break;
             }
             case byteTypeId:
+            case charTypeId:
             case ushortTypeId:
+            case wcharTypeId:
             case uintTypeId:
+            case ucharTypeId:
             case ulongTypeId:
             {
                 machineInst = cmajor::systemx::machine::CMPU;
@@ -1376,18 +1409,21 @@ void EmitTruncate(TruncateInstruction& inst, CodeGenerator& codeGen)
         }
         case byteTypeId:
         case sbyteTypeId:
+        case charTypeId:
         {
             maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFF), true);
             break;
         }
         case ushortTypeId:
         case shortTypeId:
+        case wcharTypeId:
         {
             maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFF), true);
             break;
         }
         case uintTypeId:
         case intTypeId:
+        case ucharTypeId:
         {
             maskOperand = cmajor::systemx::assembler::MakeConstantExpr(uint64_t(0xFFFFFFFF), true);
             break;
@@ -1642,6 +1678,24 @@ void EmitDouble(DoubleValue& value, CodeGenerator& codeGen)
 {
     uint64_t v = *static_cast<uint64_t*>(static_cast<void*>(&value));
     codeGen.EmitOcta(v);
+}
+
+void EmitChar(CharValue& value, CodeGenerator& codeGen)
+{
+    uint8_t v = static_cast<uint8_t>(value.GetValue());
+    codeGen.EmitByte(v);
+}
+
+void EmitWChar(WCharValue& value, CodeGenerator& codeGen)
+{
+    uint16_t v = static_cast<uint16_t>(value.GetValue());
+    codeGen.EmitWyde(v);
+}
+
+void EmitUChar(UCharValue& value, CodeGenerator& codeGen)
+{
+    uint32_t v = static_cast<uint32_t>(value.GetValue());
+    codeGen.EmitTetra(v);
 }
 
 void EmitNull(CodeGenerator& codeGen)

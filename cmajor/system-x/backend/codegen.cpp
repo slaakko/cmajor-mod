@@ -1588,11 +1588,11 @@ void* SystemXCodeGenerator::GetGlobalWStringConstant(int stringId, void*& arrayT
         std::vector<void*> wcharConstants;
         for (char16_t c : str)
         {
-            wcharConstants.push_back(emitter->CreateIrValueForUShort(static_cast<uint16_t>(c)));
+            wcharConstants.push_back(emitter->CreateIrValueForWChar(c));
         }
-        wcharConstants.push_back(emitter->CreateIrValueForUShort(static_cast<uint16_t>(0)));
-        void* arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUShort(), length + 1);
-        void* stringObject = emitter->GetOrInsertGlobal("wstring" + std::to_string(stringId) + "_" + compileUnitId, emitter->GetIrTypeForUShort());
+        wcharConstants.push_back(emitter->CreateIrValueForWChar(static_cast<char16_t>(0)));
+        void* arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForWChar(), length + 1);
+        void* stringObject = emitter->GetOrInsertGlobal("wstring" + std::to_string(stringId) + "_" + compileUnitId, emitter->GetIrTypeForWChar());
         void* stringGlobal = stringObject;
         emitter->SetPrivateLinkage(stringGlobal);
         void* constant = emitter->CreateIrValueForConstantArray(arrayType, wcharConstants, "w");
@@ -1617,11 +1617,11 @@ void* SystemXCodeGenerator::GetGlobalUStringConstant(int stringId, void*& arrayT
         std::vector<void*> ucharConstants;
         for (char32_t c : str)
         {
-            ucharConstants.push_back(emitter->CreateIrValueForUInt(static_cast<uint32_t>(c)));
+            ucharConstants.push_back(emitter->CreateIrValueForUChar(c));
         }
-        ucharConstants.push_back(emitter->CreateIrValueForUInt(static_cast<uint32_t>(0)));
-        void* arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUInt(), length + 1);
-        void* stringObject = emitter->GetOrInsertGlobal("ustring" + std::to_string(stringId) + "_" + compileUnitId, emitter->GetIrTypeForUInt());
+        ucharConstants.push_back(emitter->CreateIrValueForUChar(static_cast<char32_t>(0)));
+        void* arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUChar(), length + 1);
+        void* stringObject = emitter->GetOrInsertGlobal("ustring" + std::to_string(stringId) + "_" + compileUnitId, emitter->GetIrTypeForUChar());
         void* stringGlobal = stringObject;
         emitter->SetPrivateLinkage(stringGlobal);
         void* constant = emitter->CreateIrValueForConstantArray(arrayType, ucharConstants, "u");

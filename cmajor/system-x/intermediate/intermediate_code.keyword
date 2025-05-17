@@ -15,6 +15,6 @@ keywords cmajor.systemx.intermediate.code.keyword
     ("equal", EQUAL), ("less", LESS), ("param", PARAM), ("local", LOCAL), ("load", LOAD), ("elemaddr", ELEMADDR), ("ptroffset", PTROFFSET), ("ptrdiff", PTRDIFF), ("trap", TRAP),
     ("phi", PHI), ("type", TYPE), 
     ("void", VOID), ("bool", BOOL), ("sbyte", SBYTE), ("byte", BYTE), ("short", SHORT), ("ushort", USHORT), ("int", INT), ("uint", UINT), ("long", LONG), ("ulong", ULONG),
-    ("float", FLOAT), ("double", DOUBLE),
+    ("float", FLOAT), ("double", DOUBLE), ("char", CHAR), ("wchar", WCHAR), ("uchar", UCHAR),
     ("true", TRUE), ("false", FALSE), ("null", NULL_TOKEN), ("conv", CONV), ("metadata", METADATA)
 }
