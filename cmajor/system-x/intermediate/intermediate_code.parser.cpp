@@ -3793,7 +3793,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::UCharConstant(LexerT& lexer,
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UCharConstant");
                         #endif
-                        return soul::parser::Match(true, context->GetCharValue(static_cast<char32_t>(lexer.GetToken(pos).ToUInt())));
+                        return soul::parser::Match(true, context->GetUCharValue(static_cast<char32_t>(lexer.GetToken(pos).ToUInt())));
                     }
                 }
                 *parentMatch2 = match;
@@ -4667,7 +4667,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::StringArrayConstant(LexerT& 
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 4396680239057469473);
     soul::ast::SourcePos sp = soul::ast::SourcePos();
-    std::vector<cmajor::systemx::intermediate::ConstantValue*> strings = std::vector<cmajor::systemx::intermediate::ConstantValue*>();
+    std::vector<cmajor::systemx::intermediate::ConstantValue*> elements = std::vector<cmajor::systemx::intermediate::ConstantValue*>();
     std::unique_ptr<soul::parser::Value<char>> prefix;
     std::unique_ptr<cmajor::systemx::intermediate::ConstantValue> first;
     std::unique_ptr<cmajor::systemx::intermediate::ConstantValue> next;
@@ -4734,7 +4734,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::StringArrayConstant(LexerT& 
                                 first.reset(static_cast<cmajor::systemx::intermediate::ConstantValue*>(match.value));
                                 if (match.hit)
                                 {
-                                    strings.push_back(first.release());
+                                    elements.push_back(first.release());
                                 }
                                 *parentMatch9 = match;
                             }
@@ -4779,7 +4779,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::StringArrayConstant(LexerT& 
                                                             next.reset(static_cast<cmajor::systemx::intermediate::ConstantValue*>(match.value));
                                                             if (match.hit)
                                                             {
-                                                                strings.push_back(next.release());
+                                                                elements.push_back(next.release());
                                                             }
                                                             *parentMatch15 = match;
                                                         }
@@ -4843,7 +4843,7 @@ soul::parser::Match IntermediateCodeParser<LexerT>::StringArrayConstant(LexerT& 
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "StringArrayConstant");
                         #endif
-                        return soul::parser::Match(true, context->MakeStringArrayValue(sp, prefix->value, strings));
+                        return soul::parser::Match(true, context->MakeStringArrayValue(sp, prefix->value, elements));
                     }
                 }
                 *parentMatch17 = match;

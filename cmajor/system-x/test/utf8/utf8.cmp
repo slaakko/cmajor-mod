@@ -1,0 +1,3 @@
+project utf8;
+target=program;
+source <utf8.cm>;

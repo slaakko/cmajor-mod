@@ -37,7 +37,7 @@ void OptimizingCodeGenerator::Visit(cmajor::systemx::intermediate::ArgInstructio
 
 void OptimizingCodeGenerator::Visit(cmajor::systemx::intermediate::ParamInstruction& inst)
 {
-    if (HasOptimization(Optimizations::paramRegs) && !inst.Parent()->Parent()->IsMain())
+    if (HasOptimization(Optimizations::paramRegs))
     {
         if (inst.ParamIndex() < cmajor::systemx::machine::numParamRegs)
         {

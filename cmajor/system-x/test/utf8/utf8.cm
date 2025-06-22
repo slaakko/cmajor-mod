@@ -1,0 +1,8 @@
+using System;
+
+void main()
+{
+    ustring u(u"*.x");
+    string s = ToUtf8(u);
+    Console.Out() << s << endl();
+}

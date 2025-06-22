@@ -212,9 +212,9 @@ ConstantValue* Context::MakeStringValue(const soul::ast::SourcePos& sourcePos, c
     return data.MakeStringValue(sourcePos, value, crop);
 }
 
-ConstantValue* Context::MakeStringArrayValue(const soul::ast::SourcePos& sourcePos, char prefix, const std::vector<ConstantValue*>& strings)
+ConstantValue* Context::MakeStringArrayValue(const soul::ast::SourcePos& sourcePos, char prefix, const std::vector<ConstantValue*>& elements)
 {
-    return data.MakeStringArrayValue(sourcePos, prefix, strings);
+    return data.MakeStringArrayValue(sourcePos, prefix, elements);
 }
 
 ConstantValue* Context::MakeConversionValue(const soul::ast::SourcePos& sourcePos, Type* type, ConstantValue* from)

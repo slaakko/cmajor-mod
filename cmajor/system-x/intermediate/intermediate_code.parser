@@ -219,7 +219,7 @@ parser IntermediateCodeParser
         ;
 
     UCharConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
-        ::= UCHAR NUMBER{ return context->GetCharValue(static_cast<char32_t>(lexer.GetToken(pos).ToUInt())); }
+        ::= UCHAR NUMBER{ return context->GetUCharValue(static_cast<char32_t>(lexer.GetToken(pos).ToUInt())); }
         ;
 
     LongConstant(cmajor::systemx::intermediate::Context* context) : cmajor::systemx::intermediate::ConstantValue*
@@ -278,14 +278,14 @@ parser IntermediateCodeParser
         ;
 
     StringArrayConstant(cmajor::systemx::intermediate::Context* context, 
-        var soul::ast::SourcePos sp, var std::vector<cmajor::systemx::intermediate::ConstantValue*> strings) : cmajor::systemx::intermediate::ConstantValue*
+        var soul::ast::SourcePos sp, var std::vector<cmajor::systemx::intermediate::ConstantValue*> elements) : cmajor::systemx::intermediate::ConstantValue*
         ::= StringArrayPrefix:prefix{ sp = lexer.GetSourcePos(pos); } 
             LBRACKET 
-            (Constant(context):first{ strings.push_back(first); } 
-            (COMMA Constant(context):next{ strings.push_back(next); })*)? 
+            (Constant(context):first{ elements.push_back(first); } 
+            (COMMA Constant(context):next{ elements.push_back(next); })*)? 
             RBRACKET
         {
-            return context->MakeStringArrayValue(sp, prefix, strings);
+            return context->MakeStringArrayValue(sp, prefix, elements);
         }
         ;
 

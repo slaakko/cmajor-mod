@@ -158,7 +158,7 @@ std::string StringValue::ToString() const
     {
         if (c == '"' || c == '\\')
         {
-            s.append(util::ToHexString(static_cast<uint8_t>(c)));
+            s.append(1, '\\').append(util::ToHexString(static_cast<uint8_t>(c)));
         }
         else if (static_cast<uint8_t>(c) >= 32 && static_cast<uint8_t>(c) < 127)
         {
@@ -166,7 +166,7 @@ std::string StringValue::ToString() const
         }
         else
         {
-            s.append(util::ToHexString(static_cast<uint8_t>(c)));
+            s.append(1, '\\').append(util::ToHexString(static_cast<uint8_t>(c)));
         }
     }
     s.append("\\").append(util::ToHexString(static_cast<uint8_t>(0)));
@@ -613,9 +613,9 @@ ConstantValue* Data::MakeStringValue(const soul::ast::SourcePos& sourcePos, cons
     return stringValue;
 }
 
-ConstantValue* Data::MakeStringArrayValue(const soul::ast::SourcePos& sourcePos, char prefix, const std::vector<ConstantValue*>& strings)
+ConstantValue* Data::MakeStringArrayValue(const soul::ast::SourcePos& sourcePos, char prefix, const std::vector<ConstantValue*>& elements)
 {
-    StringArrayValue* stringArrayValue = new StringArrayValue(sourcePos, prefix, strings);
+    StringArrayValue* stringArrayValue = new StringArrayValue(sourcePos, prefix, elements);
     values.push_back(std::unique_ptr<Value>(stringArrayValue));
     return stringArrayValue;
 }

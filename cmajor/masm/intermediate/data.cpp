@@ -1069,9 +1069,9 @@ Value* Data::MakeStringValue(const soul::ast::Span& span, const std::string& val
     return stringValue;
 }
 
-Value* Data::MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& strings)
+Value* Data::MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements)
 {
-    StringArrayValue* stringArrayValue = new StringArrayValue(span, prefix, strings);
+    StringArrayValue* stringArrayValue = new StringArrayValue(span, prefix, elements);
     values.push_back(std::unique_ptr<Value>(stringArrayValue));
     return stringArrayValue;
 }

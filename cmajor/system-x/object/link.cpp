@@ -369,17 +369,17 @@ LinkCommand* MakeLinkCommand(LinkCode linkCode)
 {
     switch (linkCode)
     {
-    case LinkCode::once: return new LinkOnceCommand();
-    case LinkCode::forwardLongJump: return new LinkForwardLongJumpCommand();
-    case LinkCode::forwardShortJump: return new LinkForwardShortJumpCommand();
-    case LinkCode::absoluteAddrValue: return new LinkAbsoluteAddressCommand();
-    case LinkCode::farOcta: return new LinkFarOctaCommand();
-    case LinkCode::clsid: return new LinkClsIdCommand();
-    case LinkCode::end: return new LinkEndCommamnd();
-    default:
-    {
-        return nullptr;
-    }
+        case LinkCode::once: return new LinkOnceCommand();
+        case LinkCode::forwardLongJump: return new LinkForwardLongJumpCommand();
+        case LinkCode::forwardShortJump: return new LinkForwardShortJumpCommand();
+        case LinkCode::absoluteAddrValue: return new LinkAbsoluteAddressCommand();
+        case LinkCode::farOcta: return new LinkFarOctaCommand();
+        case LinkCode::clsid: return new LinkClsIdCommand();
+        case LinkCode::end: return new LinkEndCommamnd();
+        default:
+        {
+            return nullptr;
+        }
     }
 }
 
@@ -402,21 +402,21 @@ void LinkInternal(ObjectFile* objectFile)
     {
         switch (linkCommand->Code())
         {
-        case LinkCode::forwardLongJump:
-        {
-            linkCommand->Apply(objectFile, 0);
-            break;
-        }
-        case LinkCode::forwardShortJump:
-        {
-            linkCommand->Apply(objectFile, 0);
-            break;
-        }
-        default:
-        {
-            externalCommands.push_back(std::unique_ptr<LinkCommand>(linkCommand->Clone()));
-            break;
-        }
+            case LinkCode::forwardLongJump:
+            {
+                linkCommand->Apply(objectFile, 0);
+                break;
+            }
+            case LinkCode::forwardShortJump:
+            {
+                linkCommand->Apply(objectFile, 0);
+                break;
+            }
+            default:
+            {
+                externalCommands.push_back(std::unique_ptr<LinkCommand>(linkCommand->Clone()));
+                break;
+            }
         }
     }
     linkSection->ReplaceLinkCommmands(externalCommands);
@@ -434,28 +434,28 @@ void ProcessUsedSymbol(Symbol* symbol, LinkSection* linkSection, SymbolTable* sy
         {
             switch (linkCommand->Code())
             {
-            case LinkCode::absoluteAddrValue:
-            {
-                LinkAbsoluteAddressCommand* command = static_cast<LinkAbsoluteAddressCommand*>(linkCommand);
-                symbolIndex = command->SymbolIndex();
-                if (symbolIndex == -1)
+                case LinkCode::absoluteAddrValue:
                 {
-                    throw std::runtime_error("error processing used symbol '" + symbol->FullName() + "': symbol index of link command " + std::to_string(linkCommandId) +
-                        " not set in link section of file '" + linkSection->File()->FileName() + "'");
+                    LinkAbsoluteAddressCommand* command = static_cast<LinkAbsoluteAddressCommand*>(linkCommand);
+                    symbolIndex = command->SymbolIndex();
+                    if (symbolIndex == -1)
+                    {
+                        throw std::runtime_error("error processing used symbol '" + symbol->FullName() + "': symbol index of link command " + std::to_string(linkCommandId) +
+                            " not set in link section of file '" + linkSection->File()->FileName() + "'");
+                    }
+                    break;
                 }
-                break;
-            }
-            case LinkCode::farOcta:
-            {
-                LinkFarOctaCommand* command = static_cast<LinkFarOctaCommand*>(linkCommand);
-                symbolIndex = command->SymbolIndex();
-                if (symbolIndex == -1)
+                case LinkCode::farOcta:
                 {
-                    throw std::runtime_error("error processing used symbol '" + symbol->FullName() + "': symbol index of link command " + std::to_string(linkCommandId) +
-                        " not set in link section of file '" + linkSection->File()->FileName() + "'");
+                    LinkFarOctaCommand* command = static_cast<LinkFarOctaCommand*>(linkCommand);
+                    symbolIndex = command->SymbolIndex();
+                    if (symbolIndex == -1)
+                    {
+                        throw std::runtime_error("error processing used symbol '" + symbol->FullName() + "': symbol index of link command " + std::to_string(linkCommandId) +
+                            " not set in link section of file '" + linkSection->File()->FileName() + "'");
+                    }
+                    break;
                 }
-                break;
-            }
             }
         }
         else
@@ -515,25 +515,25 @@ void MarkUsedSymbols(LinkTable& linkTable, const std::vector<std::unique_ptr<Bin
     {
         switch (binaryFile->Kind())
         {
-        case BinaryFileKind::objectFile:
-        {
-            ObjectFile* objectFile = static_cast<ObjectFile*>(binaryFile.get());
-            MarkUsedSymbols(linkTable, objectFile);
-            break;
-        }
-        case BinaryFileKind::archiveFile:
-        {
-            ArchiveFile* archiveFile = static_cast<ArchiveFile*>(binaryFile.get());
-            for (const auto& objectFile : archiveFile->ObjectFiles())
+            case BinaryFileKind::objectFile:
             {
-                MarkUsedSymbols(linkTable, objectFile.get());
+                ObjectFile* objectFile = static_cast<ObjectFile*>(binaryFile.get());
+                MarkUsedSymbols(linkTable, objectFile);
+                break;
             }
-            break;
-        }
-        default:
-        {
-            throw std::runtime_error("error linking: object or archive file expected");
-        }
+            case BinaryFileKind::archiveFile:
+            {
+                ArchiveFile* archiveFile = static_cast<ArchiveFile*>(binaryFile.get());
+                for (const auto& objectFile : archiveFile->ObjectFiles())
+                {
+                    MarkUsedSymbols(linkTable, objectFile.get());
+                }
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("error linking: object or archive file expected");
+            }
         }
     }
 }

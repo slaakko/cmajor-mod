@@ -24,8 +24,16 @@ void LinkSystemX(cmajor::ast::Project* project, cmajor::symbols::Module* rootMod
             bdp.remove_filename();
             std::filesystem::create_directories(bdp);
             std::vector<std::string> binaryFiles;
-            std::string systemMainObjectFilePath = util::GetFullPath(util::Path::Combine(util::CmajorRoot(), "system-x/system/Main/Main.o"));
-            binaryFiles.push_back(systemMainObjectFilePath);
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+            {
+                std::string systemMainObjectFilePath = util::GetFullPath(util::Path::Combine(util::CmajorRoot(), "system-x/system/Main/rel/Main.o"));
+                binaryFiles.push_back(systemMainObjectFilePath);
+            }
+            else
+            {
+                std::string systemMainObjectFilePath = util::GetFullPath(util::Path::Combine(util::CmajorRoot(), "system-x/system/Main/dbg/Main.o"));
+                binaryFiles.push_back(systemMainObjectFilePath);
+            }
             for (const auto& libraryFile : rootModule->LibraryFilePaths())
             {
                 binaryFiles.push_back(libraryFile);

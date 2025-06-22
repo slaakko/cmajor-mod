@@ -66,7 +66,7 @@ public:
     ConstantValue* MakeArrayValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& elements, const std::string& prefix);
     ConstantValue* MakeStructureValue(const soul::ast::SourcePos& sourcePos, const std::vector<ConstantValue*>& fieldValues);
     ConstantValue* MakeStringValue(const soul::ast::SourcePos& sourcePos, const std::string& value, bool crop);
-    ConstantValue* MakeStringArrayValue(const soul::ast::SourcePos& sourcePos, char prefix, const std::vector<ConstantValue*>& strings);
+    ConstantValue* MakeStringArrayValue(const soul::ast::SourcePos& sourcePos, char prefix, const std::vector<ConstantValue*>& elements);
     ConstantValue* MakeConversionValue(const soul::ast::SourcePos& sourcePos, Type* type, ConstantValue* from);
     ConstantValue* MakeClsIdValue(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& clsIdStr, bool crop);
     ConstantValue* MakeSymbolValue(const soul::ast::SourcePos& sourcePos, Type* type, const std::string& symbol);

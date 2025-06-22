@@ -16,5 +16,4 @@ sys:
 	sxcmc -v -c=release --opt=3 System.cms
 
 mn:
-	$(MAKE) -C Main clean
 	$(MAKE) -C Main

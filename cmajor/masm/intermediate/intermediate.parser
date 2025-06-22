@@ -231,14 +231,14 @@ parser IntermediateParser
         ;
 
     StringArrayConstant(cmajor::masm::intermediate::Context* context, 
-        var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::Value*> strings) : cmajor::masm::intermediate::Value*
+        var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::Value*> elements) : cmajor::masm::intermediate::Value*
         ::= StringArrayPrefix:prefix{ span = lexer.GetSpan(pos); } 
             LBRACKET 
-            (Constant(context):first{ strings.push_back(first); } 
-            (COMMA Constant(context):next{ strings.push_back(next); })*)? 
+            (Constant(context):first{ elements.push_back(first); } 
+            (COMMA Constant(context):next{ elements.push_back(next); })*)? 
             RBRACKET
         {
-            return context->MakeStringArrayValue(span, prefix, strings);
+            return context->MakeStringArrayValue(span, prefix, elements);
         }
         ;
 

@@ -1,7 +1,11 @@
-all: Main.o
+all: debug release
 
 clean:
-	del_main.bat
+	cd dbg && del_main.bat
+	cd rel && del_main.bat
 
-Main.o: 
-	sxas -v Main.s
+debug:
+	cd dbg && sxas -v Main.s
+
+release:
+	cd rel && sxas -v Main.s

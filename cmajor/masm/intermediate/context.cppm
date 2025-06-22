@@ -77,7 +77,7 @@ public:
     Value* MakeArrayValue(const soul::ast::Span& span, const std::vector<Value*>& elements);
     Value* MakeStructureValue(const soul::ast::Span& span, const std::vector<Value*>& fieldValues);
     Value* MakeStringValue(const soul::ast::Span& span, const std::string& value);
-    Value* MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& strings);
+    Value* MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements);
     Value* MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from);
     Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr);
     Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol);

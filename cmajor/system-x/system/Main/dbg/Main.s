@@ -15,10 +15,8 @@ Main FUNC
         STOU     $1,fp,#50
         STOU     $2,fp,#58
         CALL     1,main
-		SET 	 $0,ax
-		CALL	 1,run_at_exits
-		SET      ax,$0
-        TRAP     #00,#00,#00
+        STOU     ax,fp,#48
+        CALL     1,exit
         SET      sp,fp
         LDO      fp,sp
         RET     

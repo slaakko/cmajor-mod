@@ -1,8 +1,9 @@
 using System;
+using System.IO;
 
 void main()
 {
-    Console.WriteLine("foo");
-    Console.WriteLine("bar");
+    FileStream fs(1);
+    fs.Write(cast<byte*>(cast<void*>("\n")), 1);
     int x = 0;
 }

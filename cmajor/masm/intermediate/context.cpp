@@ -183,9 +183,9 @@ Value* Context::MakeStringValue(const soul::ast::Span& span, const std::string& 
     return data.MakeStringValue(span, value);
 }
 
-Value* Context::MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& strings)
+Value* Context::MakeStringArrayValue(const soul::ast::Span& span, char prefix, const std::vector<Value*>& elements)
 {
-    return data.MakeStringArrayValue(span, prefix, strings);
+    return data.MakeStringArrayValue(span, prefix, elements);
 }
 
 Value* Context::MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from)
